@@ -1,0 +1,95 @@
+#!/usr/bin/python
+
+from distutils.sysconfig import get_python_lib
+from optparse import OptionParser
+import nose
+import os
+import osgtest
+import sys
+
+
+# ------------------------------------------------------------------------------
+# Functions
+# ------------------------------------------------------------------------------
+
+def parse_command_line():
+    script_description='''Tests an OSG Software RPM installation.'''
+    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.1',
+                          description=script_description)
+
+    parser.set_defaults(adduser=False)
+    parser.add_option('-a', '--add-user', action='store_true', dest='adduser',
+                      help='Add and configure the test user account (see -u below)')
+
+    parser.set_defaults(cleanup=False)
+    parser.add_option('-c', '--cleanup', action='store_true', dest='cleanup',
+                       help='Run clean-up steps after all tests are done')
+
+    parser.set_defaults(packages=[])
+    parser.add_option('-i', '--install', action='append', dest='packages',
+                      metavar='PACKAGE',
+                      help='Install PACKAGE with yum before running tests')
+
+    parser.set_defaults(password='vdttest')
+    parser.add_option('-p', '--password', action='store', type='string',
+                      dest='password',
+                      help='Password for the grid certificate of the test user '
+                      '(see -u below)')
+
+    parser.set_defaults(runtests=True)
+    parser.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
+                      action='store_false', dest='runtests',
+                      help='Do not run the functional tests; ' +
+                      'can enable install and cleanup separately')
+
+    parser.set_defaults(username='vdttest')
+    parser.add_option('-u', '--test-user', action='store', type='string',
+                      dest='username', metavar='NAME',
+                      help='The NAME of an unprivileged user account that can '
+                      'be used to run (some) test commands (default: vdttest)')
+
+    parser.set_defaults(verbose=False)
+    parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
+                      help='Increase quantity of output')
+
+    (osgtest.options, args) = parser.parse_args()
+    if len(args) != 0:
+        parser.error('unknown argument(s): %s') % ' '.join(args)
+
+def discover_tests():
+    test_dir = os.path.join(get_python_lib(), 'osgtest')
+    test_files = ['osgtest.' + d[:-3] for d in os.listdir(test_dir)
+                  if d.startswith('test_') and d.endswith('.py')]
+    test_files.sort()
+    args = [sys.argv[0]]
+    if osgtest.options.runtests or osgtest.options.adduser:
+        args.append('osgtest.special_user')
+    if len(osgtest.options.packages) > 0:
+        args.append('osgtest.special_install')
+    if osgtest.options.runtests:
+        args += test_files
+    if osgtest.options.cleanup:
+        args.append('osgtest.special_cleanup')
+    return args
+
+def run_tests(a_argv):
+    config = nose.config.Config()
+    if osgtest.options.verbose:
+        config.verbosity = 2
+    return nose.run(config=config, argv=a_argv)
+
+
+# ------------------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    if os.getuid() != 0:
+        print 'Must be run as root'
+        sys.exit(1)
+    parse_command_line()
+    tests = discover_tests()
+    if len(tests) > 1:
+        run_tests(tests)
+    else:
+        print 'No tests to run.'

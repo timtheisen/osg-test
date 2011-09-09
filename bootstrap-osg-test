@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# The way in which we download and/or install the YUM repository RPMs is unsafe,
+# because it assumes specific versions at specific URLs.  Ideally, we would have
+# a way to discover the latest versions and grab them.
+
+on_error_die()
+{
+    if [ $? -ne 0 ]; then
+        echo 'FAILED!'
+        echo $1
+        exit 1
+    else
+        echo 'done'
+    fi
+}
+
+epel_rpm=`rpm -q epel-release 2>/dev/null`
+if [ $? -eq 1 ]; then
+    echo -n 'Downloading epel-release-5-4.noarch.rpm... '
+    if [ ! -f epel-release-5-4.noarch.rpm ]; then
+        wget --quiet http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+        on_error_die 'Could not download epel-release-5-4.noarch.rpm'
+    else
+        echo 'already downloaded'
+    fi
+
+    echo -n 'Installing epel-release... '
+    rpm --install --nosignature epel-release-5-4.noarch.rpm
+    on_error_die 'Could not install epel-release RPM'
+else
+    echo 'Already installed: epel-release'
+fi
+
+osg_rpm=`rpm -q osg-release 2>/dev/null`
+if [ $? -eq 1 ]; then
+    echo -n 'Installing osg-release... '
+    rpm --upgrade http://repo.grid.iu.edu/osg-release-latest.rpm
+    on_error_die 'Could not install osg-release'
+else
+    echo 'Already installed: osg-release'
+fi
+
+echo -n 'Updating osg-release... '
+yum -y --quiet update osg-release
+on_error_die 'Could not update osg-release'
+
+# Always erase and install, to get latest
+rpm -e osg-test >/dev/null 2>&1
+echo -n "Install osg-test... "
+yum -y --quiet install osg-test
+on_error_die "Could not install osg-test"
+echo -n 'Verify osg-test... '
+rpm --verify osg-test
+on_error_die "Could not verify osg-test"
