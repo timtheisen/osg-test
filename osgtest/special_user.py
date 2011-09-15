@@ -2,7 +2,6 @@ import os
 import os.path
 import osgtest
 import pwd
-import random
 import shutil
 import unittest
 
@@ -24,10 +23,8 @@ class TestUser(unittest.TestCase):
         # Add
         if not os.path.isdir(osgtest.HOME_DIR):
             os.mkdir(osgtest.HOME_DIR)
-        password = ''.join([chr(random.randint(33, 126)) for i in range(8)])
         command = ['useradd',
                    '--base-dir', osgtest.HOME_DIR, '-n',
-                   '--password', password,
                    '--shell', '/bin/sh',
                    osgtest.options.username]
         (status, stdout, stderr) = osgtest.syspipe(command)

@@ -4,16 +4,19 @@ import unittest
 class TestInstall(unittest.TestCase):
 
     def test_01_yum_repositories(self):
-        status = osgtest.command(['rpm', '--verify', '--quiet', 'epel-release'])
+        pre = ['rpm', '--verify', '--quiet', '--nomd5', '--nosize', '--nomtime']
+        status = osgtest.command(pre + ['epel-release'])
         self.assertEqual(status, 0)
-        status = osgtest.command(['rpm', '--verify', '--quiet', 'osg-release'])
+        status = osgtest.command(pre + ['osg-release'])
         self.assertEqual(status, 0)
 
     def test_02_install_packages(self):
         osgtest.original_rpms = osgtest.installed_rpms()
         for package in osgtest.options.packages:
-            command = ['yum', '-y', '--enablerepo=osg-testing', 'install',
-                       package]
+            command = ['yum', '-y']
+            for repo in osgtest.options.extrarepos:
+                command.append('--enablerepo=%s' % repo)
+            command += ['install', package]
             (status, stdout, stderr) = osgtest.syspipe(command)
             self.assertEqual(status, 0,
                              "Installing '%s' failed with exit status %d" %

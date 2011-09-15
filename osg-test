@@ -14,7 +14,7 @@ import sys
 
 def parse_command_line():
     script_description='''Tests an OSG Software RPM installation.'''
-    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.1',
+    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.2',
                           description=script_description)
 
     parser.set_defaults(adduser=False)
@@ -35,6 +35,12 @@ def parse_command_line():
                       dest='password',
                       help='Password for the grid certificate of the test user '
                       '(see -u below)')
+
+    parser.set_defaults(extrarepos=[])
+    parser.add_option('-r', '--extra-repo', action='append', type='string',
+                      dest='extrarepos', metavar='REPO',
+                      help='Extra repository (in addition to production) to use'
+                      ' when installing packages')
 
     parser.set_defaults(runtests=True)
     parser.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
