@@ -15,6 +15,18 @@ on_error_die()
     fi
 }
 
+extra_repo=
+case $1 in
+    test|testing)     extra_repo='--enablerepo=osg-testing';;
+    dev|development)  extra_repo='--enablerepo=osg-development';;
+    '') ;;
+    *)
+        echo "$0: unknown option '$1'"
+        echo "usage: $0 [testing|development]"
+        exit 1
+        ;;
+esac
+
 epel_rpm=`rpm -q epel-release 2>/dev/null`
 if [ $? -eq 1 ]; then
     echo -n 'Downloading epel-release-5-4.noarch.rpm... '
@@ -48,7 +60,7 @@ on_error_die 'Could not update osg-release'
 # Always erase and install, to get latest
 rpm -e osg-test >/dev/null 2>&1
 echo -n "Install osg-test... "
-yum -y --quiet install osg-test
+yum -y --quiet $extra_repo install osg-test
 on_error_die "Could not install osg-test"
 echo -n 'Verify osg-test... '
 rpm --verify osg-test
