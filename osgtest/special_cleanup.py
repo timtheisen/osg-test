@@ -39,6 +39,9 @@ class TestCleanup(unittest.TestCase):
             return
         current_rpms = osgtest.installed_rpms()
         rpms_to_erase = current_rpms - osgtest.original_rpms
+        if len(rpms_to_erase) == 0:
+            osgtest.skip('no new RPMs')
+            return
         command = ['rpm', '--quiet', '--erase'] + list(rpms_to_erase)
         (status, stdout, stderr) = osgtest.syspipe(command)
         self.assertEqual(status, 0,
