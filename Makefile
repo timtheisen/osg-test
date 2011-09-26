@@ -20,15 +20,16 @@ CA_CERT_DIR := ca-certificate
 CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.*
 INSTALL_CA_CERT_DIR := etc/grid-security/certificates
 
-CERT_DIR := certificate
-CERT_FILE := $(CERT_DIR)/usercert.pem
-CERT_KEY := $(CERT_DIR)/userkey.pem
-INSTALL_CERT_DIR := usr/share/osg-test
+SHARE_DIR := files
+CERT_FILE := $(SHARE_DIR)/usercert.pem
+CERT_KEY := $(SHARE_DIR)/userkey.pem
+TEST_FILES := $(SHARE_DIR)/test_*
+INSTALL_SHARE_DIR := usr/share/osg-test
 
 PYTHON_DIR := osgtest
 PYTHON_FILES := $(PYTHON_DIR)/*.py
 
-DIST_FILES := $(SBIN_FILES) $(CA_CERT_DIR) $(CERT_DIR) $(PYTHON_DIR) Makefile
+DIST_FILES := $(SBIN_FILES) $(CA_CERT_DIR) $(SHARE_DIR) $(PYTHON_DIR) Makefile
 
 
 # ------------------------------------------------------------------------------
@@ -77,9 +78,10 @@ else
 	install -p -m 0755 $(SBIN_FILES) $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
 	install -p -m 0644 $(CA_CERT_FILES) $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
-	mkdir -p $(DESTDIR)/$(INSTALL_CERT_DIR)
-	install -p -m 0644 $(CERT_FILE) $(DESTDIR)/$(INSTALL_CERT_DIR)
-	install -p -m 0400 $(CERT_KEY) $(DESTDIR)/$(INSTALL_CERT_DIR)
+	mkdir -p $(DESTDIR)/$(INSTALL_SHARE_DIR)
+	install -p -m 0644 $(CERT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
+	install -p -m 0400 $(CERT_KEY) $(DESTDIR)/$(INSTALL_SHARE_DIR)
+	install -p -m 0644 $(TEST_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_DIR)
 	install -p -m 0644 $(PYTHON_FILES) $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_DIR)
 endif
