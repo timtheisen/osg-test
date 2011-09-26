@@ -14,7 +14,7 @@ import sys
 
 def parse_command_line():
     script_description='''Tests an OSG Software RPM installation.'''
-    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.3',
+    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.4',
                           description=script_description)
 
     parser.set_defaults(adduser=False)
@@ -24,6 +24,11 @@ def parse_command_line():
     parser.set_defaults(cleanup=False)
     parser.add_option('-c', '--cleanup', action='store_true', dest='cleanup',
                        help='Run clean-up steps after all tests are done')
+
+    parser.set_defaults(dumpout=False)
+    parser.add_option('-d', '--dump-output', action='store_true',
+                      dest='dumpout',
+                      help='After test output, print all command output')
 
     parser.set_defaults(packages=[])
     parser.add_option('-i', '--install', action='append', dest='packages',
@@ -94,8 +99,13 @@ if __name__ == '__main__':
         print 'Must be run as root'
         sys.exit(1)
     parse_command_line()
+    osgtest.start_log()
     tests = discover_tests()
     if len(tests) > 1:
         run_tests(tests)
     else:
         print 'No tests to run.'
+    osgtest.end_log()
+    if osgtest.options.dumpout:
+        osgtest.dump_log()
+    osgtest.remove_log()

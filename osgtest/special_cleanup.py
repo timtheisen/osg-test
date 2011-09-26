@@ -2,12 +2,19 @@ import os
 import os.path
 import osgtest
 import pwd
+import re
 import shutil
 import unittest
 
 class TestCleanup(unittest.TestCase):
 
     def test_01_remove_test_user(self):
+        if (osgtest.mapfile is not None) and os.path.exists(osgtest.mapfile):
+            os.remove(osgtest.mapfile)
+        backup = osgtest.mapfile_backup
+        if (backup is not None) and os.path.exists(backup):
+            shutil.move(backup, '/etc/grid-security/grid-mapfile')
+
         password_entry = pwd.getpwnam(osgtest.options.username)
 
         globus_dir = os.path.join(password_entry[5], '.globus')
@@ -38,12 +45,27 @@ class TestCleanup(unittest.TestCase):
             osgtest.skip('no original list')
             return
         current_rpms = osgtest.installed_rpms()
-        rpms_to_erase = current_rpms - osgtest.original_rpms
-        if len(rpms_to_erase) == 0:
+        new_rpms_since_install = current_rpms - osgtest.original_rpms
+        if len(new_rpms_since_install) == 0:
             osgtest.skip('no new RPMs')
             return
-        command = ['rpm', '--quiet', '--erase'] + list(rpms_to_erase)
+
+        # Creating the list of RPMs to erase is more complicated than just using
+        # the list of new RPMs, because there may be RPMs with both 32- and 64-
+        # bit versions installed.  In that case, rpm will fail if given just the
+        # base package name; instead, the architecture must be specified, and an
+        # easy way to get that information is from 'rpm -q'.  So we use the bare
+        # name when possible, and the fully versioned one when necessary.
+        rpm_arguments = []
+        for rpm in new_rpms_since_install:
+            (status, stdout, stderr) = osgtest.syspipe(['rpm', '--query', rpm])
+            versioned_rpms = re.split('\n', stdout.strip())
+            if len(versioned_rpms) > 1:
+                rpm_arguments += versioned_rpms
+            else:
+                rpm_arguments.append(rpm)
+        command = ['rpm', '--quiet', '--erase'] + rpm_arguments
         (status, stdout, stderr) = osgtest.syspipe(command)
         self.assertEqual(status, 0,
                          "Removing %d packages failed with exit status %d" %
-                         (len(rpms_to_erase), status))
+                         (len(rpm_arguments), status))

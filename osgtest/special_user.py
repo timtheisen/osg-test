@@ -2,6 +2,7 @@ import os
 import os.path
 import osgtest
 import pwd
+import re
 import shutil
 import unittest
 
@@ -53,3 +54,26 @@ class TestUser(unittest.TestCase):
         self.assert_(os.path.isdir(password_entry[5]),
                      "The user '%s' does not have a home directory at '%s'" %
                      (osgtest.options.username, password_entry[5]))
+
+    def test_03_install_mapfile(self):
+        try:
+            password_entry = pwd.getpwnam(osgtest.options.username)
+        except KeyError, e:
+            osgtest.skip('no user')
+            return
+
+        backup_filename = '/etc/grid-security/grid-mapfile.osg-test.backup'
+        if os.path.exists('/etc/grid-security/grid-mapfile'):
+            shutil.move('/etc/grid-security/grid-mapfile', backup_filename)
+            osgtest.mapfile_backup = backup_filename
+
+        cert_path = os.path.join(password_entry[5], '.globus', 'usercert.pem')
+        command = ['openssl', 'x509', '-in', cert_path, '-noout', '-subject']
+        (status, stdout, stderr) = osgtest.syspipe(command)
+        self.assertEqual(status, 0, 'Could not read user certificate')
+        user_dn = re.sub(r'^[^/]*', '', stdout.strip())
+
+        mapfile = open('/etc/grid-security/grid-mapfile', 'w')
+        mapfile.write('"%s" %s\n' % (user_dn, password_entry[0]))
+        mapfile.close()
+        osgtest.mapfile = '/etc/grid-security/grid-mapfile'

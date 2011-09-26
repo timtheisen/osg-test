@@ -13,6 +13,8 @@ class TestInstall(unittest.TestCase):
     def test_02_install_packages(self):
         osgtest.original_rpms = osgtest.installed_rpms()
         for package in osgtest.options.packages:
+            if osgtest.rpm_is_installed(package):
+                continue
             command = ['yum', '-y']
             for repo in osgtest.options.extrarepos:
                 command.append('--enablerepo=%s' % repo)
