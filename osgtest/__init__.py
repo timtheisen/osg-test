@@ -1,1 +1,1 @@
-from osgtest.core import HOME_DIR, options, original_rpms, mapfile, mapfile_backup, log, log_filename, start_log, end_log, dump_log, remove_log, command, syspipe, rpm_is_installed, installed_rpms, skip, missing_rpm
+from osgtest.core import *
