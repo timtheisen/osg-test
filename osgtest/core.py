@@ -92,6 +92,21 @@ def missing_rpm(a_packages):
         return True
     return False
 
+def diagnose(message, status, stdout, stderr):
+    result = message + '\n'
+    result += 'EXIT STATUS: %d\n' % (status)
+    result += 'STANDARD OUTPUT:'
+    if (stdout is None) or (len(stdout.rstrip('\n')) == 0):
+        result += ' [none]\n'
+    else:
+        result += '\n' + stdout.rstrip('\n') + '\n'
+    result += 'STANDARD ERROR:'
+    if (stderr is None) or (len(stderr.rstrip('\n')) == 0):
+        result += ' [none]\n'
+    else:
+        result += '\n' + stderr.rstrip('\n') + '\n'
+    return result
+
 def __format_command(command):
     result = []
     for part in command:

@@ -33,19 +33,25 @@ class TestUser(unittest.TestCase):
                          "Adding user '%s' failed with exit status %d"
                          % (osgtest.options.username, status))
 
-        # Set up certificate
-        password_entry = pwd.getpwnam(osgtest.options.username)
-        globus_dir = os.path.join(password_entry[5], '.globus')
+        # Set up directories
+        user = pwd.getpwnam(osgtest.options.username)
+        os.chown(user.pw_dir, user.pw_uid, user.pw_gid)
+        os.chmod(user.pw_dir, 0755)
+        globus_dir = os.path.join(user.pw_dir, '.globus')
         if not os.path.isdir(globus_dir):
             os.mkdir(globus_dir)
+            os.chown(globus_dir, user.pw_uid, user.pw_gid)
+            os.chmod(globus_dir, 0755)
+
+        # Set up certificate
         shutil.copy2('/usr/share/osg-test/usercert.pem', globus_dir)
         shutil.copy2('/usr/share/osg-test/userkey.pem', globus_dir)
         os.chmod(os.path.join(globus_dir, 'usercert.pem'), 0644)
         os.chmod(os.path.join(globus_dir, 'userkey.pem'), 0400)
         os.chown(os.path.join(globus_dir, 'usercert.pem'),
-                 password_entry[2], password_entry[3])
+                 user.pw_uid, user.pw_gid)
         os.chown(os.path.join(globus_dir, 'userkey.pem'),
-                 password_entry[2], password_entry[3])
+                 user.pw_uid, user.pw_gid)
 
     def test_02_user(self):
         password_entry = pwd.getpwnam(osgtest.options.username)

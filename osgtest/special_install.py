@@ -20,9 +20,9 @@ class TestInstall(unittest.TestCase):
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
             (status, stdout, stderr) = osgtest.syspipe(command)
-            self.assertEqual(status, 0,
-                             "Installing '%s' failed with exit status %d" %
-                             (package, status))
+            fail = osgtest.diagnose('Install "%s"' % (package),
+                                    status, stdout, stderr)
+            self.assertEqual(status, 0, fail)
             status = osgtest.command(['rpm', '--verify', '--quiet', package])
             self.assertEqual(status, 0,
                              "Verifying '%s' failed with exit status %d" %

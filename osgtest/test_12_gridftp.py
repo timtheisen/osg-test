@@ -12,13 +12,14 @@ import unittest
 class TestGridFTP(unittest.TestCase):
 
     __started_server = False
+    __pid_file = '/var/run/globus-gridftp-server.pid'
 
     def test_00_start_gridftp(self):
         TestGridFTP.__started_server = False
         if not osgtest.rpm_is_installed('globus-gridftp-server-progs'):
             osgtest.skip('not installed')
             return
-        if os.path.exists('/var/lock/subsys/globus-gridftp-server'):
+        if os.path.exists(TestGridFTP.__pid_file):
             osgtest.skip('apparently running')
             return
 
@@ -28,8 +29,8 @@ class TestGridFTP(unittest.TestCase):
                          "exit status %d" % status)
         self.assert_(stdout.find('FAILED') == -1,
                      "Starting the GridFTP server reported 'FAILED'")
-        self.assert_(os.path.exists('/var/lock/subsys/globus-gridftp-server'),
-                     'GridFTP server run lock file missing')
+        self.assert_(os.path.exists(TestGridFTP.__pid_file),
+                     'GridFTP server PID file missing')
         TestGridFTP.__started_server = True
 
     def test_01_copy_local_to_server(self):
@@ -82,6 +83,5 @@ class TestGridFTP(unittest.TestCase):
                          "exit status %d" % status)
         self.assert_(stdout.find('FAILED') == -1,
                      "Stopping the GridFTP server reported 'FAILED'")
-        self.assert_(not
-                     os.path.exists('/var/lock/subsys/globus-gridftp-server'),
-                     'GridFTP server run lock file still present')
+        self.assert_(not os.path.exists(TestGridFTP.__pid_file),
+                     'GridFTP server PID file still present')
