@@ -58,7 +58,8 @@ class TestCleanup(unittest.TestCase):
         # name when possible, and the fully versioned one when necessary.
         rpm_arguments = []
         for rpm in new_rpms_since_install:
-            (status, stdout, stderr) = osgtest.syspipe(['rpm', '--query', rpm])
+            (status, stdout, stderr) = osgtest.syspipe(['rpm', '--query', rpm],
+                                                       brief_output=True)
             versioned_rpms = re.split('\n', stdout.strip())
             if len(versioned_rpms) > 1:
                 rpm_arguments += versioned_rpms
