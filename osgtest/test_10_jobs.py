@@ -92,7 +92,8 @@ class TestRunningJobs(unittest.TestCase):
                          'Incorrect output from globus-job-run with Condor job')
 
     def test_50_sleep(self):
-        time.sleep(5)
+        if TestRunningJobs.__started_condor:
+            time.sleep(5)
 
     def test_94_stop_condor(self):
         if not osgtest.rpm_is_installed('condor'):
