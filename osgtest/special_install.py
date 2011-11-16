@@ -10,7 +10,16 @@ class TestInstall(unittest.TestCase):
         status = osgtest.command(pre + ['osg-release'])
         self.assertEqual(status, 0)
 
-    def test_02_install_packages(self):
+    def test_02_clean_yum(self):
+        pre = ['yum', '--enablerepo=*', 'clean']
+        (status, stdout, stderr) = osgtest.syspipe(pre + ['all'])
+        fail = osgtest.diagnose('YUM clean all', status, stdout, stderr)
+        self.assertEqual(status, 0, fail)
+        (status, stdout, stderr) = osgtest.syspipe(pre + ['expire-cache'])
+        fail = osgtest.diagnose('YUM clean cache', status, stdout, stderr)
+        self.assertEqual(status, 0, fail)
+
+    def test_03_install_packages(self):
         osgtest.original_rpms = osgtest.installed_rpms()
         for package in osgtest.options.packages:
             if osgtest.rpm_is_installed(package):

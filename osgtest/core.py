@@ -21,7 +21,7 @@ mapfile_backup = None
 log = None
 log_filename = None
 
-last_log_was_brief = False
+last_log_had_output = True
 
 # ------------------------------------------------------------------------------
 # Global Functions
@@ -43,6 +43,13 @@ def start_log():
     osgtest.log.write('  - Verbose: %s\n' % str(osgtest.options.verbose))
     osgtest.log.flush()
 
+def log_message(message):
+    osgtest.log.write('\n')
+    osgtest.log.write('message: ')
+    osgtest.log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    osgtest.log.write(message + '\n')
+    osgtest.last_log_had_output = True
+
 def end_log():
     osgtest.log.close()
 
@@ -56,27 +63,25 @@ def dump_log():
 def remove_log():
     os.remove(osgtest.log_filename)
 
-def command(command, user=None, stdin=None, no_output=False,
-            brief_output=False):
+def command(command, user=None, stdin=None, log_output=True):
     (status, stdout, stderr) = __run_command(command, user, stdin,
                                              subprocess.PIPE, subprocess.STDOUT,
-                                             no_output, brief_output)
+                                             log_output)
     print stdout.rstrip(),
     return status
 
-def syspipe(command, user=None, stdin=None, no_output=False,
-            brief_output=False):
+def syspipe(command, user=None, stdin=None, log_output=True):
     return __run_command(command, user, stdin, subprocess.PIPE,
-                         subprocess.PIPE, no_output, brief_output)
+                         subprocess.PIPE, log_output)
 
 def rpm_is_installed(a_package):
     (status, stdout, stderr) = syspipe(['rpm', '--query', a_package],
-                                       brief_output=True)
+                                       log_output=False)
     return (status == 0) and stdout.startswith(a_package)
 
 def installed_rpms():
     command = ['rpm', '--query', '--all', '--queryformat', r'%{NAME}\n']
-    (status, stdout, stderr) = syspipe(command, no_output=True)
+    (status, stdout, stderr) = syspipe(command, log_output=False)
     return set(re.split('\s+', stdout.strip()))
 
 def skip(message=None):
@@ -122,7 +127,7 @@ def __format_command(command):
     return result
 
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
-                  no_output=False, brief_output=False):
+                  log_output=True):
     # Preprocess command
     if not (isinstance(command, list) or isinstance(command, tuple)):
         raise TypeError, 'Need list or tuple, got %s' % str(type(command))
@@ -135,43 +140,37 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
         stdin = subprocess.PIPE
 
     # Log
-    log_time_string = time.strftime('%Y-%m-%d %H:%M:%S')
-    log_command_string = ' '.join(__format_command(command))
-    if brief_output:
-        if not osgtest.last_log_was_brief:
-            osgtest.log.write('\n' + ('-' * 80) + '\n\n')
-        osgtest.last_log_was_brief = True
-        osgtest.log.write('%s: %s ' % (log_time_string, log_command_string))
-    else:
-        osgtest.last_log_was_brief = False
-        osgtest.log.write('\n' + ('-' * 80) + '\n\n')
-        osgtest.log.write('TIME: %s\n' % (log_time_string))
-        osgtest.log.write('COMMAND: %s\n' % (log_command_string))
+    if osgtest.last_log_had_output:
+        osgtest.log.write('\n')
+    osgtest.log.write('osgtest: ')
+    osgtest.log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    osgtest.log.write(' '.join(__format_command(command)))
 
     # Run and return command
     p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
     (stdout, stderr) = p.communicate(a_input)
 
-    if brief_output:
-        osgtest.log.write('(%d)\n' % (p.returncode))
-    else:
-        osgtest.log.write('EXIT STATUS: %d\n' % p.returncode)
-        osgtest.log.write('STANDARD OUTPUT:')
-        if no_output:
-            osgtest.log.write(' [suppressed]\n')
-        elif (stdout is None) or (len(stdout.rstrip('\n')) == 0):
-            osgtest.log.write(' [none]\n')
-        else:
-            osgtest.log.write('\n' + stdout.rstrip('\n') + '\n')
-        osgtest.log.write('STANDARD ERROR:')
-        if no_output:
-            osgtest.log.write(' [suppressed]\n')
-        elif (stderr is None) or (len(stderr.rstrip('\n')) == 0):
-            osgtest.log.write(' [none]\n')
-        else:
-            osgtest.log.write('\n' + stderr.rstrip('\n') + '\n')
-
+    # Log
+    stdout_length = 0
+    if stdout is not None:
+        stdout_length = len(stdout)
+    stderr_length = 0
+    if stderr is not None:
+        stderr_length = len(stderr)
+    osgtest.log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
+    osgtest.last_log_had_output = False
+    if log_output:
+        if (stdout is not None) and (len(stdout.rstrip('\n')) > 0):
+            osgtest.log.write('STDOUT:{\n')
+            osgtest.log.write(stdout.rstrip('\n') + '\n')
+            osgtest.log.write('STDOUT:}\n')
+            osgtest.last_log_had_output = True
+        if (stderr is not None) and (len(stderr.rstrip('\n')) > 0):
+            osgtest.log.write('STDERR:{\n')
+            osgtest.log.write(stderr.rstrip('\n') + '\n')
+            osgtest.log.write('STDERR:}\n')
+            osgtest.last_log_had_output = True
     osgtest.log.flush()
 
     return (p.returncode, stdout, stderr)
