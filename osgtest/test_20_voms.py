@@ -39,7 +39,6 @@ class TestVOMS(unittest.TestCase):
 
         if not os.path.exists(target_dir):
             os.mkdir(target_dir)
-            print "********** GOT HERE **********"
             TestVOMS.__certs[nickname + '_dir'] = target_dir
             os.chown(target_dir, user.pw_uid, user.pw_gid)
             os.chmod(target_dir, 0755)
