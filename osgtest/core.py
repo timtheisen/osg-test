@@ -16,6 +16,7 @@ HOME_DIR = '/var/home'
 
 options = None
 original_rpms = []
+installed_rpm_list = []
 mapfile = None
 mapfile_backup = None
 log = None
@@ -44,11 +45,12 @@ def start_log():
     osgtest.log.flush()
 
 def log_message(message):
-    osgtest.log.write('\n')
+    if osgtest.last_log_had_output:
+        osgtest.log.write('\n')
     osgtest.log.write('message: ')
     osgtest.log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
     osgtest.log.write(message + '\n')
-    osgtest.last_log_had_output = True
+    osgtest.last_log_had_output = False
 
 def end_log():
     osgtest.log.close()
@@ -63,6 +65,30 @@ def dump_log():
 def remove_log():
     os.remove(osgtest.log_filename)
 
+def monitor_file(filename, position, sentinel, timeout):
+    start_time = time.time()
+    end_time = start_time + timeout
+    monitored_file = None
+    while time.time() <= end_time:
+        if monitored_file is None:
+            if os.path.exists(filename):
+                monitored_file = open(filename, 'r')
+                monitored_file.seek(position)
+            else:
+                time.sleep(0.2)
+                continue
+
+        where = monitored_file.tell()
+        line = monitored_file.readline()
+        if line:
+            if sentinel in line:
+                monitored_file.close()
+                return (line, time.time() - start_time)
+        else:
+            time.sleep(0.2)
+            monitored_file.seek(where)
+    return None
+
 def command(command, user=None, stdin=None, log_output=True):
     (status, stdout, stderr) = __run_command(command, user, stdin,
                                              subprocess.PIPE, subprocess.STDOUT,
@@ -70,18 +96,18 @@ def command(command, user=None, stdin=None, log_output=True):
     print stdout.rstrip(),
     return status
 
-def syspipe(command, user=None, stdin=None, log_output=True):
+def syspipe(command, user=None, stdin=None, log_output=True, shell=False):
     return __run_command(command, user, stdin, subprocess.PIPE,
-                         subprocess.PIPE, log_output)
+                         subprocess.PIPE, log_output, shell=shell)
 
 def rpm_is_installed(a_package):
-    (status, stdout, stderr) = syspipe(['rpm', '--query', a_package],
-                                       log_output=False)
+    status, stdout, stderr = syspipe(('rpm', '--query', a_package),
+                                     log_output=False)
     return (status == 0) and stdout.startswith(a_package)
 
 def installed_rpms():
-    command = ['rpm', '--query', '--all', '--queryformat', r'%{NAME}\n']
-    (status, stdout, stderr) = syspipe(command, log_output=False)
+    command = ('rpm', '--query', '--all', '--queryformat', r'%{NAME}\n')
+    status, stdout, stderr = syspipe(command, log_output=False)
     return set(re.split('\s+', stdout.strip()))
 
 def skip(message=None):
@@ -92,15 +118,28 @@ def skip(message=None):
         sys.stdout.write('SKIPPED ... ')
     sys.stdout.flush()
 
-def missing_rpm(a_packages):
+def missing_rpm(*packages):
     missing = []    
-    for package in a_packages:
+    for package in packages:
         if not osgtest.rpm_is_installed(package):
             missing.append(package)
     if len(missing) > 0:
         osgtest.skip('missing %s' % ' '.join(missing))
         return True
     return False
+
+def certificate_info(path):
+    command = ('openssl', 'x509', '-noout', '-subject', '-issuer', '-in', path)
+    status, stdout, stderr = syspipe(command)
+    if (status != 0) or (stdout is None) or (stderr is not None):
+        raise OSError(status, stderr)
+    if len(stdout.strip()) == 0:
+        raise OSError(status, stdout)
+    subject_issuer_re = r'subject\s*=\s*([^\n]+)\nissuer\s*=\s*([^\n]+)\n'
+    matches = re.match(subject_issuer_re, stdout)
+    if matches is None:
+        raise OSError(status, stdout)
+    return (matches.group(1), matches.group(2))
 
 def diagnose(message, status, stdout, stderr):
     result = message + '\n'
@@ -118,19 +157,26 @@ def diagnose(message, status, stdout, stderr):
     return result
 
 def __format_command(command):
+    if isinstance(command, str):
+        return [command]
     result = []
     for part in command:
-        if re.search(r"[' \\]", part):
+        if part == '':
+            result.append("''")
+        elif re.search(r"[' \\]", part):
             result.append("'" + part + "'")
         else:
             result.append(part)
     return result
 
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
-                  log_output=True):
+                  log_output=True, shell=False):
     # Preprocess command
-    if not (isinstance(command, list) or isinstance(command, tuple)):
-        raise TypeError, 'Need list or tuple, got %s' % str(type(command))
+    if shell:
+        if not isinstance(command, str):
+            command = ' '.join(command)
+    elif not (isinstance(command, list) or isinstance(command, tuple)):
+        raise TypeError, 'Need list or tuple, got %s' % (repr(command))
     if use_test_user:
         command = ['su', '-c', ' '.join(command), osgtest.options.username]
 
@@ -148,7 +194,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
 
     # Run and return command
     p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT)
+                         stderr=subprocess.STDOUT, shell=shell)
     (stdout, stderr) = p.communicate(a_input)
 
     # Log

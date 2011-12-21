@@ -17,9 +17,9 @@ class TestRunningJobs(unittest.TestCase):
         if not osgtest.rpm_is_installed('globus-proxy-utils'):
             osgtest.skip()
             return
-        command = ['grid-proxy-init', '-debug']
+        command = ('grid-proxy-init', '-debug')
         password = osgtest.options.password + '\n'
-        (status, stdout, stderr) = osgtest.syspipe(command, True, password)
+        status, stdout, stderr = osgtest.syspipe(command, True, password)
         fail = osgtest.diagnose('Run grid-proxy-init', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
 
@@ -32,10 +32,20 @@ class TestRunningJobs(unittest.TestCase):
             osgtest.skip('apparently running')
             return
 
-        command = ['service', 'globus-gatekeeper', 'start']
-        (status, stdout, stderr) = osgtest.syspipe(command)
-        self.assertEqual(status, 0, "Starting the Globus gatekeeper failed "
-                         "with exit status %d" % status)
+        # DEBUG: Set up gatekeeper debugging
+        jobmanager_config = open('/etc/globus/globus-gram-job-manager.conf', 'a')
+        jobmanager_config.write('-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n')
+        jobmanager_config.write('-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n')
+        jobmanager_config.close()
+        if not os.path.exists('/var/log/globus'):
+            os.mkdir('/var/log/globus')
+            os.chmod('/var/log/globus', 0777)
+
+        command = ('service', 'globus-gatekeeper', 'start')
+        status, stdout, stderr = osgtest.syspipe(command)
+        fail = osgtest.diagnose('Start Globus gatekeeper',
+                                status, stdout, stderr)
+        self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('FAILED') == -1,
                      "Starting the Globus gatekeeper reported 'FAILED'")
         self.assert_(os.path.exists(TestRunningJobs.__lockfile_gatekeeper),
@@ -51,10 +61,10 @@ class TestRunningJobs(unittest.TestCase):
             osgtest.skip('apparently running')
             return
 
-        command = ['service', 'condor', 'start']
-        (status, stdout, stderr) = osgtest.syspipe(command)
-        self.assertEqual(status, 0,
-                         "Starting Condor failed with exit status %d" % status)
+        command = ('service', 'condor', 'start')
+        status, stdout, stderr = osgtest.syspipe(command)
+        fail = osgtest.diagnose('Start Condor', status, stdout, stderr)
+        self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('error') == -1,
                      "Starting Condor reported 'error'")
         self.assert_(os.path.exists(TestRunningJobs.__lockfile_condor),
@@ -62,14 +72,14 @@ class TestRunningJobs(unittest.TestCase):
         TestRunningJobs.__started_condor = True
 
     def test_20_fork_job(self):
-        if osgtest.missing_rpm(['globus-gatekeeper', 'globus-gram-client-tools',
-                                'globus-proxy-utils', 'globus-gram-job-manager',
-                                'globus-gram-job-manager-fork-setup-poll']):
+        if osgtest.missing_rpm('globus-gatekeeper', 'globus-gram-client-tools',
+                               'globus-proxy-utils', 'globus-gram-job-manager',
+                               'globus-gram-job-manager-fork-setup-poll'):
             return
 
-        command = ['globus-job-run', 'localhost/jobmanager-fork',
-                   '/bin/echo', 'hello']
-        (status, stdout, stderr) = osgtest.syspipe(command, True)
+        command = ('globus-job-run', 'localhost/jobmanager-fork', '/bin/echo',
+                   'hello')
+        status, stdout, stderr = osgtest.syspipe(command, True)
         fail = osgtest.diagnose('Failed globus-job-run on fork job',
                                 status, stdout, stderr)
         self.assertEqual(status, 0, fail)
@@ -77,14 +87,14 @@ class TestRunningJobs(unittest.TestCase):
                          'Incorrect output from globus-job-run with fork job')
 
     def test_30_condor_job(self):
-        if osgtest.missing_rpm(['globus-gram-job-manager-condor',
-                                'globus-gram-client-tools',
-                                'globus-proxy-utils']):
+        if osgtest.missing_rpm('globus-gram-job-manager-condor',
+                               'globus-gram-client-tools',
+                               'globus-proxy-utils'):
             return
 
-        command = ['globus-job-run', 'localhost/jobmanager-condor',
-                   '/bin/echo', 'hello']
-        (status, stdout, stderr) = osgtest.syspipe(command, True)
+        command = ('globus-job-run', 'localhost/jobmanager-condor', '/bin/echo',
+                   'hello')
+        status, stdout, stderr = osgtest.syspipe(command, True)
         fail = osgtest.diagnose('Failed globus-job-run on Condor job',
                                 status, stdout, stderr)
         self.assertEqual(status, 0, fail)
@@ -103,11 +113,10 @@ class TestRunningJobs(unittest.TestCase):
             osgtest.skip('did not start server')
             return
 
-        command = ['service', 'condor', 'stop']
-        (status, stdout, stderr) = osgtest.syspipe(command)
-        self.assertEqual(status, 0,
-                         'Stopping Condor failed with exit status %d\n%s\n%s' \
-                         % (status, stdout, stderr))
+        command = ('service', 'condor', 'stop')
+        status, stdout, stderr = osgtest.syspipe(command)
+        fail = osgtest.diagnose('Stop Condor', status, stdout, stderr)
+        self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('error') == -1,
                      "Stopping Condor reported 'error'")
         self.assert_(not os.path.exists(TestRunningJobs.__lockfile_condor),
@@ -121,10 +130,11 @@ class TestRunningJobs(unittest.TestCase):
             osgtest.skip('did not start server')
             return
 
-        command = ['service', 'globus-gatekeeper', 'stop']
-        (status, stdout, stderr) = osgtest.syspipe(command)
-        self.assertEqual(status, 0, "Stopping the Globus gatekeeper failed "
-                         "with exit status %d" % status)
+        command = ('service', 'globus-gatekeeper', 'stop')
+        status, stdout, stderr = osgtest.syspipe(command)
+        fail = osgtest.diagnose('Stop Globus gatekeeper',
+                                status, stdout, stderr)
+        self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('FAILED') == -1,
                      "Stopping the Globus gatekeeper reported 'FAILED'")
         self.assert_(not

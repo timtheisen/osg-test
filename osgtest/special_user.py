@@ -24,11 +24,9 @@ class TestUser(unittest.TestCase):
         # Add
         if not os.path.isdir(osgtest.HOME_DIR):
             os.mkdir(osgtest.HOME_DIR)
-        command = ['useradd',
-                   '--base-dir', osgtest.HOME_DIR, '-n',
-                   '--shell', '/bin/sh',
-                   osgtest.options.username]
-        (status, stdout, stderr) = osgtest.syspipe(command)
+        command = ('useradd', '--base-dir', osgtest.HOME_DIR, '-n',
+                   '--shell', '/bin/sh', osgtest.options.username)
+        status, stdout, stderr = osgtest.syspipe(command)
         self.assertEqual(status, 0,
                          "Adding user '%s' failed with exit status %d"
                          % (osgtest.options.username, status))
@@ -57,29 +55,21 @@ class TestUser(unittest.TestCase):
         password_entry = pwd.getpwnam(osgtest.options.username)
         self.assert_(password_entry is not None,
                      "The user '%s' does not exist" % osgtest.options.username)
-        self.assert_(os.path.isdir(password_entry[5]),
+        self.assert_(os.path.isdir(password_entry.pw_dir),
                      "The user '%s' does not have a home directory at '%s'" %
-                     (osgtest.options.username, password_entry[5]))
+                     (osgtest.options.username, password_entry.pw_dir))
 
     def test_03_install_mapfile(self):
-        try:
-            password_entry = pwd.getpwnam(osgtest.options.username)
-        except KeyError, e:
-            osgtest.skip('no user')
-            return
-
+        pwd_entry = pwd.getpwnam(osgtest.options.username)
         backup_filename = '/etc/grid-security/grid-mapfile.osg-test.backup'
         if os.path.exists('/etc/grid-security/grid-mapfile'):
             shutil.move('/etc/grid-security/grid-mapfile', backup_filename)
             osgtest.mapfile_backup = backup_filename
 
-        cert_path = os.path.join(password_entry[5], '.globus', 'usercert.pem')
-        command = ['openssl', 'x509', '-in', cert_path, '-noout', '-subject']
-        (status, stdout, stderr) = osgtest.syspipe(command)
-        self.assertEqual(status, 0, 'Could not read user certificate')
-        user_dn = re.sub(r'^[^/]*', '', stdout.strip())
+        cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
+        user_dn, user_cert_issuer = osgtest.certificate_info(cert_path)
 
         mapfile = open('/etc/grid-security/grid-mapfile', 'w')
-        mapfile.write('"%s" %s\n' % (user_dn, password_entry[0]))
+        mapfile.write('"%s" %s\n' % (user_dn, pwd_entry.pw_name))
         mapfile.close()
         osgtest.mapfile = '/etc/grid-security/grid-mapfile'

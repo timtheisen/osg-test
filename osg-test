@@ -14,7 +14,7 @@ import sys
 
 def parse_command_line():
     script_description='''Tests an OSG Software RPM installation.'''
-    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.6',
+    parser = OptionParser(usage='usage: %prog [options]', version='%prog 0.0.7',
                           description=script_description)
 
     parser.set_defaults(adduser=False)
