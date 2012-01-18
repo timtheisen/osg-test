@@ -400,7 +400,7 @@ class TestVOMS(unittest.TestCase):
     # ==========================================================================
 
     def test_50_config_mkgridmap(self):
-        if osgtest.missing_rpm('edg-mkgridmap'):
+        if osgtest.missing_rpm('edg-mkgridmap', 'voms-server'):
             return
         contents = 'group vomss://%s:8443/voms/%s %s\n' % \
             (socket.getfqdn(), TestVOMS.__voname, osgtest.options.username)
@@ -410,7 +410,7 @@ class TestVOMS(unittest.TestCase):
         osgtest.syspipe(('cat', TestVOMS.__mkgridmap_conf))
 
     def test_51_edg_mkgridmap(self):
-        if osgtest.missing_rpm('edg-mkgridmap'):
+        if osgtest.missing_rpm('edg-mkgridmap', 'voms-server'):
             return
         command = ('edg-mkgridmap', '--conf', TestVOMS.__mkgridmap_conf)
         os.environ['GRIDMAP'] = '/usr/share/osg-test/grid-mapfile'
@@ -435,7 +435,7 @@ class TestVOMS(unittest.TestCase):
     # ==========================================================================
 
     def test_90_clean_edg_mkgridmap(self):
-        if osgtest.missing_rpm('edg-mkgridmap'):
+        if osgtest.missing_rpm('edg-mkgridmap', 'voms-server'):
             return
 
         for envvar in ('VO_LIST_FILE', 'UNDEFINED_ACCTS_FILE',
