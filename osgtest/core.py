@@ -87,7 +87,7 @@ def monitor_file(filename, position, sentinel, timeout):
         else:
             time.sleep(0.2)
             monitored_file.seek(where)
-    return None
+    return (None, None)
 
 def command(command, user=None, stdin=None, log_output=True):
     (status, stdout, stderr) = __run_command(command, user, stdin,
