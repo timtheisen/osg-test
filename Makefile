@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 
 PACKAGE := osg-test
-VERSION := 0.0.8
+VERSION := 0.0.9
 
 
 # ------------------------------------------------------------------------------
@@ -86,15 +86,15 @@ else
 	install -p -m 0644 $(PYTHON_FILES) $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_DIR)
 endif
 
-
-dist: $(TARBALL_NAME)
 $(TARBALL_NAME): $(DIST_FILES)
 	$(eval TEMP_DIR := $(shell mktemp -d -p . $(DIST_DIR_PREFIX)XXXXXXXXXX))
 	mkdir -p $(TEMP_DIR)/$(TARBALL_DIR)
 	cp -pr $(DIST_FILES) $(TEMP_DIR)/$(TARBALL_DIR)/
+	sed -i -e 's/##VERSION##/$(VERSION)/g' $(TEMP_DIR)/$(TARBALL_DIR)/osg-test
 	tar czf $(TARBALL_NAME) -C $(TEMP_DIR) $(TARBALL_DIR)
 	rm -rf $(TEMP_DIR)
 
+dist: $(TARBALL_NAME)
 
 upstream: $(TARBALL_NAME)
 ifeq ($(shell ls -1d $(UPSTREAM) 2>/dev/null),)
