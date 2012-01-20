@@ -1,6 +1,6 @@
 import os
 import os.path
-import osgtest
+import osgtest.library.core as core
 import pwd
 import re
 import shutil
@@ -9,13 +9,13 @@ import unittest
 class TestCleanup(unittest.TestCase):
 
     def test_01_remove_test_user(self):
-        if (osgtest.mapfile is not None) and os.path.exists(osgtest.mapfile):
-            os.remove(osgtest.mapfile)
-        backup = osgtest.mapfile_backup
+        if (core.mapfile is not None) and os.path.exists(core.mapfile):
+            os.remove(core.mapfile)
+        backup = core.mapfile_backup
         if (backup is not None) and os.path.exists(backup):
             shutil.move(backup, '/etc/grid-security/grid-mapfile')
 
-        password_entry = pwd.getpwnam(osgtest.options.username)
+        password_entry = pwd.getpwnam(core.options.username)
 
         globus_dir = os.path.join(password_entry.pw_dir, '.globus')
 
@@ -27,27 +27,27 @@ class TestCleanup(unittest.TestCase):
         if os.path.exists(userkey_path):
             os.unlink(userkey_path)
 
-        mail_path = os.path.join('/var/spool/mail', osgtest.options.username)
+        mail_path = os.path.join('/var/spool/mail', core.options.username)
         if os.path.exists(mail_path):
             os.unlink(mail_path)
 
         if os.path.isdir(password_entry.pw_dir):
             shutil.rmtree(password_entry.pw_dir)
 
-        command = ('userdel', osgtest.options.username)
-        status, stdout, stderr = osgtest.syspipe(command)
+        command = ('userdel', core.options.username)
+        status, stdout, stderr = core.syspipe(command)
         self.assertEqual(status, 0,
                          "Removing user '%s' failed with exit status %d" %
-                         (osgtest.options.username, status))
+                         (core.options.username, status))
 
     def test_02_remove_packages(self):
-        if len(osgtest.original_rpms) == 0:
-            osgtest.skip('no original list')
+        if len(core.original_rpms) == 0:
+            core.skip('no original list')
             return
-        current_rpms = osgtest.installed_rpms()
-        new_rpms_since_install = current_rpms - osgtest.original_rpms
+        current_rpms = core.installed_rpms()
+        new_rpms_since_install = current_rpms - core.original_rpms
         if len(new_rpms_since_install) == 0:
-            osgtest.skip('no new RPMs')
+            core.skip('no new RPMs')
             return
 
         # For the "rpm -e" command, RPMs should be listed in the same order as
@@ -61,14 +61,14 @@ class TestCleanup(unittest.TestCase):
         # the chances of a clean erase.
 
         rpm_erase_candidates = []
-        for package in osgtest.installed_rpm_list:
+        for package in core.installed_rpm_list:
             if package in new_rpms_since_install:
                 rpm_erase_candidates.append(package)
 
         remaining_new_rpms = new_rpms_since_install - set(rpm_erase_candidates)
-        if len(remaining_new_rpms) > 0:
-            osgtest.log_message('%d RPMs installed but not in yum output' % \
-                                (len(remaining_new_rpms)))
+        count = len(remaining_new_rpms)
+        if count > 0:
+            core.log_message('%d RPMs installed but not in yum output' % count)
             rpm_erase_candidates += remaining_new_rpms
 
         # Creating the list of RPMs to erase is more complicated than just using
@@ -82,7 +82,7 @@ class TestCleanup(unittest.TestCase):
         rpm_erase_list = []
         for package in rpm_erase_candidates:
             command = ('rpm', '--query', package)
-            status, stdout, stderr = osgtest.syspipe(command, log_output=False)
+            status, stdout, stderr = core.syspipe(command, log_output=False)
             versioned_rpms = re.split('\n', stdout.strip())
             if len(versioned_rpms) > 1:
                 rpm_erase_list += versioned_rpms
@@ -90,7 +90,7 @@ class TestCleanup(unittest.TestCase):
                 rpm_erase_list.append(package)
 
         command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
-        status, stdout, stderr = osgtest.syspipe(command)
+        status, stdout, stderr = core.syspipe(command)
         self.assertEqual(status, 0,
                          "Removing %d packages failed with exit status %d" %
                          (len(rpm_erase_list), status))

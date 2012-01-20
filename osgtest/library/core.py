@@ -1,6 +1,5 @@
 import os
 import os.path
-import osgtest
 import re
 import subprocess
 import sys
@@ -9,7 +8,7 @@ import time
 
 
 # ------------------------------------------------------------------------------
-# Globally accessible data
+# Module attributes
 # ------------------------------------------------------------------------------
 
 HOME_DIR = '/var/home'
@@ -29,41 +28,43 @@ last_log_had_output = True
 # ------------------------------------------------------------------------------
 
 def start_log():
-    (log_fd, osgtest.log_filename) = tempfile.mkstemp()
-    osgtest.log = os.fdopen(log_fd, 'w')
-    osgtest.log.write(('-' * 80) + '\n')
-    osgtest.log.write('OSG-TEST LOG\n')
-    osgtest.log.write('Start time: ' + time.strftime('%Y-%m-%d %H:%M:%S') + '\n\n')
-    osgtest.log.write('Options:\n')
-    osgtest.log.write('  - Add user: %s\n' % str(osgtest.options.adduser))
-    osgtest.log.write('  - Cleanup: %s\n' % str(osgtest.options.cleanup))
-    osgtest.log.write('  - Install: %s\n' % ', '.join(osgtest.options.packages))
-    osgtest.log.write('  - Extra repos: %s\n' % ', '.join(osgtest.options.extrarepos))
-    osgtest.log.write('  - Run tests: %s\n' % str(osgtest.options.runtests))
-    osgtest.log.write('  - Test user: %s\n' % osgtest.options.username)
-    osgtest.log.write('  - Verbose: %s\n' % str(osgtest.options.verbose))
-    osgtest.log.flush()
+    global log_filename, log
+    (log_fd, log_filename) = tempfile.mkstemp()
+    log = os.fdopen(log_fd, 'w')
+    log.write(('-' * 80) + '\n')
+    log.write('OSG-TEST LOG\n')
+    log.write('Start time: ' + time.strftime('%Y-%m-%d %H:%M:%S') + '\n\n')
+    log.write('Options:\n')
+    log.write('  - Add user: %s\n' % str(options.adduser))
+    log.write('  - Cleanup: %s\n' % str(options.cleanup))
+    log.write('  - Install: %s\n' % ', '.join(options.packages))
+    log.write('  - Extra repos: %s\n' % ', '.join(options.extrarepos))
+    log.write('  - Run tests: %s\n' % str(options.runtests))
+    log.write('  - Test user: %s\n' % options.username)
+    log.write('  - Verbose: %s\n' % str(options.verbose))
+    log.flush()
 
 def log_message(message):
-    if osgtest.last_log_had_output:
-        osgtest.log.write('\n')
-    osgtest.log.write('message: ')
-    osgtest.log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
-    osgtest.log.write(message + '\n')
-    osgtest.last_log_had_output = False
+    global last_log_had_output
+    if last_log_had_output:
+        log.write('\n')
+    log.write('message: ')
+    log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    log.write(message + '\n')
+    last_log_had_output = False
 
 def end_log():
-    osgtest.log.close()
+    log.close()
 
 def dump_log():
-    logfile = open(osgtest.log_filename, 'r')
+    logfile = open(log_filename, 'r')
     print '\n'
     for line in logfile:
         print line.rstrip('\n')
     logfile.close()
 
 def remove_log():
-    os.remove(osgtest.log_filename)
+    os.remove(log_filename)
 
 def monitor_file(filename, position, sentinel, timeout):
     start_time = time.time()
@@ -121,10 +122,10 @@ def skip(message=None):
 def missing_rpm(*packages):
     missing = []    
     for package in packages:
-        if not osgtest.rpm_is_installed(package):
+        if not rpm_is_installed(package):
             missing.append(package)
     if len(missing) > 0:
-        osgtest.skip('missing %s' % ' '.join(missing))
+        skip('missing %s' % ' '.join(missing))
         return True
     return False
 
@@ -171,6 +172,8 @@ def __format_command(command):
 
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
                   log_output=True, shell=False):
+    global last_log_had_output
+
     # Preprocess command
     if shell:
         if not isinstance(command, str):
@@ -178,7 +181,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
     elif not (isinstance(command, list) or isinstance(command, tuple)):
         raise TypeError, 'Need list or tuple, got %s' % (repr(command))
     if use_test_user:
-        command = ['su', '-c', ' '.join(command), osgtest.options.username]
+        command = ['su', '-c', ' '.join(command), options.username]
 
     # Figure out stdin
     stdin = None
@@ -186,11 +189,11 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
         stdin = subprocess.PIPE
 
     # Log
-    if osgtest.last_log_had_output:
-        osgtest.log.write('\n')
-    osgtest.log.write('osgtest: ')
-    osgtest.log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
-    osgtest.log.write(' '.join(__format_command(command)))
+    if last_log_had_output:
+        log.write('\n')
+    log.write('osgtest: ')
+    log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    log.write(' '.join(__format_command(command)))
 
     # Run and return command
     p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE,
@@ -204,19 +207,19 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
     stderr_length = 0
     if stderr is not None:
         stderr_length = len(stderr)
-    osgtest.log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
-    osgtest.last_log_had_output = False
+    log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
+    last_log_had_output = False
     if log_output:
         if (stdout is not None) and (len(stdout.rstrip('\n')) > 0):
-            osgtest.log.write('STDOUT:{\n')
-            osgtest.log.write(stdout.rstrip('\n') + '\n')
-            osgtest.log.write('STDOUT:}\n')
-            osgtest.last_log_had_output = True
+            log.write('STDOUT:{\n')
+            log.write(stdout.rstrip('\n') + '\n')
+            log.write('STDOUT:}\n')
+            last_log_had_output = True
         if (stderr is not None) and (len(stderr.rstrip('\n')) > 0):
-            osgtest.log.write('STDERR:{\n')
-            osgtest.log.write(stderr.rstrip('\n') + '\n')
-            osgtest.log.write('STDERR:}\n')
-            osgtest.last_log_had_output = True
-    osgtest.log.flush()
+            log.write('STDERR:{\n')
+            log.write(stderr.rstrip('\n') + '\n')
+            log.write('STDERR:}\n')
+            last_log_had_output = True
+    log.flush()
 
     return (p.returncode, stdout, stderr)

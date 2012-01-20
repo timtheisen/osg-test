@@ -1,6 +1,6 @@
 import os
 import os.path
-import osgtest
+import osgtest.library.core as core
 import shutil
 import socket
 import tempfile
@@ -16,16 +16,16 @@ class TestGridFTP(unittest.TestCase):
 
     def test_00_start_gridftp(self):
         TestGridFTP.__started_server = False
-        if not osgtest.rpm_is_installed('globus-gridftp-server-progs'):
-            osgtest.skip('not installed')
+        if not core.rpm_is_installed('globus-gridftp-server-progs'):
+            core.skip('not installed')
             return
         if os.path.exists(TestGridFTP.__pid_file):
-            osgtest.skip('apparently running')
+            core.skip('apparently running')
             return
 
         command = ('service', 'globus-gridftp-server', 'start')
-        status, stdout, stderr = osgtest.syspipe(command)
-        fail = osgtest.diagnose('Start GridFTP server', status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command)
+        fail = core.diagnose('Start GridFTP server', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('FAILED') == -1,
                      "Starting the GridFTP server reported 'FAILED'")
@@ -34,8 +34,8 @@ class TestGridFTP(unittest.TestCase):
         TestGridFTP.__started_server = True
 
     def test_01_copy_local_to_server(self):
-        if osgtest.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                               'globus-proxy-utils', 'globus-gass-copy-progs'):
+        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
+                            'globus-proxy-utils', 'globus-gass-copy-progs'):
             return
 
         hostname = socket.getfqdn()
@@ -46,18 +46,18 @@ class TestGridFTP(unittest.TestCase):
                    'file:///usr/share/osg-test/test_gridftp_data.txt',
                    gsiftp_url)
 
-        status, stdout, stderr = osgtest.syspipe(command, True)
+        status, stdout, stderr = core.syspipe(command, True)
 
-        fail = osgtest.diagnose('GridFTP copy, local to URL',
-                                status, stdout, stderr)
+        fail = core.diagnose('GridFTP copy, local to URL',
+                             status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
         shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_copy_server_to_local(self):
-        if osgtest.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                               'globus-proxy-utils', 'globus-gass-copy-progs'):
+        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
+                            'globus-proxy-utils', 'globus-gass-copy-progs'):
             return
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
@@ -66,31 +66,29 @@ class TestGridFTP(unittest.TestCase):
         gsiftp_url += '/usr/share/osg-test/test_gridftp_data.txt'
         local_path = temp_dir + '/copied_file.txt'
         command = ('globus-url-copy', gsiftp_url, 'file://' + local_path)
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('GridFTP copy, URL to local',
-                                status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('GridFTP copy, URL to local',
+                             status, stdout, stderr)
         file_copied = os.path.exists(local_path)
         shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_03_copy_local_to_server_uberftp(self):
-        if osgtest.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                               'globus-proxy-utils', 'globus-gass-copy-progs'):
+        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
+                            'globus-proxy-utils', 'globus-gass-copy-progs'):
             return
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
-
         local_dir  = '/usr/share/osg-test'
         local_path = 'test_gridftp_data.txt'
-        ftpCmd = '"cd %s; lcd %s; put %s"' % (temp_dir, local_dir, local_path)
-        command = ('uberftp', hostname, ftpCmd)
-
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('UberFTP copy, local to URL',
-                                status, stdout, stderr)
+        ftp_cmd = '"cd %s; lcd %s; put %s"' % (temp_dir, local_dir, local_path)
+        command = ('uberftp', hostname, ftp_cmd)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('UberFTP copy, local to URL',
+                             status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
 
         shutil.rmtree(temp_dir)
@@ -98,22 +96,20 @@ class TestGridFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_04_copy_server_to_local_uberftp(self):
-        if osgtest.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                               'globus-proxy-utils', 'globus-gass-copy-progs'):
+        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
+                            'globus-proxy-utils', 'globus-gass-copy-progs'):
             return
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
-
         local_dir  = '/usr/share/osg-test'
         local_path = 'test_gridftp_data.txt'
-        ftpCmd = '"cd %s; lcd %s; get %s"' % (local_dir, temp_dir, local_path)
-        command = ('uberftp', hostname, ftpCmd)
-
-        status, stdout, stderr = osgtest.syspipe(command, True)
-
-        fail = osgtest.diagnose('UberFTP copy, URL to local', status, stdout, stderr)
+        ftp_cmd = '"cd %s; lcd %s; get %s"' % (local_dir, temp_dir, local_path)
+        command = ('uberftp', hostname, ftp_cmd)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('UberFTP copy, URL to local',
+                             status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
 
         shutil.rmtree(temp_dir)
@@ -121,30 +117,30 @@ class TestGridFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_05_copy_local_to_server_uberftp_parallel(self):
-        if osgtest.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client', 'globus-proxy-utils', 'globus-gass-copy-progs'):
+        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
+                            'globus-proxy-utils', 'globus-gass-copy-progs'):
             return
 
         hostname = socket.getfqdn()
-
         temp_dir_source = tempfile.mkdtemp()
-        temp_dir_dest   = tempfile.mkdtemp()
-
+        temp_dir_dest = tempfile.mkdtemp()
         os.chmod(temp_dir_source, 0777)
-        os.chmod(temp_dir_dest,   0777)
-
-        filename='testfile_10MB'
-        full_path = (os.path.join(temp_dir_source, filename))
-
-        command = ('dd', 'if=/dev/zero', 'of='+full_path, 'bs=10485760', 'count=1')
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('Creation of a test file using dd', status, stdout, stderr)
+        os.chmod(temp_dir_dest, 0777)
+        filename = 'testfile_10MB'
+        full_path = os.path.join(temp_dir_source, filename)
+        command = ('dd', 'if=/dev/zero', 'of=' + full_path, 'bs=10485760',
+                   'count=1')
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('Creation of a test file using dd',
+                             status, stdout, stderr)
         self.assertEqual(status, 0, fail)
 
-        ftpCmd = '"cd %s; lcd %s; put %s"' % (temp_dir_dest, temp_dir_source, filename)
-        command = ('uberftp', '-parallel 10', hostname, ftpCmd)
-
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('UberFTP copy, local to URL', status, stdout, stderr)
+        ftp_cmd = '"cd %s; lcd %s; put %s"' % \
+            (temp_dir_dest, temp_dir_source, filename)
+        command = ('uberftp', '-parallel', '10', hostname, ftp_cmd)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('UberFTP copy, local to URL',
+                             status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
 
         shutil.rmtree(temp_dir_source)
@@ -154,30 +150,30 @@ class TestGridFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_06_copy_server_to_local_uberftp_parallel(self):
-        if osgtest.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client', 'globus-proxy-utils', 'globus-gass-copy-progs'):
+        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
+                            'globus-proxy-utils', 'globus-gass-copy-progs'):
             return
 
         hostname = socket.getfqdn()
-
         temp_dir_source = tempfile.mkdtemp()
-        temp_dir_dest   = tempfile.mkdtemp()
-
+        temp_dir_dest = tempfile.mkdtemp()
         os.chmod(temp_dir_source, 0777)
-        os.chmod(temp_dir_dest,   0777)
-
-        filename='testfile_10MB'
+        os.chmod(temp_dir_dest, 0777)
+        filename = 'testfile_10MB'
         full_path = (os.path.join(temp_dir_source, filename))
-
-        command = ('dd', 'if=/dev/zero', 'of='+full_path, 'bs=10485760', 'count=1')
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('Creation of a test file using dd', status, stdout, stderr)
+        command = ('dd', 'if=/dev/zero', 'of=' + full_path, 'bs=10485760',
+                   'count=1')
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('Creation of a test file using dd',
+                             status, stdout, stderr)
         self.assertEqual(status, 0, fail)
 
-        ftpCmd = '"cd %s; lcd %s; get %s"' % (temp_dir_source, temp_dir_dest, filename)
-        command = ('uberftp', '-parallel 10', hostname, ftpCmd)
-
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('UberFTP copy, local to URL', status, stdout, stderr)
+        ftp_cmd = '"cd %s; lcd %s; get %s"' % \
+            (temp_dir_source, temp_dir_dest, filename)
+        command = ('uberftp', '-parallel 10', hostname, ftp_cmd)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('UberFTP copy, local to URL',
+                             status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
 
         shutil.rmtree(temp_dir_source)
@@ -187,16 +183,16 @@ class TestGridFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_99_stop_gridftp(self):
-        if not osgtest.rpm_is_installed('globus-gridftp-server-progs'):
-            osgtest.skip('not installed')
+        if not core.rpm_is_installed('globus-gridftp-server-progs'):
+            core.skip('not installed')
             return
         if TestGridFTP.__started_server == False:
-            osgtest.skip('did not start server')
+            core.skip('did not start server')
             return
 
         command = ('service', 'globus-gridftp-server', 'stop')
-        status, stdout, stderr = osgtest.syspipe(command)
-        fail = osgtest.diagnose('Stop GridFTP server', status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command)
+        fail = core.diagnose('Stop GridFTP server', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('FAILED') == -1,
                      "Stopping the GridFTP server reported 'FAILED'")

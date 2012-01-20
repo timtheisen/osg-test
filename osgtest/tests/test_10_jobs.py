@@ -1,5 +1,5 @@
 import os
-import osgtest
+import osgtest.library.core as core
 import time
 import unittest
 
@@ -14,22 +14,22 @@ class TestRunningJobs(unittest.TestCase):
     __started_condor = False
 
     def test_01_grid_proxy_init(self):
-        if not osgtest.rpm_is_installed('globus-proxy-utils'):
-            osgtest.skip()
+        if not core.rpm_is_installed('globus-proxy-utils'):
+            core.skip()
             return
         command = ('grid-proxy-init', '-debug')
-        password = osgtest.options.password + '\n'
-        status, stdout, stderr = osgtest.syspipe(command, True, password)
-        fail = osgtest.diagnose('Run grid-proxy-init', status, stdout, stderr)
+        password = core.options.password + '\n'
+        status, stdout, stderr = core.syspipe(command, True, password)
+        fail = core.diagnose('Run grid-proxy-init', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
 
     def test_10_start_gatekeeper(self):
         TestRunningJobs.__started_gatekeeper = False
-        if not osgtest.rpm_is_installed('globus-gatekeeper'):
-            osgtest.skip('not installed')
+        if not core.rpm_is_installed('globus-gatekeeper'):
+            core.skip('not installed')
             return
         if os.path.exists(TestRunningJobs.__lockfile_gatekeeper):
-            osgtest.skip('apparently running')
+            core.skip('apparently running')
             return
 
         # DEBUG: Set up gatekeeper debugging
@@ -42,9 +42,8 @@ class TestRunningJobs(unittest.TestCase):
             os.chmod('/var/log/globus', 0777)
 
         command = ('service', 'globus-gatekeeper', 'start')
-        status, stdout, stderr = osgtest.syspipe(command)
-        fail = osgtest.diagnose('Start Globus gatekeeper',
-                                status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command)
+        fail = core.diagnose('Start Globus gatekeeper', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('FAILED') == -1,
                      "Starting the Globus gatekeeper reported 'FAILED'")
@@ -54,16 +53,16 @@ class TestRunningJobs(unittest.TestCase):
 
     def test_12_start_condor(self):
         TestRunningJobs.__started_condor = False
-        if not osgtest.rpm_is_installed('condor'):
-            osgtest.skip('not installed')
+        if not core.rpm_is_installed('condor'):
+            core.skip('not installed')
             return
         if os.path.exists(TestRunningJobs.__lockfile_condor):
-            osgtest.skip('apparently running')
+            core.skip('apparently running')
             return
 
         command = ('service', 'condor', 'start')
-        status, stdout, stderr = osgtest.syspipe(command)
-        fail = osgtest.diagnose('Start Condor', status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command)
+        fail = core.diagnose('Start Condor', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('error') == -1,
                      "Starting Condor reported 'error'")
@@ -72,31 +71,30 @@ class TestRunningJobs(unittest.TestCase):
         TestRunningJobs.__started_condor = True
 
     def test_20_fork_job(self):
-        if osgtest.missing_rpm('globus-gatekeeper', 'globus-gram-client-tools',
-                               'globus-proxy-utils', 'globus-gram-job-manager',
-                               'globus-gram-job-manager-fork-setup-poll'):
+        if core.missing_rpm('globus-gatekeeper', 'globus-gram-client-tools',
+                            'globus-proxy-utils', 'globus-gram-job-manager',
+                            'globus-gram-job-manager-fork-setup-poll'):
             return
 
         command = ('globus-job-run', 'localhost/jobmanager-fork', '/bin/echo',
                    'hello')
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('Failed globus-job-run on fork job',
-                                status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('Failed globus-job-run on fork job',
+                             status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run with fork job')
 
     def test_30_condor_job(self):
-        if osgtest.missing_rpm('globus-gram-job-manager-condor',
-                               'globus-gram-client-tools',
-                               'globus-proxy-utils'):
+        if core.missing_rpm('globus-gram-job-manager-condor',
+                            'globus-gram-client-tools', 'globus-proxy-utils'):
             return
 
         command = ('globus-job-run', 'localhost/jobmanager-condor', '/bin/echo',
                    'hello')
-        status, stdout, stderr = osgtest.syspipe(command, True)
-        fail = osgtest.diagnose('Failed globus-job-run on Condor job',
-                                status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command, True)
+        fail = core.diagnose('Failed globus-job-run on Condor job',
+                             status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run with Condor job')
@@ -106,16 +104,16 @@ class TestRunningJobs(unittest.TestCase):
             time.sleep(5)
 
     def test_94_stop_condor(self):
-        if not osgtest.rpm_is_installed('condor'):
-            osgtest.skip('not installed')
+        if not core.rpm_is_installed('condor'):
+            core.skip('not installed')
             return
         if TestRunningJobs.__started_condor == False:
-            osgtest.skip('did not start server')
+            core.skip('did not start server')
             return
 
         command = ('service', 'condor', 'stop')
-        status, stdout, stderr = osgtest.syspipe(command)
-        fail = osgtest.diagnose('Stop Condor', status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command)
+        fail = core.diagnose('Stop Condor', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('error') == -1,
                      "Stopping Condor reported 'error'")
@@ -123,17 +121,16 @@ class TestRunningJobs(unittest.TestCase):
                      'Condor run lock file still present')
 
     def test_95_stop_gatekeeper(self):
-        if not osgtest.rpm_is_installed('globus-gatekeeper'):
-            osgtest.skip('not installed')
+        if not core.rpm_is_installed('globus-gatekeeper'):
+            core.skip('not installed')
             return
         if TestRunningJobs.__started_gatekeeper == False:
-            osgtest.skip('did not start server')
+            core.skip('did not start server')
             return
 
         command = ('service', 'globus-gatekeeper', 'stop')
-        status, stdout, stderr = osgtest.syspipe(command)
-        fail = osgtest.diagnose('Stop Globus gatekeeper',
-                                status, stdout, stderr)
+        status, stdout, stderr = core.syspipe(command)
+        fail = core.diagnose('Stop Globus gatekeeper', status, stdout, stderr)
         self.assertEqual(status, 0, fail)
         self.assert_(stdout.find('FAILED') == -1,
                      "Stopping the Globus gatekeeper reported 'FAILED'")

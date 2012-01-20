@@ -4,7 +4,7 @@ from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 import nose
 import os
-import osgtest
+import osgtest.library.core as core
 import sys
 
 
@@ -64,29 +64,29 @@ def parse_command_line():
     parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
                       help='Increase quantity of output')
 
-    (osgtest.options, args) = parser.parse_args()
+    (core.options, args) = parser.parse_args()
     if len(args) != 0:
         parser.error('unknown argument(s): %s') % ' '.join(args)
 
 def discover_tests():
-    test_dir = os.path.join(get_python_lib(), 'osgtest')
-    test_files = ['osgtest.' + d[:-3] for d in os.listdir(test_dir)
+    test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
+    test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
                   if d.startswith('test_') and d.endswith('.py')]
     test_files.sort()
     args = [sys.argv[0]]
-    if osgtest.options.runtests or osgtest.options.adduser:
-        args.append('osgtest.special_user')
-    if len(osgtest.options.packages) > 0:
-        args.append('osgtest.special_install')
-    if osgtest.options.runtests:
+    if core.options.runtests or core.options.adduser:
+        args.append('osgtest.tests.special_user')
+    if len(core.options.packages) > 0:
+        args.append('osgtest.tests.special_install')
+    if core.options.runtests:
         args += test_files
-    if osgtest.options.cleanup:
-        args.append('osgtest.special_cleanup')
+    if core.options.cleanup:
+        args.append('osgtest.tests.special_cleanup')
     return args
 
 def run_tests(a_argv):
     config = nose.config.Config()
-    if osgtest.options.verbose:
+    if core.options.verbose:
         config.verbosity = 2
     return nose.run(config=config, argv=a_argv)
 
@@ -100,13 +100,13 @@ if __name__ == '__main__':
         print 'Must be run as root'
         sys.exit(1)
     parse_command_line()
-    osgtest.start_log()
+    core.start_log()
     tests = discover_tests()
     if len(tests) > 1:
         run_tests(tests)
     else:
         print 'No tests to run.'
-    osgtest.end_log()
-    if osgtest.options.dumpout:
-        osgtest.dump_log()
-    osgtest.remove_log()
+    core.end_log()
+    if core.options.dumpout:
+        core.dump_log()
+    core.remove_log()
