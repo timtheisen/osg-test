@@ -11,60 +11,75 @@ import time
 # Module attributes
 # ------------------------------------------------------------------------------
 
-HOME_DIR = '/var/home'
+# Global configuration dictionary.  The intent here is to store configuration
+# for the test run.  Someday, we may even load this configuration from a file,
+# or something like that.  For now, test modules should not modify the contents
+# of this dictionary (except for the "special_" tests).
+config = {}
+config['user.home'] = '/var/home'
+config['system.mapfile'] = '/etc/grid-security/grid-mapfile'
+config['system.mapfile-backup'] = config['system.mapfile'] + '.osgtest.backup'
 
+# Global state dictionary.  Other modules may add, read, change, and delete the
+# keys stored herein.  At the moment, no checking is done on its contents, so
+# individual tests should be careful about using it.  The recommendation is to
+# prefix each key with "COMP.", where "COMP" is a short lowercase string that
+# indicates which component the test belongs to, or "general." for truly cross-
+# cutting objects.
+state = {}
+
+# Global command-line options.  This should be merged into the config object,
+# eventually.
 options = None
-original_rpms = []
-installed_rpm_list = []
-mapfile = None
-mapfile_backup = None
-log = None
-log_filename = None
 
-last_log_had_output = True
+# "Internal" attributes for use within this module.
+_log = None
+_log_filename = None
+_last_log_had_output = True
+
 
 # ------------------------------------------------------------------------------
 # Global Functions
 # ------------------------------------------------------------------------------
 
 def start_log():
-    global log_filename, log
-    (log_fd, log_filename) = tempfile.mkstemp()
-    log = os.fdopen(log_fd, 'w')
-    log.write(('-' * 80) + '\n')
-    log.write('OSG-TEST LOG\n')
-    log.write('Start time: ' + time.strftime('%Y-%m-%d %H:%M:%S') + '\n\n')
-    log.write('Options:\n')
-    log.write('  - Add user: %s\n' % str(options.adduser))
-    log.write('  - Cleanup: %s\n' % str(options.cleanup))
-    log.write('  - Install: %s\n' % ', '.join(options.packages))
-    log.write('  - Extra repos: %s\n' % ', '.join(options.extrarepos))
-    log.write('  - Run tests: %s\n' % str(options.runtests))
-    log.write('  - Test user: %s\n' % options.username)
-    log.write('  - Verbose: %s\n' % str(options.verbose))
-    log.flush()
+    global _log_filename, _log
+    (log_fd, _log_filename) = tempfile.mkstemp()
+    _log = os.fdopen(log_fd, 'w')
+    _log.write(('-' * 80) + '\n')
+    _log.write('OSG-TEST LOG\n')
+    _log.write('Start time: ' + time.strftime('%Y-%m-%d %H:%M:%S') + '\n\n')
+    _log.write('Options:\n')
+    _log.write('  - Add user: %s\n' % str(options.adduser))
+    _log.write('  - Cleanup: %s\n' % str(options.cleanup))
+    _log.write('  - Install: %s\n' % ', '.join(options.packages))
+    _log.write('  - Extra repos: %s\n' % ', '.join(options.extrarepos))
+    _log.write('  - Run tests: %s\n' % str(options.runtests))
+    _log.write('  - Test user: %s\n' % options.username)
+    _log.write('  - Verbose: %s\n' % str(options.verbose))
+    _log.flush()
 
 def log_message(message):
-    global last_log_had_output
-    if last_log_had_output:
-        log.write('\n')
-    log.write('message: ')
-    log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
-    log.write(message + '\n')
-    last_log_had_output = False
+    global _last_log_had_output
+    if _last_log_had_output:
+        _log.write('\n')
+    _log.write('message: ')
+    _log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    _log.write(message + '\n')
+    _last_log_had_output = False
 
 def end_log():
-    log.close()
+    _log.close()
 
 def dump_log():
-    logfile = open(log_filename, 'r')
+    logfile = open(_log_filename, 'r')
     print '\n'
     for line in logfile:
         print line.rstrip('\n')
     logfile.close()
 
 def remove_log():
-    os.remove(log_filename)
+    os.remove(_log_filename)
 
 def monitor_file(filename, position, sentinel, timeout):
     start_time = time.time()
@@ -172,7 +187,7 @@ def __format_command(command):
 
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
                   log_output=True, shell=False):
-    global last_log_had_output
+    global _last_log_had_output
 
     # Preprocess command
     if shell:
@@ -189,11 +204,11 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
         stdin = subprocess.PIPE
 
     # Log
-    if last_log_had_output:
-        log.write('\n')
-    log.write('osgtest: ')
-    log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
-    log.write(' '.join(__format_command(command)))
+    if _last_log_had_output:
+        _log.write('\n')
+    _log.write('osgtest: ')
+    _log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    _log.write(' '.join(__format_command(command)))
 
     # Run and return command
     p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE,
@@ -207,19 +222,19 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
     stderr_length = 0
     if stderr is not None:
         stderr_length = len(stderr)
-    log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
-    last_log_had_output = False
+    _log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
+    _last_log_had_output = False
     if log_output:
         if (stdout is not None) and (len(stdout.rstrip('\n')) > 0):
-            log.write('STDOUT:{\n')
-            log.write(stdout.rstrip('\n') + '\n')
-            log.write('STDOUT:}\n')
-            last_log_had_output = True
+            _log.write('STDOUT:{\n')
+            _log.write(stdout.rstrip('\n') + '\n')
+            _log.write('STDOUT:}\n')
+            _last_log_had_output = True
         if (stderr is not None) and (len(stderr.rstrip('\n')) > 0):
-            log.write('STDERR:{\n')
-            log.write(stderr.rstrip('\n') + '\n')
-            log.write('STDERR:}\n')
-            last_log_had_output = True
-    log.flush()
+            _log.write('STDERR:{\n')
+            _log.write(stderr.rstrip('\n') + '\n')
+            _log.write('STDERR:}\n')
+            _last_log_had_output = True
+    _log.flush()
 
     return (p.returncode, stdout, stderr)

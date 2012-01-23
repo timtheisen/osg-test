@@ -22,9 +22,10 @@ class TestUser(unittest.TestCase):
             return
 
         # Add
-        if not os.path.isdir(core.HOME_DIR):
-            os.mkdir(core.HOME_DIR)
-        command = ('useradd', '--base-dir', core.HOME_DIR, '-n',
+        home_dir = core.config['user.home']
+        if not os.path.isdir(home_dir):
+            os.mkdir(home_dir)
+        command = ('useradd', '--base-dir', home_dir, '-n',
                    '--shell', '/bin/sh', core.options.username)
         status, stdout, stderr = core.syspipe(command)
         self.assertEqual(status, 0,
@@ -61,15 +62,15 @@ class TestUser(unittest.TestCase):
 
     def test_03_install_mapfile(self):
         pwd_entry = pwd.getpwnam(core.options.username)
-        backup_filename = '/etc/grid-security/grid-mapfile.osg-test.backup'
-        if os.path.exists('/etc/grid-security/grid-mapfile'):
-            shutil.move('/etc/grid-security/grid-mapfile', backup_filename)
-            core.mapfile_backup = backup_filename
+        if os.path.exists(core.config['system.mapfile']):
+            shutil.move(core.config['system.mapfile'],
+                        core.config['system.mapfile-backup'])
+            core.state['user.made-mapfile-backup'] = True
 
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, user_cert_issuer = core.certificate_info(cert_path)
 
-        mapfile = open('/etc/grid-security/grid-mapfile', 'w')
+        mapfile = open(core.config['system.mapfile'], 'w')
         mapfile.write('"%s" %s\n' % (user_dn, pwd_entry.pw_name))
         mapfile.close()
-        core.mapfile = '/etc/grid-security/grid-mapfile'
+        core.state['user.made-mapfile'] = True

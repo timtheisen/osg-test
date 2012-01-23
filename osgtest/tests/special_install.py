@@ -22,7 +22,8 @@ class TestInstall(unittest.TestCase):
 
     def test_03_install_packages(self):
         install_regexp = re.compile(r'\s+Installing\s+:\s+(\S+)\s+\d')
-        core.original_rpms = core.installed_rpms()
+        core.state['install.preinstalled'] = core.installed_rpms()
+        core.state['install.installed'] = []
         for package in core.options.packages:
             if core.rpm_is_installed(package):
                 continue
@@ -43,4 +44,4 @@ class TestInstall(unittest.TestCase):
             for line in stdout.strip().split('\n'):
                 matches = install_regexp.match(line)
                 if matches is not None:
-                    core.installed_rpm_list.append(matches.group(1))
+                    core.state['install.installed'].append(matches.group(1))

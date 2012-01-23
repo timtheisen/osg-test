@@ -9,11 +9,15 @@ import unittest
 class TestCleanup(unittest.TestCase):
 
     def test_01_remove_test_user(self):
-        if (core.mapfile is not None) and os.path.exists(core.mapfile):
-            os.remove(core.mapfile)
-        backup = core.mapfile_backup
-        if (backup is not None) and os.path.exists(backup):
-            shutil.move(backup, '/etc/grid-security/grid-mapfile')
+        if (core.state.has_key('user.made-mapfile') and
+            os.path.exists(core.config['system.mapfile'])):
+            os.remove(core.config['system.mapfile'])
+            core.log_message('Removed testing grid-mapfile')
+        if (core.state.has_key('user.made-mapfile-backup') and
+            os.path.exists(core.config['system.mapfile-backup'])):
+            shutil.move(core.config['system.mapfile-backup'],
+                        core.config['system.mapfile'])
+            core.log_message('Restored original grid-mapfile')
 
         password_entry = pwd.getpwnam(core.options.username)
 
@@ -41,12 +45,12 @@ class TestCleanup(unittest.TestCase):
                          (core.options.username, status))
 
     def test_02_remove_packages(self):
-        if len(core.original_rpms) == 0:
+        if len(core.state['install.preinstalled']) == 0:
             core.skip('no original list')
             return
         current_rpms = core.installed_rpms()
-        new_rpms_since_install = current_rpms - core.original_rpms
-        if len(new_rpms_since_install) == 0:
+        new_rpms = current_rpms - core.state['install.preinstalled']
+        if len(new_rpms) == 0:
             core.skip('no new RPMs')
             return
 
@@ -61,11 +65,11 @@ class TestCleanup(unittest.TestCase):
         # the chances of a clean erase.
 
         rpm_erase_candidates = []
-        for package in core.installed_rpm_list:
-            if package in new_rpms_since_install:
+        for package in core.state['install.installed']:
+            if package in new_rpms:
                 rpm_erase_candidates.append(package)
 
-        remaining_new_rpms = new_rpms_since_install - set(rpm_erase_candidates)
+        remaining_new_rpms = new_rpms - set(rpm_erase_candidates)
         count = len(remaining_new_rpms)
         if count > 0:
             core.log_message('%d RPMs installed but not in yum output' % count)
