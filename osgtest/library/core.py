@@ -13,8 +13,8 @@ import time
 
 # Global configuration dictionary.  The intent here is to store configuration
 # for the test run.  Someday, we may even load this configuration from a file,
-# or something like that.  For now, test modules should not modify the contents
-# of this dictionary (except for the "special_" tests).
+# or something like that.  For now, test modules should only add new entries to
+# this dictionary, neither modifying nor deleting existing ones.
 config = {}
 config['user.home'] = '/var/home'
 config['system.mapfile'] = '/etc/grid-security/grid-mapfile'
@@ -81,18 +81,20 @@ def dump_log():
 def remove_log():
     os.remove(_log_filename)
 
-def monitor_file(filename, position, sentinel, timeout):
+def monitor_file(filename, stat_object, sentinel, timeout):
     start_time = time.time()
     end_time = start_time + timeout
     monitored_file = None
+    initial_position = stat_object.st_size
     while time.time() <= end_time:
         if monitored_file is None:
-            if os.path.exists(filename):
-                monitored_file = open(filename, 'r')
-                monitored_file.seek(position)
-            else:
+            if not os.path.exists(filename):
                 time.sleep(0.2)
                 continue
+            if os.stat(filename).st_ino != stat_object.st_ino:
+                initial_position = 0
+            monitored_file = open(filename, 'r')
+            monitored_file.seek(initial_position)
 
         where = monitored_file.tell()
         line = monitored_file.readline()
@@ -103,6 +105,8 @@ def monitor_file(filename, position, sentinel, timeout):
         else:
             time.sleep(0.2)
             monitored_file.seek(where)
+    if monitored_file is not None:
+        monitored_file.close()
     return (None, None)
 
 def command(command, user=None, stdin=None, log_output=True):
