@@ -4,7 +4,7 @@ import unittest
 
 class TestStartGatekeeper(unittest.TestCase):
 
-    def test_10_start_gatekeeper(self):
+    def test_01_start_gatekeeper(self):
         core.config['globus.gk-lockfile'] = '/var/lock/subsys/globus-gatekeeper'
         core.state['globus.started-gk'] = False
 
