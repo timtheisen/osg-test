@@ -11,7 +11,8 @@ class TestGlobusJobRun(unittest.TestCase):
 
         command = ('globus-job-run', 'localhost/jobmanager-fork', '/bin/echo',
                    'hello')
-        stdout = core.check_system(command, 'globus-job-run on fork job')[0]
+        stdout = core.check_system(command, 'globus-job-run on fork job',
+                                   user=True)[0]
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run on fork job')
 
@@ -22,6 +23,7 @@ class TestGlobusJobRun(unittest.TestCase):
 
         command = ('globus-job-run', 'localhost/jobmanager-condor',
                    '/bin/echo', 'hello')
-        stdout = core.check_system(command, 'globus-job-run on Condor job')[0]
+        stdout = core.check_system(command, 'globus-job-run on Condor job',
+                                   user=True)[0]
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run on Condor job')

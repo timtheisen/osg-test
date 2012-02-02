@@ -128,18 +128,18 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False):
 
     """
     status, stdout, stderr = system(command, user, stdin, shell=shell)
-    fail = core.diagnose(message, status, stdout, stderr)
+    fail = diagnose(message, status, stdout, stderr)
     assert status == 0, fail
     return stdout, stderr, fail
 
 def rpm_is_installed(a_package):
-    status, stdout, stderr = syspipe(('rpm', '--query', a_package),
-                                     log_output=False)
+    status, stdout, stderr = system(('rpm', '--query', a_package),
+                                    log_output=False)
     return (status == 0) and stdout.startswith(a_package)
 
 def installed_rpms():
     command = ('rpm', '--query', '--all', '--queryformat', r'%{NAME}\n')
-    status, stdout, stderr = syspipe(command, log_output=False)
+    status, stdout, stderr = system(command, log_output=False)
     return set(re.split('\s+', stdout.strip()))
 
 def skip(message=None):
@@ -162,7 +162,7 @@ def missing_rpm(*packages):
 
 def certificate_info(path):
     command = ('openssl', 'x509', '-noout', '-subject', '-issuer', '-in', path)
-    status, stdout, stderr = syspipe(command)
+    status, stdout, stderr = system(command)
     if (status != 0) or (stdout is None) or (stderr is not None):
         raise OSError(status, stderr)
     if len(stdout.strip()) == 0:
