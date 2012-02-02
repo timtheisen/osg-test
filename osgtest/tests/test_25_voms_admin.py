@@ -28,6 +28,4 @@ class TestSetupVomsAdmin(unittest.TestCase):
                    '--vo', core.config['voms.vo'],
                    'add-ACL-entry', '/' + core.config['voms.vo'], 'ANYONE',
                    'VOMS_CA', 'CONTAINER_READ,MEMBERSHIP_READ', 'true')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Add VOMS Admin ACL entry', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Add VOMS Admin ACL entry')

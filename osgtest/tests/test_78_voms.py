@@ -1,6 +1,7 @@
 import glob
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import pwd
 import re
 import shutil
@@ -35,20 +36,14 @@ class TestStopVOMS(unittest.TestCase):
             return
 
         command = ('service', 'voms', 'stop')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Stop VOMS service', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout, stderr, fail = core.check_system(command, 'Stop VOMS server')
         self.assertEqual(stdout.find('FAILED'), -1, fail)
         self.assert_(not os.path.exists(core.config['voms.lock-file']),
                      'VOMS server lock file still exists')
 
     def test_02_restore_vomses(self):
-        if os.path.isdir(core.config['voms.lsc-dir']):
-            shutil.rmtree(core.config['voms.lsc-dir'])
-        if core.state['voms.installed-vomses']:
-            os.remove('/etc/vomses')
-        if os.path.exists('/etc/vomses.osg-test.backup'):
-            shutil.move('/etc/vomses.osg-test.backup', '/etc/vomses')
+        files.remove(core.config['voms.lsc-dir'])
+        files.restore('/etc/vomses')
 
     def test_03_remove_vo(self):
         if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):
@@ -59,19 +54,14 @@ class TestStopVOMS(unittest.TestCase):
         command = ('voms-admin-configure', 'remove',
                    '--vo', core.config['voms.vo'],
                    '--undeploy-database')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Remove VO', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout, stderr, fail = core.check_system(command, 'Remove VO')
         self.assert_('Database undeployed correctly!' in stdout, fail)
         self.assert_(' succesfully removed.' in stdout, fail)
 
         # Really remove database
         mysql_statement = "DROP DATABASE `voms_%s`" % (core.config['voms.vo'])
         command = ('mysql', '-u', 'root', '-e', mysql_statement)
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Drop MYSQL VOMS database',
-                             status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Drop MYSQL VOMS database')
 
     # Do the keys first, so that the directories will be empty for the certs.
     def test_04_remove_certs(self):

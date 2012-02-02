@@ -30,13 +30,13 @@ class TestGlexec(unittest.TestCase):
         key_dn = '"'+user_cert_dn+'"'+' '+core.options.username
 
         command = ('/bin/grep', key_dn, self.__grid_mapfile)
-        status, stdout, stderr = core.syspipe(command)
+        status, stdout, stderr = core.system(command)
         self.assert_(status==0, 'Grid-mapfile entry for user '+core.options.username+' missing')
         TestGlexec.__good_gridmap = True
 
     def test_02_define_user_proxy_path(self):
         command = ('/usr/bin/id','-u')
-        status, stdout, stderr = core.syspipe(command, True)
+        status, stdout, stderr = core.system(command, True)
         TestGlexec.__uid = stdout.rstrip()
         TestGlexec.__user_proxy_path = '/tmp/x509up_u'+self.__uid
 
@@ -45,17 +45,17 @@ class TestGlexec(unittest.TestCase):
 
         command = ('grid-proxy-init','-out',self.__user_proxy_path)
         password = core.options.password + '\n'
-        status, stdout, stderr = core.syspipe(command, True, password)
+        status, stdout, stderr = core.system(command, True, password)
         self.assert_(status==0, 'grid-proxy-init for user '+core.options.username+' has failed')
 
         command = ('/bin/cp', self.__user_proxy_path, self.__glexec_client_cert)
-        status, stdout, stderr = core.syspipe(command)
+        status, stdout, stderr = core.system(command)
         os.environ['GLEXEC_CLIENT_CERT']=self.__glexec_client_cert
 
     def test_04_glexec_switch_id(self):
         command = ('/usr/sbin/glexec','/usr/bin/id','-u')
 
-        status, stdout, stderr = core.syspipe(command)
+        status, stdout, stderr = core.system(command)
         switched_id = stdout.rstrip()
 
         self.assert_(self.__uid==switched_id, 'Glexec identity switch from root to user '+core.options.username+' failed')

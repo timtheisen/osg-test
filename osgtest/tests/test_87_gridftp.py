@@ -13,10 +13,7 @@ class TestStopGridFTP(unittest.TestCase):
             return
 
         command = ('service', 'globus-gridftp-server', 'stop')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Stop GridFTP server', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        self.assert_(stdout.find('FAILED') == -1,
-                     "Stopping the GridFTP server reported 'FAILED'")
+        stdout, _, fail = core.check_system(command, 'Stop GridFTP server')
+        self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(not os.path.exists(core.config['gridftp.pid-file']),
                      'GridFTP server PID file still present')

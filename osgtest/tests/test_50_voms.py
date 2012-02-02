@@ -19,9 +19,7 @@ class TestVOMS(unittest.TestCase):
                    '--host', hostname, '--nousercert', 'create-user',
                    user_cert_dn, user_cert_issuer, 'OSG Test User',
                    'root@localhost')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Add VO user', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Add VO user')
 
     def test_02_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
@@ -31,9 +29,8 @@ class TestVOMS(unittest.TestCase):
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'])
         password = core.options.password + '\n'
-        status, stdout, stderr = core.syspipe(command, True, password)
-        fail = core.diagnose('Run voms-proxy-init', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Run voms-proxy-init', user=True,
+                          stdin=password)
         core.state['voms.got-proxy'] = True
 
     def test_03_voms_proxy_info(self):
@@ -44,9 +41,8 @@ class TestVOMS(unittest.TestCase):
             return
 
         command = ('voms-proxy-info', '-all')
-        status, stdout, stderr = core.syspipe(command, True)
-        fail = core.diagnose('Run voms-proxy-info', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout = core.check_system(command, 'Run voms-proxy-info',
+                                   user=True)[0]
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout,
                      'voms-proxy-info output contains sentinel')
 
@@ -56,7 +52,7 @@ class TestVOMS(unittest.TestCase):
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
         password = core.options.password + '\n'
-        status, stdout, stderr = core.syspipe(command, True, password)
+        status, stdout, stderr = core.system(command, True, password)
         self.assertNotEqual(status, 0, 'voms-proxy-init fails on bad group')
         self.assert_('Unable to satisfy' in stdout,
                      'voms-proxy-init failure message')
@@ -70,8 +66,7 @@ class TestVOMS(unittest.TestCase):
             return
 
         command = ('voms-proxy-info', '-all')
-        status, stdout, stderr = core.syspipe(command, True)
-        fail = core.diagnose('Run voms-proxy-info', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout = core.check_system(command, 'Run voms-proxy-info',
+                                   user=True)[0]
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout,
                      'voms-proxy-info output extended attribute')

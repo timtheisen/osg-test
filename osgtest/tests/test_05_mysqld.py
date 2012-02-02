@@ -16,9 +16,7 @@ class TestStartMySQL(unittest.TestCase):
             return
 
         command = ('service', 'mysqld', 'start')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Start MySQL service', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout, stderr, fail = core.check_system(command, 'Start MySQL')
         self.assertEqual(stdout.find('FAILED'), -1, fail)
         self.assert_(os.path.exists(core.config['mysql.pid-file']),
                      'MySQL server PID file is missing')

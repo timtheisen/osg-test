@@ -16,11 +16,8 @@ class TestStartGridFTP(unittest.TestCase):
             return
 
         command = ('service', 'globus-gridftp-server', 'start')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Start GridFTP server', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        self.assert_(stdout.find('FAILED') == -1,
-                     "Starting the GridFTP server reported 'FAILED'")
+        stdout, _, fail = core.check_system(command, 'Start GridFTP server')
+        self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(os.path.exists(core.config['gridftp.pid-file']),
                      'GridFTP server PID file missing')
         core.state['gridftp.started-server'] = True

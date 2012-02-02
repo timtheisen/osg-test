@@ -1,6 +1,7 @@
 import os
 import os.path
 import osgtest.library.core as core
+import osgtest.library.files as files
 import pwd
 import re
 import shutil
@@ -9,40 +10,19 @@ import unittest
 class TestCleanup(unittest.TestCase):
 
     def test_01_remove_test_user(self):
-        if (core.state.has_key('user.made-mapfile') and
-            os.path.exists(core.config['system.mapfile'])):
-            os.remove(core.config['system.mapfile'])
-            core.log_message('Removed testing grid-mapfile')
-        if (core.state.has_key('user.made-mapfile-backup') and
-            os.path.exists(core.config['system.mapfile-backup'])):
-            shutil.move(core.config['system.mapfile-backup'],
-                        core.config['system.mapfile'])
-            core.log_message('Restored original grid-mapfile')
+        files.restore(core.config['system.mapfile'])
 
-        password_entry = pwd.getpwnam(core.options.username)
-
+        username = core.options.username
+        password_entry = pwd.getpwnam(username)
         globus_dir = os.path.join(password_entry.pw_dir, '.globus')
 
-        usercert_path = os.path.join(globus_dir, 'usercert.pem')
-        if os.path.exists(usercert_path):
-            os.unlink(usercert_path)
+        command = ('userdel', username)
+        core.check_system(command, 'Remove user %s' % (username))
 
-        userkey_path = os.path.join(globus_dir, 'userkey.pem')
-        if os.path.exists(userkey_path):
-            os.unlink(userkey_path)
-
-        mail_path = os.path.join('/var/spool/mail', core.options.username)
-        if os.path.exists(mail_path):
-            os.unlink(mail_path)
-
-        if os.path.isdir(password_entry.pw_dir):
-            shutil.rmtree(password_entry.pw_dir)
-
-        command = ('userdel', core.options.username)
-        status, stdout, stderr = core.syspipe(command)
-        self.assertEqual(status, 0,
-                         "Removing user '%s' failed with exit status %d" %
-                         (core.options.username, status))
+        files.remove(os.path.join(globus_dir, 'usercert.pem'))
+        files.remove(os.path.join(globus_dir, 'userkey.pem'))
+        files.remove(os.path.join('/var/spool/mail', username))
+        files.remove(password_entry.pw_dir)
 
     def test_02_remove_packages(self):
         if len(core.state['install.preinstalled']) == 0:
@@ -86,15 +66,13 @@ class TestCleanup(unittest.TestCase):
         rpm_erase_list = []
         for package in rpm_erase_candidates:
             command = ('rpm', '--query', package)
-            status, stdout, stderr = core.syspipe(command, log_output=False)
+            status, stdout, stderr = core.system(command, log_output=False)
             versioned_rpms = re.split('\n', stdout.strip())
             if len(versioned_rpms) > 1:
                 rpm_erase_list += versioned_rpms
             else:
                 rpm_erase_list.append(package)
 
+        package_count = len(rpm_erase_list)
         command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
-        status, stdout, stderr = core.syspipe(command)
-        self.assertEqual(status, 0,
-                         "Removing %d packages failed with exit status %d" %
-                         (len(rpm_erase_list), status))
+        core.check_system(command, 'Remove %d packages' % (package_count))

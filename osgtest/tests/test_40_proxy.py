@@ -9,6 +9,5 @@ class TestGridProxyInit(unittest.TestCase):
             return
         command = ('grid-proxy-init', '-debug')
         password = core.options.password + '\n'
-        status, stdout, stderr = core.syspipe(command, True, password)
-        fail = core.diagnose('Run grid-proxy-init', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Run grid-proxy-init', user=True,
+                          stdin=password)

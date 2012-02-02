@@ -13,10 +13,7 @@ class TestStopCondor(unittest.TestCase):
             return
 
         command = ('service', 'condor', 'stop')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Stop Condor', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        self.assert_(stdout.find('error') == -1,
-                     "Stopping Condor reported 'error'")
+        stdout, _, fail = core.check_system(command, 'Stop Condor')
+        self.assert_(stdout.find('error') == -1, fail)
         self.assert_(not os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file still present')

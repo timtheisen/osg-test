@@ -13,10 +13,7 @@ class TestStopGatekeeper(unittest.TestCase):
             return
 
         command = ('service', 'globus-gatekeeper', 'stop')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Stop Globus gatekeeper', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        self.assert_(stdout.find('FAILED') == -1,
-                     "Stopping the Globus gatekeeper reported 'FAILED'")
+        stdout, _, fail = core.check_system(command, 'Stop Globus gatekeeper')
+        self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(not os.path.exists(core.config['globus.gk-lockfile']),
                      'Globus gatekeeper run lock file still present')

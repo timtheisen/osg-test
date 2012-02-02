@@ -25,11 +25,8 @@ class TestStartGatekeeper(unittest.TestCase):
             os.chmod('/var/log/globus', 0777)
 
         command = ('service', 'globus-gatekeeper', 'start')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Start Globus gatekeeper', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        self.assert_(stdout.find('FAILED') == -1,
-                     "Starting the Globus gatekeeper reported 'FAILED'")
+        stdout, _, fail = core.check_system(command, 'Start Globus gatekeeper')
+        self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(os.path.exists(core.config['globus.gk-lockfile']),
                      'Globus gatekeeper run lock file missing')
         core.state['globus.started-gk'] = True

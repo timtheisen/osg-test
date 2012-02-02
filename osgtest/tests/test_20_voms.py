@@ -1,19 +1,12 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import pwd
 import shutil
 import socket
 import unittest
 
 class TestStartVOMS(unittest.TestCase):
-
-    # "Constants"
-
-
-    # Class attributes
-    __started_voms = False
-    __started_voms_admin = False
-    __installed_vomses = False
 
     # Carefully install a certificate with the given key from the given
     # source path, then set ownership and permissions as given.  Record
@@ -89,9 +82,7 @@ class TestStartVOMS(unittest.TestCase):
 
         # Find full path to libvomsmysql.so
         command = ('rpm', '--query', '--list', 'voms-mysql-plugin')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('List VOMS-MySQL files', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout = core.check_system(command, 'List VOMS-MySQL files')[0]
         voms_mysql_files = stdout.strip().split('\n')
         voms_mysql_so_path = None
         for voms_mysql_path in voms_mysql_files:
@@ -114,9 +105,7 @@ class TestStartVOMS(unittest.TestCase):
                    '--cert', core.config['certs.vomscert'],
                    '--key', core.config['certs.vomskey'],
                    '--read-access-for-authenticated-clients')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Configure VOMS Admin', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout, _, fail = core.check_system(command, 'Configure VOMS Admin')
         good_message = 'VO %s installation finished' % (core.config['voms.vo'])
         self.assert_(good_message in stdout, fail)
 
@@ -128,63 +117,50 @@ class TestStartVOMS(unittest.TestCase):
         command = ('voms-db-deploy.py', 'add-admin',
                    '--vo', core.config['voms.vo'],
                    '--dn', host_dn, '--ca', host_issuer)
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Add VO admin', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Add VO admin')
 
     def test_07_config_va_properties(self):
         if core.missing_rpm('voms-admin-server'):
             return
 
-        properties_path = os.path.join('/etc/voms-admin',
-                                       core.config['voms.vo'],
-                                       'voms.service.properties')
-        new_path = properties_path + '__NEW'
-        properties_file = open(properties_path, 'r')
-        new_file = open(new_path, 'w')
-        wrote_csrf_line = False
-        for line in properties_file:
+        path = os.path.join('/etc/voms-admin', core.config['voms.vo'],
+                            'voms.service.properties')
+        contents = files.read(path)
+
+        had_csrf_line = False
+        for line in contents:
             if 'voms.csrf.log_only' in line:
-                new_file.write('voms.csrf.log_only = true\n')
-                wrote_csrf_line = True
-            else:
-                new_file.write(line.rstrip('\n') + '\n')
-        properties_file.close()
-        if not wrote_csrf_line:
-            new_file.write('voms.csrf.log_only = true\n')
-        new_file.close()
-        shutil.move(new_path, properties_path)
+                line = 'voms.csrf.log_only = true\n'
+                had_csrf_line = True
+            elif line[-1] != '\n':
+                line = line + '\n'
+        if not had_csrf_line:
+            contents += 'voms.csrf.log_only = true\n'
+
+        files.write(path, contents, backup=False)
 
     def test_08_advertise(self):
-        core.state['voms.installed-vomses'] = False
-
         if core.missing_rpm('voms-admin-server'):
             return
-
-        if os.path.exists('/etc/vomses'):
-            shutil.move('/etc/vomses', '/etc/vomses.osg-test.backup')
 
         hostname = socket.getfqdn()
         host_dn, host_issuer = \
             core.certificate_info(core.config['certs.hostcert'])
-        vomses = open('/etc/vomses', 'w')
-        vomses.write('"%s" "%s" "%d" "%s" "%s"\n' %
+        files.write('/etc/vomses',
+                    ('"%s" "%s" "%d" "%s" "%s"\n' %
                      (core.config['voms.vo'], hostname, 15151, host_dn,
-                      core.config['voms.vo']))
-        vomses.close()
-        core.state['voms.installed-vomses'] = True
+                      core.config['voms.vo'])))
 
         if not os.path.isdir(core.config['voms.lsc-dir']):
             os.mkdir(core.config['voms.lsc-dir'])
         vo_lsc_path = os.path.join(core.config['voms.lsc-dir'],
                                    hostname + '.lsc')
-        vo_lsc_file = open(vo_lsc_path, 'w')
-        vo_lsc_file.write(host_dn + '\n')
-        vo_lsc_file.write(host_issuer + '\n')
-        vo_lsc_file.close()
+        files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'),
+                    backup=False)
+        os.chmod(vo_lsc_path, 0644)
 
-        core.syspipe('ls -ldF /etc/*vom*', shell=True)
-        core.syspipe(('find', '/etc/grid-security/vomsdir', '-ls'))
+        core.system('ls -ldF /etc/*vom*', shell=True)
+        core.system(('find', '/etc/grid-security/vomsdir', '-ls'))
 
     def test_09_start_voms(self):
         core.state['voms.started-server'] = False
@@ -197,9 +173,7 @@ class TestStartVOMS(unittest.TestCase):
             return
 
         command = ('service', 'voms', 'start')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Start VOMS service', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout, _, fail = core.check_system(command, 'Start VOMS service')
         self.assertEqual(stdout.find('FAILED'), -1, fail)
         self.assert_(os.path.exists(core.config['voms.lock-file']),
                      'VOMS server PID file is missing')
@@ -215,10 +189,7 @@ class TestStartVOMS(unittest.TestCase):
             return
 
         command = ('service', 'voms-admin', 'start')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Start VOMS Admin service', status, stdout,
-                             stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Install VOMS Admin webapp(s)')
         self.assert_(os.path.exists(core.config['voms.vo-webapp']),
                      'VOMS Admin VO context file is missing')
         core.state['voms.installed-vo-webapp'] = True

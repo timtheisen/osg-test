@@ -16,11 +16,8 @@ class TestStartCondor(unittest.TestCase):
             return
 
         command = ('service', 'condor', 'start')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Start Condor', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        self.assert_(stdout.find('error') == -1,
-                     "Starting Condor reported 'error'")
+        stdout, _, fail = core.check_system(command, 'Start Condor')
+        self.assert_(stdout.find('error') == -1, fail)
         self.assert_(os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file missing')
         core.state['condor.started-master'] = True

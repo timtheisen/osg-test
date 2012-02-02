@@ -1,8 +1,8 @@
 import os
 import os.path
 import osgtest.library.core as core
+import osgtest.library.files as files
 import pwd
-import re
 import shutil
 import unittest
 
@@ -27,10 +27,7 @@ class TestUser(unittest.TestCase):
             os.mkdir(home_dir)
         command = ('useradd', '--base-dir', home_dir, '-n',
                    '--shell', '/bin/sh', core.options.username)
-        status, stdout, stderr = core.syspipe(command)
-        self.assertEqual(status, 0,
-                         "Adding user '%s' failed with exit status %d"
-                         % (core.options.username, status))
+        core.check_system(command, 'Add user %s' % (core.options.username))
 
         # Set up directories
         user = pwd.getpwnam(core.options.username)
@@ -62,15 +59,7 @@ class TestUser(unittest.TestCase):
 
     def test_03_install_mapfile(self):
         pwd_entry = pwd.getpwnam(core.options.username)
-        if os.path.exists(core.config['system.mapfile']):
-            shutil.move(core.config['system.mapfile'],
-                        core.config['system.mapfile-backup'])
-            core.state['user.made-mapfile-backup'] = True
-
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, user_cert_issuer = core.certificate_info(cert_path)
-
-        mapfile = open(core.config['system.mapfile'], 'w')
-        mapfile.write('"%s" %s\n' % (user_dn, pwd_entry.pw_name))
-        mapfile.close()
-        core.state['user.made-mapfile'] = True
+        files.write(core.config['system.mapfile'],
+                    '"%s" %s\n' % (user_dn, pwd_entry.pw_name))

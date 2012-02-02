@@ -13,9 +13,7 @@ class TestStopMySQL(unittest.TestCase):
             return
 
         command = ('service', 'mysqld', 'stop')
-        status, stdout, stderr = core.syspipe(command)
-        fail = core.diagnose('Stop MySQL service', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        stdout, stderr, fail = core.check_system(command, 'Stop MySQL')
         self.assertEqual(stdout.find('FAILED'), -1, fail)
         self.assert_(not os.path.exists(core.config['mysql.pid-file']),
                      'MySQL server PID file still exists')

@@ -6,19 +6,13 @@ class TestInstall(unittest.TestCase):
 
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--quiet', '--nomd5', '--nosize', '--nomtime')
-        status = core.command(pre + ('epel-release',))
-        self.assertEqual(status, 0)
-        status = core.command(pre + ('osg-release',))
-        self.assertEqual(status, 0)
+        core.check_system(pre + ('epel-release',), 'Verify epel-release')
+        core.check_system(pre + ('osg-release',), 'Verify osg-release')
 
     def test_02_clean_yum(self):
         pre = ('yum', '--enablerepo=*', 'clean')
-        status, stdout, stderr = core.syspipe(pre + ('all',))
-        fail = core.diagnose('YUM clean all', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
-        status, stdout, stderr = core.syspipe(pre + ('expire-cache',))
-        fail = core.diagnose('YUM clean cache', status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(pre + ('all',), 'YUM clean all')
+        core.check_system(pre + ('expire-cache',), 'YUM clean cache')
 
     def test_03_install_packages(self):
         install_regexp = re.compile(r'\s+Installing\s+:\s+(\S+)\s+\d')
@@ -31,14 +25,9 @@ class TestInstall(unittest.TestCase):
             for repo in core.options.extrarepos:
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
-            status, stdout, stderr = core.syspipe(command)
-            fail = core.diagnose('Install "%s"' % (package),
-                                    status, stdout, stderr)
-            self.assertEqual(status, 0, fail)
-            status = core.command(('rpm', '--verify', '--quiet', package))
-            self.assertEqual(status, 0,
-                             "Verifying '%s' failed with exit status %d" %
-                             (package, status))
+            stdout = core.check_system(command, 'Install %s' % (package))[0]
+            command = ('rpm', '--verify', '--quiet', package)
+            core.check_system(command, 'Verify %s' % (package))
 
             # Parse output for order of installs
             for line in stdout.strip().split('\n'):

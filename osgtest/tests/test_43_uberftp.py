@@ -1,7 +1,7 @@
 import os
 import os.path
 import osgtest.library.core as core
-import shutil
+import osgtest.library.files as files
 import socket
 import tempfile
 import unittest
@@ -20,12 +20,12 @@ class TestUberFTP(unittest.TestCase):
         local_path = 'test_gridftp_data.txt'
         ftp_cmd = '"cd %s; lcd %s; put %s"' % (temp_dir, local_dir, local_path)
         command = ('uberftp', hostname, ftp_cmd)
-        status, stdout, stderr = core.syspipe(command, True)
+
+        status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
-
-        shutil.rmtree(temp_dir)
+        files.remove(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -41,12 +41,12 @@ class TestUberFTP(unittest.TestCase):
         local_path = 'test_gridftp_data.txt'
         ftp_cmd = '"cd %s; lcd %s; get %s"' % (local_dir, temp_dir, local_path)
         command = ('uberftp', hostname, ftp_cmd)
-        status, stdout, stderr = core.syspipe(command, True)
+
+        status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, URL to local',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
-
-        shutil.rmtree(temp_dir)
+        files.remove(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -64,22 +64,17 @@ class TestUberFTP(unittest.TestCase):
         full_path = os.path.join(temp_dir_source, filename)
         command = ('dd', 'if=/dev/zero', 'of=' + full_path, 'bs=10485760',
                    'count=1')
-        status, stdout, stderr = core.syspipe(command, True)
-        fail = core.diagnose('Creation of a test file using dd',
-                             status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Create test file with dd', user=True)
 
-        ftp_cmd = '"cd %s; lcd %s; put %s"' % \
-            (temp_dir_dest, temp_dir_source, filename)
+        ftp_cmd = ('"cd %s; lcd %s; put %s"' %
+                   (temp_dir_dest, temp_dir_source, filename))
         command = ('uberftp', '-parallel', '10', hostname, ftp_cmd)
-        status, stdout, stderr = core.syspipe(command, True)
+        status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
-
-        shutil.rmtree(temp_dir_source)
-        shutil.rmtree(temp_dir_dest)
-
+        files.remove(temp_dir_source)
+        files.remove(temp_dir_dest)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -97,21 +92,16 @@ class TestUberFTP(unittest.TestCase):
         full_path = (os.path.join(temp_dir_source, filename))
         command = ('dd', 'if=/dev/zero', 'of=' + full_path, 'bs=10485760',
                    'count=1')
-        status, stdout, stderr = core.syspipe(command, True)
-        fail = core.diagnose('Creation of a test file using dd',
-                             status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, 'Create test file with dd', user=True)
 
-        ftp_cmd = '"cd %s; lcd %s; get %s"' % \
-            (temp_dir_source, temp_dir_dest, filename)
+        ftp_cmd = ('"cd %s; lcd %s; get %s"' %
+                   (temp_dir_source, temp_dir_dest, filename))
         command = ('uberftp', '-parallel 10', hostname, ftp_cmd)
-        status, stdout, stderr = core.syspipe(command, True)
+        status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
-
-        shutil.rmtree(temp_dir_source)
-        shutil.rmtree(temp_dir_dest)
-
+        files.remove(temp_dir_source)
+        files.remove(temp_dir_dest)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
