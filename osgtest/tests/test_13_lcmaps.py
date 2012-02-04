@@ -135,4 +135,4 @@ verifyproxy -> gridmapfile
 gridmapfile -> glexectracking
 
         """
-        files.write(path, contents, backup=False)
+        files.write(path, contents, backup=True)
