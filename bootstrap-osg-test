@@ -29,16 +29,34 @@ esac
 
 epel_rpm=`rpm -q epel-release 2>/dev/null`
 if [ $? -eq 1 ]; then
-    echo -n 'Downloading epel-release-5-4.noarch.rpm... '
-    if [ ! -f epel-release-5-4.noarch.rpm ]; then
-        wget --quiet http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm
-        on_error_die 'Could not download epel-release-5-4.noarch.rpm'
+    release=`cat /etc/redhat-release`
+    case $release in
+        *5.* )
+            rpm_name='epel-release-5-4.noarch.rpm'
+            rpm_path='http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
+            osg_name='osg-el5-release-latest.rpm'
+            ;;
+        *6.* )
+            rpm_name='epel-release-6-5.noarch.rpm'
+            rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm'
+            osg_name='osg-el6-release-latest.rpm'
+            ;;
+        * )
+            echo 'Could not determine OS release'
+            exit 1
+            ;;
+    esac
+
+    echo -n "Downloading $rpm_name... "
+    if [ ! -f $rpm_name ]; then
+        wget --quiet $rpm_path
+        on_error_die "Could not download $rpm_name"
     else
         echo 'already downloaded'
     fi
 
     echo -n 'Installing epel-release... '
-    rpm --install --nosignature epel-release-5-4.noarch.rpm
+    rpm --install --nosignature $rpm_name
     on_error_die 'Could not install epel-release RPM'
 else
     echo 'Already installed: epel-release'
@@ -47,7 +65,7 @@ fi
 osg_rpm=`rpm -q osg-release 2>/dev/null`
 if [ $? -eq 1 ]; then
     echo -n 'Installing osg-release... '
-    rpm --upgrade http://repo.grid.iu.edu/osg-release-latest.rpm
+    rpm --upgrade http://repo.grid.iu.edu/$osg_name
     on_error_die 'Could not install osg-release'
 else
     echo 'Already installed: osg-release'
