@@ -84,16 +84,18 @@ def monitor_file(filename, old_stat, sentinel, timeout):
     start_time = time.time()
     end_time = start_time + timeout
     monitored_file = None
-    initial_position = old_stat.st_size
     while time.time() <= end_time:
         if monitored_file is None:
             if not os.path.exists(filename):
                 time.sleep(0.2)
                 continue
             new_stat = os.stat(filename)
-            if ((new_stat.st_ino != old_stat.st_ino) or
+            if ((old_stat is None) or
+                (new_stat.st_ino != old_stat.st_ino) or
                 (new_stat.st_size < old_stat.st_size)):
                 initial_position = 0
+            else:
+                initial_position = old_stat.st_size
             monitored_file = open(filename, 'r')
             monitored_file.seek(initial_position)
 
