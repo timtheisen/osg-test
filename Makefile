@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 
 PACKAGE := osg-test
-VERSION := 0.0.11
+VERSION := 0.0.12
 
 
 # ------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ SBIN_FILES := osg-test
 INSTALL_SBIN_DIR := usr/sbin
 
 CA_CERT_DIR := ca-certificate
-CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.*
+CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.* $(CA_CERT_DIR)/bffdd190.*
 INSTALL_CA_CERT_DIR := etc/grid-security/certificates
 
 SHARE_DIR := files

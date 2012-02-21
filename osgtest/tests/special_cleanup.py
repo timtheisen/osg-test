@@ -25,8 +25,12 @@ class TestCleanup(unittest.TestCase):
         files.remove(password_entry.pw_dir)
 
     def test_02_remove_packages(self):
-        if len(core.state['install.preinstalled']) == 0:
+        if (('install.preinstalled' not in core.state) or
+            (len(core.state['install.preinstalled']) == 0)):
             core.skip('no original list')
+            return
+        if 'install.installed' not in core.state:
+            core.skip('no packages installed')
             return
         current_rpms = core.installed_rpms()
         new_rpms = current_rpms - core.state['install.preinstalled']
