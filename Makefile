@@ -17,7 +17,7 @@ SBIN_FILES := osg-test
 INSTALL_SBIN_DIR := usr/sbin
 
 CA_CERT_DIR := ca-certificate
-CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.* $(CA_CERT_DIR)/bffdd190.*
+CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.*
 INSTALL_CA_CERT_DIR := etc/grid-security/certificates
 
 SHARE_DIR := files
@@ -82,6 +82,7 @@ else
 	install -p -m 0755 $(SBIN_FILES) $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
 	install -p -m 0644 $(CA_CERT_FILES) $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
+	for f in $(CA_CERT_FILES); do b=`basename $$f`; n=`echo $$b | sed -e 's/4eca18ce/bffdd190/g'`; ln -s $$b $(DESTDIR)/$(INSTALL_CA_CERT_DIR)/$$n; done
 	mkdir -p $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(CERT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0400 $(CERT_KEY) $(DESTDIR)/$(INSTALL_SHARE_DIR)
