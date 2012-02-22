@@ -27,26 +27,27 @@ case $1 in
         ;;
 esac
 
+# Determine platform-specific details
+release=`cat /etc/redhat-release`
+case $release in
+    *5.* )
+        rpm_name='epel-release-5-4.noarch.rpm'
+        rpm_path='http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
+        osg_name='osg-el5-release-latest.rpm'
+        ;;
+    *6.* )
+        rpm_name='epel-release-6-5.noarch.rpm'
+        rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm'
+        osg_name='osg-el6-release-latest.rpm'
+        ;;
+    * )
+        echo 'Could not determine OS release'
+        exit 1
+        ;;
+esac
+
 epel_rpm=`rpm -q epel-release 2>/dev/null`
 if [ $? -eq 1 ]; then
-    release=`cat /etc/redhat-release`
-    case $release in
-        *5.* )
-            rpm_name='epel-release-5-4.noarch.rpm'
-            rpm_path='http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
-            osg_name='osg-el5-release-latest.rpm'
-            ;;
-        *6.* )
-            rpm_name='epel-release-6-5.noarch.rpm'
-            rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm'
-            osg_name='osg-el6-release-latest.rpm'
-            ;;
-        * )
-            echo 'Could not determine OS release'
-            exit 1
-            ;;
-    esac
-
     echo -n "Downloading $rpm_name... "
     if [ ! -f $rpm_name ]; then
         curl --fail --location --output $rpm_name --retry 10 --silent $rpm_path
