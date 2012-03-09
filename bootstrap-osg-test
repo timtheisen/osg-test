@@ -79,6 +79,13 @@ echo -n 'Updating osg-release... '
 yum -y --quiet update osg-release
 on_error_die 'Could not update osg-release'
 
+echo -n "Install yum-priorities... "
+yum -y --quiet install yum-priorities
+on_error_die "Could not install yum-priorities"
+echo -n 'Verify yum-priorities... '
+rpm --verify yum-priorities
+on_error_die "Could not verify yum-priorities"
+
 # Always erase and install, to get latest
 rpm -e osg-test >/dev/null 2>&1
 echo -n "Install osg-test... "
