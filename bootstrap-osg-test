@@ -83,8 +83,8 @@ echo -n "Install yum-priorities... "
 yum -y --quiet install yum-priorities
 on_error_die "Could not install yum-priorities"
 echo -n 'Verify yum-priorities... '
-rpm --verify yum-priorities
-on_error_die "Could not verify yum-priorities"
+rpm --verify yum-priorities || rpm --verify yum-plugin-priorities
+on_error_die "Could not verify yum-priorities or yum-plugin-priorities"
 
 # Always erase and install, to get latest
 rpm -e osg-test >/dev/null 2>&1
