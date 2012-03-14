@@ -14,41 +14,29 @@ class TestLcMaps(unittest.TestCase):
         path='/etc/lcmaps.db'
         
         contents = """
-# Please note that the below is a non-standard lcmaps.db meant for testing specifically glexec. Other applications will
-# require adjustments
+##############################################################################
+#
+# lcmaps.db
+# 
+# This is a configuration for lcmaps for testing the ce and glexec. It CAN'T
+# be used as-is to test gums.
+# 
+##############################################################################
 
-path = lcmaps
-
-gumsclient = "lcmaps_gums_client.mod"
-             "-resourcetype ce"
-             "-actiontype execute-now"
-             "-capath /etc/grid-security/certificates"
-             "-cert   /etc/grid-security/hostcert.pem"
-             "-key    /etc/grid-security/hostkey.pem"
-             "--cert-owner root"
-# Change this URL to your GUMS server
-             "--endpoint https://yourgums.yourdomain:8443/gums/services/GUMSXACMLAuthorizationServicePort"
-# Uncomment this to set a different expected host certificate name for server
-#            "--override-expected-hostname overridegumsname.yourdomain"
-
-sazclient = "lcmaps_saz_client.mod"
-            "-resourcetype ce"
-            "-actiontype execute-now"
-            "-capath /etc/grid-security/certificates"
-            "-cert   /etc/grid-security/hostcert.pem"
-            "-key    /etc/grid-security/hostkey.pem"
-            "--cert-owner root"
-            "-authorization-only"
-# Change this URL to your SAZ server if you have one
-            "--endpoint https://yoursaz.yourdomain:8443/saz/services/SAZXACMLAuthorizationServicePort"
-# Uncomment this to set a different expected host certificate name for server
-#            "--override-expected-hostname overridesazname.yourdomain"
-
+glexectracking = "lcmaps_glexec_tracking.mod"
+         "-exec /usr/sbin/glexec_monitor"
 # Uncomment if your procd is located in a non-standard directory
-#           "-procddir /usr"
+#         "-procddir /usr"
 # Uncomment to write tracking info to glexec_monitor.log in the given dir
 #     otherwise the default is to use syslog
 #         "-logdir /var/log/glexec"
+# Uncomment to change the default logging level for the glexec_monitor
+#   Level 0: none, 1: errors, 2: warnings, 3: notices, 4: info, 5: debug
+#   The notices level is used for usage tracking; info is commonly useful.
+#   Default is lcmaps_debug_level from glexec.conf.
+#         "-log-level 4"
+# Uncomment to change the syslog facility.  Default is LOG_DAEMON
+#	  "-log-facility LOG_DAEMON"
 # Uncomment to use local time in the file log (doesn't apply to syslog)
 #         "-datetime-local"
 # Uncomment to change the minimum tracking group id
@@ -68,46 +56,16 @@ verifyproxy = "lcmaps_verify_proxy.mod"
           "--allow-limited-proxy"
           " -certdir /etc/grid-security/certificates"
 
-# These two lines were originally comemnted out, but these are exactly what we need to glexec
-glexectracking = "lcmaps_glexec_tracking.mod"
-               "-exec /usr/sbin/glexec_monitor"
-
-
-#-----------------------------------------------------------------------------
-#
 # Mapping policies
-#
-# Each of these define how lcmaps is used in different scenarios.
-# The defaults are generally good.
-# We've left the various glexec policies commented out--you need to
-# choose one of the three policies. Most sites will use the first
-# policy (verify proxy, gums client, glexectracking). Do not uncomment
-# the glexec policies if you are not using glexec!
-#
-# For the globus_gridftp_mapping and the osg_default mapping, we've
-# shown how to add saz, if you are using it at your site. Uncomment
-# that line if appropriate.
-#
-#-----------------------------------------------------------------------------
-
-#
-# Mapping policy: globus_gridftp_mapping
-# Purpose:        Used for gridftp
-#
-globus_gridftp_mapping:
-#Uncomment this one line to add SAZ
-#sazclient -> gumsclient
-gumsclient -> posix_enf
 
 #
 # Mapping policy: osg_default
-# Purpose:        Used for the Globus gatekeeper
+# Purpose:        Used for the Globus gatekeeper and the gridftp server
 #
 osg_default:
-verifyproxy -> gumsclient
-#Uncomment the next two lines and comment the previous line to add SAZ
-#verifyproxy -> sazclient
-#sazclient -> gumsclient
+
+gridmapfile -> posix_enf
+
 
 #
 # Mapping policy: glexec
@@ -115,24 +73,7 @@ verifyproxy -> gumsclient
 #
 glexec:
 
-## Pick an appropriate policy from the ones below. Make sure that only
-## one policy is uncommented--the other policies should be commented
-## out. For example, if you want policy #1 (the most common), remove
-## the hash mark two lines: just before "verifyproxy" and just before
-## "gumsclient".
-
-## Policy 1: GUMS but not SAZ (most common)
-#verifyproxy -> gumsclient
-#gumsclient -> glexectracking
-
-## Policy 2: GUMS & SAZ
-#verifyproxy -> sazclient
-#sazclient -> gumsclient
-#gumsclient -> glexectracking
-
-## Policy 3: grid-mapfile
 verifyproxy -> gridmapfile
 gridmapfile -> glexectracking
-
         """
         files.write(path, contents, backup=True)
