@@ -69,7 +69,8 @@ class TestCleanup(unittest.TestCase):
 
         rpm_erase_list = []
         for package in rpm_erase_candidates:
-            command = ('rpm', '--query', package)
+            command = ('rpm', '--query', package, '--queryformat',
+                       r'%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n')
             status, stdout, stderr = core.system(command, log_output=False)
             versioned_rpms = re.split('\n', stdout.strip())
             if len(versioned_rpms) > 1:
