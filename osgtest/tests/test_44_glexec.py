@@ -8,6 +8,10 @@ import socket
 import time
 import unittest
 
+# ==========================================================================
+# Note: March 2012 version, add checking prerequisites such as globus-proxy-utils,
+# to avoid confusion.
+
 class TestGlexec(unittest.TestCase):
 
     # Constants
@@ -47,14 +51,26 @@ class TestGlexec(unittest.TestCase):
         TestGlexec.__user_proxy_path = '/tmp/x509up_u'+self.__uid
 
     def test_03_create_user_proxy(self):
+        # if the utils are not present, it won't work anyhow, so might as well skip the test
+        if not core.rpm_is_installed('globus-proxy-utils'):
+            core.skip('globus-proxy-utils not installed')
+            return
+
+        # ...and also skip if there is no glexec
         if not core.rpm_is_installed('glexec'):
             core.skip('not installed')
             return
 
-        command = ('grid-proxy-init','-out',self.__user_proxy_path)
-        password = core.options.password + '\n'
-        status, stdout, stderr = core.system(command, True, password)
-        self.assert_(status==0, 'grid-proxy-init for user '+core.options.username+' has failed')
+        # OK, software is present, now just check it previous tests did create the proxy already so
+        # we don't do it twice
+        command = ('grid-proxy-info','-f',self.__user_proxy_path)
+        status, stdout, stderr = core.system(command, True)
+
+        if int(status)!=0: # no proxy found for some reason, try to construct a new one
+            command = ('grid-proxy-init','-out',self.__user_proxy_path)
+            password = core.options.password + '\n'
+            status, stdout, stderr = core.system(command, True, password)
+            self.assert_(status==0, 'grid-proxy-init for user '+core.options.username+' has failed even though globus-proxy-util was present')
 
         # we need to have the right permissions on that proxy for glexec to agree to work,
         # and the easiest way is to copy the file
@@ -63,9 +79,22 @@ class TestGlexec(unittest.TestCase):
         os.environ['GLEXEC_CLIENT_CERT']=self.__glexec_client_cert
 
     def test_04_glexec_switch_id(self):
+        # if the utils are not present, it won't work anyhow, so might as well skip the test
+        if not core.rpm_is_installed('globus-proxy-utils'):
+            core.skip('globus-proxy-utils not installed')
+            return
+
         if not core.rpm_is_installed('glexec'):
             core.skip('not installed')
             return
+
+        command = ('grid-proxy-info','-f',self.__user_proxy_path)
+        status, stdout, stderr = core.system(command, True)
+
+        if int(status)!=0: # no proxy found even after previous checks, have to skip
+            core.skip('suitable proxy not found')
+            return
+
         command = ('/usr/sbin/glexec','/usr/bin/id','-u')
 
         status, stdout, stderr = core.system(command)
@@ -74,7 +103,15 @@ class TestGlexec(unittest.TestCase):
         self.assert_(self.__uid==switched_id, 'Glexec identity switch from root to user '+core.options.username+' failed')
 
     def test_05_glexec_proxy_cleanup(self):
+        # if the utils are not present, it won't work anyhow, so might as well skip the test
+        if not core.rpm_is_installed('globus-proxy-utils'):
+            core.skip('globus-proxy-utils not installed')
+            return
+
         if not core.rpm_is_installed('glexec'):
             core.skip('not installed')
             return
-        status = os.unlink(self.__glexec_client_cert)
+        try:
+            status = os.unlink(self.__glexec_client_cert)
+        except:
+            pass
