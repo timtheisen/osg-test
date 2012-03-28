@@ -2,6 +2,7 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import socket
+import shutil
 import tempfile
 import unittest
 
@@ -25,7 +26,7 @@ class TestGridFTP(unittest.TestCase):
         fail = core.diagnose('GridFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
-        files.remove(temp_dir)
+        shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -45,6 +46,6 @@ class TestGridFTP(unittest.TestCase):
         fail = core.diagnose('GridFTP copy, URL to local',
                              status, stdout, stderr)
         file_copied = os.path.exists(local_path)
-        files.remove(temp_dir)
+        shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')

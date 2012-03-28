@@ -3,6 +3,7 @@ import os.path
 import osgtest.library.core as core
 import osgtest.library.files as files
 import socket
+import shutil
 import tempfile
 import unittest
 
@@ -25,7 +26,7 @@ class TestUberFTP(unittest.TestCase):
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
-        files.remove(temp_dir)
+        shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -46,7 +47,7 @@ class TestUberFTP(unittest.TestCase):
         fail = core.diagnose('UberFTP copy, URL to local',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
-        files.remove(temp_dir)
+        shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -73,8 +74,8 @@ class TestUberFTP(unittest.TestCase):
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
-        files.remove(temp_dir_source)
-        files.remove(temp_dir_dest)
+        shutil.rmtree(temp_dir_source)
+        shutil.rmtree(temp_dir_dest)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
@@ -101,7 +102,7 @@ class TestUberFTP(unittest.TestCase):
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
-        files.remove(temp_dir_source)
-        files.remove(temp_dir_dest)
+        shutil.rmtree(temp_dir_source)
+        shutil.rmtree(temp_dir_dest)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')

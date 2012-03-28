@@ -74,7 +74,7 @@ def restore(path):
         core.log_message('Restored original %s' % (path))
 
 def remove(path):
-    """Remove the path, which could be a file, directory, or file glob."""
+    """Remove the path, which could be a file, empty directory, or file glob."""
     if re.search(r'[\]*?]', path):
         for glob_path in glob.glob(path):
             if os.path.isfile(glob_path):
