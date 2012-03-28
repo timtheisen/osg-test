@@ -16,3 +16,5 @@ class TestStopCondorCron(unittest.TestCase):
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(not os.path.exists(core.config['condor-cron.lockfile']),
                      'Condor-Cron run lock file still present')
+
+        core.state['condor-cron.running-service'] = False

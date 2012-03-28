@@ -22,3 +22,4 @@ class TestStartCondorCron(unittest.TestCase):
         self.assert_(os.path.exists(core.config['condor-cron.lockfile']),
                      'Condor-Cron run lock file missing')
         core.state['condor-cron.started-service'] = True
+        core.state['condor-cron.running-service'] = True
