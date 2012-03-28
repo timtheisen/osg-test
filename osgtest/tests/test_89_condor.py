@@ -5,10 +5,9 @@ import unittest
 class TestStopCondor(unittest.TestCase):
 
     def test_01_stop_condor(self):
-        if not core.rpm_is_installed('condor'):
-            core.skip('not installed')
+        if core.missing_rpm('condor'):
             return
-        if core.state['condor.started-master'] == False:
+        if core.state['condor.started-service'] == False:
             core.skip('did not start server')
             return
 

@@ -6,12 +6,13 @@ class TestStartCondor(unittest.TestCase):
 
     def test_01_start_condor(self):
         core.config['condor.lockfile'] = '/var/lock/subsys/condor_master'
-        core.state['condor.started-master'] = False
+        core.state['condor.started-service'] = False
+        core.state['condor.running-service'] = False
 
-        if not core.rpm_is_installed('condor'):
-            core.skip('not installed')
+        if core.missing_rpm('condor'):
             return
         if os.path.exists(core.config['condor.lockfile']):
+            core.state['condor.running-service'] = True
             core.skip('apparently running')
             return
 
@@ -20,4 +21,4 @@ class TestStartCondor(unittest.TestCase):
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file missing')
-        core.state['condor.started-master'] = True
+        core.state['condor.started-service'] = True
