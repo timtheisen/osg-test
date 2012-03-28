@@ -80,6 +80,12 @@ def remove(path):
             if os.path.isfile(glob_path):
                 os.unlink(glob_path)
     elif os.path.isdir(path):
-        shutil.rmtree(path)
+        if not os.listdir(path):
+            os.rmdir(path)
+        else:
+            #shutil.rmtree(path)
+            print "Cowardly refusing to delete a non-empty directory using rmtree"
+            # Go ahead and try the rmdir to raise an exception
+            os.rmdir(path)
     elif os.path.isfile(path):
         os.unlink(path)
