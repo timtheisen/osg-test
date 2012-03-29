@@ -1,9 +1,15 @@
 import osgtest.library.core as core
 
 import re
+import socket
 import unittest
+import ConfigParser
+
+core.config['rsv.config-file'] = '/etc/osg/config.d/30-rsv.ini'
 
 class TestRSV(unittest.TestCase):
+
+    host = socket.getfqdn()
 
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')
@@ -20,6 +26,14 @@ class TestRSV(unittest.TestCase):
         return
 
 
+    def run_metric(self, metric, host=host):
+        command = ('rsv-control', '--run', '--host', host, metric)
+        stdout = core.check_system(command, ' '.join(command))[0]
+
+        self.assert_(re.search('metricStatus: OK', stdout) is not None)
+        return
+    
+
     def test_001_version(self):
         if core.missing_rpm('rsv'):
             return
@@ -31,7 +45,7 @@ class TestRSV(unittest.TestCase):
         self.assert_(re.search('\d.\d.\d', stdout) is not None)
 
 
-    def test_010_list(self):
+    def test_002_list(self):
         if core.missing_rpm('rsv'):
             return
 
@@ -43,7 +57,7 @@ class TestRSV(unittest.TestCase):
         # once and we'll call it good enough.
         self.assert_(re.search('org.osg.', stdout) is not None)
 
-    def test_011_list_with_cron(self):
+    def test_003_list_with_cron(self):
         if core.missing_rpm('rsv'):
             return
         
@@ -54,12 +68,26 @@ class TestRSV(unittest.TestCase):
         self.assert_(re.search('Cron times', stdout) is not None)
 
 
+    def test_010_load_default_config(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        # We'll pull in the default config file and store it.  We might want to
+        # do tests based on the default.
+        self.config = ConfigParser.RawConfigParser()
+        self.config.optionxform = str
+        self.config.read(core.config['rsv.config-file'])
+        core.config['rsv.default-config'] = self.config
+        return
+
+
     def test_020_start_and_stop(self):
         if core.missing_rpm('rsv'):
             return
 
         self.stop_rsv()
         self.start_rsv()
+
 
     def test_021_job_list(self):
         if core.missing_rpm('rsv'):
@@ -81,3 +109,20 @@ class TestRSV(unittest.TestCase):
         self.assert_(re.search('\|', stdout) is not None)
 
         return
+
+
+    def test_030_ping_metric(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        self.run_metric('org.osg.general.ping-host')
+        return
+
+
+    def test_031_hostcert_expiry(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        self.run_metric('org.osg.local.hostcert-expiry')
+        return
+        
