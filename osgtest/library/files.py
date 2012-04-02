@@ -66,6 +66,23 @@ def write(path, contents, backup=True):
 
     core.log_message('Wrote %d bytes to %s' % (os.stat(path).st_size, path))
 
+
+def append_line(path, line, backup=True, if_not_present=False):
+    """ Append the supplied line to the given path.  A backup will
+    be made by default.  If the lines should not be added if they are
+    already present in the file pass if_not_present=True """
+
+    old_contents = read(path)
+
+    if if_not_present:
+        if line in old_contents:
+            return
+
+    new_contents = old_contents + [line]
+    write(path, new_contents)
+    return
+
+
 def restore(path):
     """Restores the path to its original state."""
     if path in _files and os.path.exists(path):

@@ -1,5 +1,6 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import unittest
 
 class TestStopGatekeeper(unittest.TestCase):
@@ -11,6 +12,8 @@ class TestStopGatekeeper(unittest.TestCase):
         if core.state['globus.started-gk'] == False:
             core.skip('did not start server')
             return
+
+        files.restore(core.config['jobmanager-config'])
 
         command = ('service', 'globus-gatekeeper', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop Globus gatekeeper')

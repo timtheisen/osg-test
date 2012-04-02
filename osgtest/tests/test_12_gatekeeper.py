@@ -1,5 +1,6 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import unittest
 
 class TestStartGatekeeper(unittest.TestCase):
@@ -16,10 +17,10 @@ class TestStartGatekeeper(unittest.TestCase):
             return
 
         # DEBUG: Set up gatekeeper debugging
-        jobmanager_config = open('/etc/globus/globus-gram-job-manager.conf', 'a')
-        jobmanager_config.write('-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n')
-        jobmanager_config.write('-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n')
-        jobmanager_config.close()
+        core.config['jobmanager-config'] = '/etc/globus/globus-gram-job-manager.conf'
+        files.append_line(core.config['jobmanager-config'], '-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n', if_not_present=True)
+        files.append_line(core.config['jobmanager-config'], '-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n', if_not_present=True)
+
         if not os.path.exists('/var/log/globus'):
             os.mkdir('/var/log/globus')
             os.chmod('/var/log/globus', 0777)
