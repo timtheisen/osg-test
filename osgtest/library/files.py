@@ -50,9 +50,14 @@ def write(path, contents, backup=True):
 
     # Back up existing file
     if os.path.exists(path) and backup:
+        # We don't want to overwrite an existing backup.  Someday we might
+        # have sequential backups, but for now we just want to save the state
+        # of a file as it first exists (for most files this will be as it was
+        # before we started running tests)
         backup_path = path + _backup_suffix
-        shutil.copy2(path, backup_path)
-        _record_path(backup_path)
+        if not os.path.exists(backup_path):
+            shutil.copy2(path, backup_path)
+            _record_path(backup_path)
 
     # Atomically move temporary file into final location
     os.rename(temp_path, path)
