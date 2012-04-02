@@ -22,7 +22,7 @@ class TestCleanup(unittest.TestCase):
         files.remove(os.path.join(globus_dir, 'usercert.pem'))
         files.remove(os.path.join(globus_dir, 'userkey.pem'))
         files.remove(os.path.join('/var/spool/mail', username))
-        files.remove(password_entry.pw_dir)
+        shutil.rmtree(password_entry.pw_dir)
 
     def test_02_remove_packages(self):
         if (('install.preinstalled' not in core.state) or
