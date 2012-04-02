@@ -42,7 +42,8 @@ class TestStopVOMS(unittest.TestCase):
                      'VOMS server lock file still exists')
 
     def test_02_restore_vomses(self):
-        shutil.rmtree(core.config['voms.lsc-dir'])
+        if os.path.exists(core.config['voms.lsc-dir']):
+            shutil.rmtree(core.config['voms.lsc-dir'])
         files.restore('/etc/vomses')
 
     def test_03_remove_vo(self):
