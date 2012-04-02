@@ -1,4 +1,5 @@
 import osgtest.library.core as core
+import osgtest.library.files as files
 
 import re
 import os
@@ -72,14 +73,16 @@ class TestRSV(unittest.TestCase):
 
 
     def test_003_setup_grid_mapfile(self):
+        if core.missing_rpm('rsv'):
+            return
+
         # Register the cert in the gridmap file
         cert_subject = core.certificate_info(core.config['rsv.certfile'])[0]
 
-        # TODO - we should track this file and restore the original grid mapfile
-        fd = open('/etc/grid-security/grid-mapfile', 'a')
-        fd.write('"%s" rsv' % (cert_subject))
-        fd.close()
-
+        # TODO - should we restore the grid-mapfile after RSV tests finish?
+        files.append_line('/etc/grid-security/grid-mapfile', '"%s" rsv' % (cert_subject))
+        return
+    
 
     def test_004_load_default_config(self):
         if core.missing_rpm('rsv'):
@@ -164,7 +167,7 @@ class TestRSV(unittest.TestCase):
         return
 
 
-    def test_021_job_list_parsable(self):
+    def test_022_job_list_parsable(self):
         if core.missing_rpm('rsv'):
             return
 
@@ -198,6 +201,13 @@ class TestRSV(unittest.TestCase):
             return
 
         self.run_metric('org.osg.globus.gram-authentication')
+        return
+
+    def test_051_osg_version_metric(self):
+        if core.missing_rpm('rsv', 'globus-gatekeeper'):
+            return
+
+        self.run_metric('org.osg.general.osg-version')
         return
 
 # Test to write:
