@@ -17,6 +17,7 @@ Testing number conventions:
  030-049 - Testing of metrics that don't require any other services
  050-079 - Testing of metrics that require a CE
  080-099 - Testing of metrics that require an SE
+ 100-120 - Testing of consumers
 """
 
 core.config['rsv.config-file'] = '/etc/osg/config.d/30-rsv.ini'
@@ -138,23 +139,44 @@ class TestRSV(unittest.TestCase):
     def test_013_profiler(self):
         if core.missing_rpm('rsv'):
             return
+
+        profiler_tarball = 'rsv-profiler.tar.gz'
         
         command = ('rsv-control', '--profile')
         stdout = core.check_system(command, 'rsv-control --profile')[0]
         self.assert_(re.search('Running the rsv-profiler', stdout) is not None)
-        self.assert_(os.path.exists('rsv-profiler.tar.gz'))
+        self.assert_(os.path.exists(profiler_tarball))
+        files.remove(profiler_tarball)
         return
 
 
-    def test_020_start_and_stop(self):
+    def test_024_rsv_control_bad_arg(self):
+        if core.missing_rpm('rsv'):
+            return
+        
+        command = ('rsv-control', '--kablooey')
+        (ret, out, err) = core.system(command, 'rsv-control --kablooey')
+        self.assert_(ret != 0)
+        return
+
+
+    def test_020_stop_rsv(self):
         if core.missing_rpm('rsv'):
             return
 
         self.stop_rsv()
+        return
+
+
+    def test_021_start_rsv(self):
+        if core.missing_rpm('rsv'):
+            return
+        
         self.start_rsv()
+        return
 
 
-    def test_021_job_list(self):
+    def test_022_job_list(self):
         if core.missing_rpm('rsv'):
             return
 
@@ -167,7 +189,7 @@ class TestRSV(unittest.TestCase):
         return
 
 
-    def test_022_job_list_parsable(self):
+    def test_023_job_list_parsable(self):
         if core.missing_rpm('rsv'):
             return
 
@@ -210,8 +232,41 @@ class TestRSV(unittest.TestCase):
         self.run_metric('org.osg.general.osg-version')
         return
 
+    def test_052_vo_supported_metric(self):
+        if core.missing_rpm('rsv', 'globus-gatekeeper'):
+            return
+
+        self.run_metric('org.osg.general.vo-supported')
+        return
+
+
+
+    def test_100_html_consumer(self):
+        # This test must come after some of the metric tests so that we have
+        # some job records to use to create an index.html
+        if core.missing_rpm('rsv'):
+            return
+
+        index_file = "/usr/share/rsv/www/index.html"
+
+        # We are going to make sure the html-consumer runs, and that the index
+        # file is updated.
+        old_mtime = os.stat(index_file).st_mtime
+
+        stdout = core.check_system("su -c '/usr/libexec/rsv/consumers/html-consumer' rsv", "run html-consumer", shell=True)[0]
+        self.assert_('html-consumer initializing' in stdout)
+
+
+        new_mtime = os.stat(index_file).st_mtime
+        self.assert_(old_mtime != new_mtime)
+        return
+
+
+
 # Test to write:
-# - run html-consumer
-# - test that html page is created
 # - run gratia-consumer?
-# - run Globus metrics
+# - run other metrics?
+#     org.osg.batch.jobmanagers-available                       | OSG-CE
+#     org.osg.certificates.cacert-expiry                        | OSG-CE
+#     org.osg.certificates.crl-expiry                           | OSG-CE
+#     org.osg.general.osg-directories-CE-permissions            | OSG-CE
