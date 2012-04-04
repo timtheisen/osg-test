@@ -1,10 +1,12 @@
 import os
-import osgtest.library.core as core
-import osgtest.library.files as files
 import pwd
 import shutil
 import socket
 import unittest
+
+import osgtest.library.core as core
+import osgtest.library.files as files
+import osgtest.library.tomcat as tomcat
 
 class TestStartVOMS(unittest.TestCase):
 
@@ -19,13 +21,14 @@ class TestStartVOMS(unittest.TestCase):
         source_path = core.config[source_key]
         user = pwd.getpwnam(owner_name)
 
-        if os.path.exists(target_path):
+        # Using os.path.lexists because os.path.exists return False for broken symlinks
+        if os.path.lexists(target_path):
             backup_path = target_path + '.osgtest.backup'
             shutil.move(target_path, backup_path)
             core.state[target_key + '-backup'] = backup_path
 
         if not os.path.exists(target_dir):
-            os.mkdir(target_dir)
+            os.makedirs(target_dir)
             core.state[target_key + '-dir'] = target_dir
             os.chown(target_dir, user.pw_uid, user.pw_gid)
             os.chmod(target_dir, 0755)
@@ -71,10 +74,10 @@ class TestStartVOMS(unittest.TestCase):
         core.config['voms.vo'] = 'osgtestvo'
         core.config['voms.lsc-dir'] = '/etc/grid-security/vomsdir/osgtestvo'
         core.config['voms.lock-file'] = '/var/lock/subsys/voms.osgtestvo'
-        core.config['voms.vo-webapp'] = ('/usr/share/tomcat5/conf/Catalina/' +
-                                         'localhost/voms#osgtestvo.xml')
-        core.config['voms.webapp-log'] = ('/var/log/tomcat5/' +
-                                          'voms-admin-osgtestvo.log')
+        core.config['voms.vo-webapp'] = os.path.join(
+            tomcat.datadir(), "conf/Catalina/localhost/voms#osgtestvo.xml")
+        core.config['voms.webapp-log'] = os.path.join(
+            tomcat.logdir(), 'voms-admin-osgtestvo.log')
 
     def test_05_configure_voms_admin(self):
         if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):

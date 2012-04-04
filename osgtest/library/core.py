@@ -4,10 +4,12 @@
 import os
 import os.path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
+import traceback
 
 
 # ------------------------------------------------------------------------------
@@ -38,6 +40,7 @@ options = None
 _log = None
 _log_filename = None
 _last_log_had_output = True
+_el_release = None
 
 
 # ------------------------------------------------------------------------------
@@ -81,13 +84,15 @@ def end_log():
     """Closes the detailed log file; not for general use."""
     _log.close()
 
-def dump_log():
-    """Dumps the detailed log file to standard out; not for general use."""
-    logfile = open(_log_filename, 'r')
-    print '\n'
-    for line in logfile:
-        print line.rstrip('\n')
-    logfile.close()
+def dump_log(outfile=None):
+    if outfile is None:
+        logfile = open(_log_filename, 'r')
+        print '\n'
+        for line in logfile:
+            print line.rstrip('\n')
+        logfile.close()
+    else:
+        shutil.copy(_log_filename, outfile)
 
 def remove_log():
     """Removes the detailed log file; not for general use."""
@@ -280,6 +285,14 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
         _log.write('\n')
     _log.write('osgtest: ')
     _log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+    # HACK: print test name
+    # Get the current test function name, the .py file it's in, and the line number from the call stack
+    if options.printtest:
+        stack = traceback.extract_stack()
+        for stackentry in reversed(stack):
+            filename, lineno, funcname, text = stackentry
+            if re.search(r'(test_\d+|special).+\.py', filename):
+                _log.write("%s:%s:%d: " % (os.path.basename(filename), funcname, lineno))
     _log.write(' '.join(__format_command(command)))
 
     # Run and return command
@@ -310,3 +323,21 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
     _log.flush()
 
     return (p.returncode, stdout, stderr)
+
+
+def el_release():
+    global _el_release
+    if not _el_release:
+        try:
+            try:
+                release_file = open("/etc/redhat-release", 'r')
+                release_text = release_file.read()
+            finally:
+                release_file.close()
+            match = re.search(r"release (\d)", release_text)
+            _el_release = int(match.group(1))
+        except Exception, e: 
+            _log.write("Couldn't determine redhat release: " + str(e) + "\n")
+            sys.exit(1)
+    return _el_release
+

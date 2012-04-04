@@ -1,9 +1,10 @@
 import glob
 import os
-import osgtest.library.core as core
 import re
 import shutil
 import tempfile
+
+import osgtest.library.core as core
 
 _backup_suffix = '.osgtest-backup'
 _files = {}

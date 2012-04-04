@@ -30,6 +30,10 @@ def parse_command_line():
     parser.add_option('-d', '--dump-output', action='store_true',
                       dest='dumpout',
                       help='After test output, print all command output')
+    
+    parser.set_defaults(dumpfile=None)
+    parser.add_option('--dump-file', action='store', type='string', dest='dumpfile', metavar='DUMPFILE',
+                      help='Store all command output into a file')
 
     parser.set_defaults(packages=[])
     parser.add_option('-i', '--install', action='append', dest='packages',
@@ -47,6 +51,10 @@ def parse_command_line():
                       dest='extrarepos', metavar='REPO',
                       help='Extra repository (in addition to production) to use'
                       ' when installing packages')
+
+    parser.set_defaults(printtest=False)
+    parser.add_option('--print-test-name', action='store_true', dest='printtest',
+                       help='Print test name before command output')
 
     parser.set_defaults(runtests=True)
     parser.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
@@ -109,4 +117,6 @@ if __name__ == '__main__':
     core.end_log()
     if core.options.dumpout:
         core.dump_log()
+    if core.options.dumpfile:
+        core.dump_log(core.options.dumpfile)
     core.remove_log()

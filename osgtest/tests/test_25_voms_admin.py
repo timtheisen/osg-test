@@ -1,6 +1,7 @@
 import os
-import osgtest.library.core as core
 import unittest
+
+import osgtest.library.core as core
 
 class TestSetupVomsAdmin(unittest.TestCase):
 
