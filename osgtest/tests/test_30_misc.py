@@ -38,3 +38,37 @@ class TestMisc(unittest.TestCase):
         osg_version_rpm_version = matches.group(1)
         self.assert_(osg_version == osg_version_rpm_version)
         
+    def test_03_lfc_multilib(self):
+        if core.missing_rpm('yum-utils'):
+            return
+
+        # We can't test this on 32-bit
+        uname_out, _, _ = core.check_system(['uname', '-i'], 'getting arch')
+        if re.search(r'i\d86', uname_out):
+            core.skip('running on 32-bit')
+            return
+
+        cmdbase = ['repoquery', '--whatprovides']
+
+        # Find the 32-bit lfc-python rpm
+        stdout, _, _ = core.check_system(cmdbase + ['lfc-python.i386'], 'lfc-python multilib (32bit)')
+        if stdout.strip() == '':
+            self.fail('32-bit lfc-python not found in 64-bit repo')
+
+        # Sanity check: find the 64-bit lfc-python rpm
+        stdout, _, _ = core.check_system(cmdbase + ['lfc-python.x86_64'], 'lfc-python multilib (64bit)')
+        if stdout.strip() == '':
+            self.fail('64-bit lfc-python not found in 64-bit repo')
+
+        # Find the 32-bit lfc-python26 rpm (on el5 only)
+        if core.el_release() == 5:
+            stdout, _, _ = core.check_system(cmdbase + ['lfc-python26.i386'], 'lfc-python26 multilib (32bit)')
+            if stdout.strip() == '':
+                self.fail('32-bit lfc-python not found in 64-bit repo')
+
+            # Sanity check: find the 64-bit lfc-python26 rpm
+            stdout, _, _ = core.check_system(cmdbase + ['lfc-python26.x86_64'], 'lfc-python26 multilib (64bit)')
+            if stdout.strip() == '':
+                self.fail('64-bit lfc-python not found in 64-bit repo')
+            
+        
