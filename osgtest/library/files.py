@@ -80,7 +80,7 @@ def append_line(path, line, backup=True, if_not_present=False):
             return
 
     new_contents = old_contents + [line]
-    write(path, new_contents)
+    write(path, new_contents, backup=backup)
     return
 
 
