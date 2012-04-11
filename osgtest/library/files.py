@@ -67,6 +67,18 @@ def write(path, contents, backup=True):
 
     core.log_message('Wrote %d bytes to %s' % (os.stat(path).st_size, path))
 
+def replace(path, oldLine, newLine):
+    """ Replace an old line with a new line in given path
+   Uses the existing read/write functions """
+
+    linesToWrite = []
+    lines = read(path)
+    for line in lines:
+        if line.strip() == oldLine.strip():
+            linesToWrite.append(newLine+'\n')
+        else:
+            linesToWrite.append(line.strip()+'\n')
+    write(path,linesToWrite)
 
 def append_line(path, line, backup=True, if_not_present=False):
     """ Append the supplied line to the given path.  A backup will
