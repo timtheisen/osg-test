@@ -48,7 +48,7 @@ class TestMisc(unittest.TestCase):
             core.skip('running on 32-bit')
             return
 
-        cmdbase = ['repoquery', '--whatprovides']
+        cmdbase = ['repoquery']
 
         # Find the 32-bit lfc-python rpm
         stdout, _, _ = core.check_system(cmdbase + ['lfc-python.i386'], 'lfc-python multilib (32bit)')
