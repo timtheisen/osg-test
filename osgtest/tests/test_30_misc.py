@@ -48,7 +48,9 @@ class TestMisc(unittest.TestCase):
             core.skip('running on 32-bit')
             return
 
-        cmdbase = ['repoquery']
+        cmdbase = ['repoquery', '--plugins']
+        for repo in core.options.extrarepos:
+            cmdbase.append('--enablerepo=%s' % repo)
 
         # Find the 32-bit lfc-python rpm
         stdout, _, _ = core.check_system(cmdbase + ['lfc-python.i386'], 'lfc-python multilib (32bit)')
