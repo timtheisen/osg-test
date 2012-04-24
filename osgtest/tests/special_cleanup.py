@@ -9,22 +9,7 @@ import unittest
 
 class TestCleanup(unittest.TestCase):
 
-    def test_01_remove_test_user(self):
-        files.restore(core.config['system.mapfile'])
-
-        username = core.options.username
-        password_entry = pwd.getpwnam(username)
-        globus_dir = os.path.join(password_entry.pw_dir, '.globus')
-
-        command = ('userdel', username)
-        core.check_system(command, 'Remove user %s' % (username))
-
-        files.remove(os.path.join(globus_dir, 'usercert.pem'))
-        files.remove(os.path.join(globus_dir, 'userkey.pem'))
-        files.remove(os.path.join('/var/spool/mail', username))
-        shutil.rmtree(password_entry.pw_dir)
-
-    def test_02_remove_packages(self):
+    def test_01_remove_packages(self):
         if (('install.preinstalled' not in core.state) or
             (len(core.state['install.preinstalled']) == 0)):
             core.skip('no original list')
@@ -81,3 +66,18 @@ class TestCleanup(unittest.TestCase):
         package_count = len(rpm_erase_list)
         command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
         core.check_system(command, 'Remove %d packages' % (package_count))
+
+    def test_02_remove_test_user(self):
+        files.restore(core.config['system.mapfile'])
+
+        username = core.options.username
+        password_entry = pwd.getpwnam(username)
+        globus_dir = os.path.join(password_entry.pw_dir, '.globus')
+
+        command = ('userdel', username)
+        core.check_system(command, 'Remove user %s' % (username))
+
+        files.remove(os.path.join(globus_dir, 'usercert.pem'))
+        files.remove(os.path.join(globus_dir, 'userkey.pem'))
+        files.remove(os.path.join('/var/spool/mail', username))
+        shutil.rmtree(password_entry.pw_dir)
