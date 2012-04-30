@@ -9,6 +9,8 @@ import unittest
 class TestUser(unittest.TestCase):
 
     def test_01_add_user(self):
+        core.state['general.user_added'] = False
+
         # Bail out if this step is not needed
         if not core.options.adduser:
             core.skip('not requested')
@@ -25,9 +27,9 @@ class TestUser(unittest.TestCase):
         home_dir = core.config['user.home']
         if not os.path.isdir(home_dir):
             os.mkdir(home_dir)
-        command = ('useradd', '--base-dir', home_dir, '-n',
-                   '--shell', '/bin/sh', core.options.username)
+        command = ('useradd', '--base-dir', home_dir, '-n', '--shell', '/bin/sh', core.options.username)
         core.check_system(command, 'Add user %s' % (core.options.username))
+        core.state['general.user_added'] = True
 
         # Set up directories
         user = pwd.getpwnam(core.options.username)
@@ -44,22 +46,30 @@ class TestUser(unittest.TestCase):
         shutil.copy2('/usr/share/osg-test/userkey.pem', globus_dir)
         os.chmod(os.path.join(globus_dir, 'usercert.pem'), 0644)
         os.chmod(os.path.join(globus_dir, 'userkey.pem'), 0400)
-        os.chown(os.path.join(globus_dir, 'usercert.pem'),
-                 user.pw_uid, user.pw_gid)
-        os.chown(os.path.join(globus_dir, 'userkey.pem'),
-                 user.pw_uid, user.pw_gid)
+        os.chown(os.path.join(globus_dir, 'usercert.pem'), user.pw_uid, user.pw_gid)
+        os.chown(os.path.join(globus_dir, 'userkey.pem'), user.pw_uid, user.pw_gid)
 
     def test_02_user(self):
-        password_entry = pwd.getpwnam(core.options.username)
-        self.assert_(password_entry is not None,
-                     "The user '%s' does not exist" % core.options.username)
+        if not (core.options.runtests or core.options.adduser):
+            core.skip('no user needed')
+            return
+        try:
+            password_entry = pwd.getpwnam(core.options.username)
+        except KeyError, e:
+            self.fail("User '%s' should exist but does not" % core.options.username)
+        self.assert_(password_entry.pw_dir != '/', "User '%s' has home directory at '/'" % (core.options.username))
         self.assert_(os.path.isdir(password_entry.pw_dir),
-                     "The user '%s' does not have a home directory at '%s'" %
-                     (core.options.username, password_entry.pw_dir))
+                     "User '%s' missing a home directory at '%s'" % (core.options.username, password_entry.pw_dir))
 
     def test_03_install_mapfile(self):
-        pwd_entry = pwd.getpwnam(core.options.username)
+        try:
+            pwd_entry = pwd.getpwnam(core.options.username)
+        except KeyError:
+            core.skip('no user')
+            return
+        if pwd_entry.pw_dir == '/':
+            core.skip('no user home dir')
+            return
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, user_cert_issuer = core.certificate_info(cert_path)
-        files.write(core.config['system.mapfile'],
-                    '"%s" %s\n' % (user_dn, pwd_entry.pw_name))
+        files.append_line(core.config['system.mapfile'], '"%s" %s\n' % (user_dn, pwd_entry.pw_name))

@@ -85,11 +85,13 @@ def append_line(path, line, backup=True, if_not_present=False):
     be made by default.  If the lines should not be added if they are
     already present in the file pass if_not_present=True """
 
-    old_contents = read(path)
+    if os.path.exists(path):
+        old_contents = read(path)
+    else:
+        old_contents = []
 
-    if if_not_present:
-        if line in old_contents:
-            return
+    if if_not_present and (line in old_contents):
+        return
 
     new_contents = old_contents + [line]
     write(path, new_contents, backup=backup)

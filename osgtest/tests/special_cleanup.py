@@ -67,15 +67,20 @@ class TestCleanup(unittest.TestCase):
         command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
         core.check_system(command, 'Remove %d packages' % (package_count))
 
-    def test_02_remove_test_user(self):
+    def test_02_restore_mapfile(self):
         files.restore(core.config['system.mapfile'])
+
+    def test_03_remove_test_user(self):
+        if not core.state['general.user_added']:
+            core.skip('did not add user')
+            return
 
         username = core.options.username
         password_entry = pwd.getpwnam(username)
         globus_dir = os.path.join(password_entry.pw_dir, '.globus')
 
         command = ('userdel', username)
-        core.check_system(command, 'Remove user %s' % (username))
+        core.check_system(command, "Remove user '%s'" % (username))
 
         files.remove(os.path.join(globus_dir, 'usercert.pem'))
         files.remove(os.path.join(globus_dir, 'userkey.pem'))
