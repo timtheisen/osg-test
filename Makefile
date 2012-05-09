@@ -75,9 +75,6 @@ ifneq ($(strip $(DIST_DIR_PREFIX)),) # avoid evil
 endif
 
 install:
-ifeq ($(strip $(DESTDIR)),)
-	@echo "Error: make install requires DESTDIR to be defined"
-else
 	mkdir -p $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	install -p -m 0755 $(SBIN_FILES) $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
@@ -93,7 +90,6 @@ else
 	install -p -m 0644 $(PYTHON_LIB_FILES) $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_LIB_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_TEST_DIR)
 	install -p -m 0644 $(PYTHON_TEST_FILES) $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_TEST_DIR)
-endif
 
 $(TARBALL_NAME): $(DIST_FILES)
 	$(eval TEMP_DIR := $(shell mktemp -d -p . $(DIST_DIR_PREFIX)XXXXXXXXXX))
