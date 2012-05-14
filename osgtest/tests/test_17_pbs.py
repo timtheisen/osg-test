@@ -80,13 +80,11 @@ set server scheduling=true
             core.skip('pbs server apparently running')
             return
     
-        command = ('pbs_server', '-f', '-t', 'create')
-        stdout, _, fail = core.check_system(command, 'Clear pbs server config')
         # add the local node as a compute node
         files.write("/var/torque/server_priv/nodes",
                     "localhost np=1\n",
                     backup=True) 
-        command = ('service', 'pbs_server', 'restart')
+        command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(os.path.exists(core.config['torque.pbs-lockfile']),

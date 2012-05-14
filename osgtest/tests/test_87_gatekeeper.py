@@ -20,3 +20,17 @@ class TestStopGatekeeper(unittest.TestCase):
         self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(not os.path.exists(core.config['globus.gk-lockfile']),
                      'Globus gatekeeper run lock file still present')
+
+    def test_02_stop_seg(self):
+        if not core.rpm_is_installed('globus-scheduler-event-generator-progs'):
+            core.skip('Globus SEG not installed')
+            return
+        if core.state['globus.started-seg'] == False:
+            core.skip('SEG apparently running')
+            return
+        command = ('service', 'globus-scheduler-event-generator', 'stop')
+        stdout, _, fail = core.check_system(command, 'Start Globus SEG')
+        self.assert_(stdout.find('FAILED') == -1, fail)
+        self.assert_(not os.path.exists(core.config['globus.seg-lockfile']),
+                     'Globus SEG run lock file still present')
+        core.state['globus.started-seg'] = False
