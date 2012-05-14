@@ -1,15 +1,17 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import unittest
 
-class TestStopCondor(unittest.TestCase):
+class TestStopPBS(unittest.TestCase):
 
     def __rpms_present(self):
       """
       Check to make sure needed rpms are installed
       """
       rpm_list = ['torque-mom',
-                  'torque-server']
+                  'torque-server',
+                  'torque-scheduler']
       for rpm in rpm_list:
         if core.missing_rpm(rpm):
           return False
@@ -19,7 +21,7 @@ class TestStopCondor(unittest.TestCase):
         if not self.__rpms_present():
             return
         if core.state['torque.pbs-mom-running'] == False:
-            core.skip('did not start server')
+            core.skip('did not start pbs mom server')
             return
 
         command = ('service', 'pbs_mom', 'stop')
@@ -34,7 +36,7 @@ class TestStopCondor(unittest.TestCase):
         if not self.__rpms_present():
             return
         if core.state['torque.pbs-server-running'] == False:
-            core.skip('did not start server')
+            core.skip('did not start pbs server')
             return
 
         command = ('service', 'pbs_server', 'stop')
@@ -44,3 +46,19 @@ class TestStopCondor(unittest.TestCase):
                      'PBS server run lock file still present')
 
         core.state['torque.pbs-server-running'] = False
+
+    def test_03_stop_scheduler(self):
+        if not self.__rpms_present():
+            return
+        if core.state['torque.pbs-sched-running'] == False:
+            core.skip('did not start pbs scheduler')
+            return
+
+        command = ('service', 'pbs_sched', 'stop')
+        stdout, _, fail = core.check_system(command, 'Stop pbs scheduler')
+        self.assert_(stdout.find('error') == -1, fail)
+        self.assert_(not os.path.exists(core.config['torque.sched-lockfile']),
+                     'PBS server run lock file still present')
+
+        files.restore('/var/torque/server_priv/nodes')
+        core.state['torque.pbs-sched-running'] = False

@@ -1,29 +1,45 @@
 import os
-import osgtest.library.core as core
 import unittest
+
+import osgtest.library.core as core
+import osgtest.library.files as files
 
 class TestStartPBS(unittest.TestCase):
 
+    pbs_config = """
+create queue batch queue_type=execution
+set queue batch started=true
+set queue batch enabled=true
+set queue batch resources_default.nodes=1
+set queue batch resources_default.walltime=3600
+set server default_queue=batch
+set server keep_completed = 600
+set server job_nanny = True
+set server scheduling=true
+"""
+
     def __rpms_present(self):
-      """
-      Check to make sure needed rpms are installed
-      """
-      rpm_list = ['torque-mom',
-                  'torque-server']
-      for rpm in rpm_list:
-        if core.missing_rpm(rpm):
-          return False
-      return True
+        """
+        Check to make sure needed rpms are installed
+        """
+        rpm_list = ['torque-mom',
+                    'torque-server',
+                    'torque-scheduler',
+                    'torque-client']
+        for rpm in rpm_list:
+            if core.missing_rpm(rpm):
+                return False
+        return True
 
     def test_01_start_mom(self):
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
-        core.state['torque.mom-daemon'] = False
+        core.state['torque.pbs-mom-running'] = False
 
         if not self.__rpms_present():
             core.skip('pbs not installed')
             return
         if os.path.exists(core.config['torque.mom-lockfile']):
-            core.skip('apparently running')
+            core.skip('pbs mom apparently running')
             return
 
         command = ('service', 'pbs_mom', 'start')
@@ -31,22 +47,46 @@ class TestStartPBS(unittest.TestCase):
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(os.path.exists(core.config['torque.mom-lockfile']),
                      'PBS mom run lock file missing')
-        core.state['torque.mom-daemon'] = True
         core.state['torque.pbs-mom-running'] = True
 
 
-    def test_02_start_pbs(self):
+    def test_02_start_pbs_sched(self):
+        core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
+        core.state['torque.pbs-sched-running'] = False
+
+        if not self.__rpms_present():
+          core.skip('pbs not installed')
+          return
+        if os.path.exists(core.config['torque.sched-lockfile']):
+          core.skip('pbs scheduler apparently running')
+          return
+    
+        command = ('service', 'pbs_sched', 'start')
+        stdout, _, fail = core.check_system(command, 'Start pbs scheduler daemon')
+        self.assert_(stdout.find('error') == -1, fail)
+        self.assert_(os.path.exists(core.config['torque.sched-lockfile']),
+                     'pbs sched run lock file missing')
+        core.state['torque.pbs-sched-running'] = True
+
+    def test_03_start_pbs(self):
         core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
-        core.state['torque.pbs-server'] = False
+        core.state['torque.pbs-server-running'] = False
+        core.state['torque.pbs-configured'] = False
 
         if not self.__rpms_present():
             core.skip('pbs not installed')
             return
         if os.path.exists(core.config['torque.pbs-lockfile']):
-            core.skip('apparently running')
+            core.skip('pbs server apparently running')
             return
-
-        command = ('service', 'pbs_server', 'start')
+    
+        command = ('pbs_server', '-f', '-t', 'create')
+        stdout, _, fail = core.check_system(command, 'Clear pbs server config')
+        # add the local node as a compute node
+        files.write("/var/torque/server_priv/nodes",
+                    "localhost np=1\n",
+                    backup=True) 
+        command = ('service', 'pbs_server', 'restart')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(os.path.exists(core.config['torque.pbs-lockfile']),
@@ -54,3 +94,7 @@ class TestStartPBS(unittest.TestCase):
         core.state['torque.pbs-server'] = True
         core.state['torque.pbs-server-running'] = True
 
+        core.check_system("echo '%s' | qmgr" % self.pbs_config, 
+                          "Configuring pbs server",
+                          shell = True)
+        core.state['torque.pbs-configured'] = True
