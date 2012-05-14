@@ -43,7 +43,7 @@ class TestStartTomcat(unittest.TestCase):
         line = 'JAVA_ENDORSED_DIRS="${JAVA_ENDORSED_DIRS+$JAVA_ENDORSED_DIRS:}/usr/share/voms-admin/endorsed"\n'
         if old_contents.find(line) == -1:
             new_contents = old_contents + "\n" + line
-        files.write(tomcat.conffile(), new_contents)
+            files.write(tomcat.conffile(), new_contents)
 
     def test_05_start_tomcat(self):
         if not core.rpm_is_installed(tomcat.pkgname()):
