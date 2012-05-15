@@ -95,10 +95,17 @@ class TestStartBestman(unittest.TestCase):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
            core.skip('Bestman not installed')
            return
-        orig_file = '/etc/bestman2/conf/bestman2.rc'
-        oldline = 'securePort=8443'
-        newline = 'securePort=10443'
-        files.replace(orig_file,oldline,newline)
+        config_file = '/etc/bestman2/conf/bestman2.rc'
+	env_file = '/etc/sysconfig/bestman2'
+        old_port = 'securePort=8443'
+        new_port = 'securePort=10443'
+        old_gridmap = 'GridMapFileName=/etc/bestman2/conf/grid-mapfile.empty'
+        new_gridmap = 'GridMapFileName=/etc/grid-security/grid-mapfile'
+	old_auth = 'BESTMAN_GUMS_ENABLED=yes'
+	new_auth = 'BESTMAN_GUMS_ENABLED=no'
+	files.replace(config_file,old_port,new_port)
+	files.replace(config_file,old_gridmap,new_gridmap)
+	files.replace(env_file,old_auth,new_auth)
     
     def test_06_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
