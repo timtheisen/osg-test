@@ -43,23 +43,11 @@ class TestStartBestman(unittest.TestCase):
             return
         if (os.path.exists(core.config['certs.bestmancert']) and
             os.path.exists(core.config['certs.bestmankey'])):
-            core.skip('Bestman cert exists')
             return
         self.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0644)
         self.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
 
-    def test_03_install_http_certs(self):
-        if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
-            core.skip('Bestman not installed')
-            return
-        if (os.path.exists(core.config['certs.httpcert']) and
-            os.path.exists(core.config['certs.httpkey'])):
-            core.skip('HTTP cert exists')
-            return
-        self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
-        self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
-
-    def test_04_modify_sudoers(self):
+    def test_03_modify_sudoers(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
            core.skip('Bestman not installed')
            return
@@ -91,7 +79,7 @@ class TestStartBestman(unittest.TestCase):
 	if not had_srm_cmd_line or not had_requiretty_commented:
            files.write(orig_file, new_contents)
 
-    def test_05_modify_bestman_conf(self):
+    def test_04_modify_bestman_conf(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
            core.skip('Bestman not installed')
            return
@@ -107,7 +95,7 @@ class TestStartBestman(unittest.TestCase):
 	files.replace(config_file,old_gridmap,new_gridmap)
 	files.replace(env_file,old_auth,new_auth)
     
-    def test_06_start_bestman(self):
+    def test_05_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
         core.state['bestman.started-server'] = False
 
