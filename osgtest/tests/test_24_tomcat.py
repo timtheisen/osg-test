@@ -25,7 +25,7 @@ class TestStartTomcat(unittest.TestCase):
         old_contents = files.read(server_xml_path, True)
         pattern = re.compile(r'crlRequired=".*?"', re.IGNORECASE)
         new_contents = pattern.sub('crlRequired="false"', old_contents)
-        files.write(server_xml_path, new_contents)
+        files.write(server_xml_path, new_contents, owner='tomcat')
 
     def test_03_record_vomsadmin_start(self):
         core.state['voms.webapp-log-stat'] = None
@@ -43,7 +43,7 @@ class TestStartTomcat(unittest.TestCase):
         line = 'JAVA_ENDORSED_DIRS="${JAVA_ENDORSED_DIRS+$JAVA_ENDORSED_DIRS:}/usr/share/voms-admin/endorsed"\n'
         if old_contents.find(line) == -1:
             new_contents = old_contents + "\n" + line
-            files.write(tomcat.conffile(), new_contents)
+            files.write(tomcat.conffile(), new_contents, owner='tomcat')
 
     def test_05_start_tomcat(self):
         if not core.rpm_is_installed(tomcat.pkgname()):

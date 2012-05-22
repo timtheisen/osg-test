@@ -13,7 +13,7 @@ class TestStopGatekeeper(unittest.TestCase):
             core.skip('did not start server')
             return
 
-        files.restore(core.config['jobmanager-config'])
+        files.restore(core.config['jobmanager-config'], 'globus')
 
         command = ('service', 'globus-gatekeeper', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop Globus gatekeeper')

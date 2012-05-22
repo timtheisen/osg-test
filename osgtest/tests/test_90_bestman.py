@@ -1,7 +1,8 @@
 import os
+import unittest
+
 import osgtest.library.core as core
 import osgtest.library.files as files
-import unittest
 
 class TestStopBestman(unittest.TestCase):
 
@@ -20,5 +21,4 @@ class TestStopBestman(unittest.TestCase):
                      'Bestman server PID file still present')
 
     def test_02_deconfig_sudoers(self):
-        files.restore('/etc/sudoers')
-
+        files.restore('/etc/sudoers', 'bestman')

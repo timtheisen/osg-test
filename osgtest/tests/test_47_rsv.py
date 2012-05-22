@@ -79,11 +79,8 @@ class TestRSV(unittest.TestCase):
 
         # Register the cert in the gridmap file
         cert_subject = core.certificate_info(core.config['rsv.certfile'])[0]
+        files.append(core.config['system.mapfile'], '"%s" rsv' % (cert_subject), owner='rsv')
 
-        # TODO - should we restore the grid-mapfile after RSV tests finish?
-        files.append_line('/etc/grid-security/grid-mapfile', '"%s" rsv' % (cert_subject))
-        return
-    
 
     def test_004_load_default_config(self):
         if core.missing_rpm('rsv'):

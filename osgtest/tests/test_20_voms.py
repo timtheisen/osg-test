@@ -165,19 +165,15 @@ class TestStartVOMS(unittest.TestCase):
             return
 
         hostname = socket.getfqdn()
-        host_dn, host_issuer = \
-            core.certificate_info(core.config['certs.hostcert'])
-        files.write('/etc/vomses',
-                    ('"%s" "%s" "%d" "%s" "%s"\n' %
-                     (core.config['voms.vo'], hostname, 15151, host_dn,
-                      core.config['voms.vo'])))
+        host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
+        contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
+                    (core.config['voms.vo'], hostname, 15151, host_dn, core.config['voms.vo']))
+        files.write('/etc/vomses', contents, owner='voms')
 
         if not os.path.isdir(core.config['voms.lsc-dir']):
             os.mkdir(core.config['voms.lsc-dir'])
-        vo_lsc_path = os.path.join(core.config['voms.lsc-dir'],
-                                   hostname + '.lsc')
-        files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'),
-                    backup=False)
+        vo_lsc_path = os.path.join(core.config['voms.lsc-dir'], hostname + '.lsc')
+        files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False)
         os.chmod(vo_lsc_path, 0644)
 
         core.system('ls -ldF /etc/*vom*', shell=True)

@@ -18,8 +18,9 @@ class TestStartGatekeeper(unittest.TestCase):
 
         # DEBUG: Set up gatekeeper debugging
         core.config['jobmanager-config'] = '/etc/globus/globus-gram-job-manager.conf'
-        files.append_line(core.config['jobmanager-config'], '-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n', if_not_present=True)
-        files.append_line(core.config['jobmanager-config'], '-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n', if_not_present=True)
+        conf_path = core.config['jobmanager-config']
+        files.append(conf_path, '-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n', owner='globus')
+        files.append(conf_path, '-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n', backup=False)
 
         if not os.path.exists('/var/log/globus'):
             os.mkdir('/var/log/globus')

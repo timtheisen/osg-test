@@ -81,9 +81,7 @@ set server scheduling=true
             return
     
         # add the local node as a compute node
-        files.write("/var/torque/server_priv/nodes",
-                    "localhost np=1\n",
-                    backup=True) 
+        files.write('/var/torque/server_priv/nodes', 'localhost np=1\n', owner='pbs')
         command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)

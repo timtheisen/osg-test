@@ -44,7 +44,7 @@ class TestStopVOMS(unittest.TestCase):
     def test_02_restore_vomses(self):
         if os.path.exists(core.config['voms.lsc-dir']):
             shutil.rmtree(core.config['voms.lsc-dir'])
-        files.restore('/etc/vomses')
+        files.restore('/etc/vomses', 'voms')
 
     def test_03_remove_vo(self):
         if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):

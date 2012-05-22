@@ -32,7 +32,7 @@ class TestStopTomcat(unittest.TestCase):
     def test_03_deconfig_tomcat_properties(self):
         if core.missing_rpm(tomcat.pkgname(), 'emi-trustmanager-tomcat'):
             return
-        files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'))
+        files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'tomcat')
 
     def test_04_remove_trustmanager(self):
         if core.missing_rpm(tomcat.pkgname(), 'emi-trustmanager-tomcat'):
@@ -65,5 +65,5 @@ class TestStopTomcat(unittest.TestCase):
         if core.missing_rpm(tomcat.pkgname()):
             return
 
-        files.restore(tomcat.conffile())
+        files.restore(tomcat.conffile(), 'tomcat')
 

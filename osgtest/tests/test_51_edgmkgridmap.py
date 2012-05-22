@@ -13,10 +13,9 @@ class TestEdgMkGridmap(unittest.TestCase):
         if core.missing_rpm('edg-mkgridmap', 'voms-server'):
             return
 
-        files.write(core.config['edg.conf'],
-                    ('group vomss://%s:8443/voms/%s %s\n' %
-                     (socket.getfqdn(), core.config['voms.vo'],
-                      core.options.username)))
+        contents = ('group vomss://%s:8443/voms/%s %s\n' %
+                    (socket.getfqdn(), core.config['voms.vo'], core.options.username))
+        files.write(core.config['edg.conf'], contents, owner='edg')
         core.system(('cat', core.config['edg.conf']))
 
     def test_02_edg_mkgridmap(self):
@@ -48,4 +47,4 @@ class TestEdgMkGridmap(unittest.TestCase):
                        'EDG_MKGRIDMAP_LOG', 'USER_VO_MAP', 'GRIDMAP'):
             files.remove(os.environ[envvar])
             del os.environ[envvar]
-        files.restore(core.config['edg.conf'])
+        files.restore(core.config['edg.conf'], 'edg')

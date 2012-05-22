@@ -6,18 +6,10 @@ import tempfile
 
 import osgtest.library.core as core
 
-_backup_suffix = '.osgtest-backup'
-_files = {}
 
-def _record_path(path):
-    if path in _files:
-        _files[path] += 1
-    else:
-        _files[path] = 1
+_backup_directory = '/usr/share/osg-test/backups'
+_backups = {}
 
-def _remove_path(path):
-    if path in _files:
-        del _files[path]
 
 def read(path, as_single_string=False):
     """Read the file at the path and return its contents."""
@@ -29,19 +21,45 @@ def read(path, as_single_string=False):
     the_file.close()
     return contents
 
-def write(path, contents, backup=True):
+
+def preserve(path, owner):
+    """Backup the file at path and tag it with the given owner."""
+    if not os.path.exists(path):
+        return
+    if owner is None:
+        raise ValueError('Must have owner string')
+
+    backup_id = (path, owner)
+    if _backups.has_key(backup_id):
+        raise ValueError("Already have a backup of '%s' for '%s'" % (path, owner))
+
+    backup_path = os.path.join(_backup_directory, os.path.basename(path) + '#' + owner)
+    if os.path.exists(backup_path):
+        raise ValueError("Backup already exists at '%s'" % (backup_path))
+
+    if not os.path.isdir(_backup_directory):
+        os.mkdir(_backup_directory)
+    shutil.copy2(path, backup_path)
+    _backups[backup_id] = backup_path
+
+
+def write(path, contents, owner=None, backup=True):
     """Write the contents to a file at the path."""
+
+    # The default arguments are invalid: Either "backup" must be false or the
+    # "owner" must be specified.
+    if (owner is None) and backup:
+        raise ValueError('Must specify an owner or backup=False')
+
     # Write temporary file
-    temp_fd, temp_path = tempfile.mkstemp(dir=os.path.dirname(path),
-                                          prefix=os.path.basename(path),
-                                          suffix='.osgtest-new')
+    temp_fd, temp_path = tempfile.mkstemp(prefix=os.path.basename(path) + '.', suffix='.osgtest-new',
+                                          dir=os.path.dirname(path))
     temp_file = os.fdopen(temp_fd, 'w')
     if isinstance(contents, list) or isinstance(contents, tuple):
         temp_file.writelines(contents)
     else:
         temp_file.write(contents)
     temp_file.close()
-    _record_path(temp_path)
 
     # Copy ownership and permissions
     if os.path.exists(path):
@@ -50,65 +68,63 @@ def write(path, contents, backup=True):
         os.chmod(temp_path, old_stat.st_mode)
 
     # Back up existing file
-    if os.path.exists(path) and backup:
-        # We don't want to overwrite an existing backup.  Someday we might
-        # have sequential backups, but for now we just want to save the state
-        # of a file as it first exists (for most files this will be as it was
-        # before we started running tests)
-        backup_path = path + _backup_suffix
-        if not os.path.exists(backup_path):
-            shutil.copy2(path, backup_path)
-            _record_path(backup_path)
+    if backup:
+        preserve(path, owner)
 
     # Atomically move temporary file into final location
     os.rename(temp_path, path)
-    _record_path(path)
-    _remove_path(temp_path)
 
     core.log_message('Wrote %d bytes to %s' % (os.stat(path).st_size, path))
 
-def replace(path, oldLine, newLine):
-    """ Replace an old line with a new line in given path
-   Uses the existing read/write functions """
 
-    linesToWrite = []
+def replace(path, old_line, new_line, owner=None, backup=True):
+    """Replace an old line with a new line in given path."""
+    lines_to_write = []
     lines = read(path)
     for line in lines:
-        if line.strip() == oldLine.strip():
-            linesToWrite.append(newLine+'\n')
+        if line.rstrip('\n') == old_line.rstrip('\n'):
+            lines_to_write.append(new_line + '\n')
         else:
-            linesToWrite.append(line.strip()+'\n')
-    write(path,linesToWrite)
+            lines_to_write.append(line.rstrip('\n') + '\n')
+    write(path, lines_to_write, owner, backup)
 
-def append_line(path, line, backup=True, if_not_present=False):
-    """ Append the supplied line to the given path.  A backup will
-    be made by default.  If the lines should not be added if they are
-    already present in the file pass if_not_present=True """
 
+def append(path, contents, force=False, owner=None, backup=True):
+    """Append the contents to the given file.
+
+    Normally, if the contents already exist in the file, no action is taken.
+    However, if the force argument is True, then the extra contents are always
+    appended.  The owner and backup arguments have the same meaning as for the
+    write() method.
+    """
     if os.path.exists(path):
         old_contents = read(path)
     else:
         old_contents = []
 
-    if if_not_present and (line in old_contents):
+    if (not force) and (contents in old_contents):
         return
 
-    new_contents = old_contents + [line]
-    write(path, new_contents, backup=backup)
+    new_contents = old_contents + [contents]
+    write(path, new_contents, owner=owner, backup=backup)
     return
 
 
-def restore(path):
+def restore(path, owner):
     """Restores the path to its original state."""
-    if path in _files and os.path.exists(path):
+    backup_id = (path, owner)
+    if backup_id not in _backups:
+        raise ValueError("No backup of '%s' for '%s'" % (path, owner))
+
+    if os.path.exists(path):
         os.remove(path)
-        _remove_path(path)
         core.log_message('Removed test %s' % (path))
-    backup_path = path + _backup_suffix
-    if backup_path in _files and os.path.exists(backup_path):
+    backup_path = _backups[backup_id]
+    if os.path.exists(backup_path):
         shutil.move(backup_path, path)
-        _remove_path(backup_path)
         core.log_message('Restored original %s' % (path))
+    del _backups[backup_id]
+
 
 def remove(path):
     """Remove the path, which could be a file, empty directory, or file glob."""

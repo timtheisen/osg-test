@@ -51,8 +51,8 @@ class TestStartBestman(unittest.TestCase):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
            core.skip('Bestman not installed')
            return
-        orig_file = '/etc/sudoers'
-        contents = files.read(orig_file)
+        sudoers_path = '/etc/sudoers'
+        contents = files.read(sudoers_path)
         srm_cmd = 'Cmnd_Alias SRM_CMD = /bin/rm, /bin/mkdir, /bin/rmdir, /bin/mv, /bin/cp, /bin/ls'
         srm_usr = 'Runas_Alias SRM_USR = ALL, !root'
         bestman_perm = 'bestman   ALL=(SRM_USR) NOPASSWD: SRM_CMD'
@@ -77,13 +77,13 @@ class TestStartBestman(unittest.TestCase):
            new_contents += srm_usr+'\n'
            new_contents += bestman_perm+'\n'
 	if not had_srm_cmd_line or not had_requiretty_commented:
-           files.write(orig_file, new_contents)
+           files.write(sudoers_path, new_contents, owner='bestman')
 
     def test_04_modify_bestman_conf(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
            core.skip('Bestman not installed')
            return
-        config_file = '/etc/bestman2/conf/bestman2.rc'
+        bestman_rc_path = '/etc/bestman2/conf/bestman2.rc'
 	env_file = '/etc/sysconfig/bestman2'
         old_port = 'securePort=8443'
         new_port = 'securePort=10443'
@@ -91,9 +91,9 @@ class TestStartBestman(unittest.TestCase):
         new_gridmap = 'GridMapFileName=/etc/grid-security/grid-mapfile'
 	old_auth = 'BESTMAN_GUMS_ENABLED=yes'
 	new_auth = 'BESTMAN_GUMS_ENABLED=no'
-	files.replace(config_file,old_port,new_port)
-	files.replace(config_file,old_gridmap,new_gridmap)
-	files.replace(env_file,old_auth,new_auth)
+	files.replace(bestman_rc_path, old_port, new_port, backup=False)
+	files.replace(bestman_rc_path, old_gridmap, new_gridmap, backup=False)
+	files.replace(env_file, old_auth, new_auth, backup=False)
     
     def test_05_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'

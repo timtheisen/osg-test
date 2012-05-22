@@ -76,4 +76,4 @@ glexec:
 verifyproxy -> gridmapfile
 gridmapfile -> glexectracking
         """
-        files.write(path, contents, backup=True)
+        files.write(path, contents, owner='lcmaps')

@@ -72,5 +72,5 @@ class TestUser(unittest.TestCase):
             return
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, user_cert_issuer = core.certificate_info(cert_path)
-        files.append_line(core.config['system.mapfile'], '"%s" %s\n' % (user_dn, pwd_entry.pw_name))
+        files.append(core.config['system.mapfile'], '"%s" %s\n' % (user_dn, pwd_entry.pw_name), owner='user')
         os.chmod(core.config['system.mapfile'], 0644)

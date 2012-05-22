@@ -1,6 +1,8 @@
 import os
-import osgtest.library.core as core
 import unittest
+
+import osgtest.library.core as core
+import osgtest.library.files as files
 
 class TestStopRSV(unittest.TestCase):
 
@@ -18,3 +20,6 @@ class TestStopRSV(unittest.TestCase):
                      'RSV run lock file still present')
 
         core.state['rsv.running-service'] = False
+
+    def test_02_restore_config(self):
+        files.restore(core.config['system.mapfile'], 'rsv')
