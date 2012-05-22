@@ -24,24 +24,25 @@ def read(path, as_single_string=False):
 
 def preserve(path, owner):
     """Backup the file at path and tag it with the given owner."""
-    if not os.path.exists(path):
-        return
     if owner is None:
         raise ValueError('Must have owner string')
 
     backup_id = (path, owner)
-    if _backups.has_key(backup_id):
+    if _backups in backup_id:
         raise ValueError("Already have a backup of '%s' for '%s'" % (path, owner))
 
     backup_path = os.path.join(_backup_directory, os.path.basename(path) + '#' + owner)
     if os.path.exists(backup_path):
         raise ValueError("Backup already exists at '%s'" % (backup_path))
 
-    if not os.path.isdir(_backup_directory):
-        os.mkdir(_backup_directory)
-    shutil.copy2(path, backup_path)
-    _backups[backup_id] = backup_path
-
+    if os.path.exists(path):
+        if not os.path.isdir(_backup_directory):
+            os.mkdir(_backup_directory)
+        shutil.copy2(path, backup_path)
+        _backups[backup_id] = backup_path
+        core.log_message("Backed up '%s' as '%s'" % (path, backup_path))
+    else:
+        _backups[backup_id] = None
 
 def write(path, contents, owner=None, backup=True):
     """Write the contents to a file at the path."""
@@ -120,7 +121,7 @@ def restore(path, owner):
         os.remove(path)
         core.log_message('Removed test %s' % (path))
     backup_path = _backups[backup_id]
-    if os.path.exists(backup_path):
+    if (backup_path is not None) and os.path.exists(backup_path):
         shutil.move(backup_path, path)
         core.log_message('Restored original %s' % (path))
     del _backups[backup_id]
