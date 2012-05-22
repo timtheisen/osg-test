@@ -8,7 +8,6 @@ class TestStopBestman(unittest.TestCase):
 
     def test_01_stop_bestman(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
-            core.skip('not installed')
             return
         if core.state['bestman.started-server'] == False:
             core.skip('did not start server')
@@ -21,4 +20,6 @@ class TestStopBestman(unittest.TestCase):
                      'Bestman server PID file still present')
 
     def test_02_deconfig_sudoers(self):
+        if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
+            return
         files.restore('/etc/sudoers', 'bestman')

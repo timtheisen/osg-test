@@ -1,13 +1,14 @@
 import glob
 import os
-import osgtest.library.core as core
-import osgtest.library.files as files
 import pwd
 import re
 import shutil
 import socket
 import time
 import unittest
+
+import osgtest.library.core as core
+import osgtest.library.files as files
 
 class TestStopVOMS(unittest.TestCase):
 
@@ -41,10 +42,15 @@ class TestStopVOMS(unittest.TestCase):
         self.assert_(not os.path.exists(core.config['voms.lock-file']),
                      'VOMS server lock file still exists')
 
+
     def test_02_restore_vomses(self):
+        if core.missing_rpm('voms-admin-server'):
+            return
+
         if os.path.exists(core.config['voms.lsc-dir']):
             shutil.rmtree(core.config['voms.lsc-dir'])
         files.restore('/etc/vomses', 'voms')
+
 
     def test_03_remove_vo(self):
         if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):
@@ -64,8 +70,9 @@ class TestStopVOMS(unittest.TestCase):
         command = ('mysql', '-u', 'root', '-e', mysql_statement)
         core.check_system(command, 'Drop MYSQL VOMS database')
 
-    # Do the keys first, so that the directories will be empty for the certs.
+
     def test_04_remove_certs(self):
+        # Do the keys first, so that the directories will be empty for the certs.
         self.remove_cert('certs.vomskey')
         self.remove_cert('certs.vomscert')
         self.remove_cert('certs.httpkey')

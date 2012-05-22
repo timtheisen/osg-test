@@ -68,7 +68,8 @@ class TestCleanup(unittest.TestCase):
         core.check_system(command, 'Remove %d packages' % (package_count))
 
     def test_02_restore_mapfile(self):
-        files.restore(core.config['system.mapfile'], 'user')
+        if core.state['system.wrote_mapfile']:
+            files.restore(core.config['system.mapfile'], 'user')
 
     def test_03_remove_test_user(self):
         if not core.state['general.user_added']:

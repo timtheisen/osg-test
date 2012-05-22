@@ -10,7 +10,7 @@ class TestStopRSV(unittest.TestCase):
         if core.missing_rpm('rsv'):
             return
         if core.state['rsv.started-service'] == False:
-            core.skip('did not start servive')
+            core.skip('did not start service')
             return
 
         command = ('service', 'rsv', 'stop')
@@ -22,4 +22,6 @@ class TestStopRSV(unittest.TestCase):
         core.state['rsv.running-service'] = False
 
     def test_02_restore_config(self):
+        if core.missing_rpm('rsv'):
+            return
         files.restore(core.config['system.mapfile'], 'rsv')
