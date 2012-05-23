@@ -5,20 +5,12 @@ import unittest
 
 class TestStopPBS(unittest.TestCase):
 
-    def __rpms_present(self):
-      """
-      Check to make sure needed rpms are installed
-      """
-      rpm_list = ['torque-mom',
-                  'torque-server',
-                  'torque-scheduler']
-      for rpm in rpm_list:
-        if core.missing_rpm(rpm):
-          return False
-      return True
+    required_rpms = ['torque-mom',
+                     'torque-server',
+                     'torque-scheduler']
 
     def test_01_stop_mom(self):
-        if not self.__rpms_present():
+        if core.missing_rpm(*self.required_rpms):
             return
         if core.state['torque.pbs-mom-running'] == False:
             core.skip('did not start pbs mom server')
@@ -33,7 +25,7 @@ class TestStopPBS(unittest.TestCase):
         core.state['torque.pbs-mom-running'] = False
 
     def test_02_stop_server(self):
-        if not self.__rpms_present():
+        if core.missing_rpm(*self.required_rpms):
             return
         if core.state['torque.pbs-server-running'] == False:
             core.skip('did not start pbs server')
@@ -48,7 +40,7 @@ class TestStopPBS(unittest.TestCase):
         core.state['torque.pbs-server-running'] = False
 
     def test_03_stop_scheduler(self):
-        if not self.__rpms_present():
+        if core.missing_rpm(*self.required_rpms):
             return
         if core.state['torque.pbs-sched-running'] == False:
             core.skip('did not start pbs scheduler')

@@ -8,20 +8,11 @@ sys.path.insert(0, pathname)
 
 class TestOSGConfigure(unittest.TestCase):
 
-    def __rpms_present(self):
-      """
-      Check to make sure needed rpms are installed
-      """
-      rpm_list = ['osg-configure',
-                  'osg-configure-tests']
-      for rpm in rpm_list:
-        if core.missing_rpm(rpm):
-          return False
-      return True
+    required_rpms = ['osg-configure',
+                     'osg-configure-tests']
 
     def test_01_version(self):
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
+        if core.missing_rpm(*self.required_rpms):
             return
         command = ('osg-configure', '--version')
         stdout = core.check_system(command, 'osg-configure version check')[0]
@@ -53,6 +44,8 @@ class TestOSGConfigure(unittest.TestCase):
     
     
     def test_02_cemon(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -65,6 +58,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import cemon unit test")
 
     def test_03_condor(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -77,6 +72,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import condor unit test")
 
     def test_04_configfile(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -89,6 +86,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import configfile unit test")
 
     def test_05_gip(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -101,6 +100,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import gip unit test")
 
     def test_06_gratia(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -113,6 +114,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import gratia unit test")
 
     def test_07_local_settings(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -125,6 +128,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import local settings unit test")
 
     def test_08_lsf(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -137,6 +142,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import lsf unit test")
 
     def test_09_managedfork(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -149,6 +156,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import managed fork unit test")
 
     def test_10_misc(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -161,6 +170,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import misc unit test")
 
     def test_11_monalisa(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -173,6 +184,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import monalisa unit test")
 
     def test_12_network(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -185,6 +198,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import network unit test")
 
     def test_13_pbs(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -197,6 +212,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import pbs unit test")
 
     def test_14_rsv(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -209,6 +226,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import rsv unit test")
 
     def test_15_sge(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -221,6 +240,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import sge unit test")
 
     def test_16_siteattributes(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -233,6 +254,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import site attributes unit test")
 
     def test_17_squid(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -245,6 +268,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import squid unit test")
 
     def test_18_storage(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -257,6 +282,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import storage unit test")
 
     def test_19_utilities(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -269,6 +296,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import utilities unit test")
 
     def test_20_validation(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return
@@ -281,6 +310,8 @@ class TestOSGConfigure(unittest.TestCase):
           self.fail("Can't import validation unit test")
 
     def test_21_xml_utilities(self):
+        if core.missing_rpm(*self.required_rpms):
+            return
         if not self.__rpms_present():
             core.skip('osg-configure not installed')
             return

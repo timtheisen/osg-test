@@ -1,5 +1,6 @@
 import os
 import unittest
+import re
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -17,6 +18,10 @@ set server keep_completed = 600
 set server job_nanny = True
 set server scheduling=true
 """
+    required_rpms = ['torque-mom',
+                     'torque-server', 
+                     'torque-scheduler',
+                     'torque-client']
 
     def __get_release(self):
         """
@@ -29,25 +34,11 @@ set server scheduling=true
         else:
             return matches.group(1)
 
-    def __rpms_present(self):
-        """
-        Check to make sure needed rpms are installed
-        """
-        rpm_list = ['torque-mom',
-                    'torque-server',
-                    'torque-scheduler',
-                    'torque-client']
-        for rpm in rpm_list:
-            if core.missing_rpm(rpm):
-                return False
-        return True
-
     def test_01_start_mom(self):
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
         core.state['torque.pbs-mom-running'] = False
 
-        if not self.__rpms_present():
-            core.skip('pbs not installed')
+        if core.missing_rpm(*self.required_rpms):
             return
         if os.path.exists(core.config['torque.mom-lockfile']):
             core.skip('pbs mom apparently running')
@@ -65,9 +56,8 @@ set server scheduling=true
         core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
         core.state['torque.pbs-sched-running'] = False
 
-        if not self.__rpms_present():
-          core.skip('pbs not installed')
-          return
+        if core.missing_rpm(*self.required_rpms):
+            return
         if os.path.exists(core.config['torque.sched-lockfile']):
           core.skip('pbs scheduler apparently running')
           return
@@ -90,15 +80,16 @@ set server scheduling=true
         else:
             core.skip('Distribution version not supported')
 
-        if not self.__rpms_present():
-            core.skip('pbs not installed')
+        if core.missing_rpm(*self.required_rpms):
             return
         if os.path.exists(core.config['torque.pbs-lockfile']):
             core.skip('pbs server apparently running')
             return
     
         # add the local node as a compute node
-        files.write('/var/torque/server_priv/nodes', 'localhost np=1\n', owner='pbs')
+        files.write(core.config['torque.pbs-nodes-file'],
+                    "localhost np=1\n",
+                    backup=True) 
         command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)
