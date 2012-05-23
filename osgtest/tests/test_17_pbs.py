@@ -18,6 +18,17 @@ set server job_nanny = True
 set server scheduling=true
 """
 
+    def __get_release(self):
+        """
+        Get release information
+        """
+        release = file('/etc/redhat-release').read()
+        matches = re.match('.*release (\d)\.\d', release)
+        if matches is None:
+            return None
+        else:
+            return matches.group(1)
+
     def __rpms_present(self):
         """
         Check to make sure needed rpms are installed
@@ -72,6 +83,12 @@ set server scheduling=true
         core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
         core.state['torque.pbs-server-running'] = False
         core.state['torque.pbs-configured'] = False
+        if self.__get_release() == '5':
+            core.config['torque.pbs-nodes-file'] = '/var/torque/server_priv/nodes'
+        elif self.__get_release() == '6':
+            core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
+        else:
+            core.skip('Distribution version not supported')
 
         if not self.__rpms_present():
             core.skip('pbs not installed')
