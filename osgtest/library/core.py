@@ -210,6 +210,9 @@ def missing_rpm(*packages):
 
     If any package is missing, list all missing packages in a skip() message.
     """
+    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
+        packages = packages[0]
+
     missing = []    
     for package in packages:
         if not rpm_is_installed(package):
