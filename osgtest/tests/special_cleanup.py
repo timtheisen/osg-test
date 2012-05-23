@@ -1,11 +1,12 @@
 import os
 import os.path
-import osgtest.library.core as core
-import osgtest.library.files as files
 import pwd
 import re
 import shutil
 import unittest
+
+import osgtest.library.core as core
+import osgtest.library.files as files
 
 class TestCleanup(unittest.TestCase):
 
@@ -67,9 +68,11 @@ class TestCleanup(unittest.TestCase):
         command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
         core.check_system(command, 'Remove %d packages' % (package_count))
 
+
     def test_02_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
             files.restore(core.config['system.mapfile'], 'user')
+
 
     def test_03_remove_test_user(self):
         if not core.state['general.user_added']:
@@ -87,3 +90,27 @@ class TestCleanup(unittest.TestCase):
         files.remove(os.path.join(globus_dir, 'userkey.pem'))
         files.remove(os.path.join('/var/spool/mail', username))
         shutil.rmtree(password_entry.pw_dir)
+
+
+    # The backups test should always be last, in case any prior tests restore
+    # files from backup.
+    def test_04_backups(self):
+        record_is_clear = True
+        if len(files._backups) > 0:
+            details = ''
+            for id, backup_path in files._backups:
+                details += "-- Backup of '%s' for '%s' in '%s'\n" % (id[0], id[1], backup_path)
+            core.log_message('Backups remain in backup dictionary:\n' + details)
+            record_is_clear = False
+
+        actual_is_clear = True
+        backups = os.listdir(files._backup_directory)
+        if len(backups) > 0:
+            core.log_message("Files remain in '%s:'" % (files._backup_directory))
+            core.system('ls -lF ' + files._backup_directory, shell=True)
+            actual_is_clear = False
+
+        if os.path.isdir(files._backup_directory):
+            shutil.rmtree(files._backup_directory, ignore_errors=True)
+
+        self.assert_(record_is_clear and actual_is_clear, 'Backups were not restored fully')
