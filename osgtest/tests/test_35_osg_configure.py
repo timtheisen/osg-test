@@ -46,9 +46,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_02_cemon(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_cemon
           mesg = self.__run_unit_tests(test_cemon.TestCEMon)
@@ -59,9 +56,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_03_condor(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_condor
@@ -74,9 +68,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_04_configfile(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_configfile
           mesg = self.__run_unit_tests(test_configfile.TestConfigFile)
@@ -87,9 +78,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_05_gip(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_gip
@@ -102,9 +90,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_06_gratia(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_gratia
           mesg = self.__run_unit_tests(test_gratia.TestGratia)
@@ -115,9 +100,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_07_local_settings(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_cemon
@@ -130,9 +112,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_08_lsf(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_lsf
           mesg = self.__run_unit_tests(test_lsf.TestLSF)
@@ -143,9 +122,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_09_managedfork(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_managedfork
@@ -158,9 +134,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_10_misc(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_misc
           mesg = self.__run_unit_tests(test_misc.TestMisc)
@@ -171,9 +144,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_11_monalisa(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_monalisa
@@ -186,9 +156,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_12_network(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_network
           mesg = self.__run_unit_tests(test_network.TestNetwork)
@@ -199,9 +166,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_13_pbs(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_pbs
@@ -214,9 +178,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_14_rsv(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_rsv
           mesg = self.__run_unit_tests(test_rsv.TestRSV)
@@ -227,9 +188,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_15_sge(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_sge
@@ -242,9 +200,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_16_siteattributes(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_siteattributes
           mesg = self.__run_unit_tests(test_siteattributes.TestSiteAttributes)
@@ -255,9 +210,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_17_squid(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_squid
@@ -270,9 +222,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_18_storage(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_storage
           mesg = self.__run_unit_tests(test_storage.TestStorage)
@@ -283,9 +232,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_19_utilities(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_utilities
@@ -298,9 +244,6 @@ class TestOSGConfigure(unittest.TestCase):
     def test_20_validation(self):
         if core.missing_rpm(*self.required_rpms):
             return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
-            return
         try:
           import test_validation
           mesg = self.__run_unit_tests(test_validation.TestValidation)
@@ -311,9 +254,6 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_21_xml_utilities(self):
         if core.missing_rpm(*self.required_rpms):
-            return
-        if not self.__rpms_present():
-            core.skip('osg-configure not installed')
             return
         try:
           import test_xml_utilities

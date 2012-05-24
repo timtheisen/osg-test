@@ -23,16 +23,6 @@ set server scheduling=true
                      'torque-scheduler',
                      'torque-client']
 
-    def __get_release(self):
-        """
-        Get release information
-        """
-        release = file('/etc/redhat-release').read()
-        matches = re.match('.*release (\d)\.\d', release)
-        if matches is None:
-            return None
-        else:
-            return matches.group(1)
 
     def test_01_start_mom(self):
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
@@ -73,9 +63,9 @@ set server scheduling=true
         core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
         core.state['torque.pbs-server-running'] = False
         core.state['torque.pbs-configured'] = False
-        if self.__get_release() == '5':
+        if core.el_release() == 5:
             core.config['torque.pbs-nodes-file'] = '/var/torque/server_priv/nodes'
-        elif self.__get_release() == '6':
+        elif core.el_release() == 6:
             core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
         else:
             core.skip('Distribution version not supported')
@@ -89,7 +79,7 @@ set server scheduling=true
         # add the local node as a compute node
         files.write(core.config['torque.pbs-nodes-file'],
                     "localhost np=1\n",
-                    backup=True) 
+                    owner='pbs') 
         command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)
