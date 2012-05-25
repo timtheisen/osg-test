@@ -28,7 +28,7 @@ def preserve(path, owner):
         raise ValueError('Must have owner string')
 
     backup_id = (path, owner)
-    if _backups in backup_id:
+    if backup_id in _backups:
         raise ValueError("Already have a backup of '%s' for '%s'" % (path, owner))
 
     backup_path = os.path.join(_backup_directory, os.path.basename(path) + '#' + owner)

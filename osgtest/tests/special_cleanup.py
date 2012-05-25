@@ -98,7 +98,7 @@ class TestCleanup(unittest.TestCase):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''
-            for id, backup_path in files._backups:
+            for id, backup_path in files._backups.items():
                 details += "-- Backup of '%s' for '%s' in '%s'\n" % (id[0], id[1], backup_path)
             core.log_message('Backups remain in backup dictionary:\n' + details)
             record_is_clear = False
