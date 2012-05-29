@@ -7,7 +7,8 @@ class TestStopPBS(unittest.TestCase):
 
     required_rpms = ['torque-mom',
                      'torque-server',
-                     'torque-scheduler']
+                     'torque-scheduler',
+                     'munge']
 
     def test_01_stop_mom(self):
         if core.missing_rpm(*self.required_rpms):
@@ -54,3 +55,18 @@ class TestStopPBS(unittest.TestCase):
 
         files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
         core.state['torque.pbs-sched-running'] = False
+
+    def test_04_stop_munge(self):
+
+        if core.missing_rpm(*self.required_rpms):
+            return
+        if core.state['munge.running'] == False:
+            core.skip('munge not running')
+
+        command = ('service', 'munge', 'stop')
+        stdout, _, fail = core.check_system(command, 'Stop munge daemon')
+        self.assert_(stdout.find('error') == -1, fail)
+        self.assert_(not os.path.exists(core.config['munge.lockfile']),
+                     'munge lock file still present')
+        core.state['munge.running'] = False
+        files.restore(core.config['munge.keyfile'], 'pbs')

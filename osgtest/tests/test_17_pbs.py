@@ -21,7 +21,7 @@ set server scheduling=true
     required_rpms = ['torque-mom',
                      'torque-server', 
                      'torque-scheduler',
-                     'torque-client']
+                     'munge']
 
 
     def test_01_start_mom(self):
@@ -92,3 +92,26 @@ set server scheduling=true
                           "Configuring pbs server",
                           shell = True)
         core.state['torque.pbs-configured'] = True
+
+    def test_04_start_munge(self):
+        core.config['munge.lockfile'] = '/var/lock/subsys/munge'
+        core.config['munge.keyfile'] = '/etc/munge/munge.key'
+        core.state['munge.running'] = False
+
+        if core.missing_rpm(*self.required_rpms):
+            return
+        if os.path.exists(core.config['munge.lockfile']):
+            core.skip('munge apparently running')
+            return
+
+        files.preserve(core.config['munge.keyfile'], 'pbs')
+        command = ('/usr/sbin/create-munge-key',)
+        stdout, _, fail = core.check_system(command, 'Create munge key')
+        self.assert_(stdout.find('error') == -1, fail)
+        command = ('service', 'munge', 'start')
+        stdout, _, fail = core.check_system(command, 'Start munge daemon')
+        self.assert_(stdout.find('error') == -1, fail)
+        self.assert_(os.path.exists(core.config['munge.lockfile']),
+                     'munge lock file missing')
+        core.state['munge.running'] = True
+
