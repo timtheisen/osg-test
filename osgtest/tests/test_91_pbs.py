@@ -52,5 +52,5 @@ class TestStopPBS(unittest.TestCase):
         self.assert_(not os.path.exists(core.config['torque.sched-lockfile']),
                      'PBS server run lock file still present')
 
-        files.restore('/var/torque/server_priv/nodes', 'pbs')
+        files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
         core.state['torque.pbs-sched-running'] = False
