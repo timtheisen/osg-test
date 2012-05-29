@@ -104,13 +104,12 @@ class TestCleanup(unittest.TestCase):
             record_is_clear = False
 
         actual_is_clear = True
-        backups = os.listdir(files._backup_directory)
-        if len(backups) > 0:
-            core.log_message("Files remain in '%s:'" % (files._backup_directory))
-            core.system('ls -lF ' + files._backup_directory, shell=True)
-            actual_is_clear = False
-
         if os.path.isdir(files._backup_directory):
+            backups = os.listdir(files._backup_directory)
+            if len(backups) > 0:
+                core.log_message("Files remain in '%s:'" % (files._backup_directory))
+                core.system('ls -lF ' + files._backup_directory, shell=True)
+                actual_is_clear = False
             shutil.rmtree(files._backup_directory, ignore_errors=True)
 
         self.assert_(record_is_clear and actual_is_clear, 'Backups were not restored fully')
