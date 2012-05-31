@@ -12,7 +12,7 @@ _backups = {}
 
 
 def read(path, as_single_string=False):
-    """Read the file at the path and return its contents."""
+    """Read the file at the path and return its contents as a list or string."""
     the_file = open(path, 'r')
     if as_single_string:
         contents = the_file.read()
@@ -23,7 +23,7 @@ def read(path, as_single_string=False):
 
 
 def preserve(path, owner):
-    """Backup the file at path and tag it with the given owner."""
+    """Backup the file at path and remember it with the given owner."""
     if owner is None:
         raise ValueError('Must have owner string')
 
@@ -45,7 +45,16 @@ def preserve(path, owner):
         _backups[backup_id] = None
 
 def write(path, contents, owner=None, backup=True):
-    """Write the contents to a file at the path."""
+    """Write the contents to a file at the path.
+
+    The 'owner' argument (default: None), is a string that identifies the owner
+    of the file.  If the 'backup' argument is True (default), then any existing
+    file at the path will be backed up for later restoration.  However, because
+    backups are identified in part by 'owner', if 'backup' is True, then 'owner'
+    must be defined.  Typically, a caller specifies either 'backup=False' to
+    turn off backups (not recommended) or 'owner=[some string]' to set the owner
+    for the backup.
+    """
 
     # The default arguments are invalid: Either "backup" must be false or the
     # "owner" must be specified.
@@ -79,7 +88,10 @@ def write(path, contents, owner=None, backup=True):
 
 
 def replace(path, old_line, new_line, owner=None, backup=True):
-    """Replace an old line with a new line in given path."""
+    """Replace an old line with a new line in given path.
+
+    The 'owner' and 'backup' arguments are passed to write().
+    """
     lines_to_write = []
     lines = read(path)
     for line in lines:
@@ -95,8 +107,9 @@ def append(path, contents, force=False, owner=None, backup=True):
 
     Normally, if the contents already exist in the file, no action is taken.
     However, if the force argument is True, then the extra contents are always
-    appended.  The owner and backup arguments have the same meaning as for the
-    write() method.
+    appended.
+
+    The 'owner' and 'backup' arguments are passed to write().
     """
     if os.path.exists(path):
         old_contents = read(path)
@@ -112,7 +125,7 @@ def append(path, contents, force=False, owner=None, backup=True):
 
 
 def restore(path, owner):
-    """Restores the path to its original state."""
+    """Restores the path to its state prior to being written by its owner."""
     backup_id = (path, owner)
     if backup_id not in _backups:
         raise ValueError("No backup of '%s' for '%s'" % (path, owner))
