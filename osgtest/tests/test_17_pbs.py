@@ -17,6 +17,8 @@ set server default_queue=batch
 set server keep_completed = 600
 set server job_nanny = True
 set server scheduling=true
+set server acl_hosts += *
+set server acl_host_enable = True
 """
     required_rpms = ['torque-mom',
                      'torque-server', 
@@ -88,13 +90,17 @@ set server scheduling=true
         core.state['torque.pbs-server'] = True
         core.state['torque.pbs-server-running'] = True
 
-        core.check_system("echo '%s' | qmgr" % self.pbs_config, 
+        core.check_system("echo '%s' | qmgr %s" % (self.pbs_config,
+                                                   core.get_hostname()),
                           "Configuring pbs server",
                           shell = True)
         core.state['torque.pbs-configured'] = True
 
     def test_04_start_munge(self):
-        core.config['munge.lockfile'] = '/var/lock/subsys/munge'
+        if core.el_release() == 5:
+            core.config['munge.lockfile'] = '/var/lock/subsys/munge'
+        elif core.el_release() == 6:
+            core.config['munge.lockfile'] = '/var/lock/subsys/munged'
         core.config['munge.keyfile'] = '/etc/munge/munge.key'
         core.state['munge.running'] = False
 
@@ -105,7 +111,7 @@ set server scheduling=true
             return
 
         files.preserve(core.config['munge.keyfile'], 'pbs')
-        command = ('/usr/sbin/create-munge-key',)
+        command = ('/usr/sbin/create-munge-key', '-f',)
         stdout, _, fail = core.check_system(command, 'Create munge key')
         self.assert_(stdout.find('error') == -1, fail)
         command = ('service', 'munge', 'start')

@@ -10,7 +10,7 @@ import sys
 import tempfile
 import time
 import traceback
-
+import socket
 
 # ------------------------------------------------------------------------------
 # Module attributes
@@ -344,3 +344,13 @@ def el_release():
             sys.exit(1)
     return _el_release
 
+def get_hostname():
+    """
+    Returns the hostname of the current system, returns None if it can't
+    get the hostname
+    """
+    try:
+        return socket.gethostbyaddr(socket.gethostname())[0]
+    except Exception:
+        return None
+    return None

@@ -34,3 +34,10 @@ class TestStopGatekeeper(unittest.TestCase):
         self.assert_(not os.path.exists(core.config['globus.seg-lockfile']),
                      'Globus SEG run lock file still present')
         core.state['globus.started-seg'] = False
+
+    def test_03_configure_globus_pbs(self):
+        if not core.state['globus.pbs_configured']:
+            core.skip('Globus pbs configuration not altered')
+        if not core.rpm_is_installed('globus-gram-job-manager-pbs'):
+            return
+        files.restore(core.config['globus.pbs-config'], 'pbs')

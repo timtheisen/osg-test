@@ -36,7 +36,8 @@ class TestGlobusJobRun(unittest.TestCase):
 
         if (not core.state['torque.pbs-configured'] or
             not core.state['torque.pbs-mom-running'] or
-            not core.state['torque.pbs-server-running']):
+            not core.state['torque.pbs-server-running'] or
+            not core.state['globus.pbs_configured']):
           core.skip('pbs not running or configured')
           return
 

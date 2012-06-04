@@ -1,4 +1,4 @@
-import os
+import os, re
 import osgtest.library.core as core
 import osgtest.library.files as files
 import unittest
@@ -38,7 +38,6 @@ class TestStartGatekeeper(unittest.TestCase):
         core.config['globus.seg-lockfile'] = '/var/lock/subsys/globus-scheduler-event-generator'
 
         if not core.rpm_is_installed('globus-scheduler-event-generator-progs'):
-            core.skip('Globus SEG not installed')
             return
         if os.path.exists(core.config['globus.seg-lockfile']):
             core.skip('SEG apparently running')
@@ -49,3 +48,19 @@ class TestStartGatekeeper(unittest.TestCase):
         self.assert_(os.path.exists(core.config['globus.seg-lockfile']),
                      'Globus SEG run lock file missing')
         core.state['globus.started-seg'] = True
+
+    def test_03_configure_globus_pbs(self):
+        core.config['globus.pbs-config'] = '/etc/globus/globus-pbs.conf'
+        core.state['globus.pbs_configured'] = False
+        if not core.rpm_is_installed('globus-gram-job-manager-pbs'):
+            return
+        config_file = file(core.config['globus.pbs-config']).read()
+        server_name = core.get_hostname()
+        re_obj = re.compile('^qsub=.*$', re.MULTILINE)
+        if 'pbs_default' in config_file:
+            config_file = re_obj.sub("pbs_default=\"%s\"" % server_name, 
+                                     config_file)
+        else:
+            config_file += "pbs_default=\"%s\"" % server_name
+        files.write(core.config['globus.pbs-config'], config_file, 'pbs')
+        core.state['globus.pbs_configured'] = True
