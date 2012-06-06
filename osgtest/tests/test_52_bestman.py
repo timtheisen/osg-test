@@ -18,6 +18,9 @@ class TestBestman(unittest.TestCase):
     def test_01_ping(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
            return
+        if not core.state['bestman.started-server']:
+           core.skip('bestman server not started')
+           return
         srm_url = 'srm://%s:' % (TestBestman.__hostname)
         command = ('srm-ping', srm_url + TestBestman.__port + '/' + TestBestman.__sfn )
         status, stdout, stderr = core.system(command, True)
@@ -27,6 +30,9 @@ class TestBestman(unittest.TestCase):
  
     def test_02_copy_local_to_server(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
+           return
+        if not core.state['bestman.started-server']:
+           core.skip('bestman server not started')
            return
         os.chmod(TestBestman.__temp_dir, 0777)
         srm_url = 'srm://%s:%s/%s?SFN=%s' % (TestBestman.__hostname, TestBestman.__port, TestBestman.__sfn, TestBestman.__remote_path)
@@ -41,6 +47,9 @@ class TestBestman(unittest.TestCase):
     def test_03_copy_server_to_local(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):     
 	   return
+        if not core.state['bestman.started-server']:
+           core.skip('bestman server not started')
+           return
 	srm_url = 'srm://%s:%s/%s?SFN=%s' % (TestBestman.__hostname, TestBestman.__port, TestBestman.__sfn, TestBestman.__remote_path)
 	command = ('srm-copy', srm_url, 'file:///' + TestBestman.__local_path)
         status, stdout, stderr = core.system(command, True)
@@ -53,6 +62,9 @@ class TestBestman(unittest.TestCase):
 
     def test_04_remove_server_file(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
+           return
+        if not core.state['bestman.started-server']:
+           core.skip('bestman server not started')
            return
         srm_url = 'srm://%s:%s/%s?SFN=%s' % (TestBestman.__hostname, TestBestman.__port, TestBestman.__sfn, TestBestman.__remote_path)
         command = ('srm-rm', srm_url)

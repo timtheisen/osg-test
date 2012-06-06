@@ -9,10 +9,9 @@ class TestStopBestman(unittest.TestCase):
     def test_01_stop_bestman(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
             return
-        if core.state['bestman.started-server'] == False:
-            core.skip('did not start server')
+        if not core.state['bestman.started-server']:
+            core.skip('bestman server not started')
             return
-
         command = ('service', 'bestman2', 'stop')
         stdout, _, fail = core.check_system(command, 'Shutting down bestman2')
         self.assert_(stdout.find('FAILED') == -1, fail)
