@@ -56,7 +56,7 @@ class TestStartGatekeeper(unittest.TestCase):
             return
         config_file = file(core.config['globus.pbs-config']).read()
         server_name = core.get_hostname()
-        re_obj = re.compile('^qsub=.*$', re.MULTILINE)
+        re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
         if 'pbs_default' in config_file:
             config_file = re_obj.sub("pbs_default=\"%s\"" % server_name, 
                                      config_file)

@@ -26,7 +26,32 @@ set server acl_host_enable = True
                      'munge']
 
 
-    def test_01_start_mom(self):
+    def test_01_start_munge(self):
+        if core.el_release() == 5:
+            core.config['munge.lockfile'] = '/var/lock/subsys/munge'
+        elif core.el_release() == 6:
+            core.config['munge.lockfile'] = '/var/lock/subsys/munged'
+        core.config['munge.keyfile'] = '/etc/munge/munge.key'
+        core.state['munge.running'] = False
+
+        if core.missing_rpm(*self.required_rpms):
+            return
+        if os.path.exists(core.config['munge.lockfile']):
+            core.skip('munge apparently running')
+            return
+
+        files.preserve(core.config['munge.keyfile'], 'pbs')
+        command = ('/usr/sbin/create-munge-key', '-f',)
+        stdout, _, fail = core.check_system(command, 'Create munge key')
+        self.assert_(stdout.find('error') == -1, fail)
+        command = ('service', 'munge', 'start')
+        stdout, _, fail = core.check_system(command, 'Start munge daemon')
+        self.assert_(stdout.find('error') == -1, fail)
+        self.assert_(os.path.exists(core.config['munge.lockfile']),
+                     'munge lock file missing')
+        core.state['munge.running'] = True
+
+    def test_02_start_mom(self):
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
         core.state['torque.pbs-mom-running'] = False
 
@@ -44,7 +69,7 @@ set server acl_host_enable = True
         core.state['torque.pbs-mom-running'] = True
 
 
-    def test_02_start_pbs_sched(self):
+    def test_03_start_pbs_sched(self):
         core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
         core.state['torque.pbs-sched-running'] = False
 
@@ -61,7 +86,7 @@ set server acl_host_enable = True
                      'pbs sched run lock file missing')
         core.state['torque.pbs-sched-running'] = True
 
-    def test_03_start_pbs(self):
+    def test_04_start_pbs(self):
         core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
         core.state['torque.pbs-server-running'] = False
         core.state['torque.pbs-configured'] = False
@@ -95,29 +120,4 @@ set server acl_host_enable = True
                           "Configuring pbs server",
                           shell = True)
         core.state['torque.pbs-configured'] = True
-
-    def test_04_start_munge(self):
-        if core.el_release() == 5:
-            core.config['munge.lockfile'] = '/var/lock/subsys/munge'
-        elif core.el_release() == 6:
-            core.config['munge.lockfile'] = '/var/lock/subsys/munged'
-        core.config['munge.keyfile'] = '/etc/munge/munge.key'
-        core.state['munge.running'] = False
-
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if os.path.exists(core.config['munge.lockfile']):
-            core.skip('munge apparently running')
-            return
-
-        files.preserve(core.config['munge.keyfile'], 'pbs')
-        command = ('/usr/sbin/create-munge-key', '-f',)
-        stdout, _, fail = core.check_system(command, 'Create munge key')
-        self.assert_(stdout.find('error') == -1, fail)
-        command = ('service', 'munge', 'start')
-        stdout, _, fail = core.check_system(command, 'Start munge daemon')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(os.path.exists(core.config['munge.lockfile']),
-                     'munge lock file missing')
-        core.state['munge.running'] = True
 
