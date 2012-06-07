@@ -51,7 +51,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_cemon.TestCEMon)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import cemon unit test")
 
     def test_03_condor(self):
@@ -62,7 +62,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_condor.TestCondor)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import condor unit test")
 
     def test_04_configfile(self):
@@ -73,7 +73,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_configfile.TestConfigFile)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import configfile unit test")
 
     def test_05_gip(self):
@@ -84,7 +84,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_gip.TestGip)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import gip unit test")
 
     def test_06_gratia(self):
@@ -95,7 +95,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_gratia.TestGratia)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import gratia unit test")
 
     def test_07_local_settings(self):
@@ -106,7 +106,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_local_settings.TestLocalSettings)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import local settings unit test")
 
     def test_08_lsf(self):
@@ -117,7 +117,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_lsf.TestLSF)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import lsf unit test")
 
     def test_09_managedfork(self):
@@ -128,7 +128,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_managedfork.TestManagedFork)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import managed fork unit test")
 
     def test_10_misc(self):
@@ -139,7 +139,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_misc.TestMisc)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import misc unit test")
 
     def test_11_monalisa(self):
@@ -150,7 +150,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_monalisa.TestMonalisa)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import monalisa unit test")
 
     def test_12_network(self):
@@ -161,7 +161,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_network.TestNetwork)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import network unit test")
 
     def test_13_pbs(self):
@@ -172,7 +172,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_pbs.TestPBS)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import pbs unit test")
 
     def test_14_rsv(self):
@@ -183,7 +183,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_rsv.TestRSV)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import rsv unit test")
 
     def test_15_sge(self):
@@ -194,7 +194,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_sge.TestSGE)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import sge unit test")
 
     def test_16_siteattributes(self):
@@ -205,7 +205,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_siteattributes.TestSiteAttributes)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import site attributes unit test")
 
     def test_17_squid(self):
@@ -216,7 +216,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_squid.TestSquid)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import squid unit test")
 
     def test_18_storage(self):
@@ -227,7 +227,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_storage.TestStorage)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import storage unit test")
 
     def test_19_utilities(self):
@@ -238,7 +238,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_utilities.TestUtilities)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import utilities unit test")
 
     def test_20_validation(self):
@@ -249,7 +249,7 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_validation.TestValidation)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import validation unit test")
 
     def test_21_xml_utilities(self):
@@ -260,6 +260,6 @@ class TestOSGConfigure(unittest.TestCase):
           mesg = self.__run_unit_tests(test_xml_utilities.TestXMLUtilities)
           if mesg is not None:
             self.fail(mesg)
-        except:
+        except ImportError:
           self.fail("Can't import xml_utilities unit test")
 
