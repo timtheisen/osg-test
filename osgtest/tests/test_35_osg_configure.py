@@ -3,7 +3,7 @@ import os, re, unittest, sys
 import osgtest.library.core as core
 
 # setup system library path
-pathname = os.path.realpath('/usr/share/osg-configure')
+pathname = os.path.realpath('/usr/share/osg-configure/tests')
 sys.path.insert(0, pathname)
 
 class TestOSGConfigure(unittest.TestCase):
@@ -46,6 +46,8 @@ class TestOSGConfigure(unittest.TestCase):
     def test_02_cemon(self):
         if core.missing_rpm(*self.required_rpms):
             return
+        if core.missing_rpm('osg-ce'):
+            return
         try:
           import test_cemon
           mesg = self.__run_unit_tests(test_cemon.TestCEMon)
@@ -79,6 +81,8 @@ class TestOSGConfigure(unittest.TestCase):
     def test_05_gip(self):
         if core.missing_rpm(*self.required_rpms):
             return
+        if core.missing_rpm('osg-ce'):
+            return
         try:
           import test_gip
           mesg = self.__run_unit_tests(test_gip.TestGip)
@@ -89,6 +93,8 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_06_gratia(self):
         if core.missing_rpm(*self.required_rpms):
+            return
+        if core.missing_rpm('osg-ce'):
             return
         try:
           import test_gratia
@@ -102,7 +108,7 @@ class TestOSGConfigure(unittest.TestCase):
         if core.missing_rpm(*self.required_rpms):
             return
         try:
-          import test_cemon
+          import test_local_settings
           mesg = self.__run_unit_tests(test_local_settings.TestLocalSettings)
           if mesg is not None:
             self.fail(mesg)
@@ -178,6 +184,8 @@ class TestOSGConfigure(unittest.TestCase):
     def test_14_rsv(self):
         if core.missing_rpm(*self.required_rpms):
             return
+        if core.missing_rpm('rsv-core'):
+            return
         try:
           import test_rsv
           mesg = self.__run_unit_tests(test_rsv.TestRSV)
@@ -221,6 +229,8 @@ class TestOSGConfigure(unittest.TestCase):
 
     def test_18_storage(self):
         if core.missing_rpm(*self.required_rpms):
+            return
+        if core.missing_rpm('osg-ce'):
             return
         try:
           import test_storage
