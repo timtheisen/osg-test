@@ -16,7 +16,7 @@ class TestStartCvmfs(unittest.TestCase):
             if "user_allow_other" in line:
                 return
         contents.append("user_allow_other\n")
-        files.write(fuse_conf_path, contents)
+        files.write(fuse_conf_path, contents, 'root')
         os.chmod(fuse_conf_path,0644)
        
     def setup_automount(self):
@@ -30,7 +30,7 @@ class TestStartCvmfs(unittest.TestCase):
             if "cvmfs" in line:
                 return
         contents.append("/cvmfs /etc/auto.cvmfs\n")
-        files.write(automount_conf_path, contents)
+        files.write(automount_conf_path, contents, 'root')
         os.chmod(automount_conf_path,0644)
     
     def setup_cvmfs(self):
@@ -39,7 +39,7 @@ class TestStartCvmfs(unittest.TestCase):
         contents.append("CVMFS_CACHE_BASE=/var/scratch/cvmfs\n")
         contents.append("CVMFS_QUOTA_LIMIT=10000\n")
         contents.append("CVMFS_HTTP_PROXY=\"http://cmsfrontier1.fnal.gov:3128\"\n")
-        files.write("/etc/cvmfs/default.local", contents)
+        files.write("/etc/cvmfs/default.local", contents, 'root')
         os.chmod("/etc/cvmfs/default.local",0644)
 	
     def test_01_setup_cvmfs(self):
