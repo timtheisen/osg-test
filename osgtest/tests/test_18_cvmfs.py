@@ -6,9 +6,9 @@ import unittest
 class TestStartCvmfs(unittest.TestCase):
 
     def setup_fuse(self):
-	fuse_conf_path='/etc/fuse.conf'
+        fuse_conf_path='/etc/fuse.conf'
         try:
-	    contents = files.read(fuse_conf_path)
+            contents = files.read(fuse_conf_path)
         except IOError:
             #Sometimes this file doesn't exist
             contents=[]
@@ -20,7 +20,7 @@ class TestStartCvmfs(unittest.TestCase):
         os.chmod(fuse_conf_path,0644)
        
     def setup_automount(self):
-	automount_conf_path='/etc/auto.master'
+        automount_conf_path='/etc/auto.master'
         try:
 	    contents = files.read(automount_conf_path)
         except IOError:
@@ -43,6 +43,10 @@ class TestStartCvmfs(unittest.TestCase):
         os.chmod("/etc/cvmfs/default.local",0644)
 	
     def test_01_setup_cvmfs(self):
+        if not core.rpm_is_installed('cvmfs'):
+            core.skip('not installed')
+            return
+
         self.setup_fuse()
         self.setup_automount()
         self.setup_cvmfs()
