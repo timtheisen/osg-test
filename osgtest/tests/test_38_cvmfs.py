@@ -13,15 +13,14 @@ class TestCvmfs(unittest.TestCase):
     def test_01_cvmfs(self):
         if core.missing_rpm('cvmfs', 'cvmfs-keys'):
             return
-	
 
-	command = ('ls', self.__check_path)
+        command = ('ls', self.__check_path)
         status, stdout, stderr = core.system(command, True)
 
         file_exists = os.path.exists(self.__check_path)
         self.assert_(file_exists, 'Test cvmfs file missing')
         
-	command = ('source', self.__check_path)
+        command = ('source', self.__check_path)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('cvmfs example source a file on fs',
                              status, stdout, stderr)
