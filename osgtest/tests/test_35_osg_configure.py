@@ -1,4 +1,4 @@
-import os, re, unittest, sys
+import os, re, unittest, sys, cStringIO
 
 import osgtest.library.core as core
 
@@ -27,7 +27,10 @@ class TestOSGConfigure(unittest.TestCase):
       """
       test_suite = unittest.TestSuite()
       test_suite.addTests(unittest.makeSuite(test_case))
-      result = unittest.TextTestRunner(verbosity=2).run(test_suite)
+      output = cStringIO.StringIO()
+      result = unittest.TextTestRunner(stream=output, verbosity=2).run(test_suite)
+      core.log_message(output.getvalue())
+      output.close()
       if not result.wasSuccessful():
         error_message = "Encountered problems while running osg_configure cemon unit tests:\n" 
         if result.errors != []:

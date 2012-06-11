@@ -1,6 +1,7 @@
 import os
 import unittest
 import re
+import time
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -90,6 +91,7 @@ set server acl_host_enable = True
         core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
         core.state['torque.pbs-server-running'] = False
         core.state['torque.pbs-configured'] = False
+        core.state['torque.nodes-up'] = False
         if core.el_release() == 5:
             core.config['torque.pbs-nodes-file'] = '/var/torque/server_priv/nodes'
         elif core.el_release() == 6:
@@ -121,3 +123,15 @@ set server acl_host_enable = True
                           shell = True)
         core.state['torque.pbs-configured'] = True
 
+        # wait up to 5 minutes for the server to come up and trigger a failure
+        # if that doesn't happen
+        start_time = time.time()
+        while ((time.time() - start_time) < 600):
+            command = ('/usr/bin/qnodes', '-s', core.get_hostname())
+            stdout, _, fail = core.check_system(command, 'Get pbs node info')
+            self.assert_(stdout.find('error') == -1, fail)
+            if stdout.find('state = free'):
+                core.state['torque.nodes-up'] = True
+                break
+        if not core.state['torque.nodes-up']:
+            self.fail('PBS nodes not coming up')
