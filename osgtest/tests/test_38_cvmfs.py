@@ -14,10 +14,25 @@ class TestCvmfs(unittest.TestCase):
         if core.missing_rpm('cvmfs', 'cvmfs-keys'):
             return
 
+        #TESTING 
+        command = ('mkdir','-p', '/mnt/testcvmfs')
+        status, stdout, stderr = core.system(command, False)
+        command = ('mount','-t','cvmfs','cms.cern.ch','/mnt/testcvmfs')
+        status, stdout, stderr = core.system(command, False)
+        #END TESTING
+
+        command = ('ls', '/cvmfs')
+        status, stdout, stderr = core.system(command, True)
+	file_exists = os.path.exists('/cvmfs')
+        self.assert_(file_exists, 'Cvmfs mount point missing')
+
+        command = ('ls', '/cvmfs/cms.cern.ch')
+        status, stdout, stderr = core.system(command, True)
+	file_exists = os.path.exists('/cvmfs/cms.cern.ch')
+        self.assert_(file_exists, 'Cvmfs cern mount point missing')
+
         command = ('ls', self.__check_path)
         status, stdout, stderr = core.system(command, True)
-
-        file_exists = os.path.exists(self.__check_path)
         self.assert_(file_exists, 'Test cvmfs file missing')
         
         command = ('source', self.__check_path)
