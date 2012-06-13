@@ -55,6 +55,17 @@ set server acl_host_enable = True
     def test_02_start_mom(self):
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
         core.state['torque.pbs-mom-running'] = False
+       
+        if core.el_release() == 5:
+            core.config['torque.mom-config'] = '/var/torque/mom_priv/config'
+        elif core.el_release() == 6:
+            core.config['torque.mom-config'] = '/var/lib/torque/mom_priv/config'
+        else:
+            core.skip('Distribution version not supported')
+
+        files.write(core.config['torque.mom-config'],
+                    "$pbsserver %s\n" % core.get_hostname(),
+                    owner='pbs')
 
         if core.missing_rpm(*self.required_rpms):
             return
@@ -107,7 +118,7 @@ set server acl_host_enable = True
     
         # add the local node as a compute node
         files.write(core.config['torque.pbs-nodes-file'],
-                    "localhost np=1\n",
+                    "%s np=1\n" % core.get_hostname(),
                     owner='pbs') 
         command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
