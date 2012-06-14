@@ -56,6 +56,12 @@ set server acl_host_enable = True
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
         core.state['torque.pbs-mom-running'] = False
        
+        if core.missing_rpm(*self.required_rpms):
+            return
+        if os.path.exists(core.config['torque.mom-lockfile']):
+            core.skip('pbs mom apparently running')
+            return
+
         if core.el_release() == 5:
             core.config['torque.mom-config'] = '/var/torque/mom_priv/config'
         elif core.el_release() == 6:
@@ -66,12 +72,6 @@ set server acl_host_enable = True
         files.write(core.config['torque.mom-config'],
                     "$pbsserver %s\n" % core.get_hostname(),
                     owner='pbs')
-
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if os.path.exists(core.config['torque.mom-lockfile']):
-            core.skip('pbs mom apparently running')
-            return
 
         command = ('service', 'pbs_mom', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs mom daemon')
