@@ -41,7 +41,7 @@ class TestCvmfs(unittest.TestCase):
         status, stdout, stderr = core.system(command, False)
         self.assert_(file_exists, 'Test cvmfs file missing')
         
-        command = ('source', self.__check_path)
+        command = ('bash', '-c', 'source ' + self.__check_path)
         status, stdout, stderr = core.system(command, False)
         fail = core.diagnose('cvmfs example source a file on fs',
                              status, stdout, stderr)
