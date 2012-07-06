@@ -20,3 +20,4 @@ class TestStopCvmfs(unittest.TestCase):
         files.restore("/etc/fuse.conf","root")
         files.restore("/etc/auto.master","root")
         files.restore("/etc/cvmfs/default.local","root")
+        files.restore("/etc/cvmfs/domain.d/cern.ch.local","root")
