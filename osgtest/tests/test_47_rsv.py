@@ -20,7 +20,8 @@ Testing number conventions:
  100-120 - Testing of consumers
 """
 
-core.config['rsv.config-file'] = '/etc/osg/config.d/30-rsv.ini'
+core.config['rsv.osg-configure-config-file'] = '/etc/osg/config.d/30-rsv.ini'
+core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
 
 class TestRSV(unittest.TestCase):
 
@@ -49,6 +50,41 @@ class TestRSV(unittest.TestCase):
         return
 
 
+    def use_user_proxy(self):
+        """ Switch to using a user proxy instead of a service cert """
+
+        config = ConfigParser.RawConfigParser()
+        config.optionxform = str
+        config.read(core.config['rsv.config-file'])
+
+        self.assert_(os.path.exists(config.get('rsv', 'service-proxy')))
+        config.set('rsv', 'proxy-file', config.get('rsv', 'service-proxy'))
+        config.remove_option('rsv', 'service-cert')
+        config.remove_option('rsv', 'service-key')
+        config.remove_option('rsv', 'service-proxy')
+
+        fd = open(core.config['rsv.config-file'], 'w')
+        config.write(fd)
+        fd.close()
+        return
+
+
+    def use_service_cert(self):
+        """ Switch to using a service certificate instead of a user proxy """
+        config = ConfigParser.RawConfigParser()
+        config.optionxform = str
+        config.read(core.config['rsv.config-file'])
+
+        config.set('rsv', 'service-cert', core.config['rsv.certfile'])
+        config.set('rsv', 'service-key', core.config['rsv.keyfile'])
+        config.set('rsv', 'service-proxy', config.get('rsv', 'proxy-file'))
+        config.remove_option('rsv', 'proxy-file')
+
+        fd = open(core.config['rsv.config-file'], 'w')
+        config.write(fd)
+        fd.close()
+        return
+    
     def test_001_set_config_vals(self):
         core.config['rsv.certfile'] = "/etc/grid-security/rsv/rsvcert.pem"
         core.config['rsv.keyfile'] = "/etc/grid-security/rsv/rsvkey.pem"
@@ -79,7 +115,7 @@ class TestRSV(unittest.TestCase):
 
         # Register the cert in the gridmap file
         cert_subject = core.certificate_info(core.config['rsv.certfile'])[0]
-        files.append(core.config['system.mapfile'], '"%s" rsv' % (cert_subject), owner='rsv')
+        files.append(core.config['system.mapfile'], '"%s" rsv\n' % (cert_subject), owner='rsv')
 
 
     def test_004_load_default_config(self):
@@ -90,7 +126,7 @@ class TestRSV(unittest.TestCase):
         # do tests based on the default.
         self.config = ConfigParser.RawConfigParser()
         self.config.optionxform = str
-        self.config.read(core.config['rsv.config-file'])
+        self.config.read(core.config['rsv.osg-configure-config-file'])
         core.config['rsv.default-config'] = self.config
         return
 
@@ -225,6 +261,7 @@ class TestRSV(unittest.TestCase):
         self.run_metric('org.osg.globus.gram-authentication')
         return
 
+        
     def test_051_osg_version_metric(self):
         if core.missing_rpm('rsv', 'globus-gatekeeper'):
             return
@@ -238,6 +275,34 @@ class TestRSV(unittest.TestCase):
 
         self.run_metric('org.osg.general.vo-supported')
         return
+
+
+    def test_070_switch_to_user_proxy(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        # This needs to come after some test using the service certificate
+        # because it uses the service proxy as the user proxy.
+
+        self.use_user_proxy()
+        return
+
+    def test_071_gram_authentication_with_user_proxy(self):
+        if core.missing_rpm('rsv', 'globus-gatekeeper'):
+            return
+
+        self.run_metric('org.osg.globus.gram-authentication')
+        return
+
+    def test_072_switch_to_service_cert(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        # We put this in its own test so that even if there is a failure we
+        # will switch back to the service proxy.
+        self.use_service_cert()
+        return
+
 
 
 
