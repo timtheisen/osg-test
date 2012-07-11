@@ -49,41 +49,56 @@ class TestRSV(unittest.TestCase):
         self.assert_(re.search('metricStatus: OK', stdout) is not None)
         return
 
-
-    def use_user_proxy(self):
-        """ Switch to using a user proxy instead of a service cert """
-
+    def load_config_file(self):
+        """ Load /etc/rsv/rsv.conf """
         config = ConfigParser.RawConfigParser()
         config.optionxform = str
         config.read(core.config['rsv.config-file'])
+        return config
 
+    def write_config_file(self, config):
+        """ Write /etc/rsv/rsv.conf """
+        fd = open(core.config['rsv.config-file'], 'w')
+        config.write(fd)
+        fd.close()
+
+    def use_user_proxy(self):
+        """ Switch to using a user proxy instead of a service cert """
+        config = self.load_config_file()
         self.assert_(os.path.exists(config.get('rsv', 'service-proxy')))
         config.set('rsv', 'proxy-file', config.get('rsv', 'service-proxy'))
         config.remove_option('rsv', 'service-cert')
         config.remove_option('rsv', 'service-key')
         config.remove_option('rsv', 'service-proxy')
-
-        fd = open(core.config['rsv.config-file'], 'w')
-        config.write(fd)
-        fd.close()
+        self.write_config_file(config)
         return
 
 
     def use_service_cert(self):
         """ Switch to using a service certificate instead of a user proxy """
-        config = ConfigParser.RawConfigParser()
-        config.optionxform = str
-        config.read(core.config['rsv.config-file'])
-
+        # This function relies on calling use_user_proxy first
+        config = self.load_config_file()
+        self.assert_(config.has_option('rsv', 'proxy-file'))
         config.set('rsv', 'service-cert', core.config['rsv.certfile'])
         config.set('rsv', 'service-key', core.config['rsv.keyfile'])
         config.set('rsv', 'service-proxy', config.get('rsv', 'proxy-file'))
         config.remove_option('rsv', 'proxy-file')
-
-        fd = open(core.config['rsv.config-file'], 'w')
-        config.write(fd)
-        fd.close()
+        self.write_config_file(config)
         return
+
+
+    def use_condor_g(self):
+        config = self.load_config_file()
+        config.set('rsv', 'use-condor-g', 'True')
+        self.write_config_file(config)
+        return
+
+    def use_globus_job_run(self):
+        config = self.load_config_file()
+        config.set('rsv', 'use-condor-g', 'False')
+        self.write_config_file(config)
+        return
+
     
     def test_001_set_config_vals(self):
         core.config['rsv.certfile'] = "/etc/grid-security/rsv/rsvcert.pem"
@@ -301,6 +316,28 @@ class TestRSV(unittest.TestCase):
         # We put this in its own test so that even if there is a failure we
         # will switch back to the service proxy.
         self.use_service_cert()
+        return
+
+
+    def test_073_switch_to_globus_job_run(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        self.use_globus_job_run()
+        return
+
+    def test_074_osg_version_with_globus_job_run(self):
+        if core.missing_rpm('rsv', 'globus-gatekeeper'):
+            return
+
+        self.run_metric('org.osg.general.osg-version')
+        return
+
+    def test_075_switch_to_globus_job_run(self):
+        if core.missing_rpm('rsv'):
+            return
+
+        self.use_condor_g()
         return
 
 
