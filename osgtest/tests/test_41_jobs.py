@@ -3,16 +3,18 @@ import unittest
 
 class TestGlobusJobRun(unittest.TestCase):
 
+    def contact_string(self, jobmanager):
+        return core.get_hostname() + '/jobmanager-' + jobmanager
+
     def test_01_fork_job(self):
         if core.missing_rpm('globus-gatekeeper', 'globus-gram-client-tools',
                             'globus-proxy-utils', 'globus-gram-job-manager',
                             'globus-gram-job-manager-fork-setup-poll'):
             return
 
-        command = ('globus-job-run', 'localhost/jobmanager-fork', '/bin/echo',
-                   'hello')
-        stdout = core.check_system(command, 'globus-job-run on fork job',
-                                   user=True)[0]
+        
+        command = ('globus-job-run', self.contact_string('fork'), '/bin/echo', 'hello')
+        stdout = core.check_system(command, 'globus-job-run on fork job', user=True)[0]
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run on fork job')
 
@@ -21,10 +23,8 @@ class TestGlobusJobRun(unittest.TestCase):
                             'globus-gram-client-tools', 'globus-proxy-utils'):
             return
 
-        command = ('globus-job-run', 'localhost/jobmanager-condor',
-                   '/bin/echo', 'hello')
-        stdout = core.check_system(command, 'globus-job-run on Condor job',
-                                   user=True)[0]
+        command = ('globus-job-run', self.contact_string('condor'), '/bin/echo', 'hello')
+        stdout = core.check_system(command, 'globus-job-run on Condor job', user=True)[0]
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run on Condor job')
 
@@ -41,9 +41,7 @@ class TestGlobusJobRun(unittest.TestCase):
           core.skip('pbs not running or configured')
           return
 
-        command = ('globus-job-run', 'localhost/jobmanager-pbs',
-                   '/bin/echo', 'hello')
-        stdout = core.check_system(command, 'globus-job-run on PBS job',
-                                   user=True)[0]
+        command = ('globus-job-run', self.contact_string('pbs'), '/bin/echo', 'hello')
+        stdout = core.check_system(command, 'globus-job-run on PBS job', user=True)[0]
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run on PBS job')
