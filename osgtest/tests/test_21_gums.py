@@ -91,7 +91,7 @@ class TestStartGUMS(unittest.TestCase):
             return
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         command = ('gums-add-mysql-admin', host_dn)
-        core.check_system(command, 'Add GUMS MySQL admin')
+        core.check_system(command, 'Add GUMS MySQL admin', stdin='yes')
 
     def test_06_write_gums_config(self):
         if core.missing_rpm('gums-service'):
