@@ -86,12 +86,12 @@ class TestStartGUMS(unittest.TestCase):
                    '--password', core.config['gums.password'])
         core.check_system(command, 'Set up GUMS MySQL database')
 
-    def test_05_add_local_admin(self):
-        if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):
+    def test_05_add_mysql_admin(self):
+        if core.missing_rpm('gums-service'):
             return
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         command = ('gums-add-mysql-admin', host_dn)
-        core.check_system(command, 'Add GUMS admin')
+        core.check_system(command, 'Add GUMS MySQL admin')
 
     def test_06_write_gums_config(self):
         if core.missing_rpm('gums-service'):
