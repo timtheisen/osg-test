@@ -82,7 +82,7 @@ class TestStartGUMS(unittest.TestCase):
     def test_04_setup_gums_database(self):
         if core.missing_rpm('gums-service'):
             return
-        command = ('gums-setup-mysql-database', '--user', 'gums', '--host', 'localhost:3306',
+        command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
                    '--password', core.config['gums.password'])
         core.check_system(command, 'Set up GUMS MySQL database')
 
@@ -96,18 +96,6 @@ class TestStartGUMS(unittest.TestCase):
     def test_06_write_gums_config(self):
         if core.missing_rpm('gums-service'):
             return
-
-        # Debugging -- can be deleted later
-        command = ('cat', '/etc/gums/gums.config')
-        core.check_system(command, 'Dump gums.config')
-
-        contents = files.read('/usr/lib/gums/config/gums.config.template')
-        contents = re.sub(r'@USER@', 'gums', contents)
-        contents = re.sub(r'@PASSWORD@', core.config['gums.password'], contents)
-        contents = re.sub(r'@SERVER@', 'localhost', contents)
-        hostname = socket.getfqdn()
-        contents = re.sub(r'@DOMAINNAME@', hostname, contents)
-        files.write('/etc/gums/gums.config', contents, owner='gums')
 
         # Debugging -- can be deleted later
         command = ('cat', '/etc/gums/gums.config')
