@@ -90,8 +90,16 @@ class TestStartGUMS(unittest.TestCase):
         if core.missing_rpm('gums-service'):
             return
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
-        command = ('gums-add-mysql-admin', host_dn)
-        core.check_system(command, 'Add GUMS MySQL admin', stdin=('yes\n' + core.config['gums.password']))
+        mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
+        self.assert_(os.path.exists(mysql_template_path), 'GUMS MySQL template exists')
+        mysql_template = files.read(mysql_template_path)
+        core.log_message(mysql_template)
+
+        mysql_command = re.sub(r'@ADMINDN@', host_dn, mysql_template)
+        core.log_message(mysql_command)
+
+        command = ('mysql', '--user=gums', '-p' + core.config['gums.password'], '--execute=' + mysql_command)
+        core.check_system(command, 'Add GUMS MySQL admin')
 
     def test_06_write_gums_config(self):
         if core.missing_rpm('gums-service'):
