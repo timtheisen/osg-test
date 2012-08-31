@@ -92,7 +92,7 @@ class TestStartGUMS(unittest.TestCase):
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
         self.assert_(os.path.exists(mysql_template_path), 'GUMS MySQL template exists')
-        mysql_template = files.read(mysql_template_path)
+        mysql_template = files.read(mysql_template_path, as_single_string=True).strip()
         core.log_message(mysql_template)
 
         mysql_command = re.sub(r'@ADMINDN@', host_dn, mysql_template)
