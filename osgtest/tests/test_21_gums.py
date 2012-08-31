@@ -13,8 +13,8 @@ import osgtest.library.tomcat as tomcat
 class TestStartGUMS(unittest.TestCase):
 
     # ==========================================================================
-    # START: COPIED FROM test_20_voms.py
-    # Should be refactored!!!
+    # START: (MOSTLY) COPIED FROM test_20_voms.py
+    # Should be refactored, but I am in a hurry!!!
     # ==========================================================================
 
     def check_file_and_perms(self, file_path, owner_name, permissions):
@@ -76,6 +76,10 @@ class TestStartGUMS(unittest.TestCase):
             return
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+
+    # ==========================================================================
+    # END: (MOSTLY) COPIED FROM test_20_voms.py
+    # ==========================================================================
 
     def test_03_gums_configuration(self):
         core.config['gums.password'] = 'osgGUMS!'
