@@ -1,5 +1,6 @@
 import os
 import pwd
+import re
 import shutil
 import socket
 import stat
