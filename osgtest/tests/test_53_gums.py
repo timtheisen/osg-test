@@ -1,4 +1,5 @@
 import os
+import pwd
 import unittest
 
 import osgtest.library.core as core
