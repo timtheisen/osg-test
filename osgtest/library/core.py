@@ -265,8 +265,12 @@ def __format_command(command):
             result.append(part)
     return result
 
-def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
-                  log_output=True, shell=False):
+def __prepare_shell_argument(argument):
+    if re.search(r'\W', argument):
+        return "'" + re.sub(r"'", r"''\'", argument) + "'"
+    return argument
+
+def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False):
     global _last_log_had_output
 
     # Preprocess command
@@ -276,7 +280,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
     elif not (isinstance(command, list) or isinstance(command, tuple)):
         raise TypeError, 'Need list or tuple, got %s' % (repr(command))
     if use_test_user:
-        command = ['su', '-c', ' '.join(command), options.username]
+        command = ['su', '-c', ' '.join(map(__prepare_shell_argument, command)), options.username]
 
     # Figure out stdin
     stdin = None
@@ -299,8 +303,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr,
     _log.write(' '.join(__format_command(command)))
 
     # Run and return command
-    p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT, shell=shell)
+    p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell)
     (stdout, stderr) = p.communicate(a_input)
 
     # Log
