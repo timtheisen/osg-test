@@ -19,7 +19,7 @@ class TestUberFTP(unittest.TestCase):
         os.chmod(temp_dir, 0777)
         local_dir  = '/usr/share/osg-test'
         local_path = 'test_gridftp_data.txt'
-        ftp_cmd = '"cd %s; lcd %s; put %s"' % (temp_dir, local_dir, local_path)
+        ftp_cmd = 'cd %s; lcd %s; put %s' % (temp_dir, local_dir, local_path)
         command = ('uberftp', hostname, ftp_cmd)
 
         status, stdout, stderr = core.system(command, True)
@@ -40,7 +40,7 @@ class TestUberFTP(unittest.TestCase):
         os.chmod(temp_dir, 0777)
         local_dir  = '/usr/share/osg-test'
         local_path = 'test_gridftp_data.txt'
-        ftp_cmd = '"cd %s; lcd %s; get %s"' % (local_dir, temp_dir, local_path)
+        ftp_cmd = 'cd %s; lcd %s; get %s' % (local_dir, temp_dir, local_path)
         command = ('uberftp', hostname, ftp_cmd)
 
         status, stdout, stderr = core.system(command, True)
@@ -67,7 +67,7 @@ class TestUberFTP(unittest.TestCase):
                    'count=1')
         core.check_system(command, 'Create test file with dd', user=True)
 
-        ftp_cmd = ('"cd %s; lcd %s; put %s"' %
+        ftp_cmd = ('cd %s; lcd %s; put %s' %
                    (temp_dir_dest, temp_dir_source, filename))
         command = ('uberftp', '-parallel', '10', hostname, ftp_cmd)
         status, stdout, stderr = core.system(command, True)
@@ -95,9 +95,9 @@ class TestUberFTP(unittest.TestCase):
                    'count=1')
         core.check_system(command, 'Create test file with dd', user=True)
 
-        ftp_cmd = ('"cd %s; lcd %s; get %s"' %
+        ftp_cmd = ('cd %s; lcd %s; get %s' %
                    (temp_dir_source, temp_dir_dest, filename))
-        command = ('uberftp', '-parallel 10', hostname, ftp_cmd)
+        command = ('uberftp', '-parallel','10', hostname, ftp_cmd)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
                              status, stdout, stderr)
