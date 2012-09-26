@@ -1,5 +1,8 @@
 import os
+import pwd
+import shutil
 import osgtest.library.core as core
+import osgtest.library.files as files
 import unittest
 
 class TestStartXrootd(unittest.TestCase):
@@ -27,6 +30,8 @@ class TestStartXrootd(unittest.TestCase):
 
     def test_01_start_xrootd(self):
         core.config['xrootd.pid-file']='/var/run/xrootd/xrootd-default.pid'
+        core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
+        core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.xrootdcert']='/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey']='/etc/grid-security/xrd/xrdkey.pem'
         core.state['xrootd.started-server'] = False
@@ -40,14 +45,13 @@ class TestStartXrootd(unittest.TestCase):
         self.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0400)
 
         cfgfile='/etc/xrootd/xrootd-clustered.cfg'
-        files.append(cfgfile,'cms.space min 2g 5g')
-        files.append(cfgfile,'xrootd.seclib /usr/lib64/libXrdSec.so')
-        files.append(cfgfile,'sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates -cert:/etc/grid-security/xrd/xrdcert.pem -key:/etc/grid-security/xrd/xrdkey.pem -crl:3 -gridmap:/etc/grid-security/grid-mapfile --gmapopt:10 --gmapto:0')
-        files.append(cfgfile,'acc.authdb /etc/xrootd/auth_file')
+        cfgtext='cms.space min 2g 5g\n'
+        cfgtext=cfgtext+'xrootd.seclib /usr/lib64/libXrdSec.so\n'
+        cfgtext=cfgtext+'sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates -cert:/etc/grid-security/xrd/xrdcert.pem -key:/etc/grid-security/xrd/xrdkey.pem -crl:3 -gridmap:/etc/grid-security/grid-mapfile --gmapopt:10 --gmapto:0\n'
+        cfgtext=cfgtext+'acc.authdb /etc/xrootd/auth_file'
+        files.append(cfgfile,cfgtext,owner='xrootd')
         authfile='/etc/xrootd/auth_file'
-        files.write(authfile,'u * /data/xrootdfs lr',owner=xrootd)
-        files.append(authfile,'u = /data/xrootdfs/@=/ a')
-        files.append(authfile,'u xrootd /data/xrootdfs a')
+        files.write(authfile,'u * /data/xrootdfs lr\nu = /data/xrootdfs/@=/ a\nu xrootd /data/xrootdfs a',owner="xrootd")
 
         command = ('service', 'xrootd', 'start')
         stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
