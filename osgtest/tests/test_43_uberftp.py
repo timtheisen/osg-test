@@ -11,9 +11,9 @@ class TestUberFTP(unittest.TestCase):
 
     def test_01_copy_local_to_server_uberftp(self):
         if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs'):
+                            'globus-proxy-utils', 'globus-gass-copy-progs',
+                            'uberftp'):
             return
-
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
@@ -32,7 +32,8 @@ class TestUberFTP(unittest.TestCase):
 
     def test_02_copy_server_to_local_uberftp(self):
         if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs'):
+                            'globus-proxy-utils', 'globus-gass-copy-progs',
+                            'uberftp'):
             return
 
         hostname = socket.getfqdn()
@@ -53,7 +54,8 @@ class TestUberFTP(unittest.TestCase):
 
     def test_03_copy_local_to_server_uberftp_parallel(self):
         if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs'):
+                            'globus-proxy-utils', 'globus-gass-copy-progs',
+                            'uberftp'):
             return
 
         hostname = socket.getfqdn()
@@ -81,7 +83,8 @@ class TestUberFTP(unittest.TestCase):
 
     def test_04_copy_server_to_local_uberftp_parallel(self):
         if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs'):
+                            'globus-proxy-utils', 'globus-gass-copy-progs',
+                            'uberftp'):
             return
 
         hostname = socket.getfqdn()
