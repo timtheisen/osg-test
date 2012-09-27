@@ -16,7 +16,12 @@ class TestXrootd(unittest.TestCase):
             return
 
         hostname = socket.getfqdn()
-        temp_dir = tempfile.mkdtemp()
+        if core.config['xrootd.gsi'] == "ON":
+            temp_dir="/tmp/vdttest"
+            if not os.path.exists(temp_dir):
+                os.mkdir(temp_dir)
+        else:
+            temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
         command = ('xrdcp', TestXrootd.__data_path , xrootd_url)
@@ -59,9 +64,13 @@ class TestXrootd(unittest.TestCase):
         if core.missing_rpm('xrootd-server', 'xrootd-client','xrootd-fuse'):
             return
         if not os.path.exists("/mnt"):
-            log_message("/mnt did not exist, skipping xrootd fuse test")
+            core.log_message("/mnt did not exist, skipping xrootd fuse test")
+            return
         if not os.path.exists(TestXrootd.__fuse_path):
             os.mkdir(TestXrootd.__fuse_path)
+        if core.config['xrootd.gsi'] == "ON":
+            core.log_message("fuse incompatible with GSI, skipping xrootd fuse")
+            return
         hostname = socket.getfqdn()
         #command = ('xrootdfs',TestXrootd.__fuse_path,'-o','rdr=xroot://localhost:1094//tmp','-o','uid=xrootd')
         command = ('mount', '-t','fuse','-o','rdr=xroot://localhost:1094//tmp,uid=xrootd','xrootdfs',TestXrootd.__fuse_path)

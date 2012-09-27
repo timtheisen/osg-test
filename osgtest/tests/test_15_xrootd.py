@@ -34,24 +34,29 @@ class TestStartXrootd(unittest.TestCase):
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.xrootdcert']='/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey']='/etc/grid-security/xrd/xrdkey.pem'
+        core.config['xrootd.gsi']="ON"
         core.state['xrootd.started-server'] = False
 
         if not core.rpm_is_installed('xrootd-server'):
             core.skip('not installed')
             return
 
-        self.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0644
-)
-        self.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0400)
+        if core.config['xrootd.gsi'] == "ON":
+            self.install_cert('certs.xrootdcert', 'certs.hostcert', 
+                'xrootd', 0644)
+            self.install_cert('certs.xrootdkey', 'certs.hostkey', 
+                'xrootd', 0400)
 
-        cfgfile='/etc/xrootd/xrootd-clustered.cfg'
-        cfgtext='cms.space min 2g 5g\n'
-        cfgtext=cfgtext+'xrootd.seclib /usr/lib64/libXrdSec.so\n'
-        cfgtext=cfgtext+'sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates -cert:/etc/grid-security/xrd/xrdcert.pem -key:/etc/grid-security/xrd/xrdkey.pem -crl:3 -gridmap:/etc/grid-security/grid-mapfile --gmapopt:10 --gmapto:0\n'
-        cfgtext=cfgtext+'acc.authdb /etc/xrootd/auth_file'
-        files.append(cfgfile,cfgtext,owner='xrootd')
-        authfile='/etc/xrootd/auth_file'
-        files.write(authfile,'u * /data/xrootdfs lr\nu = /data/xrootdfs/@=/ a\nu xrootd /data/xrootdfs a',owner="xrootd")
+            cfgfile='/etc/xrootd/xrootd-clustered.cfg'
+            cfgtext='cms.space min 2g 5g\n'
+            cfgtext=cfgtext+'xrootd.seclib /usr/lib64/libXrdSec.so\n'
+            cfgtext=cfgtext+'sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates -cert:/etc/grid-security/xrd/xrdcert.pem -key:/etc/grid-security/xrd/xrdkey.pem -crl:3 -gridmap:/etc/grid-security/xrd/xrdmapfile --gmapopt:10 --gmapto:0\n'
+            cfgtext=cfgtext+'acc.authdb /etc/xrootd/auth_file\n'
+            cfgtext=cfgtext+'ofs.authorize\n'
+            files.append(cfgfile,cfgtext,owner='xrootd',backup=True)
+            authfile='/etc/xrootd/auth_file'
+            files.write(authfile,'u * /tmp lr\nu = /tmp/@=/ a\nu xrootd /tmp a\n',owner="xrootd")
+            files.write("/etc/grid-security/xrd/xrdmapfile","\"/O=Grid/OU=GlobusTest/OU=VDT/CN=VDT Test\" vdttest",owner="xrootd")
 
         command = ('service', 'xrootd', 'start')
         stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
