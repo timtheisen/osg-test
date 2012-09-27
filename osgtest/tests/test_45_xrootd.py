@@ -27,12 +27,17 @@ class TestXrootd(unittest.TestCase):
         command = ('xrdcp', TestXrootd.__data_path , xrootd_url)
 
         status, stdout, stderr = core.system(command, True)
+
         fail = core.diagnose('xrdcp copy, local to URL',
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
         shutil.rmtree(temp_dir)
-        self.assertEqual(status, 0, fail)
-        self.assert_(file_copied, 'Copied file missing')
+        if core.el_release() != 6:
+            self.assertEqual(status, 0, fail)
+            self.assert_(file_copied, 'Copied file missing')
+        else:
+            self.assertEqual(status, 1, fail)
+            self.assert_(not file_copied, 'Copied file existed somehow')
 
     def test_02_xrdcp_server_to_local(self):
         if core.missing_rpm('xrootd-server', 'xrootd-client'):
@@ -51,13 +56,18 @@ class TestXrootd(unittest.TestCase):
         command = ('xrdcp', xrootd_url, local_path)
 
         status, stdout, stderr = core.system(command, True)
+        
         fail = core.diagnose('Xrootd xrdcp copy, URL to local',
                              status, stdout, stderr)
         file_copied = os.path.exists(local_path)
         shutil.rmtree(temp_source_dir)
         shutil.rmtree(temp_target_dir)
-        self.assertEqual(status, 0, fail)
-        self.assert_(file_copied, 'Copied file missing')
+        if core.el_release() != 6:
+            self.assertEqual(status, 0, fail)
+            self.assert_(file_copied, 'Copied file missing')
+        else:
+            self.assertEqual(status, 1, fail)
+            self.assert_(not file_copied, 'Copied file exists')
 
     def test_03_xrootd_fuse(self):
         """ This tests xrootd-fuse using a mount in /mnt """

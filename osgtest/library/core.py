@@ -181,7 +181,7 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False):
     """
     status, stdout, stderr = system(command, user, stdin, shell=shell)
     fail = diagnose(message, status, stdout, stderr)
-    assert status == 0, fail
+    assert status == exit, fail
     return stdout, stderr, fail
 
 def rpm_is_installed(a_package):

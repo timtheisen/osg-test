@@ -36,15 +36,10 @@ class TestStartXrootd(unittest.TestCase):
         core.config['certs.xrootdkey']='/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.gsi']="ON"
         core.state['xrootd.started-server'] = False
-
         if not core.rpm_is_installed('xrootd-server'):
             core.skip('not installed')
             return
-
-        if core.el_release()==6:
-            core.log_message("GSI disabled on RHEL6 variants (openssl1.0 bug)")
-            core.config['xrootd.gsi']="OFF"
-
+        user=pwd.getpwnam("xrootd")
 
         if core.config['xrootd.gsi'] == "ON":
             self.install_cert('certs.xrootdcert', 'certs.hostcert', 
@@ -61,11 +56,20 @@ class TestStartXrootd(unittest.TestCase):
             files.append(cfgfile,cfgtext,owner='xrootd',backup=True)
             authfile='/etc/xrootd/auth_file'
             files.write(authfile,'u * /tmp lr\nu = /tmp/@=/ a\nu xrootd /tmp a\n',owner="xrootd")
+            os.chown(authfile, user.pw_uid, user.pw_gid)
+            
             files.write("/etc/grid-security/xrd/xrdmapfile","\"/O=Grid/OU=GlobusTest/OU=VDT/CN=VDT Test\" vdttest",owner="xrootd")
+            os.chown("/etc/grid-security/xrd/xrdmapfile",
+                user.pw_uid, user.pw_gid)
 
         command = ('service', 'xrootd', 'start')
-        stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(os.path.exists(core.config['xrootd.pid-file']),
+        if core.el_release() != 6:
+            stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
+            self.assert_(stdout.find('FAILED') == -1, fail)
+            self.assert_(os.path.exists(core.config['xrootd.pid-file']),
                      'xrootd server PID file missing')
-        core.state['xrootd.started-server'] = True
+            core.state['xrootd.started-server'] = True
+        else:
+            stdout, stderr, fail = core.check_system(command, 'Start Xrootd server',exit=1)
+            self.assert_(stdout.find('OK') == -1, fail)
+            # Note, sometimes pid file exists even when xrootd dies
