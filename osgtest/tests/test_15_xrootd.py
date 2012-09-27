@@ -41,6 +41,11 @@ class TestStartXrootd(unittest.TestCase):
             core.skip('not installed')
             return
 
+        if core.el_release()==6:
+            core.log_message("GSI disabled on RHEL6 variants (openssl1.0 bug)")
+            core.config['xrootd.gsi']="OFF"
+
+
         if core.config['xrootd.gsi'] == "ON":
             self.install_cert('certs.xrootdcert', 'certs.hostcert', 
                 'xrootd', 0644)
