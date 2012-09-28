@@ -1,5 +1,6 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import unittest
 
 class TestStopXrootd(unittest.TestCase):
@@ -17,3 +18,7 @@ class TestStopXrootd(unittest.TestCase):
         self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(not os.path.exists(core.config['xrootd.pid-file']),
                      'Xrootd server PID file still present')
+	if core.config['xrootd.gsi'] == "ON":
+		files.restore('/etc/xrootd/xrootd-clustered.cfg',"xrootd")
+		files.restore('/etc/xrootd/auth_file',"xrootd")
+		files.restore('/etc/grid-security/xrd/xrdmapfile',"xrootd")
