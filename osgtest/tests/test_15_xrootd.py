@@ -36,6 +36,7 @@ class TestStartXrootd(unittest.TestCase):
         core.config['certs.xrootdkey']='/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.gsi']="ON"
         core.state['xrootd.started-server'] = False
+        core.state['xrootd.backups-exist'] = False
         if not core.rpm_is_installed('xrootd-server'):
             core.skip('not installed')
             return
@@ -61,6 +62,7 @@ class TestStartXrootd(unittest.TestCase):
             files.write("/etc/grid-security/xrd/xrdmapfile","\"/O=Grid/OU=GlobusTest/OU=VDT/CN=VDT Test\" vdttest",owner="xrootd")
             os.chown("/etc/grid-security/xrd/xrdmapfile",
                 user.pw_uid, user.pw_gid)
+            core.state['xrootd.backups-exist'] = True
 
         command = ('service', 'xrootd', 'start')
         if core.el_release() != 6:
