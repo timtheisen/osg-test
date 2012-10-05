@@ -70,7 +70,7 @@ class TestXrootd(unittest.TestCase):
             self.assert_(not file_copied, 'Copied file exists')
 
     def test_03_xrootd_fuse(self):
-        """ This tests xrootd-fuse using a mount in /mnt """
+        # This tests xrootd-fuse using a mount in /mnt 
         if core.missing_rpm('xrootd-server', 'xrootd-client','xrootd-fuse'):
             return
         if not os.path.exists("/mnt"):
