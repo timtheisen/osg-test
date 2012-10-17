@@ -37,12 +37,20 @@ class TestStartXrootd(unittest.TestCase):
         core.config['xrootd.gsi']="ON"
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
+        
+        vdt_pw = pwd.getpwnam(core.options.username)
+        core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir,
+                                                     '.globus',
+                                                     'usercert.pem')
         if not core.rpm_is_installed('xrootd-server'):
             core.skip('not installed')
             return
-        user=pwd.getpwnam("xrootd")
-
+                  
+        user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
+            if not core.rpm_is_installed('globus-proxy-utils'):
+              core.skip('grid-proxy-utils not installed')
+              return
             self.install_cert('certs.xrootdcert', 'certs.hostcert', 
                 'xrootd', 0644)
             self.install_cert('certs.xrootdkey', 'certs.hostkey', 
@@ -56,10 +64,11 @@ class TestStartXrootd(unittest.TestCase):
             cfgtext=cfgtext+'ofs.authorize\n'
             files.append(cfgfile,cfgtext,owner='xrootd',backup=True)
             authfile='/etc/xrootd/auth_file'
-            files.write(authfile,'u * /tmp lr\nu = /tmp/@=/ a\nu xrootd /tmp a\n',owner="xrootd")
+            files.write(authfile,'u * /tmp a\nu = /tmp/@=/ a\nu xrootd /tmp a\n',owner="xrootd")
             os.chown(authfile, user.pw_uid, user.pw_gid)
             
-            files.write("/etc/grid-security/xrd/xrdmapfile","\"/O=Grid/OU=GlobusTest/OU=VDT/CN=VDT Test\" vdttest",owner="xrootd")
+            user_dn = core.certificate_info(core.config['certs.usercert'])[1]
+            files.write("/etc/grid-security/xrd/xrdmapfile","\"%s\" vdttest" % user_dn,owner="xrootd")
             os.chown("/etc/grid-security/xrd/xrdmapfile",
                 user.pw_uid, user.pw_gid)
             core.state['xrootd.backups-exist'] = True

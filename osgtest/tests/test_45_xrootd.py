@@ -5,6 +5,8 @@ import socket
 import shutil
 import tempfile
 import unittest
+import pwd
+
 
 class TestXrootd(unittest.TestCase):
 
@@ -20,6 +22,8 @@ class TestXrootd(unittest.TestCase):
             temp_dir="/tmp/vdttest"
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
+                user = pwd.getpwnam('vdttest')
+                os.chown(temp_dir, user[2], user[3])
         else:
             temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
