@@ -3,8 +3,8 @@ import osgtest.library.core as core
 import unittest
 import tempfile
 
-class TestFetchUrl(unittest.TestCase):
-    def test_01_fetch_url(self):
+class TestFetchCrl(unittest.TestCase):
+    def test_01_fetch_crl(self):
         if core.missing_rpm('fetch-crl'):
             return
         command=['fetch-crl']
@@ -14,7 +14,7 @@ class TestFetchUrl(unittest.TestCase):
             if name[-2:] == "r0":
                 count=count+1
         self.assert_(count>3,True)
-    def test_02_fetch_url_dir(self):
+    def test_02_fetch_crl_dir(self):
         if core.missing_rpm('fetch-crl'):
             return
         tmpdir=tempfile.mkdtemp()
