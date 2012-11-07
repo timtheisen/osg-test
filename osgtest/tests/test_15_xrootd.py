@@ -74,13 +74,9 @@ class TestStartXrootd(unittest.TestCase):
             core.state['xrootd.backups-exist'] = True
 
         command = ('service', 'xrootd', 'start')
-        if core.el_release() != 6:
-            stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
-            self.assert_(stdout.find('FAILED') == -1, fail)
-            self.assert_(os.path.exists(core.config['xrootd.pid-file']),
+
+        stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
+        self.assert_(stdout.find('FAILED') == -1, fail)
+        self.assert_(os.path.exists(core.config['xrootd.pid-file']),
                      'xrootd server PID file missing')
-            core.state['xrootd.started-server'] = True
-        else:
-            stdout, stderr, fail = core.check_system(command, 'Start Xrootd server',exit=1)
-            self.assert_(stdout.find('OK') == -1, fail)
-            # Note, sometimes pid file exists even when xrootd dies
+        core.state['xrootd.started-server'] = True
