@@ -2,10 +2,10 @@
 
 from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
-import nose
 import os
 import osgtest.library.core as core
 import sys
+import unittest
 
 
 # ------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ def discover_tests():
     test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
                   if d.startswith('test_') and d.endswith('.py')]
     test_files.sort()
-    args = [sys.argv[0]]
+    args = []
     args.append('osgtest.tests.special_user') # always safe
     if len(core.options.packages) > 0:
         args.append('osgtest.tests.special_install')
@@ -102,10 +102,13 @@ def discover_tests():
     return args
 
 def run_tests(a_argv):
-    config = nose.config.Config()
     if core.options.verbose:
-        config.verbosity = 2
-    return nose.run(config=config, argv=a_argv)
+        verb = 2
+    else:
+        verb = 1
+    test_suite = unittest.defaultTestLoader.loadTestsFromNames(a_argv)
+    runner = unittest.TextTestRunner(verbosity=verb)
+    runner.run(test_suite)
 
 
 # ------------------------------------------------------------------------------
