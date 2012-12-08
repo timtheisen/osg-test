@@ -20,12 +20,20 @@ Testing number conventions:
  100-120 - Testing of consumers
 """
 
-core.config['rsv.osg-configure-config-file'] = '/etc/osg/config.d/30-rsv.ini'
-core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
 
 class TestRSV(unittest.TestCase):
 
     host = socket.getfqdn()
+
+    configs_set_up = False
+
+    def setUp(self):
+        cls = self.__class__
+        if not cls.configs_set_up:
+            core.config['rsv.osg-configure-config-file'] = '/etc/osg/config.d/30-rsv.ini'
+            core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
+            cls.configs_set_up = True
+            
 
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')
