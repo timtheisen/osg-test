@@ -190,6 +190,16 @@ def rpm_is_installed(a_package):
                                     log_output=False)
     return (status == 0) and stdout.startswith(a_package)
 
+def dependency_is_installed(a_dependency):
+    """Returns whether an RPM package providing a dependency is installed.
+
+    Distinct from rpm_is_installed in that this handles virtual dependencies,
+    such as 'grid-certificates'.
+    """
+    status, stdout, stderr = system(('rpm', '--query', '--whatprovides', a_dependency),
+                                    log_output=False)
+    return (status == 0) and not stdout.startswith('no package provides')
+
 def installed_rpms():
     """Returns the list of all installed packages."""
     command = ('rpm', '--query', '--all', '--queryformat', r'%{NAME}\n')
