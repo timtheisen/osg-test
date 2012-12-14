@@ -25,16 +25,6 @@ class TestRSV(unittest.TestCase):
 
     host = socket.getfqdn()
 
-    configs_set_up = False
-
-    def setUp(self):
-        cls = self.__class__
-        if not cls.configs_set_up:
-            core.config['rsv.osg-configure-config-file'] = '/etc/osg/config.d/30-rsv.ini'
-            core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
-            cls.configs_set_up = True
-            
-
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')
         return
@@ -111,6 +101,8 @@ class TestRSV(unittest.TestCase):
     def test_001_set_config_vals(self):
         core.config['rsv.certfile'] = "/etc/grid-security/rsv/rsvcert.pem"
         core.config['rsv.keyfile'] = "/etc/grid-security/rsv/rsvkey.pem"
+        core.config['rsv.osg-configure-config-file'] = '/etc/osg/config.d/30-rsv.ini'
+        core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
         
     def test_002_setup_certificate(self):
         if core.missing_rpm('rsv'):

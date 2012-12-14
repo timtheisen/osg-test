@@ -10,11 +10,13 @@ class TestOSGConfigure(unittest.TestCase):
                      'osg-configure-tests']
 
     pathname = os.path.realpath('/usr/share/osg-configure/tests')
+    sys_path_saved = None
 
-    def setUp(self):
+    def test_00_setup(self):
         "setup system library path"
         cls = self.__class__
         if cls.pathname not in sys.path:
+            cls.sys_path_saved = list(sys.path)
             sys.path.insert(0, cls.pathname)
 
     def test_01_version(self):
@@ -285,4 +287,10 @@ class TestOSGConfigure(unittest.TestCase):
                 self.fail(mesg)
         except ImportError, e:
             self.fail("Can't import xml_utilities unit test: " + str(e))
+    
+    def test_99_teardown(self):
+        "restore system library path"
+        cls = self.__class__
+        if cls.sys_path_saved:
+            sys.path = list(cls.sys_path_saved)
 
