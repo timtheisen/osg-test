@@ -19,10 +19,10 @@ class TestFetchCrl(unittest.TestCase):
         )
     }
 
-    def output_is_acceptable(self, stdout):
+    def output_is_acceptable(self, fetch_crl_output):
         whitelist = TestFetchCrl.error_message_whitelists[core.config['fetch-crl.major-version']]
         all_lines_ok = True
-        for line in stdout.rstrip('\n').split('\n'):
+        for line in fetch_crl_output.rstrip('\n').split('\n'):
             line_ok = False
             for error_string in whitelist:
                 if error_string in line:
@@ -56,12 +56,16 @@ class TestFetchCrl(unittest.TestCase):
         if core.config['fetch-crl.package'] is None:
             core.skip('Fetch CRL is not installed')
             return
+        if not core.dependency_is_installed('grid-certificates'):
+            core.skip('No certificates installed')
+            return
         command = [core.config['fetch-crl.package']]
         status, stdout, stderr = core.system(command)
         fail = core.diagnose('Run %s in /etc' % core.config['fetch-crl.package'], status, stdout, stderr)
-        self.assert_(0 <= status <= 1, fail)
         if status == 1:
             self.assert_(self.output_is_acceptable(stdout), fail)
+        else:
+            self.assertEquals(status, 0, fail)
         count = len(glob.glob(os.path.join('/etc/grid-security/certificates', '*.r[0-9]')))
         self.assert_(count > 3, True)
 
@@ -69,13 +73,17 @@ class TestFetchCrl(unittest.TestCase):
         if core.config['fetch-crl.package'] is None:
             core.skip('Fetch CRL is not installed')
             return
+        if not core.dependency_is_installed('grid-certificates'):
+            core.skip('No certificates installed')
+            return
         temp_crl_dir = tempfile.mkdtemp()
         command = (core.config['fetch-crl.package'], '-o', temp_crl_dir)
         status, stdout, stderr = core.system(command)
         fail = core.diagnose('Run %s in temp dir' % core.config['fetch-crl.package'], status, stdout, stderr)
-        self.assert_(0 <= status <= 1, fail)
         if status == 1:
             self.assert_(self.output_is_acceptable(stdout), fail)
+        else:
+            self.assertEquals(status, 0, fail)
         count = len(glob.glob(os.path.join(temp_crl_dir, '*.r[0-9]')))
         shutil.rmtree(temp_crl_dir)
         self.assert_(count > 3, True)
