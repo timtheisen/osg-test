@@ -78,18 +78,22 @@ class TestStartXrootd(unittest.TestCase):
 
         command = ('service', 'xrootd', 'start')
 
-        try:
-            stdout, stderr, fail = core.check_system(command, 'Start Xrootd server')
-        except AssertionError, err:
-            if (core.el_release() == 6 and
-                str(err).find('Starting xrootd (xrootd, default)') != -1 and
-                re.match(r"3\.2\.4", xrootd_server_version)):
-                core.skip('Expected failure on el6 with this version of xrootd')
-                return
-            else:
-                raise
+        status, stdout, _ = core.system(command)
+        
+        is_failure_expected = (core.el_release() == 6 and
+                               stdout.find('Starting xrootd (xrootd, default)') != -1 and
+                               re.match(r"3\.2\.[0-5]", xrootd_server_version)) 
 
-        self.assert_(stdout.find('FAILED') == -1, fail)
+        if status != 0 and is_failure_expected:
+            core.log_message('Expected failure on el6 with this version of xrootd-server')
+            return
+        elif status == 0 and is_failure_expected:
+            self.fail('Unexpected success on el6 with this version of xrootd-server')
+
+        self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)
+
+        self.assert_(stdout.find('FAILED') == -1, 'Start Xrootd server failed')
         self.assert_(os.path.exists(core.config['xrootd.pid-file']),
                      'xrootd server PID file missing')
         core.state['xrootd.started-server'] = True
+

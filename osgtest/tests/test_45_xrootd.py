@@ -39,24 +39,28 @@ class TestXrootd(unittest.TestCase):
                              status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
         shutil.rmtree(temp_dir)
-        try:
-            self.assertEqual(status, 0, fail)
-        except AssertionError:
-            if (core.el_release() == 6 and
-                re.search(r"^Error accessing path/file for " + re.escape(xrootd_url), stdout, re.MULTILINE) and
-                re.match(r"3\.2\.4", xrootd_server_version)):
-                
-                core.skip('Expected failure on el6 with this version of xrootd')
-                return
-            else:
-                raise
+        
+        is_failure_expected = (core.el_release() == 6 and
+                               re.search(r"^Error accessing path/file for " + re.escape(xrootd_url),
+                                         stdout,
+                                         re.MULTILINE) and
+                               re.match(r"3\.2\.[0-5]", xrootd_server_version))
+        
+        if status != 0 and is_failure_expected:
+            core.log_message('Expected failure on el6 with this version of xrootd-server')
+            return
+        elif status == 0 and is_failure_expected:
+            self.fail('Unexpected success on el6 with this version of xrootd-server')
+
+        self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_xrdcp_server_to_local(self):
         if core.missing_rpm('xrootd-server', 'xrootd-client'):
             return
             
-        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd-server', '--qf=%{VERSION}'), 'Getting xrootd-server version')
+        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd-server', '--qf=%{VERSION}'),
+                                                        'Getting xrootd-server version')
 
         hostname = socket.getfqdn()
         temp_source_dir = tempfile.mkdtemp()
@@ -77,18 +81,20 @@ class TestXrootd(unittest.TestCase):
         file_copied = os.path.exists(local_path)
         shutil.rmtree(temp_source_dir)
         shutil.rmtree(temp_target_dir)
-        try:
-            self.assertEqual(status, 0, fail)
-        except AssertionError:
-            if (core.el_release() == 6 and
-                re.search(r"^Error accessing path/file for " + re.escape(xrootd_url), stdout, re.MULTILINE) and
-                re.match(r"3\.2\.4", xrootd_server_version)):
-                
-                core.skip('Expected failure on el6 with this version of xrootd')
-                return
-            else:
-                raise
-            
+        
+        is_failure_expected = (core.el_release() == 6 and
+                               re.search(r"^Error accessing path/file for " + re.escape(xrootd_url),
+                                         stdout,
+                                         re.MULTILINE) and
+                               re.match(r"3\.2\.[0-5]", xrootd_server_version))
+        
+        if status != 0 and is_failure_expected:
+            core.log_message('Expected failure on el6 with this version of xrootd-server')
+            return
+        elif status == 0 and is_failure_expected:
+            self.fail('Unexpected success on el6 with this version of xrootd-server')
+
+        self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_03_xrootd_fuse(self):
