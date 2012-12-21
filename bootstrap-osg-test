@@ -36,8 +36,8 @@ case $release in
         osg_name='osg-el5-release-latest.rpm'
         ;;
     *6.* )
-        rpm_name='epel-release-6-7.noarch.rpm'
-        rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-7.noarch.rpm'
+        rpm_name='epel-release-6-8.noarch.rpm'
+        rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
         osg_name='osg-el6-release-latest.rpm'
         ;;
     * )
