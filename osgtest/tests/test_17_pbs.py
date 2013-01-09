@@ -24,6 +24,7 @@ set server acl_host_enable = True
     required_rpms = ['torque-mom',
                      'torque-server', 
                      'torque-scheduler',
+                     'torque-client', # for qmgr
                      'munge']
 
 
