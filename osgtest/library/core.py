@@ -12,6 +12,8 @@ import time
 import traceback
 import socket
 
+from osgtest.library import osgunittest
+
 # ------------------------------------------------------------------------------
 # Module attributes
 # ------------------------------------------------------------------------------
@@ -231,6 +233,33 @@ def missing_rpm(*packages):
         skip('missing %s' % ' '.join(missing))
         return True
     return False
+
+
+def skip_ok_unless_installed(*packages, **kwargs):
+    """Check that all given RPM packages are installed and skip the test
+    if not. Accepts the keyword argument 'message' for an optional message.
+    Raise osgunittest.OkSkipException if packages are missing, otherwise
+    return None.
+    """
+    # Handle the keyword argument. There is some magic here to make it work
+    # with the variable number of arguments that we are using for 'packages'.
+    # Make sure that we accept the argument not being there, but also raise
+    # an error on unexpected keyword arguments.
+    message = kwargs.pop('message', None)
+    if kwargs:
+        raise TypeError("skip_ok_unless_installed() got unexpected keyword argument(s) '%s'" %
+                        ("', '".join(kwargs.keys())))
+
+    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
+        packages = packages[0]
+
+    missing = []    
+    for package in packages:
+        if not rpm_is_installed(package):
+            missing.append(package)
+    if len(missing) > 0:
+        raise osgunittest.OkSkipException(message or 'missing %s' % ' '.join(missing))
+
 
 def certificate_info(path):
     """Extracts and returns the subject and issuer from an X.509 certificate."""

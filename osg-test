@@ -3,9 +3,11 @@
 from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 import os
-import osgtest.library.core as core
 import sys
 import unittest
+
+from osgtest.library import core
+from osgtest.library import osgunittest
 
 
 # ------------------------------------------------------------------------------
@@ -107,7 +109,7 @@ def run_tests(a_argv):
     else:
         verb = 1
     test_suite = unittest.defaultTestLoader.loadTestsFromNames(a_argv)
-    runner = unittest.TextTestRunner(verbosity=verb)
+    runner = osgunittest.OSGTextTestRunner(verbosity=verb)
     runner.run(test_suite)
 
 
