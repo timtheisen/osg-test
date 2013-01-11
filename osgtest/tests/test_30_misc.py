@@ -1,20 +1,21 @@
-import osgtest.library.core as core
 import re
 import unittest
 
-class TestMisc(unittest.TestCase):
+from osgtest.library import core, osgunittest
+
+class TestMisc(osgunittest.OSGTestCase):
 
     def test_01_web100clt(self):
-        if core.missing_rpm('ndt'):
-            return
+        core.skip_ok_unless_installed('ndt')
+
         command = ('web100clt', '-v')
         stdout = core.check_system(command, 'NDT client')[0]
         self.assert_(re.search('ndt.+version', stdout, re.IGNORECASE)
                      is not None)
 
     def test_02_osg_version(self):
-        if core.missing_rpm('osg-version'):
-            return
+        core.skip_ok_unless_installed('osg-version')
+
         command = ('osg-version',)
         
         # First we verify that osg-version runs
@@ -39,8 +40,7 @@ class TestMisc(unittest.TestCase):
         self.assert_(osg_version == osg_version_rpm_version)
         
     def test_03_lfc_multilib(self):
-        if core.missing_rpm('yum-utils'):
-            return
+        core.skip_ok_unless_installed('yum-utils')
 
         # We can't test this on 32-bit
         uname_out, _, _ = core.check_system(['uname', '-i'], 'getting arch')
