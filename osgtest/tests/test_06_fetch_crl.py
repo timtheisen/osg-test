@@ -5,9 +5,9 @@ import shutil
 import tempfile
 import unittest
 
-import osgtest.library.core as core
+from osgtest.library import core, osgunittest
 
-class TestFetchCrl(unittest.TestCase):
+class TestFetchCrl(osgunittest.OSGTestCase):
 
     error_message_whitelists = {
         '2': (
@@ -44,7 +44,7 @@ class TestFetchCrl(unittest.TestCase):
         elif core.rpm_is_installed('fetch-crl'):
             core.config['fetch-crl.package'] = 'fetch-crl'
         else:
-            return
+            self.skip_ok('Fetch CRL is not installed')
 
         command = ('rpm', '--query', core.config['fetch-crl.package'])
         stdout = core.check_system(command, 'Get fetch-crl package NVR')[0]
@@ -54,12 +54,8 @@ class TestFetchCrl(unittest.TestCase):
         core.config['fetch-crl.major-version'] = matches.group(2)
 
     def test_02_fetch_crl(self):
-        if core.config['fetch-crl.package'] is None:
-            core.skip('Fetch CRL is not installed')
-            return
-        if not core.dependency_is_installed('grid-certificates'):
-            core.skip('No certificates installed')
-            return
+        self.skip_ok_if(core.config['fetch-crl.package'] is None, 'Fetch CRL is not installed')
+        self.skip_ok_unless(core.dependency_is_installed('grid-certificates'), 'No certificates installed')
         command = [core.config['fetch-crl.package']]
         status, stdout, stderr = core.system(command)
         fail = core.diagnose('Run %s in /etc' % core.config['fetch-crl.package'], status, stdout, stderr)
@@ -71,12 +67,8 @@ class TestFetchCrl(unittest.TestCase):
         self.assert_(count > 3, True)
 
     def test_03_fetch_crl_dir(self):
-        if core.config['fetch-crl.package'] is None:
-            core.skip('Fetch CRL is not installed')
-            return
-        if not core.dependency_is_installed('grid-certificates'):
-            core.skip('No certificates installed')
-            return
+        self.skip_ok_if(core.config['fetch-crl.package'] is None, 'Fetch CRL is not installed')
+        self.skip_ok_unless(core.dependency_is_installed('grid-certificates'), 'No certificates installed')
         temp_crl_dir = tempfile.mkdtemp()
         command = (core.config['fetch-crl.package'], '-o', temp_crl_dir)
         status, stdout, stderr = core.system(command)
