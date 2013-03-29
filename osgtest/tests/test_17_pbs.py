@@ -3,10 +3,9 @@ import unittest
 import re
 import time
 
-import osgtest.library.core as core
-import osgtest.library.files as files
+from osgtest.library import core, files, osgunittest
 
-class TestStartPBS(unittest.TestCase):
+class TestStartPBS(osgunittest.OSGTestCase):
 
     pbs_config = """
 create queue batch queue_type=execution
@@ -36,11 +35,8 @@ set server acl_host_enable = True
         core.config['munge.keyfile'] = '/etc/munge/munge.key'
         core.state['munge.running'] = False
 
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if os.path.exists(core.config['munge.lockfile']):
-            core.skip('munge apparently running')
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(os.path.exists(core.config['munge.lockfile']), 'already running')
 
         files.preserve(core.config['munge.keyfile'], 'pbs')
         command = ('/usr/sbin/create-munge-key', '-f',)
@@ -57,18 +53,15 @@ set server acl_host_enable = True
         core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
         core.state['torque.pbs-mom-running'] = False
        
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if os.path.exists(core.config['torque.mom-lockfile']):
-            core.skip('pbs mom apparently running')
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(os.path.exists(core.config['torque.mom-lockfile']), 'pbs mom apparently running')
 
         if core.el_release() == 5:
             core.config['torque.mom-config'] = '/var/torque/mom_priv/config'
         elif core.el_release() == 6:
             core.config['torque.mom-config'] = '/var/lib/torque/mom_priv/config'
         else:
-            core.skip('Distribution version not supported')
+            core.skip_ok('Distribution version not supported')
 
         files.write(core.config['torque.mom-config'],
                     "$pbsserver %s\n" % core.get_hostname(),
@@ -86,11 +79,8 @@ set server acl_host_enable = True
         core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
         core.state['torque.pbs-sched-running'] = False
 
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if os.path.exists(core.config['torque.sched-lockfile']):
-          core.skip('pbs scheduler apparently running')
-          return
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(os.path.exists(core.config['torque.sched-lockfile']), 'pbs scheduler apparently running')
     
         command = ('service', 'pbs_sched', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs scheduler daemon')
@@ -109,13 +99,10 @@ set server acl_host_enable = True
         elif core.el_release() == 6:
             core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
         else:
-            core.skip('Distribution version not supported')
+            core.skip_ok('Distribution version not supported')
 
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if os.path.exists(core.config['torque.pbs-lockfile']):
-            core.skip('pbs server apparently running')
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(os.path.exists(core.config['torque.pbs-lockfile']), 'pbs server apparently running')
     
         # add the local node as a compute node
         files.write(core.config['torque.pbs-nodes-file'],
