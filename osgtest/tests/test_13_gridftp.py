@@ -1,19 +1,15 @@
 import os
-import osgtest.library.core as core
+from osgtest.library import core, osgunittest
 import unittest
 
-class TestStartGridFTP(unittest.TestCase):
+class TestStartGridFTP(osgunittest.OSGTestCase):
 
     def test_01_start_gridftp(self):
         core.config['gridftp.pid-file'] = '/var/run/globus-gridftp-server.pid'
         core.state['gridftp.started-server'] = False
 
-        if not core.rpm_is_installed('globus-gridftp-server-progs'):
-            core.skip('not installed')
-            return
-        if os.path.exists(core.config['gridftp.pid-file']):
-            core.skip('apparently running')
-            return
+        core.skip_ok_unless_installed('globus-gridftp-server-progs')
+        self.skip_ok_if(os.path.exists(core.config['gridftp.pid-file']), 'already running')
 
         command = ('service', 'globus-gridftp-server', 'start')
         stdout, _, fail = core.check_system(command, 'Start GridFTP server')
