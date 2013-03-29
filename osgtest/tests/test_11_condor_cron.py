@@ -1,20 +1,18 @@
 import os
-import osgtest.library.core as core
+from osgtest.library import core, osgunittest
 import unittest
 
-class TestStartCondorCron(unittest.TestCase):
+class TestStartCondorCron(osgunittest.OSGTestCase):
 
     def test_01_start_condor_cron(self):
         core.config['condor-cron.lockfile'] = '/var/lock/subsys/condor-cron'
         core.state['condor-cron.started-service'] = False
         core.state['condor-cron.running-service'] = False
 
-        if core.missing_rpm('condor-cron'):
-            return
+        core.skip_ok_unless_installed('condor-cron')
         if os.path.exists(core.config['condor-cron.lockfile']):
             core.state['condor-cron.running-service'] = True
-            core.skip('already running')
-            return
+            self.skip_ok('already running')
 
         command = ('service', 'condor-cron', 'start')
         stdout, _, fail = core.check_system(command, 'Start Condor-Cron')
