@@ -1,12 +1,11 @@
 import os
 import pwd
 import shutil
-import osgtest.library.core as core
-import osgtest.library.files as files
+from osgtest.library import core, files, osgunittest
 import unittest
 import re
 
-class TestStartXrootd(unittest.TestCase):
+class TestStartXrootd(osgunittest.OSGTestCase):
     def install_cert(self, target_key, source_key, owner_name, permissions):
         target_path = core.config[target_key]
         target_dir = os.path.dirname(target_path)
@@ -43,17 +42,13 @@ class TestStartXrootd(unittest.TestCase):
         core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir,
                                                      '.globus',
                                                      'usercert.pem')
-        if not core.rpm_is_installed('xrootd-server'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('xrootd-server')
                   
         xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd-server', '--qf=%{VERSION}'), 'Getting xrootd-server version')
         
         user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
-            if not core.rpm_is_installed('globus-proxy-utils'):
-              core.skip('grid-proxy-utils not installed')
-              return
+            core.skip_ok_unless_installed('globus-proxy-utils')
             self.install_cert('certs.xrootdcert', 'certs.hostcert', 
                 'xrootd', 0644)
             self.install_cert('certs.xrootdkey', 'certs.hostkey', 
