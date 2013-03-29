@@ -1,9 +1,8 @@
 import os
-import osgtest.library.core as core
-import osgtest.library.files as files
+from osgtest.library import core, files, osgunittest
 import unittest
 
-class TestStartCvmfs(unittest.TestCase):
+class TestStartCvmfs(osgunittest.OSGTestCase):
 
     def setup_fuse(self):
         fuse_conf_path='/etc/fuse.conf'
@@ -51,9 +50,7 @@ class TestStartCvmfs(unittest.TestCase):
 
 	
     def test_01_setup_cvmfs(self):
-        if not core.rpm_is_installed('cvmfs'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('cvmfs')
 
         self.setup_fuse()
         self.setup_automount()
@@ -62,9 +59,7 @@ class TestStartCvmfs(unittest.TestCase):
     def test_02_start_cvmfs(self):
         core.state['cvmfs.started-server'] = False
 
-        if not core.rpm_is_installed('cvmfs'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('cvmfs')
 
         command = ('service', 'cvmfs', 'restartautofs')
         stdout, stderr, fail = core.check_system(command, 'Start cvmfs server')
