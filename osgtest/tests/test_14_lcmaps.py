@@ -1,16 +1,13 @@
 import os
-import osgtest.library.core as core
-import osgtest.library.files as files
+from osgtest.library import core, files, osgunittest
 import shutil
 import unittest
 
-class TestLcMaps(unittest.TestCase):
+class TestLcMaps(osgunittest.OSGTestCase):
 
     # ==================================================================
     def test_01_create_lcmaps_for_glexec(self):
-        if not core.rpm_is_installed('glexec'):
-            core.skip("glexec not installed, don't need lcmaps for it")
-            return
+        core.skip_ok_unless_installed('glexec')
         path='/etc/lcmaps.db'
         
         contents = """
