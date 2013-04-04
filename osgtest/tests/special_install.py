@@ -40,9 +40,9 @@ class TestInstall(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.options.updaterepo, 'Update option not specified')
         update_regexp = re.compile(r'\s+Updating\s+:\s+(\S+)\s+\d')
         core.state['install.updated'] = []
-        command = ['yum', '-y']
+        command = ['yum', 'update', '-y']
         command.append('--enablerepo=%s' % core.options.updaterepo)
-        stdout = core.check_system(command, 'Updating' % (package))[0]
+        stdout = core.check_system(command, 'Updating')[0]
 
         # Parse output for order of installs and to differentiate between update and installs
         for line in stdout.strip().split('\n'):
