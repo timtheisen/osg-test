@@ -35,7 +35,11 @@ class TestCleanup(unittest.TestCase):
         # the chances of a clean erase.
 
         rpm_erase_candidates = []
-        for package in core.state['install.installed']:
+        if core.options.updaterepo:
+            installed_rpms = core.state['install.installed'] + core.state['install.updated']
+        else:
+            installed_rpms = core.state['install.installed']
+        for package in installed_rpms:
             if package in new_rpms:
                 rpm_erase_candidates.append(package)
 

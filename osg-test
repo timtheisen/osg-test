@@ -39,12 +39,17 @@ def parse_command_line():
     
     parser.set_defaults(dumpfile=None)
     parser.add_option('--dump-file', '--df', action='store', type='string', dest='dumpfile', metavar='DUMPFILE',
-                      help='Store all command output into a file')
+                      help='Store all command output into DUMPFILE')
 
     parser.set_defaults(packages=[])
     parser.add_option('-i', '--install', action='append', dest='packages',
                       metavar='PACKAGE',
                       help='Install PACKAGE with yum before running tests')
+
+    parser.set_defaults(updaterepo=None)
+    parser.add_option('-g','--update-repo', action='store', type='string', dest='updaterepo', metavar='REPO',
+                      help='REPO to use when updating packages'
+                      'specified with the -i flag.')
 
     parser.set_defaults(password='vdttest')
     parser.add_option('-p', '--password', action='store', type='string',
@@ -55,7 +60,7 @@ def parse_command_line():
     parser.set_defaults(extrarepos=[])
     parser.add_option('-r', '--extra-repo', action='append', type='string',
                       dest='extrarepos', metavar='REPO',
-                      help='Extra repository (in addition to production) to use'
+                      help='Extra REPO (in addition to production) to use'
                       ' when installing packages')
 
     parser.set_defaults(printtest=True)
@@ -81,6 +86,9 @@ def parse_command_line():
     (core.options, args) = parser.parse_args()
     if len(args) != 0:
         parser.error('unknown argument(s): %s' % ' '.join(args))
+
+    if core.options.updaterepo and not core.options.packages:
+        parser.error('The -g option requires -i.')
 
     if core.options.cleanup:
         print 'WARNING: The "--cleanup" ("-c") option is deprecated as of osg-test 1.1.1.'
