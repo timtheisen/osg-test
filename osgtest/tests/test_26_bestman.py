@@ -1,11 +1,12 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import pwd
 import shutil
 import unittest
 
-class TestStartBestman(unittest.TestCase):
+class TestStartBestman(osgunittest.OSGTestCase):
 
     def install_cert(self, target_key, source_key, owner_name, permissions):
         target_path = core.config[target_key]
@@ -38,9 +39,7 @@ class TestStartBestman(unittest.TestCase):
         core.config['certs.bestmankey'] = '/etc/grid-security/bestman/bestmankey.pem'	
 
     def test_02_install_bestman_certs(self):
-        if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
-            core.skip('Bestman not installed')
-            return
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
         if (os.path.exists(core.config['certs.bestmancert']) and
             os.path.exists(core.config['certs.bestmankey'])):
             return
@@ -48,9 +47,7 @@ class TestStartBestman(unittest.TestCase):
         self.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
 
     def test_03_modify_sudoers(self):
-        if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
-           core.skip('Bestman not installed')
-           return
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
         sudoers_path = '/etc/sudoers'
         contents = files.read(sudoers_path)
         srm_cmd = 'Cmnd_Alias SRM_CMD = /bin/rm, /bin/mkdir, /bin/rmdir, /bin/mv, /bin/cp, /bin/ls'
@@ -80,9 +77,7 @@ class TestStartBestman(unittest.TestCase):
            files.write(sudoers_path, new_contents, owner='bestman')
 
     def test_04_modify_bestman_conf(self):
-        if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
-           core.skip('Bestman not installed')
-           return
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
         bestman_rc_path = '/etc/bestman2/conf/bestman2.rc'
 	env_file = '/etc/sysconfig/bestman2'
         old_port = 'securePort=8443'
@@ -99,12 +94,8 @@ class TestStartBestman(unittest.TestCase):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
         core.state['bestman.started-server'] = False
 
-        if core.missing_rpm('bestman2-server', 'bestman2-client', 'voms-clients'):
-            core.skip('not installed')
-            return
-        if os.path.exists(core.config['bestman.pid-file']):
-            core.skip('apparently running')
-            return
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
+        self.skip_ok_if(os.path.exists(core.config['bestman.pid-file']), 'apparently running') 
         #commenting and replacing with system command for temp troubleshooting purpose
         #command = ('service', 'bestman2', 'start') 	
         #stdout, _, fail = core.check_system(command, 'Starting bestman2')

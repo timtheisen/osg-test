@@ -8,8 +8,9 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
+import osgtest.library.osgunittest as osgunittest
 
-class TestStartVOMS(unittest.TestCase):
+class TestStartVOMS(osgunittest.OSGTestCase):
 
     def check_file_and_perms(self, file_path, owner_name, permissions):
         """Return True if the file at 'file_path' exists, is owned by
@@ -65,26 +66,22 @@ class TestStartVOMS(unittest.TestCase):
         core.config['certs.vomskey'] = '/etc/grid-security/voms/vomskey.pem'
 
     def test_02_install_voms_certs(self):
-        if not core.rpm_is_installed('voms-server'):
-            core.skip('VOMS not installed')
-            return
+        core.skip_ok_unless_installed('voms-server')
         vomscert = core.config['certs.vomscert']
         vomskey = core.config['certs.vomskey']
-        if self.check_file_and_perms(vomscert, 'voms', 0644) and self.check_file_and_perms(vomskey, 'voms', 0400):
-            core.skip('VOMS cert exists and has proper permissions')
-            return
+        self.skip_ok_if(self.check_file_and_perms(vomscert, 'voms', 0644) and
+                        self.check_file_and_perms(vomskey, 'voms', 0400),
+                        'VOMS cert exists and has proper permissions')
         self.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0644)
         self.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0400)
 
     def test_03_install_http_certs(self):
-        if not core.rpm_is_installed('voms-admin-server'):
-            core.skip('VOMS Admin not installed')
-            return
+        core.skip_ok_unless_installed('voms-admin-server')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
-        if self.check_file_and_perms(httpcert, 'tomcat', 0644) and self.check_file_and_perms(httpkey, 'tomcat', 0400):
-            core.skip('HTTP cert exists and has proper permissions')
-            return
+        self.skip_ok_if(self.check_file_and_perms(httpcert, 'tomcat', 0644) and
+                        self.check_file_and_perms(httpkey, 'tomcat', 0400),
+                        'HTTP cert exists and has proper permissions')
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
 
@@ -98,8 +95,7 @@ class TestStartVOMS(unittest.TestCase):
             tomcat.logdir(), 'voms-admin-osgtestvo.log')
 
     def test_05_configure_voms_admin(self):
-        if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
 
         # Find full path to libvomsmysql.so
         command = ('rpm', '--query', '--list', 'voms-mysql-plugin')
@@ -131,8 +127,7 @@ class TestStartVOMS(unittest.TestCase):
         self.assert_(good_message in stdout, fail)
 
     def test_06_add_local_admin(self):
-        if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
         host_dn, host_issuer = \
             core.certificate_info(core.config['certs.hostcert'])
         command = ('voms-db-deploy.py', 'add-admin',
@@ -141,8 +136,7 @@ class TestStartVOMS(unittest.TestCase):
         core.check_system(command, 'Add VO admin')
 
     def test_07_config_va_properties(self):
-        if core.missing_rpm('voms-admin-server'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server')
 
         path = os.path.join('/etc/voms-admin', core.config['voms.vo'],
                             'voms.service.properties')
@@ -161,9 +155,8 @@ class TestStartVOMS(unittest.TestCase):
         files.write(path, contents, backup=False)
 
     def test_08_advertise(self):
-        if core.missing_rpm('voms-admin-server'):
-            return
-
+        core.skip_ok_unless_installed('voms-admin-server')
+        
         hostname = socket.getfqdn()
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
@@ -182,12 +175,8 @@ class TestStartVOMS(unittest.TestCase):
     def test_09_start_voms(self):
         core.state['voms.started-server'] = False
 
-        if not core.rpm_is_installed('voms-server'):
-            core.skip('not installed')
-            return
-        if os.path.exists(core.config['voms.lock-file']):
-            core.skip('apparently running')
-            return
+        core.skip_ok_unless_installed('voms-server')
+        self.skip_ok_if(os.path.exists(core.config['voms.lock-file']), 'apparently running')
 
         command = ('service', 'voms', 'start')
         stdout, _, fail = core.check_system(command, 'Start VOMS service')
@@ -198,12 +187,8 @@ class TestStartVOMS(unittest.TestCase):
 
     def test_10_install_vo_webapp(self):
         core.state['voms.installed-vo-webapp'] = False
-        if not core.rpm_is_installed('voms-admin-server'):
-            core.skip('not installed')
-            return
-        if os.path.exists(core.config['voms.vo-webapp']):
-            core.skip('apparently installed')
-            return
+        core.skip_ok_unless_installed('voms-admin-server')
+        self.skip(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
 
         command = ('service', 'voms-admin', 'start')
         core.check_system(command, 'Install VOMS Admin webapp(s)')

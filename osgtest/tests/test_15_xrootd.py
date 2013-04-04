@@ -1,7 +1,9 @@
 import os
 import pwd
 import shutil
-from osgtest.library import core, files, osgunittest
+import osgtest.library.core as core
+import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import unittest
 import re
 

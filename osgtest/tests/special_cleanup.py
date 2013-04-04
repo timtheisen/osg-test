@@ -7,22 +7,17 @@ import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 
-class TestCleanup(unittest.TestCase):
+class TestCleanup(osgunittest.OSGTestCase):
 
     def test_01_remove_packages(self):
-        if (('install.preinstalled' not in core.state) or
-            (len(core.state['install.preinstalled']) == 0)):
-            core.skip('no original list')
-            return
-        if 'install.installed' not in core.state:
-            core.skip('no packages installed')
-            return
+        self.skip_ok_if(('install.preinstalled' not in core.state) or
+            (len(core.state['install.preinstalled']) == 0), 'no original list')
+        self.skip_ok_unless('install.installed' in core.state, 'no packages installed')
         current_rpms = core.installed_rpms()
         new_rpms = current_rpms - core.state['install.preinstalled']
-        if len(new_rpms) == 0:
-            core.skip('no new RPMs')
-            return
+        self.skip_ok_if(len(new_rpms) == 0, 'no new RPMs')
 
         # For the "rpm -e" command, RPMs should be listed in the same order as
         # installed.  Why?  The erase command processes files in reverse order
@@ -79,9 +74,8 @@ class TestCleanup(unittest.TestCase):
 
 
     def test_03_remove_test_user(self):
-        if not core.state['general.user_added']:
-            core.skip('did not add user')
-            return
+        self.skip_ok_unless(core.state['general.user_added'], 'did not add user')
+
 
         username = core.options.username
         password_entry = pwd.getpwnam(username)

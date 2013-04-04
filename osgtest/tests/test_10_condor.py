@@ -1,5 +1,6 @@
 import os
-from osgtest.library import core, osgunittest
+import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
 class TestStartCondor(osgunittest.OSGTestCase):

@@ -1,6 +1,7 @@
 import os, re
-from osgtest.library import core, osgunittest, files
-# import osgtest.library.files as files
+import osgtest.library.core as core
+import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
 class TestStartGatekeeper(osgunittest.OSGTestCase):

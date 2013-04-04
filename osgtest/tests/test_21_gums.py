@@ -9,8 +9,9 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
+import osgtest.library.osgunittest as osgunittest
 
-class TestStartGUMS(unittest.TestCase):
+class TestStartGUMS(osgunittest.OSGTestCase):
 
     # ==========================================================================
     # START: (MOSTLY) COPIED FROM test_20_voms.py
@@ -67,13 +68,12 @@ class TestStartGUMS(unittest.TestCase):
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
 
     def test_02_install_http_certs(self):
-        if core.missing_rpm('gums-service'):
-            return
+        core.skip_ok_unless_installed('gums-service')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
-        if self.check_file_and_perms(httpcert, 'tomcat', 0644) and self.check_file_and_perms(httpkey, 'tomcat', 0400):
-            core.skip('HTTP cert exists and has proper permissions')
-            return
+        self.skip_ok_if(self.check_file_and_perms(httpcert, 'tomcat', 0644) and
+                        self.check_file_and_perms(httpkey, 'tomcat', 0400),
+                        'HTTP cert exists and has proper permissions')
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
 
@@ -85,15 +85,13 @@ class TestStartGUMS(unittest.TestCase):
         core.config['gums.password'] = 'osgGUMS!'
 
     def test_04_setup_gums_database(self):
-        if core.missing_rpm('gums-service'):
-            return
+        core.skip_ok_unless_installed('gums-service')
         command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
                    '--password', core.config['gums.password'])
         core.check_system(command, 'Set up GUMS MySQL database')
 
     def test_05_add_mysql_admin(self):
-        if core.missing_rpm('gums-service'):
-            return
+        core.skip_ok_unless_installed('gums-service')
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
         self.assert_(os.path.exists(mysql_template_path), 'GUMS MySQL template exists')
@@ -107,8 +105,7 @@ class TestStartGUMS(unittest.TestCase):
         core.check_system(command, 'Add GUMS MySQL admin')
 
     def test_06_write_gums_config(self):
-        if core.missing_rpm('gums-service'):
-            return
+        core.skip_ok_unless_installed('gums-service')
 
         # Debugging -- can be deleted later
         command = ('cat', '/etc/gums/gums.config')

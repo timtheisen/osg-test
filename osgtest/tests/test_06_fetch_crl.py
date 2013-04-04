@@ -5,7 +5,8 @@ import shutil
 import tempfile
 import unittest
 
-from osgtest.library import core, osgunittest
+import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 
 class TestFetchCrl(osgunittest.OSGTestCase):
 

@@ -2,14 +2,14 @@ import os
 import unittest
 
 import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 
-class TestSetupVomsAdmin(unittest.TestCase):
+class TestSetupVomsAdmin(osgunittest.OSGTestCase):
 
     def test_01_wait_for_voms_admin(self):
         core.state['voms.started-webapp'] = False
 
-        if core.missing_rpm('voms-admin-server'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server')
 
         line, gap = core.monitor_file(core.config['voms.webapp-log'],
                                       core.state['voms.webapp-log-stat'],
@@ -19,11 +19,8 @@ class TestSetupVomsAdmin(unittest.TestCase):
         core.log_message('VOMS Admin started after %.1f seconds' % gap)
 
     def test_02_open_access(self):
-        if core.missing_rpm('voms-admin-server', 'voms-admin-client'):
-            return
-        if not core.state['voms.started-webapp']:
-            core.skip('VOMS Admin webapp not started')
-            return
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
+        self.skip_ok_unless(core.state['voms.started-webapp'], 'VOMS Admin webapp not started')
 
         command = ('voms-admin', '--nousercert',
                    '--vo', core.config['voms.vo'],
