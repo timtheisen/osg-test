@@ -1,8 +1,9 @@
 import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 import re
 import unittest
 
-class TestInstall(unittest.TestCase):
+class TestInstall(osgunittest.OSGTestCase):
     install_regexp = re.compile(r'\s+Installing\s+:\s+(\S+)\s+\d')
     
     def test_01_yum_repositories(self):
@@ -16,7 +17,6 @@ class TestInstall(unittest.TestCase):
         core.check_system(pre + ('expire-cache',), 'YUM clean cache')
 
     def test_03_install_packages(self):
-        # install_regexp = re.compile(r'\s+Installing\s+:\s+(\S+)\s+\d')
         core.state['install.preinstalled'] = core.installed_rpms()
         core.state['install.installed'] = []
         for package in core.options.packages:
@@ -37,24 +37,18 @@ class TestInstall(unittest.TestCase):
                     core.state['install.installed'].append(matches.group(1))
 
     def test_04_update_packages(self):
-        if not core.options.updaterepo:
-            core.skip('Update option not specified')
-        # install_regexp = re.compile(r'\s+Installing\s+:\s+(\S+)\s+\d')
+        self.skip_ok_unless(core.options.updaterepo, 'Update option not specified')
         update_regexp = re.compile(r'\s+Updating\s+:\s+(\S+)\s+\d')
         core.state['install.updated'] = []
-        for package in core.options.packages:
-            command = ['yum', '-y']
-            command.append('--enablerepo=%s' % core.options.updaterepo)
-            command += ['update', package]
-            stdout = core.check_system(command, 'Update %s' % (package))[0]
-            command = ('rpm', '--verify', '--quiet', package)
-            core.check_system(command, 'Verify %s' % (package))
+        command = ['yum', '-y']
+        command.append('--enablerepo=%s' % core.options.updaterepo)
+        stdout = core.check_system(command, 'Updating' % (package))[0]
 
-            # Parse output for order of installs and to differentiate between update and installs
-            for line in stdout.strip().split('\n'):
-                install_matches = self.install_regexp.match(line)
-                update_matches = update_regexp.match(line)
-                if install_matches is not None:
-                    core.state['install.installed'].append(install_matches.group(1))
-                elif update_matches is not None:
-                    core.state['install.updated'].append(update_matches.group(1))
+        # Parse output for order of installs and to differentiate between update and installs
+        for line in stdout.strip().split('\n'):
+            install_matches = self.install_regexp.match(line)
+            update_matches = update_regexp.match(line)
+            if install_matches is not None:
+                core.state['install.installed'].append(install_matches.group(1))
+            elif update_matches is not None:
+                core.state['install.updated'].append(update_matches.group(1))
