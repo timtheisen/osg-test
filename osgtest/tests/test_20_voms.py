@@ -188,7 +188,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
     def test_10_install_vo_webapp(self):
         core.state['voms.installed-vo-webapp'] = False
         core.skip_ok_unless_installed('voms-admin-server')
-        self.skip(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
+        self.skip_ok_if(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
 
         command = ('service', 'voms-admin', 'start')
         core.check_system(command, 'Install VOMS Admin webapp(s)')
