@@ -17,10 +17,10 @@ class TestMisc(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('osg-version')
 
         command = ('osg-version',)
-        
+
         # First we verify that osg-version runs
         stdout = core.check_system(command, 'osg-version')[0]
-        
+
         # Then we pull out the version number from the output
         version_pattern = re.compile(r'(\d+\.\d+\.\d+)')
         matches = version_pattern.search(stdout)
@@ -38,15 +38,13 @@ class TestMisc(osgunittest.OSGTestCase):
         # Verify that the versions match
         osg_version_rpm_version = matches.group(1)
         self.assert_(osg_version == osg_version_rpm_version)
-        
+
     def test_03_lfc_multilib(self):
         core.skip_ok_unless_installed('yum-utils')
 
         # We can't test this on 32-bit
         uname_out, _, _ = core.check_system(['uname', '-i'], 'getting arch')
-        if re.search(r'i\d86', uname_out):
-            core.skip('running on 32-bit')
-            return
+        self.skip_ok_if(re.search(r'i\d86', uname_out), message='running on 32-bit')
 
         cmdbase = ['repoquery', '--plugins']
         for repo in core.options.extrarepos:
@@ -72,5 +70,5 @@ class TestMisc(osgunittest.OSGTestCase):
             stdout, _, _ = core.check_system(cmdbase + ['lfc-python26.x86_64'], 'lfc-python26 multilib (64bit)')
             if stdout.strip() == '':
                 self.fail('64-bit lfc-python not found in 64-bit repo')
-            
-        
+
+
