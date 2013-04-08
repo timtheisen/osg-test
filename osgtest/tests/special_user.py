@@ -73,8 +73,6 @@ class TestUser(unittest.TestCase):
             return
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, user_cert_issuer = core.certificate_info(cert_path)
-        existed_prior = os.path.exists(core.config['system.mapfile'])
         files.append(core.config['system.mapfile'], '"%s" %s\n' % (user_dn, pwd_entry.pw_name), owner='user')
-        if not existed_prior:
-            core.state['system.wrote_mapfile'] = True
+        core.state['system.wrote_mapfile'] = True
         os.chmod(core.config['system.mapfile'], 0644)

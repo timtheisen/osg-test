@@ -109,8 +109,15 @@ def append(path, contents, force=False, owner=None, backup=True):
     However, if the force argument is True, then the extra contents are always
     appended.
 
-    The 'owner' and 'backup' arguments are passed to write().
+    The 'owner' and 'backup' arguments are the same as in write().
     """
+    # The default arguments are invalid: Either "backup" must be false or the
+    # "owner" must be specified.
+    if backup:
+        if owner is None:
+            raise ValueError('Must specify an owner or backup=False')
+        preserve(path, owner)
+
     if os.path.exists(path):
         old_contents = read(path)
     else:
@@ -120,8 +127,7 @@ def append(path, contents, force=False, owner=None, backup=True):
         return
 
     new_contents = old_contents + [contents]
-    write(path, new_contents, owner=owner, backup=backup)
-    return
+    write(path, new_contents, backup=False)
 
 
 def restore(path, owner):
