@@ -31,13 +31,13 @@ class TestCleanup(osgunittest.OSGTestCase):
 
         rpm_erase_candidates = []
         if core.options.updaterepo:
-            installed_rpms = core.state['install.installed'] + core.state['install.updated']
+            special_install_rpms = core.state['install.installed'] + core.state['install.updated']
         else:
-            installed_rpms = core.state['install.installed']
-        for package in installed_rpms:
-            if package in new_rpms:
-                rpm_erase_candidates.append(package)
-
+            special_install_rpms = core.state['install.installed']
+        for package in special_install_rpms:
+            status, stdout, stderr = core.system(('rpm', '--query', package, '--queryformat', r'%{NAME}'))
+            if status == 0 and stdout in new_rpms:
+                rpm_erase_candidates.append(stdout)
         remaining_new_rpms = new_rpms - set(rpm_erase_candidates)
         count = len(remaining_new_rpms)
         if count > 0:

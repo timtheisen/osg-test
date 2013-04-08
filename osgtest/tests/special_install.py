@@ -4,7 +4,7 @@ import re
 import unittest
 
 class TestInstall(osgunittest.OSGTestCase):
-    install_regexp = re.compile(r'\s+Installing\s+:\s+(\S+)\s+\d')
+    install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
     
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--quiet', '--nomd5', '--nosize', '--nomtime')
@@ -42,7 +42,7 @@ class TestInstall(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.options.updaterepo, 'Update option not specified')
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
         self.skip_ok_unless(core.state['install.installed'], 'No packages were installed')
-        update_regexp = re.compile(r'\s+Updating\s+:\s+(\S+)\s+\d')
+        update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
         core.state['install.updated'] = []
         command = ['yum', 'update', '-y']
         command.append('--enablerepo=%s' % core.options.updaterepo)
