@@ -59,13 +59,14 @@ INSTALL_PYTHON_DIR := $(shell python -c 'from distutils.sysconfig import get_pyt
 
 # ------------------------------------------------------------------------------
 
-.PHONY: _default distclean install dist upstream
+.PHONY: _default distclean install dist upstream check
 
 _default:
 	@echo "There is no default target; choose one of the following:"
 	@echo "make install DESTDIR=path     -- install files to path"
 	@echo "make dist                     -- make a distribution source tarball"
 	@echo "make upstream [UPSTREAM=path] -- install source tarball to upstream cache rooted at path"
+	@echo "make check                    -- use pylint to check for errors"
 
 
 distclean:
@@ -113,3 +114,7 @@ else
 	rm -f $(TARBALL_NAME)
 endif
 	install -p -m 0755 $(BOOTSTRAP_NAME) $(BOOTSTRAP_PATH)
+
+check:
+	pylint -E osg-test $(PYTHON_LIB_FILES) $(PYTHON_TEST_FILES)
+
