@@ -62,7 +62,7 @@ set server acl_host_enable = True
         elif core.el_release() == 6:
             core.config['torque.mom-config'] = '/var/lib/torque/mom_priv/config'
         else:
-            core.skip_ok('Distribution version not supported')
+            self.skip_ok('Distribution version not supported')
 
         files.write(core.config['torque.mom-config'],
                     "$pbsserver %s\n" % core.get_hostname(),
@@ -100,7 +100,7 @@ set server acl_host_enable = True
         elif core.el_release() == 6:
             core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
         else:
-            core.skip_ok('Distribution version not supported')
+            self.skip_ok('Distribution version not supported')
 
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(os.path.exists(core.config['torque.pbs-lockfile']), 'pbs server apparently running')
