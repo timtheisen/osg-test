@@ -17,6 +17,7 @@ class TestInstall(osgunittest.OSGTestCase):
         core.check_system(pre + ('expire-cache',), 'YUM clean cache')
 
     def test_03_install_packages(self):
+        core.state['install.success'] = False
         core.state['install.preinstalled'] = core.installed_rpms()
         core.state['install.installed'] = []
         for package in core.options.packages:
@@ -35,16 +36,19 @@ class TestInstall(osgunittest.OSGTestCase):
                 matches = self.install_regexp.match(line)
                 if matches is not None:
                     core.state['install.installed'].append(matches.group(1))
+        core.state['install.success'] = True
 
     def test_04_update_packages(self):
         self.skip_ok_unless(core.options.updaterepo, 'Update option not specified')
+        self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
+        self.skip_ok_unless(core.state['install.installed'], 'No packages were installed')
         update_regexp = re.compile(r'\s+Updating\s+:\s+(\S+)\s+\d')
         core.state['install.updated'] = []
+        command = ['yum', 'update', '-y']
+        command.append('--enablerepo=%s' % core.options.updaterepo)
         for package in core.state['install.installed']:
-            command = ['yum', 'update', '-y']
-            command.append('--enablerepo=%s' % core.options.updaterepo)
             command += [package]
-        stdout = core.check_system(command, 'Update %s' % (package))[0]
+        stdout = core.check_system(command, 'Update packages')[0]
 
         # Parse output for order of installs and to differentiate between update and installs
         for line in stdout.strip().split('\n'):
