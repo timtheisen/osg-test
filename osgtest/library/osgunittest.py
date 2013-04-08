@@ -59,6 +59,9 @@ class OSGTestCase(unittest.TestCase):
         unittest.TestCase.__init__(self, methodName)
         # in py2.4, testMethodName is a private variable, which means it has
         # a mangled version. Make a copy so methods we override can use it.
+        
+        # pylint:disable=E1101
+        # Quiet error about missing member--I'm checking explicitly.
         if hasattr(self, '_TestCase__testMethodName'):
             self._testMethodName = self._TestCase__testMethodName
 

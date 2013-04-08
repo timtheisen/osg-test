@@ -1,3 +1,25 @@
+"""
+Functions for dealing with writing and tracking of files.
+
+The most important part of this module is the backup mechanism.
+Backups are identified by a (filepath, owner) pair--where owner is an
+arbitraty string identifying the test component responsible for the file,
+specifically its cleanup.
+
+preserve() does the backup. It raises an error if a pair has been used.
+Normally you would not call it directly, but call write(), append() or
+replace(), and pass either the value of owner, or backup=False.
+restore() puts the backup back to its original location.
+
+Since one owner cannot back up the same file twice, if you modify a file
+twice in one module then you must either call preserve() directly, or pass
+an owner for the first append/replace/write call, and backup=False for all
+subsequent calls to append/replace/write.
+
+(You could also use a different owner for each change, but then you would
+have to restore it for each owner you used else the cleanup test will fail).
+"""
+
 import glob
 import os
 import re
@@ -23,7 +45,13 @@ def read(path, as_single_string=False):
 
 
 def preserve(path, owner):
-    """Backup the file at path and remember it with the given owner."""
+    """Backup the file at path and remember it with the given owner.
+
+    owner must be specified. The (path, owner) pair must not have been
+    previously used in a call to preserve. Raises ValueError if either
+    of these are not true.
+
+    """
     if owner is None:
         raise ValueError('Must have owner string')
 
