@@ -1,18 +1,18 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import socket
 import shutil
 import tempfile
 import unittest
 
-class TestCvmfs(unittest.TestCase):
+class TestCvmfs(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
 
     def test_01_cvmfs(self):
-        if core.missing_rpm('cvmfs', 'cvmfs-keys'):
-            return
+        core.skip_ok_unless_installed('cvmfs', 'cvmfs-keys')
 
         #TESTING 
         command = ('cat','/etc/cvmfs/default.local')

@@ -1,15 +1,15 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
-class TestStopCondorCron(unittest.TestCase):
+class TestStopCondorCron(osgunittest.OSGTestCase):
 
     def test_01_stop_condor_cron(self):
-        if core.missing_rpm('condor-cron'):
-            return
-        if core.state['condor-cron.started-service'] == False:
-            core.skip('did not start server')
-            return
+        core.skip_ok_unless_installed('condor-cron')
+        self.skip_ok_if(core.state['condor-cron.started-service'] == False, 'did not start server')
+
+
 
         command = ('service', 'condor-cron', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop Condor-Cron')

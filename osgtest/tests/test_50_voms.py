@@ -1,14 +1,14 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 import pwd
 import socket
 import unittest
 
-class TestVOMS(unittest.TestCase):
+class TestVOMS(osgunittest.OSGTestCase):
 
     def test_01_add_user(self):
-        if core.missing_rpm('voms-admin-server', 'voms-admin-client'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
@@ -24,8 +24,7 @@ class TestVOMS(unittest.TestCase):
     def test_02_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
 
-        if core.missing_rpm('voms-server', 'voms-clients'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'])
         password = core.options.password + '\n'
@@ -34,11 +33,8 @@ class TestVOMS(unittest.TestCase):
         core.state['voms.got-proxy'] = True
 
     def test_03_voms_proxy_info(self):
-        if core.missing_rpm('voms-clients'):
-            return
-        if not core.state['voms.got-proxy']:
-            core.skip('no proxy')
-            return
+        core.skip_ok_unless_installed('voms-clients')
+        self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         command = ('voms-proxy-info', '-all')
         stdout = core.check_system(command, 'Run voms-proxy-info',
@@ -47,8 +43,7 @@ class TestVOMS(unittest.TestCase):
                      'voms-proxy-info output contains sentinel')
 
     def test_04_voms_proxy_init(self):
-        if core.missing_rpm('voms-server', 'voms-clients'):
-            return
+        core.skip_ok_unless_installed('voms-server', 'voms-clients')
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
         password = core.options.password + '\n'
@@ -59,11 +54,8 @@ class TestVOMS(unittest.TestCase):
 
     # Copy of 03 above, to make sure failure did not affect good proxy
     def test_05_voms_proxy_info(self):
-        if core.missing_rpm('voms-clients'):
-            return
-        if not core.state['voms.got-proxy']:
-            core.skip('no proxy')
-            return
+        core.skip_ok_unless_installed('voms-clients')
+        self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         command = ('voms-proxy-info', '-all')
         stdout = core.check_system(command, 'Run voms-proxy-info',

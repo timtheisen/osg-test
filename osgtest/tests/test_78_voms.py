@@ -9,8 +9,9 @@ import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 
-class TestStopVOMS(unittest.TestCase):
+class TestStopVOMS(osgunittest.OSGTestCase):
 
     # Carefully removes a certificate with the given key.  Removes all
     # paths associated with the key, as created by the install_cert()
@@ -29,12 +30,8 @@ class TestStopVOMS(unittest.TestCase):
     # ==========================================================================
 
     def test_01_stop_voms(self):
-        if not core.rpm_is_installed('voms-server'):
-            core.skip('not installed')
-            return
-        if not core.state['voms.started-server']:
-            core.skip('did not start server')
-            return
+        core.skip_ok_unless_installed('voms-server')
+        self.skip_ok_unless(core.state['voms.started-server'], 'did not start server')
 
         command = ('service', 'voms', 'stop')
         stdout, stderr, fail = core.check_system(command, 'Stop VOMS server')
@@ -44,8 +41,7 @@ class TestStopVOMS(unittest.TestCase):
 
 
     def test_02_restore_vomses(self):
-        if core.missing_rpm('voms-admin-server'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server')
 
         if os.path.exists(core.config['voms.lsc-dir']):
             shutil.rmtree(core.config['voms.lsc-dir'])
@@ -53,8 +49,7 @@ class TestStopVOMS(unittest.TestCase):
 
 
     def test_03_remove_vo(self):
-        if core.missing_rpm('voms-admin-server', 'voms-mysql-plugin'):
-            return
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
 
         # Ask VOMS Admin to remove VO
         db_user_name = 'admin-' + core.config['voms.vo']

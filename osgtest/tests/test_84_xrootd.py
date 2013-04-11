@@ -1,21 +1,18 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
-class TestStopXrootd(unittest.TestCase):
+class TestStopXrootd(osgunittest.OSGTestCase):
 
     def test_01_stop_xrootd(self):
-        if (core.config['xrootd.gsi'] == "ON") and (core.state['xrootd.backups-exist'] == True) :
-		    files.restore('/etc/xrootd/xrootd-clustered.cfg',"xrootd")
-		    files.restore('/etc/xrootd/auth_file',"xrootd")
-		    files.restore('/etc/grid-security/xrd/xrdmapfile',"xrootd")
-        if not core.rpm_is_installed('xrootd-server'):
-            core.skip('not installed')
-            return
-        if core.state['xrootd.started-server'] == False:
-            core.skip('did not start server')
-            return
+        if (core.config['xrootd.gsi'] == "ON") and (core.state['xrootd.backups-exist'] == True):
+            files.restore('/etc/xrootd/xrootd-clustered.cfg',"xrootd")
+            files.restore('/etc/xrootd/auth_file',"xrootd")
+            files.restore('/etc/grid-security/xrd/xrdmapfile',"xrootd")
+        core.skip_ok_unless_installed('xrootd-server')
+        self.skip_ok_if(['xrootd.started-server'] == False, 'did not start server')
 
         command = ('service', 'xrootd', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop Xrootd server')

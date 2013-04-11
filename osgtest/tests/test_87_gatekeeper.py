@@ -1,17 +1,14 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
-class TestStopGatekeeper(unittest.TestCase):
+class TestStopGatekeeper(osgunittest.OSGTestCase):
 
     def test_01_stop_gatekeeper(self):
-        if not core.rpm_is_installed('globus-gatekeeper'):
-            core.skip('not installed')
-            return
-        if core.state['globus.started-gk'] == False:
-            core.skip('did not start server')
-            return
+        core.skip_ok_unless_installed('globus-gatekeeper')
+        self.skip_ok_if(core.state['globus.started-gk'] == False, 'did not start server')
 
         files.restore(core.config['jobmanager-config'], 'globus')
 
@@ -22,12 +19,9 @@ class TestStopGatekeeper(unittest.TestCase):
                      'Globus gatekeeper run lock file still present')
 
     def test_02_stop_seg(self):
-        if not core.rpm_is_installed('globus-scheduler-event-generator-progs'):
-            core.skip('Globus SEG not installed')
-            return
-        if core.state['globus.started-seg'] == False:
-            core.skip('SEG apparently running')
-            return
+        core.skip_ok_unless_installed('globus-scheduler-event-generator-progs')
+        self.skip_ok_if(core.state['globus.started-seg'] == False, 'SEG apparently running')
+
         command = ('service', 'globus-scheduler-event-generator', 'stop')
         stdout, _, fail = core.check_system(command, 'Start Globus SEG')
         self.assert_(stdout.find('FAILED') == -1, fail)
@@ -36,8 +30,6 @@ class TestStopGatekeeper(unittest.TestCase):
         core.state['globus.started-seg'] = False
 
     def test_03_configure_globus_pbs(self):
-        if not core.state['globus.pbs_configured']:
-            core.skip('Globus pbs configuration not altered')
-        if not core.rpm_is_installed('globus-gram-job-manager-pbs'):
-            return
+        self.skip_ok_if(core.state['globus.pbs_configured'], 'Globus pbs configuration not altered')
+        core.skip_ok_unless_installed('globus-gram-job-manager-pbs')
         files.restore(core.config['globus.pbs-config'], 'pbs')

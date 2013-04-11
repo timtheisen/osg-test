@@ -2,18 +2,21 @@ import os
 import os.path
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import socket
 import shutil
 import tempfile
 import unittest
 
-class TestUberFTP(unittest.TestCase):
+class TestUberFTP(osgunittest.OSGTestCase):
 
+    required_rpms = ['globus-gridftp-server-progs', 'globus-ftp-client'
+                     'globus-proxy-utils', 'globus-gass-copy-progs',
+                     'uberftp']
+    
     def test_01_copy_local_to_server_uberftp(self):
-        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs',
-                            'uberftp'):
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
+
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
@@ -31,10 +34,7 @@ class TestUberFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_copy_server_to_local_uberftp(self):
-        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs',
-                            'uberftp'):
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
@@ -53,10 +53,7 @@ class TestUberFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_03_copy_local_to_server_uberftp_parallel(self):
-        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs',
-                            'uberftp'):
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
 
         hostname = socket.getfqdn()
         temp_dir_source = tempfile.mkdtemp()
@@ -82,10 +79,7 @@ class TestUberFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_04_copy_server_to_local_uberftp_parallel(self):
-        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs',
-                            'uberftp'):
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
 
         hostname = socket.getfqdn()
         temp_dir_source = tempfile.mkdtemp()

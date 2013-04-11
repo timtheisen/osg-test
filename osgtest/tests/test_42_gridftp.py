@@ -1,19 +1,19 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import socket
 import shutil
 import tempfile
 import unittest
 
-class TestGridFTP(unittest.TestCase):
+class TestGridFTP(osgunittest.OSGTestCase):
 
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
 
     def test_01_copy_local_to_server(self):
-        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs'):
-            return
+        core.skip_ok_unless_installed('globus-gridftp-server-progs', 'globus-ftp-client',
+                                      'globus-proxy-utils', 'globus-gass-copy-progs')
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
@@ -31,9 +31,8 @@ class TestGridFTP(unittest.TestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_copy_server_to_local(self):
-        if core.missing_rpm('globus-gridftp-server-progs', 'globus-ftp-client',
-                            'globus-proxy-utils', 'globus-gass-copy-progs'):
-            return
+        core.skip_ok_unless_installed('globus-gridftp-server-progs', 'globus-ftp-client',
+                                      'globus-proxy-utils', 'globus-gass-copy-progs')
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()

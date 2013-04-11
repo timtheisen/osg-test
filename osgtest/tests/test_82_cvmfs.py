@@ -1,17 +1,14 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
-class TestStopCvmfs(unittest.TestCase):
+class TestStopCvmfs(osgunittest.OSGTestCase):
 
     def test_01_stop_xrootd(self):
-        if not core.rpm_is_installed('cvmfs'):
-            core.skip('not installed')
-            return
-        if core.state['cvmfs.started-server'] == False:
-            core.skip('did not start server')
-            return
+        core.skip_ok_unless_installed('cvmfs')
+        self.skip_ok_if(['cvmfs.started-server'] == False, 'did not start server')
 
         command = ('service', 'cvmfs', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop Cvmfs server')

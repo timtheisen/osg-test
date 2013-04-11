@@ -1,6 +1,7 @@
 import glob
 import os
 import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 import pwd
 import re
 import shutil
@@ -12,7 +13,7 @@ import unittest
 # Note: March 2012 version, add checking prerequisites such as globus-proxy-utils,
 # to avoid confusion.
 
-class TestGlexec(unittest.TestCase):
+class TestGlexec(osgunittest.OSGTestCase):
 
     # Constants
     __glexec_client_cert = '/tmp/x509_client_cert'
@@ -26,9 +27,7 @@ class TestGlexec(unittest.TestCase):
     # ==========================================================================
 
     def test_01_check_gridmap(self):
-        if not core.rpm_is_installed('glexec'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('glexec')
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
@@ -42,24 +41,14 @@ class TestGlexec(unittest.TestCase):
         TestGlexec.__good_gridmap = True
 
     def test_02_define_user_proxy_path(self):
-        if not core.rpm_is_installed('glexec'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('glexec')
         command = ('/usr/bin/id','-u')
         status, stdout, stderr = core.system(command, True)
         TestGlexec.__uid = stdout.rstrip()
         TestGlexec.__user_proxy_path = '/tmp/x509up_u'+self.__uid
 
     def test_03_create_user_proxy(self):
-        # if the utils are not present, it won't work anyhow, so might as well skip the test
-        if not core.rpm_is_installed('globus-proxy-utils'):
-            core.skip('globus-proxy-utils not installed')
-            return
-
-        # ...and also skip if there is no glexec
-        if not core.rpm_is_installed('glexec'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('globus-proxy-utils')
 
         # OK, software is present, now just check it previous tests did create the proxy already so
         # we don't do it twice
@@ -79,20 +68,12 @@ class TestGlexec(unittest.TestCase):
         os.environ['GLEXEC_CLIENT_CERT']=self.__glexec_client_cert
 
     def test_04_glexec_switch_id(self):
-        # if the utils are not present, it won't work anyhow, so might as well skip the test
-        if not core.rpm_is_installed('globus-proxy-utils'):
-            core.skip('globus-proxy-utils not installed')
-            return
-
-        if not core.rpm_is_installed('glexec'):
-            core.skip('not installed')
-            return
-
+        core.skip_ok_unless_installed('glexec', 'globus-proxy-utils')
         command = ('grid-proxy-info','-f',self.__user_proxy_path)
         status, stdout, stderr = core.system(command, True)
 
         if int(status)!=0: # no proxy found even after previous checks, have to skip
-            core.skip('suitable proxy not found')
+            self.skip_bad('suitable proxy not found')
             return
 
         command = ('/usr/sbin/glexec','/usr/bin/id','-u')
@@ -103,14 +84,8 @@ class TestGlexec(unittest.TestCase):
         self.assert_(self.__uid==switched_id, 'Glexec identity switch from root to user '+core.options.username+' failed')
 
     def test_05_glexec_proxy_cleanup(self):
-        # if the utils are not present, it won't work anyhow, so might as well skip the test
-        if not core.rpm_is_installed('globus-proxy-utils'):
-            core.skip('globus-proxy-utils not installed')
-            return
-
-        if not core.rpm_is_installed('glexec'):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed('glexec', 'globus-proxy-utils')
+        
         try:
             status = os.unlink(self.__glexec_client_cert)
         except:

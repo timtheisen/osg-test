@@ -5,12 +5,12 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
+import osgtest.library.osgunittest as osgunittest
 
-class TestGUMS(unittest.TestCase):
+class TestGUMS(osgunittest.OSGTestCase):
 
     def test_01_map_user(self):
-        if core.missing_rpm('gums-service'):
-            return
+        core.skip_ok_unless_installed('gums-service')
 
         host_dn, _ = core.certificate_info(core.config['certs.hostcert'])
         pwd_entry = pwd.getpwnam(core.options.username)

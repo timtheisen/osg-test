@@ -7,22 +7,17 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.tomcat as tomcat
+import osgtest.library.osgunittest as osgunittest
 
-class TestStopTomcat(unittest.TestCase):
+class TestStopTomcat(osgunittest.OSGTestCase):
 
     def test_01_stop_tomcat(self):
-        if not core.rpm_is_installed(tomcat.pkgname()):
-            core.skip('not installed')
-            return
+        core.skip_ok_unless_installed(tomcat.pkgname())
         service.stop('tomcat')
 
     def test_02_remove_vo_webapp(self):
-        if not core.rpm_is_installed('voms-admin-server'):
-            core.skip('not installed')
-            return
-        if not core.state['voms.installed-vo-webapp']:
-            core.skip('did not start webapp')
-            return
+        core.skip_ok_unless_installed('voms-admin-server')
+        self.skip_ok_unless(core.state['voms.installed-vo-webapp'], 'did not start webapp')
 
         command = ('service', 'voms-admin', 'stop')
         core.check_system(command, 'Uninstall VOMS Admin webapp(s)')
@@ -30,13 +25,11 @@ class TestStopTomcat(unittest.TestCase):
                      'VOMS Admin VO context file still exists')
 
     def test_03_deconfig_tomcat_properties(self):
-        if core.missing_rpm(tomcat.pkgname(), 'emi-trustmanager-tomcat'):
-            return
+        core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
         files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'tomcat')
 
     def test_04_remove_trustmanager(self):
-        if core.missing_rpm(tomcat.pkgname(), 'emi-trustmanager-tomcat'):
-            return
+        core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
 
         # mv -f /etc/tomcat5/server.xml.old-trustmanager /etc/tomcat5/server.xml
         old_tm = os.path.join(tomcat.sysconfdir(), 'server.xml.old-trustmanager')
@@ -62,8 +55,7 @@ class TestStopTomcat(unittest.TestCase):
         core.log_message('EMI trustmanager removed')
     
     def test_05_deconfig_tomcat(self):
-        if core.missing_rpm(tomcat.pkgname()):
-            return
+        core.skip_ok_unless_installed(tomcat.pkgname())
 
         files.restore(tomcat.conffile(), 'tomcat')
 

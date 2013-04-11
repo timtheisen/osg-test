@@ -1,9 +1,10 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
-class TestStopPBS(unittest.TestCase):
+class TestStopPBS(osgunittest.OSGTestCase):
 
     required_rpms = ['torque-mom',
                      'torque-server',
@@ -11,12 +12,9 @@ class TestStopPBS(unittest.TestCase):
                      'munge']
 
     def test_01_stop_mom(self):
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if core.state['torque.pbs-mom-running'] == False:
-            core.skip('did not start pbs mom server')
-            return
-
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(core.state['torque.pbs-mom-running'] == False, 'did not start pbs mom server')
+            
         command = ('service', 'pbs_mom', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop pbs mom')
         self.assert_(stdout.find('error') == -1, fail)
@@ -27,11 +25,8 @@ class TestStopPBS(unittest.TestCase):
         core.state['torque.pbs-mom-running'] = False
 
     def test_02_stop_server(self):
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if core.state['torque.pbs-server-running'] == False:
-            core.skip('did not start pbs server')
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(core.state['torque.pbs-server-running'] == False, 'did not start pbs server')
 
         command = ('service', 'pbs_server', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop pbs server')
@@ -43,11 +38,8 @@ class TestStopPBS(unittest.TestCase):
         core.state['torque.nodes-up'] = False
 
     def test_03_stop_scheduler(self):
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if core.state['torque.pbs-sched-running'] == False:
-            core.skip('did not start pbs scheduler')
-            return
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(core.state['torque.pbs-sched-running'] == False, 'did not start pbs scheduler')
 
         command = ('service', 'pbs_sched', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop pbs scheduler')
@@ -59,11 +51,8 @@ class TestStopPBS(unittest.TestCase):
         core.state['torque.pbs-sched-running'] = False
 
     def test_04_stop_munge(self):
-
-        if core.missing_rpm(*self.required_rpms):
-            return
-        if core.state['munge.running'] == False:
-            core.skip('munge not running')
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(core.state['munge.running'] == False, 'munge not running')
 
         command = ('service', 'munge', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop munge daemon')

@@ -2,12 +2,11 @@ import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 
-class RestoreLcMaps(unittest.TestCase):
+class RestoreLcMaps(osgunittest.OSGTestCase):
 
     def test_01_restore_lcmaps_after_glexec(self):
-        if not core.rpm_is_installed('glexec'):
-            core.skip("glexec not installed, don't need lcmaps for it")
-            return
+        core.skip_ok_unless_installed('glexec')
 
         files.restore('/etc/lcmaps.db', 'lcmaps')

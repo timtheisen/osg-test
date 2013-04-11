@@ -1,17 +1,17 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 import pwd
 import socket
 import unittest
 
-class TestEdgMkGridmap(unittest.TestCase):
+class TestEdgMkGridmap(osgunittest.OSGTestCase):
 
     def test_01_config_mkgridmap(self):
         core.config['edg.conf'] = '/usr/share/osg-test/edg-mkgridmap.conf'
 
-        if core.missing_rpm('edg-mkgridmap', 'voms-server'):
-            return
+        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-server')
 
         contents = ('group vomss://%s:8443/voms/%s %s\n' %
                     (socket.getfqdn(), core.config['voms.vo'], core.options.username))
@@ -19,8 +19,7 @@ class TestEdgMkGridmap(unittest.TestCase):
         core.system(('cat', core.config['edg.conf']))
 
     def test_02_edg_mkgridmap(self):
-        if core.missing_rpm('edg-mkgridmap', 'voms-server'):
-            return
+        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-server')
 
         command = ('edg-mkgridmap', '--conf', core.config['edg.conf'])
         os.environ['GRIDMAP'] = '/usr/share/osg-test/grid-mapfile'
@@ -40,8 +39,7 @@ class TestEdgMkGridmap(unittest.TestCase):
         self.assert_(expected in contents, 'Expected grid-mapfile contents')
 
     def test_03_clean_edg_mkgridmap(self):
-        if core.missing_rpm('edg-mkgridmap', 'voms-server'):
-            return
+        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-server')
 
         for envvar in ('VO_LIST_FILE', 'UNDEFINED_ACCTS_FILE',
                        'EDG_MKGRIDMAP_LOG', 'USER_VO_MAP', 'GRIDMAP'):

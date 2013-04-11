@@ -1,12 +1,11 @@
 import osgtest.library.core as core
+import osgtest.library.osgunittest as osgunittest
 import unittest
 
-class TestGridProxyInit(unittest.TestCase):
+class TestGridProxyInit(osgunittest.OSGTestCase):
 
     def test_01_grid_proxy_init(self):
-        if not core.rpm_is_installed('globus-proxy-utils'):
-            core.skip()
-            return
+        core.skip_ok_unless_installed('globus-proxy-utils')
         command = ('grid-proxy-init', '-debug')
         password = core.options.password + '\n'
         core.check_system(command, 'Run grid-proxy-init', user=True,

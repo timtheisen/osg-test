@@ -1,5 +1,6 @@
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 
 import re
 import os
@@ -21,7 +22,7 @@ Testing number conventions:
 """
 
 
-class TestRSV(unittest.TestCase):
+class TestRSV(osgunittest.OSGTestCase):
 
     host = socket.getfqdn()
 
@@ -105,8 +106,7 @@ class TestRSV(unittest.TestCase):
         core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
         
     def test_002_setup_certificate(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         # TODO - on fermicloud machines we copy the hostcert.  Can we do better?
         if not os.path.exists(os.path.dirname(core.config['rsv.certfile'])):
@@ -125,8 +125,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_003_setup_grid_mapfile(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         # Register the cert in the gridmap file
         cert_subject = core.certificate_info(core.config['rsv.certfile'])[0]
@@ -134,8 +133,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_004_load_default_config(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         # We'll pull in the default config file and store it.  We might want to
         # do tests based on the default.
@@ -147,8 +145,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_010_version(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         command = ('rsv-control', '--version')
         stdout = core.check_system(command, 'rsv-control --version')[0]
@@ -159,8 +156,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_011_list(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         command = ('rsv-control', '--list', '--all')
         stdout = core.check_system(command, 'rsv-control --list --all')[0]
@@ -173,8 +169,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_012_list_with_cron(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
         
         command = ('rsv-control', '--list', '--all', '--cron')
         stdout = core.check_system(command, 'rsv-control --list --all')[0]
@@ -185,8 +180,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_013_profiler(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         profiler_tarball = 'rsv-profiler.tar.gz'
         
@@ -199,8 +193,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_024_rsv_control_bad_arg(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
         
         command = ('rsv-control', '--kablooey')
         (ret, out, err) = core.system(command, 'rsv-control --kablooey')
@@ -209,24 +202,21 @@ class TestRSV(unittest.TestCase):
 
 
     def test_020_stop_rsv(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         self.stop_rsv()
         return
 
 
     def test_021_start_rsv(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
         
         self.start_rsv()
         return
 
 
     def test_022_job_list(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         command = ('rsv-control', '--job-list')
         stdout = core.check_system(command, 'rsv-control --job-list')[0]
@@ -238,8 +228,7 @@ class TestRSV(unittest.TestCase):
 
 
     def test_023_job_list_parsable(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         # This test is currently failing because there are no enabled metrics.  Until
         # we add some RSV configuration to enable metrics.
@@ -254,47 +243,41 @@ class TestRSV(unittest.TestCase):
 
 
     def test_030_ping_metric(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         self.run_metric('org.osg.general.ping-host')
         return
 
 
     def test_031_hostcert_expiry_metric(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         self.run_metric('org.osg.local.hostcert-expiry')
         return
 
 
     def test_050_gram_authentication_metric(self):
-        if core.missing_rpm('rsv', 'globus-gatekeeper'):
-            return
+        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
 
         self.run_metric('org.osg.globus.gram-authentication')
         return
 
         
     def test_051_osg_version_metric(self):
-        if core.missing_rpm('rsv', 'globus-gatekeeper'):
-            return
+        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
 
         self.run_metric('org.osg.general.osg-version')
         return
 
     def test_052_vo_supported_metric(self):
-        if core.missing_rpm('rsv', 'globus-gatekeeper'):
-            return
+        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
 
         self.run_metric('org.osg.general.vo-supported')
         return
 
 
     def test_070_switch_to_user_proxy(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         # This needs to come after some test using the service certificate
         # because it uses the service proxy as the user proxy.
@@ -303,15 +286,13 @@ class TestRSV(unittest.TestCase):
         return
 
     def test_071_gram_authentication_with_user_proxy(self):
-        if core.missing_rpm('rsv', 'globus-gatekeeper'):
-            return
+        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
 
         self.run_metric('org.osg.globus.gram-authentication')
         return
 
     def test_072_switch_to_service_cert(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         # We put this in its own test so that even if there is a failure we
         # will switch back to the service proxy.
@@ -320,22 +301,19 @@ class TestRSV(unittest.TestCase):
 
 
     def test_073_switch_to_globus_job_run(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         self.use_globus_job_run()
         return
 
     def test_074_osg_version_with_globus_job_run(self):
-        if core.missing_rpm('rsv', 'globus-gatekeeper'):
-            return
+        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
 
         self.run_metric('org.osg.general.osg-version')
         return
 
     def test_075_switch_to_globus_job_run(self):
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         self.use_condor_g()
         return
@@ -346,8 +324,7 @@ class TestRSV(unittest.TestCase):
     def test_100_html_consumer(self):
         # This test must come after some of the metric tests so that we have
         # some job records to use to create an index.html
-        if core.missing_rpm('rsv'):
-            return
+        core.skip_ok_unless_installed('rsv')
 
         index_file = "/usr/share/rsv/www/index.html"
 
