@@ -30,6 +30,6 @@ class TestStopGatekeeper(osgunittest.OSGTestCase):
         core.state['globus.started-seg'] = False
 
     def test_03_configure_globus_pbs(self):
-        self.skip_ok_if(core.state['globus.pbs_configured'], 'Globus pbs configuration not altered')
+        self.skip_ok_unless(core.state['globus.pbs_configured'], 'Globus pbs configuration not altered')
         core.skip_ok_unless_installed('globus-gram-job-manager-pbs')
         files.restore(core.config['globus.pbs-config'], 'pbs')
