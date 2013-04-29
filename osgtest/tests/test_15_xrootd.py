@@ -44,9 +44,9 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir,
                                                      '.globus',
                                                      'usercert.pem')
-        core.skip_ok_unless_installed('xrootd-server')
+        core.skip_ok_unless_installed('xrootd')
                   
-        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd-server', '--qf=%{VERSION}'), 'Getting xrootd-server version')
+        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd', '--qf=%{VERSION}'), 'Getting xrootd version')
         
         user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
@@ -77,7 +77,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         status, stdout, _ = core.system(command)
         
         if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", xrootd_server_version):
-            self.assertEqual(status, 1, 'Expected failure on el6 with this version of xrootd-server') 
+            self.assertEqual(status, 1, 'Expected failure on el6 with this version of xrootd') 
         else:
             self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)
 

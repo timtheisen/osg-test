@@ -22,10 +22,10 @@ class TestXrootd(osgunittest.OSGTestCase):
         Returns True if the test should be continue, False if it should be
         skipped. Raises AssertionError on an unexpected result.
         """
-        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd-server', '--qf=%{VERSION}'), 'Getting xrootd-server version')
+        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd', '--qf=%{VERSION}'), 'Getting xrootd version')
         
         if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", xrootd_server_version):
-            self.assertEqual(core.state['xrootd.started-server'], False, 'Expected failure on el6 with this version of xrootd-server')
+            self.assertEqual(core.state['xrootd.started-server'], False, 'Expected failure on el6 with this version of xrootd')
             return False
         else:
             self.assertEqual(core.state['xrootd.started-server'], True, 'Server not running')
@@ -33,7 +33,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
 
     def test_01_xrdcp_local_to_server(self):
-        core.skip_ok_unless_installed('xrootd-server', 'xrootd-client')
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client')
         self.skip_bad_unless(self.assert_server_started(),'Server not running')
 
         hostname = socket.getfqdn()
@@ -60,7 +60,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_xrdcp_server_to_local(self):
-        core.skip_ok_unless_installed('xrootd-server', 'xrootd-client')
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client')
         self.skip_bad_unless(self.assert_server_started(),'Server not running')
 
         hostname = socket.getfqdn()
@@ -88,7 +88,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_03_xrootd_fuse(self):
         # This tests xrootd-fuse using a mount in /mnt 
-        core.skip_ok_unless_installed('xrootd-server', 'xrootd-client')
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client')
         self.skip_ok_unless(os.path.exists("/mnt"), "/mnt did not exist")
         self.skip_ok_if(core.config['xrootd.gsi'] == "ON",'fuse incompatible with GSI')
             

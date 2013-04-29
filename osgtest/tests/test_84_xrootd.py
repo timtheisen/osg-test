@@ -11,7 +11,7 @@ class TestStopXrootd(osgunittest.OSGTestCase):
             files.restore('/etc/xrootd/xrootd-clustered.cfg',"xrootd")
             files.restore('/etc/xrootd/auth_file',"xrootd")
             files.restore('/etc/grid-security/xrd/xrdmapfile',"xrootd")
-        core.skip_ok_unless_installed('xrootd-server')
+        core.skip_ok_unless_installed('xrootd')
         self.skip_ok_if(['xrootd.started-server'] == False, 'did not start server')
 
         command = ('service', 'xrootd', 'stop')
