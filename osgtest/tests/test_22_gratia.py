@@ -67,12 +67,43 @@ class TestStartGratia(osgunittest.OSGTestCase):
         os.chmod(target_path, permissions)
 
     # ==================================================================
+    
+    #===========================================================================
+    # This helper method loops through the passed in infile line by line. 
+    # If it finds the passed in pattern, it replaces the whole line with
+    # the passed in full_line.
+    #===========================================================================
+    
+    def patternreplace(self, infile_name, pattern, full_line):
+        infile = open(infile_name, "r")
+        outfile_name = infile_name + ".tmp"
+        outfile = file(outfile_name, 'w')
+        
+        for line in infile:
+            if pattern in line:
+                line = full_line + "\n"
+            outfile.writelines(line)
+        
+        shutil.move(outfile_name, infile_name)
 
     
     def test_01_service_authorization(self):
-        pass
+        core.skip_ok_unless_installed('gratia-service')
+        gratia_auth = "/etc/gratia/collector/service-authorization.properties"
+        self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=admin")
+        self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=srini")
+        self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
+        
     def test_02_service_configuration(self):
-        pass
+        core.skip_ok_unless_installed('gratia-service')
+        gratia_conf = "/etc/gratia/collector/service-configuration.properties"
+        host = socket.gethostname()
+        mysqlurl="service.mysql.url=jdbc:mysql://" +  host + ":3306/gratia"
+        self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
+        openconn="http://" + host + ":8880"
+        self.patternreplace(gratia_conf, "service.open.connection", openconn)
+        secureconn="https://" + host + ":8443"
+        self.patternreplace(gratia_conf, "service.secure.connection", secureconn)
     
     def test_03_install_database(self):
         core.skip_ok_unless_installed('gratia-service')
