@@ -1,14 +1,7 @@
-import glob
 import os
-import pwd
-import re
 import shutil
-import socket
-import time
-import unittest
 
 import osgtest.library.core as core
-import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
 class TestStopGratia(osgunittest.OSGTestCase):
