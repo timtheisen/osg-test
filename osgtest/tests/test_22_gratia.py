@@ -91,7 +91,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         gratia_auth = "/etc/gratia/collector/service-authorization.properties"
         self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=admin")
-        self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=srini")
+        self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
         
     def test_02_service_configuration(self):
@@ -106,9 +106,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.patternreplace(gratia_conf, "service.secure.connection", secureconn)
     
     def test_03_install_database(self):
-        core.skip_ok_unless_installed('gratia-service')
-        command = "/usr/share/gratia/install-database"
-        status, stdout, stderr = core.system(command, shell=True)
+        core.skip_ok_unless_installed('gratia-service')    
+        command = (('/usr/share/gratia/install-database'))
+        status, stdout, stderr = core.system(command)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         
     def test_04_config_certs(self):
