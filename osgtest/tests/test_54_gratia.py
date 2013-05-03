@@ -8,4 +8,4 @@ class TestGratia(osgunittest.OSGTestCase):
 
         command = ('curl', ' http://gratia-integration1.fnal.gov/gratia-administration/status.html?wantDetails=0')
         status, stdout, stderr = core.system(command)
-        self.assertNotEqual(status, 0, 'Unable to launch gratia admin webpage')
+        self.assertEqual(status, 0, 'Unable to launch gratia admin webpage')
