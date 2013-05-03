@@ -100,9 +100,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
         host = socket.gethostname()
         mysqlurl="service.mysql.url=jdbc:mysql://" +  host + ":3306/gratia"
         self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
-        openconn="http://" + host + ":8880"
+        openconn="service.open.connection=http://" + host + ":8880"
         self.patternreplace(gratia_conf, "service.open.connection", openconn)
-        secureconn="https://" + host + ":8443"
+        secureconn="service.secure.connection=https://" + host + ":8443"
         self.patternreplace(gratia_conf, "service.secure.connection", secureconn)
     
     def test_03_install_database(self):
