@@ -109,7 +109,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         command = "/usr/share/gratia/install-database"
         status, stdout, stderr = core.system(command, shell=True)
-        self.assertNotEqual(status, 0, 'Unable to install Gratia Database !')
+        self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         
     def test_04_config_certs(self):
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
