@@ -44,3 +44,22 @@ class TestStopGratia(osgunittest.OSGTestCase):
         # Do the keys first, so that the directories will be empty for the certs.
         self.remove_cert('certs.httpkey')
         self.remove_cert('certs.httpcert')
+
+    def test_02_uninstall_gratia_database(self):
+        core.skip_ok_unless_installed('gratia-service')    
+       
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #print filename
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Command to drop the gratia database is:
+        #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306 
+        
+        command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=filename -B --unbuffered  --user=root --port=3306"
+        status, stdout, stderr = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to install Gratia Database !')
+        os.remove(filename)
+        
