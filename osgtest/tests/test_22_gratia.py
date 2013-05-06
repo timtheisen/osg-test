@@ -126,3 +126,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
                         'HTTP cert exists and has proper permissions')
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+        
+    def test_06_configure_tomcat(self):
+        core.skip_ok_unless_installed('gratia-service')    
+        command = "/usr/share/gratia/configure_tomcat"
+        status, stdout, stderr = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to configure Tomcat !')
