@@ -107,8 +107,8 @@ class TestStartGratia(osgunittest.OSGTestCase):
     
     def test_03_install_database(self):
         core.skip_ok_unless_installed('gratia-service')    
-        command = "/usr/share/gratia/install-database"
-        status, stdout, stderr = core.system(command, shell=True)
+        command = ('/usr/share/gratia/install-database',)
+        status, stdout, stderr = core.system(command)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         
     def test_04_config_certs(self):
@@ -129,6 +129,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
         
     def test_06_configure_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')    
-        command = "/usr/share/gratia/configure_tomcat"
-        status, stdout, stderr = core.system(command, shell=True)
+        command = ('/usr/share/gratia/configure_tomcat',)
+        status, stdout, stderr = core.system(command)
         self.assertEqual(status, 0, 'Unable to configure Tomcat !')
