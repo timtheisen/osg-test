@@ -143,4 +143,4 @@ class TestStartGratia(osgunittest.OSGTestCase):
     def test_08_start_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
-        time.sleep(600)
+        #time.sleep(600)
