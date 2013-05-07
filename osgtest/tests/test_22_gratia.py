@@ -4,11 +4,13 @@ import shutil
 import socket
 import stat
 import unittest
+import time
 
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
@@ -127,8 +129,18 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
         
-    def test_06_configure_tomcat(self):
-        core.skip_ok_unless_installed('gratia-service')    
+        
+    def test_06_stop_tomcat(self):
+        core.skip_ok_unless_installed(tomcat.pkgname())
+        service.stop('tomcat')
+
+    def test_07_configure_tomcat(self):
+        core.skip_ok_unless_installed('gratia-service')
         command = ('/usr/share/gratia/configure_tomcat',)
         status, stdout, stderr = core.system(command)
         self.assertEqual(status, 0, 'Unable to configure Tomcat !')
+
+    def test_08_start_tomcat(self):
+        core.skip_ok_unless_installed(tomcat.pkgname())
+        service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
+        time.sleep(600)
