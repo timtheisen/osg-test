@@ -29,8 +29,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306 | wc -l",
         status, stdout, stderr = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
-        self.assertEqual(stdout, 5, 'Incorrect total number of databases !')
-        
         #self.assertEqual(stdout, 5, 'Incorrect total number of databases !')
         print "stdout is: " + stdout
         result = re.search('5', stdout, re.IGNORECASE)
