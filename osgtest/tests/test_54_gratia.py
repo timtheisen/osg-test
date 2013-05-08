@@ -25,8 +25,8 @@ class TestGratia(osgunittest.OSGTestCase):
         
         #Command to drop the gratia database is:
         #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = 'echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306 | wc -l',
-        status, stdout, stderr = core.system(command)
+        command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306 | wc -l",
+        status, stdout, stderr = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         self.assertEqual(stdout, 5, 'Incorrect total number of databases !')
         os.remove(filename)
