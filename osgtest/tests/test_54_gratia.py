@@ -96,6 +96,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.gridftp-transfer-running'] = True
         
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)
         pass
 
