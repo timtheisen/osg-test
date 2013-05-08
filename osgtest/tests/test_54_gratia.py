@@ -1,9 +1,9 @@
-from distutils.sysconfig import get_python_lib
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import os
 import re
 import test_28_gratia.TestStartGratia.patternreplace
+from distutils.sysconfig import get_python_libs
 import shutil
 
 
