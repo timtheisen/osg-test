@@ -275,6 +275,29 @@ def certificate_info(path):
         raise OSError(status, stdout)
     return (matches.group(1), matches.group(2))
 
+
+def get_package_envra(package_name):
+    """Query and return the ENVRA (Epoch, Name, Version, Release, Arch) of an
+    installed package as a tuple. Can raise OSError if rpm does not return
+    output in the right format.
+
+    """
+    command = ('rpm', '--query', package_name, '--queryformat=%{EPOCH} %{NAME} %{VERSION} %{RELEASE} %{ARCH}')
+    status, stdout, stderr = system(command)
+    # Not checking stderr because signature warnings get written there and
+    # we do not care about those.
+    if (status != 0) or (stdout is None):
+        raise OSError(status, stdout)
+
+    envra = stdout.strip().split(' ')
+    if len(envra) != 5:
+        raise OSError(status, stdout)
+    (epoch, name, version, release, arch) = envra
+    return (epoch, name, version, release, arch)
+
+
+
+
 def diagnose(message, status, stdout, stderr):
     """Constructs a detailed failure message based on arguments."""
     result = message + '\n'
