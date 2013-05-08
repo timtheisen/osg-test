@@ -1,6 +1,7 @@
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import os
+import re
 
 class TestGratia(osgunittest.OSGTestCase):
 
@@ -29,4 +30,9 @@ class TestGratia(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         self.assertEqual(stdout, 5, 'Incorrect total number of databases !')
+        
+        #self.assertEqual(stdout, 5, 'Incorrect total number of databases !')
+        print "stdout is: " + stdout
+        result = re.search('5', stdout, re.IGNORECASE)
+        self.assert_(result is not None)
         os.remove(filename)
