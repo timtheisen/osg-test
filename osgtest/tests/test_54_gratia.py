@@ -2,12 +2,23 @@ import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import os
 import re
-import test_28_gratia.TestStartGratia.patternreplace
 from distutils.sysconfig import get_python_libs
 import shutil
 
 
 class TestGratia(osgunittest.OSGTestCase):
+    
+    def patternreplace(self, infile_name, pattern, full_line):
+        infile = open(infile_name, "r")
+        outfile_name = infile_name + ".tmp"
+        outfile = file(outfile_name, 'w')
+        
+        for line in infile:
+            if pattern in line:
+                line = full_line + "\n"
+            outfile.writelines(line)
+        
+        shutil.move(outfile_name, infile_name)
 
     def test_01_gratia_admin_webpage (self):
          
