@@ -87,7 +87,7 @@ class TestGratia(osgunittest.OSGTestCase):
         dst_dir = '/var/log'
         shutil.copy(grid_ftp_log, dst_dir)
         shutil.copy(grid_ftp_auth_log, dst_dir)
-        print("test_05_copy_gridftp_logs - content of /var/log:\n" + os.listdir('/var/log'))
+        print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
     
     def test_06_execute_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
