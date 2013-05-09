@@ -4,6 +4,7 @@ import os
 import re
 from distutils.sysconfig import get_python_libs
 import shutil
+import socket
 
 
 class TestGratia(osgunittest.OSGTestCase):
@@ -73,12 +74,16 @@ class TestGratia(osgunittest.OSGTestCase):
         
     def test_04_modify_gridftptransfer_probeconfig(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        host = socket.gethostname()
         probeconfig = "/etc/gratia/gridftp-transfer/ProbeConfig"
-        self.patternreplace(probeconfig, "CollectorHost", "CollectorHost=\"fermicloud316.fnal.gov:8880\"")
-        self.patternreplace(probeconfig, "SSLHost", "SSLHost=\"fermicloud316.fnal.gov:8443\"")
-        self.patternreplace(probeconfig, "SSLRegistrationHost", "SSLRegistrationHost=\"fermicloud316.fnal.gov:8880\"")
-        self.patternreplace(probeconfig, "SiteName", "SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "SiteName", "EnableProbe=\"1\"")
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
         
     def test_05_copy_gridftp_logs(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
