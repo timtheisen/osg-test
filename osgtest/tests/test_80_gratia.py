@@ -61,15 +61,15 @@ class TestStopGratia(osgunittest.OSGTestCase):
 
     def test_05_cleanup_varlog_gridftplog(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/var/log/griftp.log')
+        command = ('rm', '-rf', '/var/log/gridftp.log')
         status, _, _ = core.system(command)
-        self.assertEqual(status, 0, 'Unable to clean up  /var/log/griftp.log!')
+        self.assertEqual(status, 0, 'Unable to clean up  /var/log/gridftp.log!')
         
     def test_06_cleanup_varlog_gridftpauthlog(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/var/log/griftp-auth.log')
+        command = ('rm', '-rf', '/var/log/gridftp-auth.log')
         status, _, _ = core.system(command)
-        self.assertEqual(status, 0, 'Unable to clean up  /var/log/griftp-auth.log!')
+        self.assertEqual(status, 0, 'Unable to clean up  /var/log/gridftp-auth.log!')
     
     
     
