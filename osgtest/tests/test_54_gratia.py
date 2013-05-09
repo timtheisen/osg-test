@@ -85,8 +85,8 @@ class TestGratia(osgunittest.OSGTestCase):
         grid_ftp_log = os.path.join(get_python_lib(), 'files', 'gridftp.log')
         grid_ftp_auth_log = os.path.join(get_python_lib(), 'files', 'gridftp-auth.log')
         dst_dir = '/var/log'
-        shutil.copyfile(grid_ftp_log, dst_dir)
-        shutil.copyfile(grid_ftp_auth_log, dst_dir)
+        shutil.copy(grid_ftp_log, dst_dir)
+        shutil.copy(grid_ftp_auth_log, dst_dir)
         print("test_05_copy_gridftp_logs - content of /var/log:\n" + os.listdir('/var/log'))
     
     def test_06_execute_gridftptransfer_probedriver(self):
