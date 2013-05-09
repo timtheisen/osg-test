@@ -24,21 +24,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
             if len(os.listdir(target_dir)) == 0:
                 os.rmdir(target_dir)
 
-    # ==========================================================================
-
-#Need to determine if gratia needs to be explicitly stopped...
-#===============================================================================
-#     def test_01_stop_gratia(self):
-#         core.skip_ok_unless_installed('gratia-service')
-#         self.skip_ok_unless(core.state['voms.started-server'], 'did not start server')
-# 
-#         command = ('service', 'voms', 'stop')
-#         stdout, stderr, fail = core.check_system(command, 'Stop VOMS server')
-#         self.assertEqual(stdout.find('FAILED'), -1, fail)
-#         self.assert_(not os.path.exists(core.config['voms.lock-file']),
-#                      'VOMS server lock file still exists')
-#===============================================================================
-
 
     def test_01_remove_certs(self):
         # Do the keys first, so that the directories will be empty for the certs.
@@ -61,4 +46,31 @@ class TestStopGratia(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         os.remove(filename)
+        
+    def test_03_cleanup_temp_gratiafiles(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        command = ('rm', '-rf', '/var/lib/gratia/tmp/gratiafiles/')
+        status, _, _ = core.system(command)
+        self.assertEqual(status, 0, 'Unable to clean up /var/lib/gratia/tmp/gratiafiles/ !')
+    
+    def test_04_cleanup_temp_gridftpaccountingprobestate(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        command = ('rm', '-rf', '/var/lib/gratia/tmp/GridftpAccountingProbeState')
+        status, _, _ = core.system(command)
+        self.assertEqual(status, 0, 'Unable to clean up /var/lib/gratia/tmp/GridftpAccountingProbeState !')
+
+    def test_05_cleanup_varlog_gridftplog(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        command = ('rm', '-rf', '/var/log/griftp.log')
+        status, _, _ = core.system(command)
+        self.assertEqual(status, 0, 'Unable to clean up  /var/log/griftp.log!')
+        
+    def test_06_cleanup_varlog_gridftpauthlog(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        command = ('rm', '-rf', '/var/log/griftp-auth.log')
+        status, _, _ = core.system(command)
+        self.assertEqual(status, 0, 'Unable to clean up  /var/log/griftp-auth.log!')
+    
+    
+    
         
