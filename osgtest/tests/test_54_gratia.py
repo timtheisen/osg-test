@@ -99,7 +99,10 @@ class TestGratia(osgunittest.OSGTestCase):
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         status, stdout, stderr = core.system(command)
         self.assertEqual(status, 0, 'Unable to execute GridftpTransferProbeDriver!')
-        self.assert_(not os.listdir('/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_fermicloud316.fnal.gov_fermicloud316.fnal.gov_8880/outbox/'), 'gridftp-transfer outbox NOT empty !')
+        host = socket.gethostname()
+        outboxdir = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880/outbox/"
+        print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
+        self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
         core.state['gratia.gridftp-transfer-running'] = True
         
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
