@@ -3,11 +3,7 @@ import pwd
 import shutil
 import socket
 import stat
-import unittest
-import time
-
 import osgtest.library.core as core
-import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
@@ -88,13 +84,20 @@ class TestStartGratia(osgunittest.OSGTestCase):
         
         shutil.move(outfile_name, infile_name)
 
-    
+    #===========================================================================
+    # This test modifies "/etc/gratia/collector/service-authorization.properties" file
+    #===========================================================================
+      
     def test_01_service_authorization(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_auth = "/etc/gratia/collector/service-authorization.properties"
         self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=admin")
         self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
+        
+    #===========================================================================
+    # This test modifies "/etc/gratia/collector/service-configuration.properties" file
+    #===========================================================================
         
     def test_02_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
@@ -107,18 +110,26 @@ class TestStartGratia(osgunittest.OSGTestCase):
         secureconn="service.secure.connection=https://" + host + ":8443"
         self.patternreplace(gratia_conf, "service.secure.connection", secureconn)
     
+    #===========================================================================
+    # This test executes the install-database command
+    #===========================================================================
     def test_03_install_database(self):
         core.skip_ok_unless_installed('gratia-service')    
         command = ('/usr/share/gratia/install-database',)
-        status, stdout, stderr = core.system(command)
-        self.assertEqual(status, 0, 'Unable to install Gratia Database !')
+        core.check_system(command, 'Unable to install Gratia Database !')
         
+    #===========================================================================
+    # This test sets certificates related parameters
+    #===========================================================================
     def test_04_config_certs(self):
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
 
+    #===========================================================================
+    # This test sets installs http certificates
+    #===========================================================================
     def test_05_install_http_certs(self):
         core.skip_ok_unless_installed('gratia-service')
         httpcert = core.config['certs.httpcert']
@@ -129,18 +140,25 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
         
-        
+    #===========================================================================
+    # This test stops the Tomcat service
+    #===========================================================================
     def test_06_stop_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.stop('tomcat')
 
+    #===========================================================================
+    # This test configures Tomcat
+    #===========================================================================
     def test_07_configure_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')
         command = ('/usr/share/gratia/configure_tomcat',)
-        status, stdout, stderr = core.system(command)
-        self.assertEqual(status, 0, 'Unable to configure Tomcat !')
+        core.check_system(command, 'Unable to configure Tomcat !')
 
+    #===========================================================================
+    # This test starts the Tomcat service
+    #===========================================================================
     def test_08_start_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
-        #time.sleep(600)
+   
