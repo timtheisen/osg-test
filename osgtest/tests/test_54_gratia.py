@@ -2,7 +2,7 @@ import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import os
 import re
-from distutils.sysconfig import get_python_libs
+from distutils.sysconfig import get_python_lib
 import shutil
 import socket
 
@@ -107,8 +107,21 @@ class TestGratia(osgunittest.OSGTestCase):
         
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
-        self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)
-        pass
+        self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
+       
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #print filename
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Command to check the database is:
+        #echo "use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
+        command = "echo \"use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306 | wc -l",
+        status, stdout, stderr = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
+        os.remove(filename)
 
         
 
