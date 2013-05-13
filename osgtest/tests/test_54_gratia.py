@@ -142,8 +142,8 @@ class TestGratia(osgunittest.OSGTestCase):
         
         #Command to check the database is:
         #echo "use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306",
-        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        #command = "echo \"use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306",
+        #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         
         #The stdout (based on fixed gridftp-auth.log and gridftp.log) should look as follows
         #mysql> select sum(Njobs), sum(TransferSize) from MasterTransferSummary;
@@ -155,8 +155,15 @@ class TestGratia(osgunittest.OSGTestCase):
         #1 row in set (0.00 sec)
         #The assertions below try to search for the numbers presented above
         
-        result1 = re.search('1167', str(stdout), re.IGNORECASE)
+        command = "echo \"use gratia; select sum(Njobs);\" | mysql --skip-column-names --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306",
+        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        
+        result1 = re.search('1167', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
-        result2 = re.search('220545414576', str(stdout), re.IGNORECASE)
+        
+        command = "echo \"use gratia; select sum(TransferSize);\" | mysql --skip-column-names --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306",
+        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        
+        result2 = re.search('220545414576', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
         os.remove(filename)
