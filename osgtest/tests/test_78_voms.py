@@ -72,3 +72,4 @@ class TestStopVOMS(osgunittest.OSGTestCase):
         self.remove_cert('certs.vomscert')
         self.remove_cert('certs.httpkey')
         self.remove_cert('certs.httpcert')
+        core.state['voms.removed-certs'] = True
