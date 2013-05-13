@@ -155,8 +155,8 @@ class TestGratia(osgunittest.OSGTestCase):
         #1 row in set (0.00 sec)
         #The assertions below try to search for the numbers presented above
         
-        result1 = re.search('1167', stdout, re.IGNORECASE)
+        result1 = re.search('1167', str(stdout), re.IGNORECASE)
         self.assert_(result1 is not None)
-        result2 = re.search('220545414576', stdout, re.IGNORECASE)
+        result2 = re.search('220545414576', str(stdout), re.IGNORECASE)
         self.assert_(result2 is not None)
         os.remove(filename)
