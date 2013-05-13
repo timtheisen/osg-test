@@ -28,6 +28,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
     # This test removes the http certificates
     #===========================================================================
     def test_01_remove_certs(self):
+        core.skip_ok_unless_installed('gratia-service')
+        self.skip_ok_if(core.state['voms.removed-certs'] == True, 'Certs were already removed')
         # Do the keys first, so that the directories will be empty for the certs.
         self.remove_cert('certs.httpkey')
         self.remove_cert('certs.httpcert')
