@@ -82,3 +82,19 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
         command = ('rm', '-rf', '/var/log/gridftp-auth.log')
         core.check_system(command, 'Unable to clean up  /var/log/gridftp-auth.log!')
+        
+    #===========================================================================
+    # This test cleans up /etc/gratia/collector
+    #===========================================================================
+    def test_07_cleanup_etcgratia_collector(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        command = ('rm', '-rf', '/etc/gratia/collector')
+        core.check_system(command, 'Unable to clean up  /etc/gratia/collector!')
+        
+    #===========================================================================
+    # This test cleans up /etc/gratia/gridftp-transfer
+    #===========================================================================
+    def test_08_cleanup_etcgratia_gridftp_transfer(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        command = ('rm', '-rf', '/etc/gratia/gridftp-transfer')
+        core.check_system(command, 'Unable to clean up  /etc/gratia/gridftp-transfer!')
