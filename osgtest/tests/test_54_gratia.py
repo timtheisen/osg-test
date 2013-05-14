@@ -166,9 +166,12 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         print "select sum(Njobs) stdout is: " + stdout
         result1 = re.search('1167', stdout, re.IGNORECASE)
-        print "select sum(Njobs) type(stdout) is: " + type(stdout)
-        print "select sum(Njobs) type(result1) is: " + type(result1)
-        print "select sum(Njobs) result1 is: " + str(result1)
+        print "select sum(Njobs) type(stdout) is: "
+        print type(stdout)
+        print "select sum(Njobs) type(result1) is: "
+        print type(result1)
+        print "select sum(Njobs) result1 is: " 
+        print str(result1)
         self.assert_(result1 is not None)
         
         
@@ -186,9 +189,12 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         print "select sum(TransferSize) stdout is: " + stdout
         result2 = re.search('220545414576', stdout, re.IGNORECASE)
-        print "select sum(TransferSize) type(stdout) is: " + type(stdout)
-        print "select sum(TransferSize) type(result2) is: " + type(result2)
-        print "select sum(TransferSize) result2 is: " + str(result2)
+        print "select sum(TransferSize) type(stdout) is: "
+        print type(stdout)
+        print "select sum(TransferSize) type(result2) is: "
+        print type(result2)
+        print "select sum(TransferSize) result2 is: "
+        print str(result2)
         self.assert_(result2 is not None)
         
         
