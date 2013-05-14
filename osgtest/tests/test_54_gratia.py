@@ -155,13 +155,13 @@ class TestGratia(osgunittest.OSGTestCase):
         #1 row in set (0.00 sec)
         #The assertions below try to search for the numbers presented above
         
-        command = "echo \"use gratia; select sum(Njobs);\" | mysql --skip-column-names --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(Njobs);\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         
         result1 = re.search('1167', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
-        command = "echo \"use gratia; select sum(TransferSize);\" | mysql --skip-column-names --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(TransferSize);\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         
         result2 = re.search('220545414576', stdout, re.IGNORECASE)
