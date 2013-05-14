@@ -54,12 +54,12 @@ class TestStopGratia(osgunittest.OSGTestCase):
         os.remove(filename)
         
     #===========================================================================
-    # This test cleans up files in /var/lib/gratia/tmp/gratiafiles/
+    # This test cleans up files in core.config['gratia.gridftp-temp-dir']
     #===========================================================================
     def test_03_cleanup_temp_gratiafiles(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/var/lib/gratia/tmp/gratiafiles/')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/gratiafiles/ !')
+        command = ('rm', '-rf', core.config['gratia.gridftp-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.gridftp-temp-dir\'] !')
     
     #===========================================================================
     # This test removes /var/lib/gratia/tmp/GridftpAccountingProbeState
