@@ -83,6 +83,29 @@ class TestStartGratia(osgunittest.OSGTestCase):
             outfile.writelines(line)
         
         shutil.move(outfile_name, infile_name)
+        
+    #=======================================================================
+    # This is taken from the trunk core.py. Need to figure out how to import...
+    #=======================================================================
+    def get_package_envra(self, package_name):
+        """Query and return the ENVRA (Epoch, Name, Version, Release, Arch) of an
+        installed package as a tuple. Can raise OSError if rpm does not return
+        output in the right format.
+    
+        """
+        command = ('rpm', '--query', package_name, '--queryformat=%{EPOCH} %{NAME} %{VERSION} %{RELEASE} %{ARCH}')
+        status, stdout, stderr = os.system(command)
+        # Not checking stderr because signature warnings get written there and
+        # we do not care about those.
+        if (status != 0) or (stdout is None):
+            raise OSError(status, stdout)
+    
+        envra = stdout.strip().split(' ')
+        if len(envra) != 5:
+            raise OSError(status, stdout)
+        (epoch, name, version, release, arch) = envra
+        return (epoch, name, version, release, arch)
+   
 
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file
@@ -92,8 +115,10 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         
         # The name of the gratia directory changed
-        gratia_version = core.get_package_envra('gratia-service')[2]
+        gratia_version = self.get_package_envra('gratia-service')[2]
+        print gratia_version
         gratia_version_split = gratia_version.split('.')
+        print gratia_version_split
         if gratia_version_split >= ['1', '13', '5']:
             core.config['gratia.directory'] = "services"
         else:
