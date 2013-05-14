@@ -94,7 +94,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     
         """
         command = ('rpm', '--query', package_name, '--queryformat=%{EPOCH} %{NAME} %{VERSION} %{RELEASE} %{ARCH}')
-        status, stdout, stderr = os.system(command)
+        status, stdout, stderr = core.system(command)
         # Not checking stderr because signature warnings get written there and
         # we do not care about those.
         if (status != 0) or (stdout is None):
@@ -115,7 +115,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         
         # The name of the gratia directory changed
-        gratia_version = self.get_package_envra("gratia-service")[2]
+        gratia_version = self.get_package_envra('gratia-service')[2]
         print gratia_version
         gratia_version_split = gratia_version.split('.')
         print gratia_version_split
