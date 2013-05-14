@@ -158,12 +158,16 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         
-        result1 = re.search('1167', stdout, re.IGNORECASE)
+        result1 = re.search('1167', str(stdout), re.IGNORECASE)
+        print "checkdatabase_gridftptransfer_probedriver - str(stdout) is: " + str(stdout) + "\n"
+        print "result1 is: " + result1 + "\n"
         self.assert_(result1 is not None)
         
         command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         
-        result2 = re.search('220545414576', stdout, re.IGNORECASE)
+        result2 = re.search('220545414576', str(stdout), re.IGNORECASE)
+        print "checkdatabase_gridftptransfer_probedriver - str(stdout) is: " + str(stdout) + "\n"
+        print "result2 is: " + result2 + "\n"
         self.assert_(result2 is not None)
         os.remove(filename)
