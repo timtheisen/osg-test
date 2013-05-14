@@ -115,7 +115,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         
         # The name of the gratia directory changed
-        gratia_version = self.get_package_envra('gratia-service')[2]
+        gratia_version = self.get_package_envra("gratia-service")[2]
         print gratia_version
         gratia_version_split = gratia_version.split('.')
         print gratia_version_split
