@@ -158,50 +158,23 @@ class TestGratia(osgunittest.OSGTestCase):
         #The assertions below try to search for the numbers presented above
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
         command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
-        status, stdout, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
+        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        #status, stdout, _ = core.system(command, shell=True)
+        #self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         print "select sum(Njobs) stdout is: " + stdout
         result1 = re.search('1167', stdout, re.IGNORECASE)
-        print "select sum(Njobs) type(stdout) is: "
-        print type(stdout)
-        print "select sum(Njobs) type(result1) is: "
-        print type(result1)
-        print "select sum(Njobs) result1 is: " 
-        print str(result1)
         self.assert_(result1 is not None)
         
         
-        #=======================================================================
-        # result1 = re.search('1167', str(stdout), re.IGNORECASE)
-        # print "checkdatabase_gridftptransfer_probedriver - str(stdout) is: " + str(stdout) + "\n"
-        # print "result1 is: " + result1 + "\n"
-        # self.assert_(result1 is not None)
-        #=======================================================================
-        
         command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        # _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
-        
-        status, stdout, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
-        print "select sum(TransferSize) stdout is: " + stdout
+        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        #status, stdout, _ = core.system(command, shell=True)
+        #self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         result2 = re.search('220545414576', stdout, re.IGNORECASE)
-        print "select sum(TransferSize) type(stdout) is: "
-        print type(stdout)
-        print "select sum(TransferSize) type(result2) is: "
-        print type(result2)
-        print "select sum(TransferSize) result2 is: "
-        print str(result2)
+        print "select sum(TransferSize) stdout is: " + stdout
         self.assert_(result2 is not None)
-        
-        
-        #=======================================================================
-        # result2 = re.search('220545414576', str(stdout), re.IGNORECASE)
-        # print "checkdatabase_gridftptransfer_probedriver - str(stdout) is: " + str(stdout) + "\n"
-        # print "result2 is: " + result2 + "\n"
-        # self.assert_(result2 is not None)
-        #=======================================================================
         os.remove(filename)
