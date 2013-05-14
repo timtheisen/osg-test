@@ -125,6 +125,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
             core.config['gratia.directory'] = "collector"
             
         gratia_auth = "/etc/gratia/" + core.config['gratia.directory'] + "/service-authorization.properties"
+        print "gratia_auth = " + str(gratia_auth) + "\n"
         self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=admin")
         self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
@@ -136,6 +137,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     def test_02_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_conf = "/etc/gratia/" + core.config['gratia.directory'] + "/service-configuration.properties"
+        print "gratia_conf = " + str(gratia_conf) + "\n"
         host = socket.gethostname()
         mysqlurl="service.mysql.url=jdbc:mysql://" +  host + ":3306/gratia"
         self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
