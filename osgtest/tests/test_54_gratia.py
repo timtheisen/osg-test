@@ -161,20 +161,20 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
-        #status, stdout, _ = core.system(command, shell=True)
-        #self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
+        #command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         print "select sum(Njobs) stdout is: "
         print stdout
         result1 = re.search('1167', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
-        #status, stdout, _ = core.system(command, shell=True)
-        #self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
+        #command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         result2 = re.search('220545414576', stdout, re.IGNORECASE)
         print "select sum(TransferSize) stdout is: "
         print stdout
