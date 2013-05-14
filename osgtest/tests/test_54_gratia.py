@@ -165,7 +165,8 @@ class TestGratia(osgunittest.OSGTestCase):
         _, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         #status, stdout, _ = core.system(command, shell=True)
         #self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
-        print "select sum(Njobs) stdout is: " + stdout
+        print "select sum(Njobs) stdout is: "
+        print stdout
         result1 = re.search('1167', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
@@ -175,6 +176,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #status, stdout, _ = core.system(command, shell=True)
         #self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         result2 = re.search('220545414576', stdout, re.IGNORECASE)
-        print "select sum(TransferSize) stdout is: " + stdout
+        print "select sum(TransferSize) stdout is: "
+        print stdout
         self.assert_(result2 is not None)
         os.remove(filename)
