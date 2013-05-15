@@ -108,12 +108,14 @@ class TestStartGratia(osgunittest.OSGTestCase):
         return (epoch, name, version, release, arch)
    
 
-    #This tuple comparsion method assumes: 
-    #A. Tuple has 3 entries 
-    #B. An integer comparsion is desired
-    #Note that the python "cmp" method does NOT perform integer comparison
-    #Similar to python "cmp" method, 
-    #The return value is negative if t1 < t2, zero if t1 == t2 and strictly positive if t1 > t2.
+    #===========================================================================
+    # This tuple comparsion method assumes: 
+    # A. Tuple has 3 entries 
+    # B. An integer comparsion is desired
+    # Note that the python "cmp" method does NOT perform integer comparison
+    # Similar to python "cmp" method, 
+    # The return value is negative if t1 < t2, zero if t1 == t2 and strictly positive if t1 > t2.
+    #===========================================================================
     def tuple_cmp (self, t1, t2):
         print "t1 is: "
         print t1
