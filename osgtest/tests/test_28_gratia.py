@@ -77,8 +77,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
         outfile_name = infile_name + ".tmp"
         outfile = file(outfile_name, 'w')
         
+        #If the pattern is found in a non-comment line, replace the line with the passed in "full_line"
         for line in infile:
-            if pattern in line:
+            if pattern in line and not line.startswith('#'):
                 line = full_line + "\n"
             outfile.writelines(line)
         
