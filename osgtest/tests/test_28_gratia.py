@@ -108,6 +108,49 @@ class TestStartGratia(osgunittest.OSGTestCase):
         return (epoch, name, version, release, arch)
    
 
+    #This tuple comparsion method assumes: 
+    #A. Tuple has 3 entries 
+    #B. An integer comparsion is desired
+    #Note that the python "cmp" method does NOT perform integer comparison
+    #Similar to python "cmp" method, 
+    #The return value is negative if t1 < t2, zero if t1 == t2 and strictly positive if t1 > t2.
+    def tuple_cmp (self, t1, t2):
+        print "t1 is: "
+        print t1
+        t1_0 = int(t1[0])
+        t1_1 = int(t1[1])
+        t1_2 = int(t1[2])
+        
+        print "t2 is: "
+        print t2
+        t2_0 = int(t2[0])
+        t2_1 = int(t2[1])
+        t2_2 = int(t2[2])
+        
+        if (t1_0 < t2_0):
+            print "t1 is less than t2"
+            return -1
+        elif (t1_0  > t2_0):
+            print "t1 is greater than t2"
+            return 1
+        else: #t1_0 == t2_0
+            if (t1_1 < t2_1):
+                print "t1 is less than t2"
+                return -1
+            elif (t1_1 > t2_1):
+                print "t1 is greater than t2"
+                return 1
+            else: #t1_1 == t2_1
+                if (t1_2 < t2_2):
+                    print "t1 is less than t2"
+                    return -1
+                elif (t1_2  > t2_2):
+                    print "t1 is greater than t2"
+                    return 1
+                else: #t1_2 == t2_2
+                    print "t1 is equal to t2"
+                    return 0
+        
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file
     #===========================================================================
@@ -120,12 +163,11 @@ class TestStartGratia(osgunittest.OSGTestCase):
         print gratia_version
         gratia_version_split = gratia_version.split('.')
         print gratia_version_split
-        #Srini: There's seems to be a flaw in this comparsion
-        #Need to figure out a better way.
-        if gratia_version_split >= ['1', '13', '05']:
-            core.config['gratia.directory'] = "services"
-        else:
+       
+        if (self.tuple_cmp(gratia_version_split, ['1', '13', '5']) < 0):
             core.config['gratia.directory'] = "collector"
+        else:
+            core.config['gratia.directory'] = "services"
             
         gratia_auth = "/etc/gratia/" + core.config['gratia.directory'] + "/service-authorization.properties"
         print "gratia_auth = " + str(gratia_auth) + "\n"
