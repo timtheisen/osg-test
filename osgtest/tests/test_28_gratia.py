@@ -119,7 +119,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
         print gratia_version
         gratia_version_split = gratia_version.split('.')
         print gratia_version_split
-        if gratia_version_split >= ['1', '13', '5']:
+        #Srini: There's seems to be a flaw in this comparsion
+        #Need to figure out a better way.
+        if gratia_version_split >= ['1', '13', '05']:
             core.config['gratia.directory'] = "services"
         else:
             core.config['gratia.directory'] = "collector"
