@@ -92,7 +92,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
         directory = '/etc/gratia/' + core.config['gratia.directory']
         command = ('rm', '-rf', directory)
-        core.check_system(command, 'Unable to clean up  /etc/gratia/services!')
+        core.check_system(command, 'Unable to clean up gratia directory!')
         
     #===========================================================================
     # This test cleans up /etc/gratia/gridftp-transfer
