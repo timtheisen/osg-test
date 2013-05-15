@@ -161,6 +161,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     # This test sets certificates related parameters
     #===========================================================================
     def test_04_config_certs(self):
+        core.skip_ok_unless_installed('gratia-service')    
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
@@ -183,6 +184,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     # This test stops the Tomcat service
     #===========================================================================
     def test_06_stop_tomcat(self):
+        core.skip_ok_unless_installed('gratia-service')    
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.stop('tomcat')
 
