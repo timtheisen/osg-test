@@ -10,6 +10,7 @@ import time
 
 class TestGratia(osgunittest.OSGTestCase):
     
+    #This method is taken from test_28 - we can consider moving it to core.py module
     #===========================================================================
     # This helper method loops through the passed in infile line by line. 
     # If it finds the passed in pattern, it replaces the whole line with
@@ -20,8 +21,9 @@ class TestGratia(osgunittest.OSGTestCase):
         outfile_name = infile_name + ".tmp"
         outfile = file(outfile_name, 'w')
         
+        #If the pattern is found in a non-comment line, replace the line with the passed in "full_line"
         for line in infile:
-            if pattern in line:
+            if pattern in line and not line.startswith('#'):
                 line = full_line + "\n"
             outfile.writelines(line)
         
