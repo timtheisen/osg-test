@@ -221,7 +221,7 @@ class TestGratia(osgunittest.OSGTestCase):
         command = ('/usr/share/gratia/glexec/glexec_meter',)
         core.check_system(command, 'Unable to execute glexec_meter!')
         host = socket.gethostname()
-        core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_meter_" + host + "_" + host + "_8880"
+        core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
         outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
         print("test_10_execute_glexec_meter outboxdir is: " + outboxdir)
         #Need to check if the above outboxdir is empty
