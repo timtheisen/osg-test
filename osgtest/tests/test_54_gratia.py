@@ -247,18 +247,18 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select Njobs from MasterTransferSummary where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         status, stdout, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterTransferSummary table !')
+        self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         print "select Njobs stdout is: "
         print stdout
         result1 = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select WallDuration from MasterTransferSummary where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         status, stdout, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterTransferSummary table !')
+        self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         print "select WallDuration stdout is: "
         print stdout
         result2 = re.search('302', stdout, re.IGNORECASE)
