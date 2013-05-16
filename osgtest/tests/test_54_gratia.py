@@ -189,7 +189,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_08_modify_glexec_probeconfig(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
         host = socket.gethostname()
-        probeconfig = "/etc/gratia/gratia-probe-glexec/ProbeConfig"
+        probeconfig = "/etc/gratia/glexec/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
         collectorhost = "    CollectorHost=\"" + host + ":8880\""
