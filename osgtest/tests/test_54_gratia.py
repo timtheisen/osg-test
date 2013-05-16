@@ -182,3 +182,86 @@ class TestGratia(osgunittest.OSGTestCase):
         print stdout
         self.assert_(result2 is not None)
         os.remove(filename)
+        
+    #===============================================================================
+    # This test customizes /etc/gratia/glexec/ProbeConfig file
+    #===============================================================================
+    def test_08_modify_glexec_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        host = socket.gethostname()
+        probeconfig = "/etc/gratia/gratia-probe-glexec/ProbeConfig"
+        #Note that the blank spaces in some of the lines below have been
+        #intentionally added to align with rest of the file
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "gLExecMonitorLog", "    gLExecMonitorLog=\"/var/log/glexec.log\"")
+        
+    #===============================================================================
+    # This test copies glexec.log file from SVN to /var/log
+    #===============================================================================
+    def test_09_copy_glexec_logs(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        glexec_log = os.path.join(get_python_lib(), 'files', 'glexec.log')
+        dst_dir = '/var/log'
+        shutil.copy(glexec_log, dst_dir)
+        print("test_09_copy_glexec_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
+        
+        
+    #===============================================================================
+    # This test executes glexec_meter
+    #===============================================================================
+    def test_10_execute_glexec_meter(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        command = ('/usr/share/gratia/glexec/glexec_meter',)
+        core.check_system(command, 'Unable to execute glexec_meter!')
+        host = socket.gethostname()
+        core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_meter_" + host + "_" + host + "_8880"
+        outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
+        print("test_10_execute_glexec_meter outboxdir is: " + outboxdir)
+        #Need to check if the above outboxdir is empty
+        self.assert_(not os.listdir(outboxdir), 'glexec_meter outbox NOT empty !')
+        core.state['gratia.glexec_meter-running'] = True
+        
+    #===============================================================================
+    # This test checks the database after 
+    # the successful execution of glexec_meter
+    #===============================================================================
+    def test_11_checkdatabase_glexec_meter(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
+       
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #open the above file and write admin password information on the go
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
+        time.sleep(60)
+        
+        command = "echo \"use gratia; select Njobs from MasterTransferSummary where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterTransferSummary table !')
+        print "select Njobs stdout is: "
+        print stdout
+        result1 = re.search('4', stdout, re.IGNORECASE)
+        self.assert_(result1 is not None)
+        
+        
+        command = "echo \"use gratia; select WallDuration from MasterTransferSummary where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterTransferSummary table !')
+        print "select WallDuration stdout is: "
+        print stdout
+        result2 = re.search('302', stdout, re.IGNORECASE)
+        self.assert_(result2 is not None)
+        os.remove(filename)
+        
