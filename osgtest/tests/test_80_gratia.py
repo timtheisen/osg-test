@@ -135,3 +135,11 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
         command = ('rm', '-rf', '/var/lib/gratia/data/glexec_plugin.chk')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/data/glexec_plugin.chk!')
+
+    #===========================================================================
+    # This test cleans up /etc/gratia/glexec
+    #===========================================================================
+    def test_13_cleanup_etcgratia_glexec(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        command = ('rm', '-rf', '/etc/gratia/glexec')
+        core.check_system(command, 'Unable to clean up  /etc/gratia/glexec!')
