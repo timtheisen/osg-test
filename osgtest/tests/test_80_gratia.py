@@ -65,7 +65,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test cleans up files in core.config['gratia.gridftp-temp-dir']
     #===========================================================================
-    def test_04_cleanup_temp_gratiafiles(self):
+    def test_04_cleanup_temp_gratiafiles_gridftp(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
         command = ('rm', '-rf', core.config['gratia.gridftp-temp-dir'])
         core.check_system(command, 'Unable to clean up core.config[\'gratia.gridftp-temp-dir\'] !')
@@ -106,7 +106,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test cleans up files in core.config['gratia.glexec-temp-dir']
     #===========================================================================
-    def test_09_cleanup_temp_glexec(self):
+    def test_09_cleanup_temp_gratiafiles_glexec(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
         command = ('rm', '-rf', core.config['gratia.glexec-temp-dir'])
         core.check_system(command, 'Unable to clean up core.config[\'gratia.glexec-temp-dir\'] !')
@@ -131,7 +131,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test cleans up /var/lib/gratia/data/glexec_plugin.chk
     #===========================================================================
-    def test_12_cleanup_etcgratia_glexec(self):
+    def test_12_cleanup_varlibgratia_glexec(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
         command = ('rm', '-rf', '/var/lib/gratia/data/glexec_plugin.chk')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/data/glexec_plugin.chk!')
@@ -143,11 +143,28 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
         command = ('rm', '-rf', '/etc/gratia/glexec')
         core.check_system(command, 'Unable to clean up  /etc/gratia/glexec!')
-
+        
+    #===========================================================================
+    # This test cleans up files in core.config['gratia.dcache-temp-dir']
+    #===========================================================================
+    def test_14_cleanup_temp_gratiafiles_dcache(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        command = ('rm', '-rf', core.config['gratia.dcache-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.dcache-temp-dir\'] !')
+   
     #===========================================================================
     # This test cleans up /var/lib/gratia/tmp/dCache-storage_meter.cron.pid
     #===========================================================================
-    def test_14_cleanup_varlibgratiatmp_dcache(self):
+    def test_15_cleanup_varlibgratiatmp_dcache(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
         command = ('rm', '-rf', '/var/lib/gratia/tmp/dCache-storage_meter.cron.pid')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/dCache-storage_meter.cron.pid!')
+
+        
+    #===========================================================================
+    # This test cleans up /etc/gratia/dCache-storage
+    #===========================================================================
+    def test_16_cleanup_etcgratia_dcache(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        command = ('rm', '-rf', '/etc/gratia/dCache-storage')
+        core.check_system(command, 'Unable to clean up /etc/gratia/dCache-storage !')
