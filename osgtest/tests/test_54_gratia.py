@@ -342,5 +342,5 @@ class TestGratia(osgunittest.OSGTestCase):
         print stdout
         UsedSpace = stdout
         
-        self.assert_(TotalSpace == (FreeSpace + UsedSpace))
+        self.assert_(int(TotalSpace) == (int(FreeSpace) + int(UsedSpace)))
         os.remove(filename)
