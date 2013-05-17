@@ -265,3 +265,82 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result2 is not None)
         os.remove(filename)
         
+    #===============================================================================
+    # This test customizes /etc/gratia/dCache-storage/ProbeConfig file
+    #===============================================================================
+    def test_12_modify_dcache_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        host = socket.gethostname()
+        probeconfig = "/etc/gratia/dCache-storage/ProbeConfig"
+        #Note that the blank spaces in some of the lines below have been
+        #intentionally added to align with rest of the file
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "InfoProviderUrl", "    InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
+
+
+    #===============================================================================
+    # This test executes dCache-storage
+    #===============================================================================
+    def test_13_execute_dcache_storage(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
+        core.check_system(command, 'Unable to execute dCache-storage!')
+        #=======================================================================
+        # host = socket.gethostname()
+        # core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
+        # outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
+        # print("test_13_execute_dcache_storage outboxdir is: " + outboxdir)
+        # #Need to check if the above outboxdir is empty
+        # self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
+        #=======================================================================
+        core.state['gratia.dcache-storage-running'] = True
+    
+    #===============================================================================
+    # This test checks the database after 
+    # the successful execution of dCache-storage
+    #===============================================================================
+    def test_14_checkdatabase_dcache_storage(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
+       
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #open the above file and write admin password information on the go
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
+        time.sleep(60)
+        
+        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
+        print "select TotalSpace stdout is: "
+        print stdout
+        TotalSpace = stdout
+
+        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
+        print "select FreeSpace stdout is: "
+        print stdout
+        FreeSpace = stdout
+        
+        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
+        print "select UsedSpace stdout is: "
+        print stdout
+        UsedSpace = stdout
+        
+        self.assert_(TotalSpace == FreeSpace + UsedSpace)
+        os.remove(filename)
