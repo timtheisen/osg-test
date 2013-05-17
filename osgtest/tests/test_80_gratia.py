@@ -143,3 +143,11 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
         command = ('rm', '-rf', '/etc/gratia/glexec')
         core.check_system(command, 'Unable to clean up  /etc/gratia/glexec!')
+
+    #===========================================================================
+    # This test cleans up /var/lib/gratia/tmp/dCache-storage_meter.cron.pid
+    #===========================================================================
+    def test_14_cleanup_varlibgratiatmp_dcache(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        command = ('rm', '-rf', '/var/lib/gratia/tmp/dCache-storage_meter.cron.pid')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/dCache-storage_meter.cron.pid!')
