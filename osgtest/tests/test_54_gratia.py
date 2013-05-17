@@ -322,25 +322,23 @@ class TestGratia(osgunittest.OSGTestCase):
         time.sleep(60)
         
         command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        status, stdout, _ = core.system(command, shell=True)
+        status, TotalSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
-        print "select TotalSpace stdout is: "
-        print stdout
-        TotalSpace = stdout
+        print "TotalSpace is: "
+        print TotalSpace
 
         command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        status, stdout, _ = core.system(command, shell=True)
+        status, FreeSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
-        print "select FreeSpace stdout is: "
-        print stdout
-        FreeSpace = stdout
+        print "FreeSpace is: "
+        print FreeSpace
         
         command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
-        status, stdout, _ = core.system(command, shell=True)
+        status, UsedSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
-        print "select UsedSpace stdout is: "
-        print stdout
-        UsedSpace = stdout
+        print "UsedSpace is: "
+        print UsedSpace
         
+        #Need to assert only after converting string to integers...
         self.assert_(int(TotalSpace) == (int(FreeSpace) + int(UsedSpace)))
         os.remove(filename)
