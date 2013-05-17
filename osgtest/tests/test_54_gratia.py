@@ -292,14 +292,14 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
         core.check_system(command, 'Unable to execute dCache-storage!')
-        #=======================================================================
-        # host = socket.gethostname()
-        # core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
-        # outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
-        # print("test_13_execute_dcache_storage outboxdir is: " + outboxdir)
-        # #Need to check if the above outboxdir is empty
-        # self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
-        #=======================================================================
+        # clean up the following directory:
+        # /var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_fermicloud339.fnal.gov_fermicloud339.fnal.gov_8880
+        host = socket.gethostname()
+        core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_" + host + "_" + host + "_8880"
+        outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
+        print("test_13_execute_dcache_storage outboxdir is: " + outboxdir)
+        #Need to check if the above outboxdir is empty
+        self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
         core.state['gratia.dcache-storage-running'] = True
     
     #===============================================================================
