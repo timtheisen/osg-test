@@ -424,12 +424,12 @@ class TestGratia(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')
-        #host = socket.gethostname()
-        #core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
-        #outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
-        #print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
+        host = socket.gethostname()
+        core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
+        outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
+        print("test_18_execute_condor_meter outboxdir is: " + outboxdir)
         #Need to check if the above outboxdir is empty
-        #self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
+        self.assert_(not os.listdir(outboxdir), 'condor outbox NOT empty !')
         core.state['gratia.condor-meter-running'] = True
 
 
