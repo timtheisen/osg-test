@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GratiaCertInfo>
+  <BatchManager>condor</BatchManager>
+  <UniqID>16289904411361991231.1083399385763831206</UniqID>
+  <LocalJobId>12110</LocalJobId>
+  <DN>/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=People/CN=John Weigand 144</DN>
+  <VO>cms</VO>
+  <FQAN>/cms/uscms/Role=cmsuser/Capability=NULL</FQAN>
+</GratiaCertInfo>

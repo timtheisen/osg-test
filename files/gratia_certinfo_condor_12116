@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GratiaCertInfo>
+  <BatchManager>condor</BatchManager>
+  <UniqID>16289906613870708536.1083399385763842724</UniqID>
+  <LocalJobId>12116</LocalJobId>
+  <DN>/DC=org/DC=doegrids/OU=Services/CN=rsv/cms-xen1.fnal.gov</DN>
+</GratiaCertInfo>
