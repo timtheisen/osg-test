@@ -342,3 +342,128 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need to assert only after converting string to integers...
         self.assert_(int(TotalSpace) == (int(FreeSpace) + int(UsedSpace)))
         os.remove(filename)
+        
+    #===============================================================================
+    # This test customizes /etc/gratia/condor/ProbeConfig file
+    #===============================================================================
+    def test_15_modify_condor_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+        host = socket.gethostname()
+        probeconfig = "/etc/gratia/condor/ProbeConfig"
+        #Note that the blank spaces in some of the lines below have been
+        #intentionally added to align with rest of the file
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        
+    #===============================================================================
+    # This test copies condor probe related files from SVN to /var/log
+    #===============================================================================
+    def test_16_copy_condor_logs(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+        certinfo_12110 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12110')
+        certinfo_12111 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12111')
+        certinfo_12112 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12112')
+        certinfo_12113 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12113')
+        certinfo_12114 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12114')
+        certinfo_12115 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12115')
+        certinfo_12116 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12116')
+        history_12110 = os.path.join(get_python_lib(), 'files', 'history.12110.0')
+        history_12111 = os.path.join(get_python_lib(), 'files', 'history.12111.0')
+        history_12112 = os.path.join(get_python_lib(), 'files', 'history.12112.0')
+        history_12113 = os.path.join(get_python_lib(), 'files', 'history.12113.0')
+        history_12114 = os.path.join(get_python_lib(), 'files', 'history.12114.0')
+        history_12115 = os.path.join(get_python_lib(), 'files', 'history.12115.0')
+        history_12116 = os.path.join(get_python_lib(), 'files', 'history.12116.0')
+
+        dst_dir = '/var/lib/gratia/data'
+        shutil.copy(certinfo_12110, dst_dir)
+        shutil.copy(certinfo_12111, dst_dir)
+        shutil.copy(certinfo_12112, dst_dir)
+        shutil.copy(certinfo_12113, dst_dir)
+        shutil.copy(certinfo_12114, dst_dir)
+        shutil.copy(certinfo_12115, dst_dir)
+        shutil.copy(certinfo_12116, dst_dir)
+        shutil.copy(history_12110, dst_dir)
+        shutil.copy(history_12111, dst_dir)
+        shutil.copy(history_12112, dst_dir)
+        shutil.copy(history_12113, dst_dir)
+        shutil.copy(history_12114, dst_dir)
+        shutil.copy(history_12115, dst_dir)
+        shutil.copy(history_12116, dst_dir)
+        
+        print("test_16_copy_condor_logs - content of /var/lib/gratia/data:\n" + str(os.listdir('/var/lib/gratia/data')))
+        
+    #===============================================================================
+    # This test starts condor service, if not already running
+    #===============================================================================
+    def test_17_execute_condor(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')  
+        
+        self.skip_ok_if(core.state['condor.running-service'] == True, 'Already started condor service')
+        
+        #If the service was not already started, start it now...
+        command = ('service', 'condor', 'start')
+        stdout, _, fail = core.check_system(command, 'Start Condor')
+        self.assert_(stdout.find('error') == -1, fail)
+        self.assert_(os.path.exists(core.config['condor.lockfile']),
+                     'Condor run lock file missing')
+        core.state['condor.started-service'] = True
+        core.state['condor.running-service'] = True
+        
+    #===============================================================================
+    # This test executes condor_meter
+    #===============================================================================
+    def test_18_execute_condor_meter(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')  
+        self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
+        command = ('/usr/share/gratia/condor/condor_meter',)
+        core.check_system(command, 'Unable to execute condor_meter !')
+        #host = socket.gethostname()
+        #core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
+        #outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
+        #print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
+        #Need to check if the above outboxdir is empty
+        #self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
+        core.state['gratia.condor-meter-running'] = True
+
+
+    #===============================================================================
+    # This test checks database after condor_meter is run
+    #===============================================================================
+    def test_19_checkdatabase_condor_meter(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')  
+        self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #open the above file and write admin password information on the go
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
+        time.sleep(60)
+        
+        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
+        print "select Njobs stdout is: "
+        print stdout
+        result1 = re.search('7', stdout, re.IGNORECASE)
+        self.assert_(result1 is not None)
+        
+        
+        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
+        print "select WallDuration stdout is: "
+        print stdout
+        result2 = re.search('302', stdout, re.IGNORECASE)
+        self.assert_(result2 is not None)
+        os.remove(filename)
