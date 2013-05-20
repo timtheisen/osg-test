@@ -168,3 +168,37 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
         command = ('rm', '-rf', '/etc/gratia/dCache-storage')
         core.check_system(command, 'Unable to clean up /etc/gratia/dCache-storage !')
+        
+    #===========================================================================
+    # This test cleans up files in core.config['gratia.condor-temp-dir']
+    #===========================================================================
+    def test_17_cleanup_temp_gratiafiles_condor(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+        command = ('rm', '-rf', core.config['gratia.condor-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.condor-temp-dir\'] !')
+        
+    #===========================================================================
+    # This test cleans up files in core.config['gratia.condor-temp-dir']
+    #===========================================================================
+    def test_18_cleanup_temp_gratiafiles_condoraccountingprobestate(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+        command = ('rm', '-rf', '/var/lib/gratia/tmp/GridftpAccountingProbeState')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/GridftpAccountingProbeState !')
+        
+    #===========================================================================
+    # This test removes condor logs
+    #===========================================================================
+    def test_19_cleanup_varlib_condorlogs(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+        command = ('rm', '-rf', '/var/lib/gratia/data/gratia_certinfo_condor*')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/data/gratia_certinfo_condor*!')
+        command = ('rm', '-rf', '/var/lib/gratia/data/history.1211*')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/data/history.1211*!')
+
+    #===========================================================================
+    # This test cleans up /etc/gratia/condor
+    #===========================================================================
+    def test_20_cleanup_etcgratia_condor(self):
+        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+        command = ('rm', '-rf', '/etc/gratia/condor')
+        core.check_system(command, 'Unable to clean up /etc/gratia/condor!')
