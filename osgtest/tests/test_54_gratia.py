@@ -459,11 +459,11 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
-        print "select WallDuration stdout is: "
+        print "select sum(WallDuration) stdout is: "
         print stdout
-        result2 = re.search('302', stdout, re.IGNORECASE)
+        result2 = re.search('69', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
         os.remove(filename)
