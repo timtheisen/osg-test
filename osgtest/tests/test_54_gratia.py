@@ -29,6 +29,25 @@ class TestGratia(osgunittest.OSGTestCase):
         
         shutil.move(outfile_name, infile_name)
 
+
+    #===========================================================================
+    # This helper method copies user-vo-map in /var/lib/osg, if not already present
+    #===========================================================================
+    def copy_user_vo_map_file(self):
+        user_vo_map_dir = '/var/lib/osg/'
+        user_vo_map_file = os.path.join(get_python_lib(), 'files', 'user-vo-map')
+        if not (os.path.exists(user_vo_map_dir)):
+            os.makedirs(user_vo_map_dir)
+            shutil.copy(user_vo_map_file, user_vo_map_dir)
+            print ("/var/lib/osg/ did not exist before - created it and added the file")
+        elif not (os.path.exists(os.path.join(user_vo_map_dir,'user-vo-map'))): #directory exists, copy file, if the file is not already present
+            shutil.copy(user_vo_map_file, user_vo_map_dir)
+            print ("/var/lib/osg/ existed but the file did NOT exist before - added the file")
+        else: #both directory and file are present and so, do nothing...
+            print ("/var/lib/osg/ AND the file existed before - No further action needed")
+            pass
+        print("content of /var/lib/osg/:\n" + str(os.listdir('/var/lib/osg/')))
+
     #===============================================================================
     # This test tries to launch a gratia admin webpage
     #===============================================================================
@@ -88,7 +107,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
     #===============================================================================
     def test_04_modify_gridftptransfer_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         host = socket.gethostname()
         probeconfig = "/etc/gratia/gridftp-transfer/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
@@ -106,33 +125,21 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies the necessary files to to /var/log and /var/lib/osg/ directories
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         grid_ftp_log = os.path.join(get_python_lib(), 'files', 'gridftp.log')
         grid_ftp_auth_log = os.path.join(get_python_lib(), 'files', 'gridftp-auth.log')
         dst_dir = '/var/log'
         shutil.copy(grid_ftp_log, dst_dir)
         shutil.copy(grid_ftp_auth_log, dst_dir)
-        user_vo_map_dir = '/var/lib/osg/'
-        user_vo_map_file = os.path.join(get_python_lib(), 'files', 'user-vo-map')
-        if not (os.path.exists(user_vo_map_dir)):
-            os.makedirs(user_vo_map_dir)
-            shutil.copy(user_vo_map_file, user_vo_map_dir)
-            print ("/var/lib/osg/ did not exist before - created it and added the file")
-        elif not (os.path.exists(os.path.join(user_vo_map_dir,'user-vo-map'))): #directory exists, copy file, if the file is not already present
-            shutil.copy(user_vo_map_file, user_vo_map_dir)
-            print ("/var/lib/osg/ existed but the file did NOT exist before - added the file")
-        else: #both directory and file are present and so, do nothing...
-            print ("/var/lib/osg/ AND the file existed before - No further action needed")
-            pass
-        print("content of /var/lib/osg/:\n" + str(os.listdir('/var/lib/osg/')))
         print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
+        self.copy_user_vo_map_file()
 
     
     #===============================================================================
     # This test executes the GridftpTransferProbeDriver
     #===============================================================================
     def test_06_execute_gridftptransfer_probedriver(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
         host = socket.gethostname()
@@ -148,7 +155,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # the successful execution of GridftpTransferProbeDriver
     #===============================================================================
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
@@ -201,7 +208,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/glexec/ProbeConfig file
     #===============================================================================
     def test_08_modify_glexec_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec')
         host = socket.gethostname()
         probeconfig = "/etc/gratia/glexec/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
@@ -220,18 +227,18 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies glexec.log file from SVN to /var/log
     #===============================================================================
     def test_09_copy_glexec_logs(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec')
         glexec_log = os.path.join(get_python_lib(), 'files', 'glexec.log')
         dst_dir = '/var/log'
         shutil.copy(glexec_log, dst_dir)
         print("test_09_copy_glexec_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
-        
-        
+        self.copy_user_vo_map_file()
+
     #===============================================================================
     # This test executes glexec_meter
     #===============================================================================
     def test_10_execute_glexec_meter(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec')
         command = ('/usr/share/gratia/glexec/glexec_meter',)
         core.check_system(command, 'Unable to execute glexec_meter!')
         host = socket.gethostname()
@@ -247,7 +254,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # the successful execution of glexec_meter
     #===============================================================================
     def test_11_checkdatabase_glexec_meter(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
@@ -283,7 +290,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/dCache-storage/ProbeConfig file
     #===============================================================================
     def test_12_modify_dcache_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
         host = socket.gethostname()
         probeconfig = "/etc/gratia/dCache-storage/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
@@ -300,10 +307,17 @@ class TestGratia(osgunittest.OSGTestCase):
 
 
     #===============================================================================
+    # This test copies logs for dcache probe
+    #===============================================================================
+    def test_13_copy_dcache_logs(self):
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
+        self.copy_user_vo_map_file()
+
+    #===============================================================================
     # This test executes dCache-storage
     #===============================================================================
-    def test_13_execute_dcache_storage(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+    def test_14_execute_dcache_storage(self):
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
         core.check_system(command, 'Unable to execute dCache-storage!')
         # clean up the following directory:
@@ -311,7 +325,7 @@ class TestGratia(osgunittest.OSGTestCase):
         host = socket.gethostname()
         core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_" + host + "_" + host + "_8880"
         outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
-        print("test_13_execute_dcache_storage outboxdir is: " + outboxdir)
+        print("test_14_execute_dcache_storage outboxdir is: " + outboxdir)
         #Need to check if the above outboxdir is empty
         self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
         core.state['gratia.dcache-storage-running'] = True
@@ -320,8 +334,8 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks the database after 
     # the successful execution of dCache-storage
     #===============================================================================
-    def test_14_checkdatabase_dcache_storage(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-dcache-storage')
+    def test_15_checkdatabase_dcache_storage(self):
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
@@ -360,8 +374,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test customizes /etc/gratia/condor/ProbeConfig file
     #===============================================================================
-    def test_15_modify_condor_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+    def test_16_modify_condor_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-probe-condor')
         host = socket.gethostname()
         probeconfig = "/etc/gratia/condor/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
@@ -378,8 +392,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test copies condor probe related files from SVN to /var/log
     #===============================================================================
-    def test_16_copy_condor_logs(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')
+    def test_17_copy_condor_logs(self):
+        core.skip_ok_unless_installed('gratia-probe-condor')
         certinfo_12110 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12110')
         certinfo_12111 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12111')
         certinfo_12112 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12112')
@@ -411,13 +425,14 @@ class TestGratia(osgunittest.OSGTestCase):
         shutil.copy(history_12115, dst_dir)
         shutil.copy(history_12116, dst_dir)
         
-        print("test_16_copy_condor_logs - content of /var/lib/gratia/data:\n" + str(os.listdir('/var/lib/gratia/data')))
+        print("test_17_copy_condor_logs - content of /var/lib/gratia/data:\n" + str(os.listdir('/var/lib/gratia/data')))
+        self.copy_user_vo_map_file()
         
     #===============================================================================
     # This test starts condor service, if not already running
     #===============================================================================
-    def test_17_execute_condor(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')  
+    def test_18_execute_condor(self):
+        core.skip_ok_unless_installed('gratia-probe-condor')  
         
         self.skip_ok_if(core.state['condor.running-service'] == True, 'Already started condor service')
         
@@ -433,8 +448,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test executes condor_meter
     #===============================================================================
-    def test_18_execute_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')  
+    def test_19_execute_condor_meter(self):
+        core.skip_ok_unless_installed('gratia-probe-condor')  
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')
@@ -450,8 +465,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test checks database after condor_meter is run
     #===============================================================================
-    def test_19_checkdatabase_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-service', 'gratia-probe-condor')  
+    def test_20_checkdatabase_condor_meter(self):
+        core.skip_ok_unless_installed('gratia-probe-condor')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
