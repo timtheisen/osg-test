@@ -118,7 +118,7 @@ class TestGratia(osgunittest.OSGTestCase):
             os.makedirs(user_vo_map_dir)
             shutil.copy(user_vo_map_file, user_vo_map_dir)
             print ("/var/lib/osg/ did not exist before - created it and added the file")
-        elif not (os.path.exists(user_vo_map_file)): #directory exists, copy file, if the file is not already present
+        elif not (os.path.exists(os.path.join(user_vo_map_dir,'user-vo-map'))): #directory exists, copy file, if the file is not already present
             shutil.copy(user_vo_map_file, user_vo_map_dir)
             print ("/var/lib/osg/ existed but the file did NOT exist before - added the file")
         else: #both directory and file are present and so, do nothing...
