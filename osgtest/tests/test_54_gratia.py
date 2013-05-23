@@ -124,7 +124,7 @@ class TestGratia(osgunittest.OSGTestCase):
         else: #both directory and file are present and so, do nothing...
             print ("/var/lib/osg/ AND the file existed before - No further action needed")
             pass
-        print("content of /var/log:\n" + str(os.listdir('/var/lib/osg/')))
+        print("content of /var/lib/osg/:\n" + str(os.listdir('/var/lib/osg/')))
         print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
 
     
