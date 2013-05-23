@@ -103,7 +103,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
         
     #===============================================================================
-    # This test copies gridftp.log and gridftp-auth.log files from SVN to /var/log
+    # This test copies the necessary files to to /var/log and /var/lib/osg/ directories
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
         core.skip_ok_unless_installed('gratia-service', 'gratia-probe-gridftp-transfer')
@@ -112,7 +112,18 @@ class TestGratia(osgunittest.OSGTestCase):
         dst_dir = '/var/log'
         shutil.copy(grid_ftp_log, dst_dir)
         shutil.copy(grid_ftp_auth_log, dst_dir)
+        user_vo_map_dir = '/var/lib/osg/'
+        user_vo_map_file = os.path.join(get_python_lib(), 'files', 'user-vo-map')
+        if not (os.path.exists(user_vo_map_dir)):
+            os.makedirs(user_vo_map_dir)
+            shutil.copy(user_vo_map_file, user_vo_map_dir)
+        elif not (os.path.exists(user_vo_map_file)): #directory exists, copy file, if the file is not already present
+            shutil.copy(user_vo_map_file, user_vo_map_dir)
+        else: #both directory and file are present and so, do nothing...
+            pass
+        print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/lib/osg/')))
         print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
+
     
     #===============================================================================
     # This test executes the GridftpTransferProbeDriver
