@@ -534,7 +534,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_23_execute_psacct(self):
         core.skip_ok_unless_installed('psacct')  
-        command = (' /usr/share/gratia/psacct/psacct_probe.cron.sh',)
+        command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
         core.state['gratia.psacct-running'] = True
 
