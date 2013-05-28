@@ -544,7 +544,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_20_checkdatabase_psacct(self):
         core.skip_ok_unless_installed('psacct')  
-        self.skip_bad_if(core.state['gratia.psacct'] == False, 'Need to have psacct running !')           
+        self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
         f = open(filename,'w')
