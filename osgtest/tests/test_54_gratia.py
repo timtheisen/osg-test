@@ -13,10 +13,11 @@ class TestGratia(osgunittest.OSGTestCase):
     #This method is taken from test_28 - we can consider moving it to core.py module
     #===========================================================================
     # This helper method loops through the passed in infile line by line. 
-    # If it finds the passed in pattern, it replaces the whole line with
-    # the passed in full_line.
+    # If it finds the passed in pattern in a line, it EITHER replaces the whole line 
+    # with the passed in full_line OR inserts it after the line, depending on the
+    # desired input
     #===========================================================================
-    def patternreplace(self, infile_name, pattern, full_line):
+    def patternreplace(self, infile_name, pattern, full_line, insert_after="no"):
         infile = open(infile_name, "r")
         outfile_name = infile_name + ".tmp"
         outfile = file(outfile_name, 'w')
@@ -24,7 +25,10 @@ class TestGratia(osgunittest.OSGTestCase):
         #If the pattern is found in a non-comment line, replace the line with the passed in "full_line"
         for line in infile:
             if pattern in line and not line.startswith('#'):
-                line = full_line + "\n"
+                if(insert_after=="no"): #Default case, just replace the line
+                    line = full_line + "\n"
+                else: #Insert the passed in line AFTER the line in which the pattern was found
+                    line = line + full_line + "\n"
             outfile.writelines(line)
         
         shutil.move(outfile_name, infile_name)
@@ -496,3 +500,68 @@ class TestGratia(osgunittest.OSGTestCase):
         result2 = re.search('69', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
         os.remove(filename)
+        
+    #===============================================================================
+    # This test customizes /etc/gratia/psacct/ProbeConfig file
+    #===============================================================================
+    def test_21_modify_psacct_probeconfig(self):
+        core.skip_ok_unless_installed('psacct')
+        host = socket.gethostname()
+        probeconfig = "/etc/gratia/psacct/ProbeConfig"
+        #Note that the blank spaces in some of the lines below have been
+        #intentionally added to align with rest of the file
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "Grid=\"Local\"", "    QuarantineUnknownVORecords=\"0\"", "yes")
+        
+    #===========================================================================
+    # This test starts the psacct service
+    #===========================================================================
+    def test_22_start_psacct(self):
+        core.skip_ok_unless_installed('psacct')
+        command = ('service', 'psacct', 'start')
+        stdout, _, fail = core.check_system(command, 'Start psacct')
+        self.assert_(stdout.find('error') == -1, fail)
+        
+    #===============================================================================
+    # This test executes psacct
+    #===============================================================================
+    def test_23_execute_psacct(self):
+        core.skip_ok_unless_installed('psacct')  
+        command = (' /usr/share/gratia/psacct/psacct_probe.cron.sh',)
+        core.check_system(command, 'Unable to execute psacct!')
+        core.state['gratia.psacct-running'] = True
+
+
+    #===============================================================================
+    # This test checks database after psacct is run
+    #===============================================================================
+    def test_20_checkdatabase_psacct(self):
+        core.skip_ok_unless_installed('psacct')  
+        self.skip_bad_if(core.state['gratia.psacct'] == False, 'Need to have psacct running !')           
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #open the above file and write admin password information on the go
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
+        time.sleep(60)
+        
+        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType=\"RawCPU\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
+        print "ProbeName like 'psac%' and ResourceType=\"RawCPU\" stdout is: "
+        print stdout
+  
+        self.assert_(int(stdout) >= 1, fail) #Assert that the query returned at least ONE record
+        os.remove(filename)
+        
