@@ -209,7 +209,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     # This test removes psacct logs
     #===========================================================================
     def test_21_cleanup_psacct_logs(self):
-        core.skip_ok_unless_installed('psact')
+        core.skip_ok_unless_installed('psacct')
         command = ('rm', '-rf', '/var/lib/gratia/account/pacct')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct!')
         command = ('rm', '-rf', '/var/lib/gratia/account/pacct.creation')
