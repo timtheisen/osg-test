@@ -30,6 +30,8 @@ class TestGratia(osgunittest.OSGTestCase):
                 else: #Insert the passed in line AFTER the line in which the pattern was found
                     line = line + full_line + "\n"
             outfile.writelines(line)
+        outfile.close()
+        infile.close()
         
         shutil.move(outfile_name, infile_name)
 
@@ -560,6 +562,60 @@ class TestGratia(osgunittest.OSGTestCase):
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
         print "ProbeName like 'psac%' and ResourceType=\"RawCPU\" stdout is: "
+        print stdout
+  
+        self.assert_(int(stdout) >= 1, fail) #Assert that the query returned at least ONE record
+        os.remove(filename)
+
+    #===============================================================================
+    # This test customizes /etc/gratia/bdii-status/ProbeConfig file
+    #===============================================================================
+    def test_25_modify_bdii_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-probe-bdii-status')
+        host = socket.gethostname()
+        probeconfig = "/etc/gratia/bdii-status/ProbeConfig"
+        #Note that the blank spaces in some of the lines below have been
+        #intentionally added to align with rest of the file
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        
+    #===============================================================================
+    # This test executes bdii-status
+    #===============================================================================
+    def test_26_execute_psacct(self):
+        core.skip_ok_unless_installed('gratia-probe-bdii-status')  
+        command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
+        core.check_system(command, 'Unable to execute bdii-status!')
+        core.state['gratia.bdii-status-running'] = True
+        
+        
+    #===============================================================================
+    # This test checks database after bdii-status is run
+    #===============================================================================
+    def test_27_checkdatabase_bdii_status(self):
+        core.skip_ok_unless_installed('gratia-probe-bdii-status')  
+        self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #open the above file and write admin password information on the go
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=admin\n")
+        f.close()
+        
+        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
+        time.sleep(60)
+        
+        command = "echo \"use gratia; select count(*) from ComputeElement where SiteName=\"USCMS-FNAL-WC1\" and LRMSType=\"condor\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
+        print "count(*) from ComputeElement where SiteName=\"USCMS-FNAL-WC1\" and LRMSType=\"condor\" stdout is: "
         print stdout
   
         self.assert_(int(stdout) >= 1, fail) #Assert that the query returned at least ONE record
