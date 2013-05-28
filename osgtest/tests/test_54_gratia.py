@@ -588,7 +588,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test executes bdii-status
     #===============================================================================
-    def test_26_execute_psacct(self):
+    def test_26_execute_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')  
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
         core.check_system(command, 'Unable to execute bdii-status!')
