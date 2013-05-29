@@ -507,7 +507,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/psacct/ProbeConfig file
     #===============================================================================
     def test_21_modify_psacct_probeconfig(self):
-        core.skip_ok_unless_installed('psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct')
         host = socket.gethostname()
         probeconfig = "/etc/gratia/psacct/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
@@ -526,7 +526,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test starts the psacct service
     #===========================================================================
     def test_22_start_psacct_service(self):
-        core.skip_ok_unless_installed('psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct')
         command = ('service', 'psacct', 'start')
         stdout, _, fail = core.check_system(command, 'Start psacct')
         self.assert_(stdout.find('error') == -1, fail)
@@ -535,7 +535,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes psacct
     #===============================================================================
     def test_23_execute_psacct(self):
-        core.skip_ok_unless_installed('psacct')  
+        core.skip_ok_unless_installed('gratia-probe-psacct')  
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
         host = socket.gethostname()
@@ -551,7 +551,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks database after psacct is run
     #===============================================================================
     def test_24_checkdatabase_psacct(self):
-        core.skip_ok_unless_installed('psacct')  
+        core.skip_ok_unless_installed('gratia-probe-psacct')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
