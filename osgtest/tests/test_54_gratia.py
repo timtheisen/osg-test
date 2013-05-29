@@ -629,12 +629,12 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select count(*) from ComputeElement where SiteName=\"\"USCMS-FNAL-WC1\"\" and LRMSType=\"\"condor\"\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select count(*) from ComputeElement where SiteName='USCMS-FNAL-WC1' and LRMSType='condor';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
-        print "count(*) from ComputeElement where SiteName=\"\"USCMS-FNAL-WC1\"\" and LRMSType=\"\"condor\"\" stdout is: "
+        print "count(*) from ComputeElement where SiteName='USCMS-FNAL-WC1' and LRMSType='condor' stdout is: "
         print stdout
   
-        self.assert_(int(stdout) >= 1, fail) #Assert that the query returned at least ONE record
+        self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
         os.remove(filename)
         
