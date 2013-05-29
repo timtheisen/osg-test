@@ -525,7 +525,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test starts the psacct service
     #===========================================================================
-    def test_22_start_psacct(self):
+    def test_22_start_psacct_service(self):
         core.skip_ok_unless_installed('psacct')
         command = ('service', 'psacct', 'start')
         stdout, _, fail = core.check_system(command, 'Start psacct')
@@ -538,6 +538,12 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('psacct')  
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
+        host = socket.gethostname()
+        core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
+        outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
+        print("test_23_execute_psacct outboxdir is: " + outboxdir)
+        #Need to check if the above outboxdir is empty
+        self.assert_(not os.listdir(outboxdir), 'psacct outbox NOT empty !')
         core.state['gratia.psacct-running'] = True
 
 
