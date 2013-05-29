@@ -566,7 +566,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType=\"RawCPU\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType=\"\"RawCPU\"\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
         print "ProbeName like 'psac%' and ResourceType=\"RawCPU\" stdout is: "
