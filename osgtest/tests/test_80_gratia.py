@@ -215,6 +215,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
         command = ('rm', '-rf', '/var/lib/gratia/account/pacct.creation')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct.creation!')
         command = ('rm', '-rf', '/var/lib/gratia/backup/*')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/backup/*!')
+
         
         
     #===========================================================================
