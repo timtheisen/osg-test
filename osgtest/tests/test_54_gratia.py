@@ -598,6 +598,12 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')  
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
         core.check_system(command, 'Unable to execute bdii-status!')
+        host = socket.gethostname()
+        core.config['gratia.bdii-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.bdii_" + "*" + host + "_" + host + "_8880"
+        outboxdir = core.config['gratia.bdii-temp-dir'] + "/outbox/"
+        print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
+        #Need to check if the above outboxdir is empty
+        self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
         core.state['gratia.bdii-status-running'] = True
         
         
@@ -618,10 +624,10 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select count(*) from ComputeElement where SiteName=\"USCMS-FNAL-WC1\" and LRMSType=\"condor\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select count(*) from ComputeElement where SiteName=\"\"USCMS-FNAL-WC1\"\" and LRMSType=\"\"condor\"\";\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
-        print "count(*) from ComputeElement where SiteName=\"USCMS-FNAL-WC1\" and LRMSType=\"condor\" stdout is: "
+        print "count(*) from ComputeElement where SiteName=\"\"USCMS-FNAL-WC1\"\" and LRMSType=\"\"condor\"\" stdout is: "
         print stdout
   
         self.assert_(int(stdout) >= 1, fail) #Assert that the query returned at least ONE record
