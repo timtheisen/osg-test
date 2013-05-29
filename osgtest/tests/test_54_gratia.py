@@ -592,7 +592,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SSLHost", sslhost)
         self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
         
     #===============================================================================
     # This test executes bdii-status
