@@ -217,7 +217,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         
         
     #===========================================================================
-    # This test cleans up files in core.config['gratia.condor-temp-dir']
+    # This test cleans up files in core.config['gratia.psacct-temp-dir']
     #===========================================================================
     def test_22_cleanup_temp_gratiafiles_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
@@ -231,3 +231,19 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-psacct')
         command = ('rm', '-rf', '/etc/gratia/psacct')
         core.check_system(command, 'Unable to clean up /etc/gratia/psacct!')
+
+    #===========================================================================
+    # This test cleans up files in core.config['gratia-probe-bdii-status']
+    #===========================================================================
+    def test_24_cleanup_temp_gratiafiles_bdii(self):
+        core.skip_ok_unless_installed('gratia-probe-bdii-status')
+        command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
+        
+    #===========================================================================
+    # This test cleans up /etc/gratia/bdii-status
+    #===========================================================================
+    def test_25_cleanup_etcgratia_bdii(self):
+        core.skip_ok_unless_installed('gratia-probe-bdii-status')
+        command = ('rm', '-rf', '/etc/gratia/bdii-status')
+        core.check_system(command, 'Unable to clean up /etc/gratia/bdii-status!')
