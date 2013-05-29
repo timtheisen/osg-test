@@ -608,6 +608,7 @@ class TestGratia(osgunittest.OSGTestCase):
                 outboxdir = "/var/lib/gratia/tmp/gratiafiles/" + file + "/outbox/"
                 print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
                 #Need to check if the above outboxdir is empty
+                time.sleep(60)
                 self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
         core.state['gratia.bdii-status-running'] = True
         
