@@ -214,3 +214,20 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct!')
         command = ('rm', '-rf', '/var/lib/gratia/account/pacct.creation')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct.creation!')
+        
+        
+    #===========================================================================
+    # This test cleans up files in core.config['gratia.condor-temp-dir']
+    #===========================================================================
+    def test_22_cleanup_temp_gratiafiles_psacct(self):
+        core.skip_ok_unless_installed('psacct')
+        command = ('rm', '-rf', core.config['gratia.psacct-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.psacct-temp-dir\'] !')
+        
+    #===========================================================================
+    # This test cleans up /etc/gratia/psacct
+    #===========================================================================
+    def test_23_cleanup_etcgratia_psacct(self):
+        core.skip_ok_unless_installed('psacct')
+        command = ('rm', '-rf', '/etc/gratia/psacct')
+        core.check_system(command, 'Unable to clean up /etc/gratia/psacct!')
