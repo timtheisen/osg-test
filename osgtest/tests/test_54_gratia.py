@@ -6,6 +6,7 @@ from distutils.sysconfig import get_python_lib
 import shutil
 import socket
 import time
+import fnmatch
 
 
 class TestGratia(osgunittest.OSGTestCase):
@@ -572,7 +573,7 @@ class TestGratia(osgunittest.OSGTestCase):
         print "ProbeName like 'psac%' and ResourceType=\"RawCPU\" stdout is: "
         print stdout
   
-        self.assert_(int(stdout) >= 1, fail) #Assert that the query returned at least ONE record
+        self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
         os.remove(filename)
 
     #===============================================================================
@@ -602,10 +603,12 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute bdii-status!')
         host = socket.gethostname()
         core.config['gratia.bdii-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.bdii_" + "*" + host + "_" + host + "_8880"
-        outboxdir = core.config['gratia.bdii-temp-dir'] + "/outbox/"
-        print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
-        #Need to check if the above outboxdir is empty
-        self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
+        for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
+            if fnmatch.fnmatch(file, '*bdii*'):
+                outboxdir = "/var/lib/gratia/tmp/gratiafiles/" + file + "/outbox/"
+                print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
+                #Need to check if the above outboxdir is empty
+                self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
         core.state['gratia.bdii-status-running'] = True
         
         
