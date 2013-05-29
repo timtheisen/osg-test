@@ -521,7 +521,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
         self.patternreplace(probeconfig, "Grid=", "    Grid=\"Local\"")
-        self.patternreplace(probeconfig, "Grid=\"Local\"", "    QuarantineUnknownVORecords=\"0\"", "yes")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
 
         
     #===========================================================================
