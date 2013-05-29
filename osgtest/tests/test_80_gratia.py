@@ -200,7 +200,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     # This test stops psacct service
     #===========================================================================
     def test_20_stop_psacct_service(self):
-        core.skip_ok_unless_installed('psacct')        
+        core.skip_ok_unless_installed('gratia-probe-psacct')        
         command = ('service', 'psacct', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop psacct')
         self.assert_(stdout.find('FAILED') == -1, fail)
@@ -209,7 +209,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     # This test removes psacct logs
     #===========================================================================
     def test_21_cleanup_psacct_logs(self):
-        core.skip_ok_unless_installed('psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct')
         command = ('rm', '-rf', '/var/lib/gratia/account/pacct')
         core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct!')
         command = ('rm', '-rf', '/var/lib/gratia/account/pacct.creation')
@@ -220,7 +220,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     # This test cleans up files in core.config['gratia.condor-temp-dir']
     #===========================================================================
     def test_22_cleanup_temp_gratiafiles_psacct(self):
-        core.skip_ok_unless_installed('psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct')
         command = ('rm', '-rf', core.config['gratia.psacct-temp-dir'])
         core.check_system(command, 'Unable to clean up core.config[\'gratia.psacct-temp-dir\'] !')
         
@@ -228,6 +228,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
     # This test cleans up /etc/gratia/psacct
     #===========================================================================
     def test_23_cleanup_etcgratia_psacct(self):
-        core.skip_ok_unless_installed('psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct')
         command = ('rm', '-rf', '/etc/gratia/psacct')
         core.check_system(command, 'Unable to clean up /etc/gratia/psacct!')
