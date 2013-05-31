@@ -151,9 +151,9 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
+        host = socket.gethostname()
+        core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
-            host = socket.gethostname()
-            core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
             outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
             print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
@@ -465,9 +465,9 @@ class TestGratia(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')
+        host = socket.gethostname()
+        core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
-            host = socket.gethostname()
-            core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
             outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
             print("test_18_execute_condor_meter outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
@@ -547,9 +547,9 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-psacct')  
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
+        host = socket.gethostname()
+        core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
-            host = socket.gethostname()
-            core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
             outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
             print("test_23_execute_psacct outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
