@@ -547,12 +547,13 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-psacct')  
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
-        host = socket.gethostname()
-        core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
-        outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
-        print("test_23_execute_psacct outboxdir is: " + outboxdir)
-        #Need to check if the above outboxdir is empty
-        self.assert_(not os.listdir(outboxdir), 'psacct outbox NOT empty !')
+        if(core.state['gratia.database-installed'] == True):
+            host = socket.gethostname()
+            core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
+            outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
+            print("test_23_execute_psacct outboxdir is: " + outboxdir)
+            #Need to check if the above outboxdir is empty
+            self.assert_(not os.listdir(outboxdir), 'psacct outbox NOT empty !')
         core.state['gratia.psacct-running'] = True
 
 
@@ -560,7 +561,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks database after psacct is run
     #===============================================================================
     def test_24_checkdatabase_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')  
+        core.skip_ok_unless_installed('gratia-probe-psacct, gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
