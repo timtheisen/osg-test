@@ -133,11 +133,13 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        grid_ftp_log = os.path.join(get_python_lib(), 'files', 'gridftp.log')
-        grid_ftp_auth_log = os.path.join(get_python_lib(), 'files', 'gridftp-auth.log')
-        dst_dir = '/var/log'
-        shutil.copy(grid_ftp_log, dst_dir)
-        shutil.copy(grid_ftp_auth_log, dst_dir)
+        #=======================================================================
+        # grid_ftp_log = os.path.join(get_python_lib(), 'files', 'gridftp.log')
+        # grid_ftp_auth_log = os.path.join(get_python_lib(), 'files', 'gridftp-auth.log')
+        # dst_dir = '/var/log'
+        # shutil.copy(grid_ftp_log, dst_dir)
+        # shutil.copy(grid_ftp_auth_log, dst_dir)
+        #=======================================================================
         print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
         self.copy_user_vo_map_file()
 
@@ -149,12 +151,13 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
-        host = socket.gethostname()
-        core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
-        outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
-        print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
-        #Need to check if the above outboxdir is empty
-        self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
+        if(core.state['gratia.database-installed'] == True):
+            host = socket.gethostname()
+            core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
+            outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
+            print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
+            #Need to check if the above outboxdir is empty
+            self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
         core.state['gratia.gridftp-transfer-running'] = True
         
     #===============================================================================
@@ -162,7 +165,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # the successful execution of GridftpTransferProbeDriver
     #===============================================================================
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer, gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
@@ -197,7 +200,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         print "select sum(Njobs) stdout is: "
         print stdout
-        result1 = re.search('1167', stdout, re.IGNORECASE)
+        result1 = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
@@ -205,7 +208,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
-        result2 = re.search('220545414576', stdout, re.IGNORECASE)
+        result2 = re.search('232', stdout, re.IGNORECASE)
         print "select sum(TransferSize) stdout is: "
         print stdout
         self.assert_(result2 is not None)
@@ -401,36 +404,38 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_17_copy_condor_logs(self):
         core.skip_ok_unless_installed('gratia-probe-condor')
-        certinfo_12110 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12110')
-        certinfo_12111 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12111')
-        certinfo_12112 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12112')
-        certinfo_12113 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12113')
-        certinfo_12114 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12114')
-        certinfo_12115 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12115')
-        certinfo_12116 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12116')
-        history_12110 = os.path.join(get_python_lib(), 'files', 'history.12110.0')
-        history_12111 = os.path.join(get_python_lib(), 'files', 'history.12111.0')
-        history_12112 = os.path.join(get_python_lib(), 'files', 'history.12112.0')
-        history_12113 = os.path.join(get_python_lib(), 'files', 'history.12113.0')
-        history_12114 = os.path.join(get_python_lib(), 'files', 'history.12114.0')
-        history_12115 = os.path.join(get_python_lib(), 'files', 'history.12115.0')
-        history_12116 = os.path.join(get_python_lib(), 'files', 'history.12116.0')
-
-        dst_dir = '/var/lib/gratia/data'
-        shutil.copy(certinfo_12110, dst_dir)
-        shutil.copy(certinfo_12111, dst_dir)
-        shutil.copy(certinfo_12112, dst_dir)
-        shutil.copy(certinfo_12113, dst_dir)
-        shutil.copy(certinfo_12114, dst_dir)
-        shutil.copy(certinfo_12115, dst_dir)
-        shutil.copy(certinfo_12116, dst_dir)
-        shutil.copy(history_12110, dst_dir)
-        shutil.copy(history_12111, dst_dir)
-        shutil.copy(history_12112, dst_dir)
-        shutil.copy(history_12113, dst_dir)
-        shutil.copy(history_12114, dst_dir)
-        shutil.copy(history_12115, dst_dir)
-        shutil.copy(history_12116, dst_dir)
+#===============================================================================
+#         certinfo_12110 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12110')
+#         certinfo_12111 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12111')
+#         certinfo_12112 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12112')
+#         certinfo_12113 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12113')
+#         certinfo_12114 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12114')
+#         certinfo_12115 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12115')
+#         certinfo_12116 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12116')
+#         history_12110 = os.path.join(get_python_lib(), 'files', 'history.12110.0')
+#         history_12111 = os.path.join(get_python_lib(), 'files', 'history.12111.0')
+#         history_12112 = os.path.join(get_python_lib(), 'files', 'history.12112.0')
+#         history_12113 = os.path.join(get_python_lib(), 'files', 'history.12113.0')
+#         history_12114 = os.path.join(get_python_lib(), 'files', 'history.12114.0')
+#         history_12115 = os.path.join(get_python_lib(), 'files', 'history.12115.0')
+#         history_12116 = os.path.join(get_python_lib(), 'files', 'history.12116.0')
+# 
+#         dst_dir = '/var/lib/gratia/data'
+#         shutil.copy(certinfo_12110, dst_dir)
+#         shutil.copy(certinfo_12111, dst_dir)
+#         shutil.copy(certinfo_12112, dst_dir)
+#         shutil.copy(certinfo_12113, dst_dir)
+#         shutil.copy(certinfo_12114, dst_dir)
+#         shutil.copy(certinfo_12115, dst_dir)
+#         shutil.copy(certinfo_12116, dst_dir)
+#         shutil.copy(history_12110, dst_dir)
+#         shutil.copy(history_12111, dst_dir)
+#         shutil.copy(history_12112, dst_dir)
+#         shutil.copy(history_12113, dst_dir)
+#         shutil.copy(history_12114, dst_dir)
+#         shutil.copy(history_12115, dst_dir)
+#         shutil.copy(history_12116, dst_dir)
+#===============================================================================
         
         print("test_17_copy_condor_logs - content of /var/lib/gratia/data:\n" + str(os.listdir('/var/lib/gratia/data')))
         self.copy_user_vo_map_file()
@@ -460,12 +465,13 @@ class TestGratia(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')
-        host = socket.gethostname()
-        core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
-        outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
-        print("test_18_execute_condor_meter outboxdir is: " + outboxdir)
-        #Need to check if the above outboxdir is empty
-        self.assert_(not os.listdir(outboxdir), 'condor outbox NOT empty !')
+        if(core.state['gratia.database-installed'] == True):
+            host = socket.gethostname()
+            core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
+            outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
+            print("test_18_execute_condor_meter outboxdir is: " + outboxdir)
+            #Need to check if the above outboxdir is empty
+            self.assert_(not os.listdir(outboxdir), 'condor outbox NOT empty !')
         core.state['gratia.condor-meter-running'] = True
 
 
@@ -473,7 +479,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks database after condor_meter is run
     #===============================================================================
     def test_20_checkdatabase_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')  
+        core.skip_ok_unless_installed('gratia-probe-condor, gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go

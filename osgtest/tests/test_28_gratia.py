@@ -178,6 +178,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')    
         command = ('/usr/share/gratia/install-database',)
         core.check_system(command, 'Unable to install Gratia Database !')
+        core.state['gratia.database-installed'] = True
         
     #===========================================================================
     # This test sets certificates related parameters
