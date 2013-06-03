@@ -127,6 +127,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
         
     #===============================================================================
     # This test copies the necessary files to to /var/log and /var/lib/osg/ directories
@@ -232,6 +233,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
         self.patternreplace(probeconfig, "gLExecMonitorLog", "    gLExecMonitorLog=\"/var/log/glexec.log\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
         
     #===============================================================================
     # This test copies glexec.log file from SVN to /var/log
@@ -315,6 +317,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
         self.patternreplace(probeconfig, "InfoProviderUrl", "    InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
 
 
     #===============================================================================
@@ -400,6 +403,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
         
     #===============================================================================
     # This test copies condor probe related files from SVN to /var/log
@@ -602,6 +606,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
         self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
         
     #===============================================================================
     # This test executes bdii-status
