@@ -73,11 +73,11 @@ class TestGratia(osgunittest.OSGTestCase):
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         #Command to show the databases is:
         #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306 | wc -l",
+        command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         print "show_databases stdout is: " + stdout
@@ -95,12 +95,12 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Command to show the tabes in the gratia database is:
         #echo "use gratia;show tables;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"use gratia;show tables;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306 | wc -l",
+        command = "echo \"use gratia;show tables;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         print "show_gratia_database_tables stdout is: " + stdout
@@ -173,7 +173,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Command to check the database is:
@@ -195,7 +195,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
@@ -205,7 +205,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
@@ -274,14 +274,14 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         print "select Njobs stdout is: "
@@ -290,7 +290,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         print "select WallDuration stdout is: "
@@ -357,26 +357,26 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, TotalSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
         print "TotalSpace is: "
         print TotalSpace
 
-        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, FreeSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
         print "FreeSpace is: "
         print FreeSpace
         
-        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, UsedSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
         print "UsedSpace is: "
@@ -491,14 +491,14 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         print "select sum(Njobs) stdout is: "
@@ -507,7 +507,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         print "select sum(WallDuration) stdout is: "
@@ -574,14 +574,14 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306 | wc -l",
+        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
         print "ProbeName like 'psac%' and ResourceType=\"RawCPU\" stdout is: "
@@ -641,14 +641,14 @@ class TestGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
+        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
         print "count(*) from ComputeElement where LRMSType='condor' stdout is: "

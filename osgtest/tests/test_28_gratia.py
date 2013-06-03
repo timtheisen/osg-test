@@ -151,7 +151,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
             
         gratia_auth = "/etc/gratia/" + core.config['gratia.directory'] + "/service-authorization.properties"
         print "gratia_auth = " + str(gratia_auth) + "\n"
-        self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=admin")
+        self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=")
         self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
         
