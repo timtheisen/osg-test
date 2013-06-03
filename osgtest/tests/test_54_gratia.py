@@ -165,7 +165,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # the successful execution of GridftpTransferProbeDriver
     #===============================================================================
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer, gratia-service')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
