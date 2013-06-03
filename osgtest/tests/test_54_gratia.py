@@ -81,7 +81,7 @@ class TestGratia(osgunittest.OSGTestCase):
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         print "show_databases stdout is: " + stdout
-        result = re.search('5', stdout, re.IGNORECASE)
+        result = re.search('6', stdout, re.IGNORECASE)
         self.assert_(result is not None)
         os.remove(filename)
         
