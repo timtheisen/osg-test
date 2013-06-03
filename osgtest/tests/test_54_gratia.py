@@ -253,10 +253,11 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute glexec_meter!')
         host = socket.gethostname()
         core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
-        outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
-        print("test_10_execute_glexec_meter outboxdir is: " + outboxdir)
-        #Need to check if the above outboxdir is empty
-        self.assert_(not os.listdir(outboxdir), 'glexec_meter outbox NOT empty !')
+        if(core.state['gratia.database-installed'] == True):
+            outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
+            print("test_10_execute_glexec_meter outboxdir is: " + outboxdir)
+            #Need to check if the above outboxdir is empty
+            self.assert_(not os.listdir(outboxdir), 'glexec_meter outbox NOT empty !')
         core.state['gratia.glexec_meter-running'] = True
         
     #===============================================================================
@@ -264,7 +265,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # the successful execution of glexec_meter
     #===============================================================================
     def test_11_checkdatabase_glexec_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
@@ -334,10 +335,11 @@ class TestGratia(osgunittest.OSGTestCase):
         # /var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_fermicloud339.fnal.gov_fermicloud339.fnal.gov_8880
         host = socket.gethostname()
         core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_" + host + "_" + host + "_8880"
-        outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
-        print("test_14_execute_dcache_storage outboxdir is: " + outboxdir)
-        #Need to check if the above outboxdir is empty
-        self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
+        if(core.state['gratia.database-installed'] == True):
+            outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
+            print("test_14_execute_dcache_storage outboxdir is: " + outboxdir)
+            #Need to check if the above outboxdir is empty
+            self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
         core.state['gratia.dcache-storage-running'] = True
     
     #===============================================================================
@@ -345,7 +347,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # the successful execution of dCache-storage
     #===============================================================================
     def test_15_checkdatabase_dcache_storage(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
        
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
@@ -479,7 +481,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks database after condor_meter is run
     #===============================================================================
     def test_20_checkdatabase_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-condor, gratia-service')  
+        core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
@@ -561,7 +563,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks database after psacct is run
     #===============================================================================
     def test_24_checkdatabase_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct, gratia-service')  
+        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
@@ -610,15 +612,16 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute bdii-status!')
         host = socket.gethostname()
         core.config['gratia.bdii-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.bdii_" + "*" + host + "_" + host + "_8880"
-        for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
-            if fnmatch.fnmatch(file, '*bdii*'):
-                outboxdir = "/var/lib/gratia/tmp/gratiafiles/" + file + "/outbox/"
-                print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
-                #Apparently, there's a bug in the probe, due to which outbox is NOT getting cleaned up
-                #Tanya is investigating it and hence, commenting the outbox check for now
-                #Need to check if the above outboxdir is empty
-                #time.sleep(60)
-                #self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
+        if(core.state['gratia.database-installed'] == True):
+            for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
+                if fnmatch.fnmatch(file, '*bdii*'):
+                    outboxdir = "/var/lib/gratia/tmp/gratiafiles/" + file + "/outbox/"
+                    print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
+                    #Apparently, there's a bug in the probe, due to which outbox is NOT getting cleaned up
+                    #Tanya is investigating it and hence, commenting the outbox check for now
+                    #Need to check if the above outboxdir is empty
+                    #time.sleep(60)
+                    #self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
         core.state['gratia.bdii-status-running'] = True
         
         
@@ -626,7 +629,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test checks database after bdii-status is run
     #===============================================================================
     def test_27_checkdatabase_bdii_status(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status')  
+        core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         #open the above file and write admin password information on the go
