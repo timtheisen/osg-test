@@ -44,12 +44,12 @@ class TestStopGratia(osgunittest.OSGTestCase):
         #open the above file and write admin password information on the go
         f = open(filename,'w')
         f.write("[client]\n")
-        f.write("password=admin\n")
+        f.write("password=reader\n")
         f.close()
         
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
+        command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306"
         core.check_system(command, 'Unable to drop Gratia Database !', shell=True)
         os.remove(filename)
         
