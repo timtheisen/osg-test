@@ -657,3 +657,75 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
         os.remove(filename)
         
+    #===============================================================================
+    # This test customizes /etc/gratia/condor/ProbeConfig file
+    #===============================================================================
+    def test_28_modify_pbs_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        host = socket.gethostname()
+        probeconfig = "/etc/gratia/pbs-lsf/ProbeConfig"
+        #Note that the blank spaces in some of the lines below have been
+        #intentionally added to align with rest of the file
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+
+    #===============================================================================
+    # This test copies pbs probe related logs
+    #===============================================================================
+    def test_29_copy_pbs_logs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        self.copy_user_vo_map_file()
+
+    #===============================================================================
+    # This test executes pbs probe
+    #===============================================================================
+    def test_30_execute_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
+        command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
+        core.check_system(command, 'Unable to execute pbs-lsf_meter !')
+        host = socket.gethostname()
+        core.config['gratia.pbs-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.pbs_" + host + "_" + host + "_8880"
+        if(core.state['gratia.database-installed'] == True):
+            outboxdir = core.config['gratia.pbs-temp-dir'] + "/outbox/"
+            print("test_30_execute_pbs outboxdir is: " + outboxdir)
+            #Need to check if the above outboxdir is empty
+            self.assert_(not os.listdir(outboxdir), 'pbs outbox NOT empty !')
+        core.state['gratia.pbs-running'] = True
+
+    #===============================================================================
+    # This test checks database after pbs is run
+    #===============================================================================
+    def test_24_checkdatabase_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
+        self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        #open the above file and write admin password information on the go
+        f = open(filename,'w')
+        f.write("[client]\n")
+        f.write("password=reader\n")
+        f.close()
+        
+        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
+        #Need a more deterministic way to make this work other than waiting for a random time...
+        time.sleep(60)
+        host = socket.gethostname()
+        probename="pbs-lsf:" + host
+        query="use gratia; sum(nJobs) from MasterSummaryData where ProbeName=" + probename + ";"
+        
+        command = "echo \"" + query + "\"mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
+        status, stdout, _ = core.system(command, shell=True)
+        self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
+        print "test_24_checkdatabase_pbs sum(nJobs) from MasterSummaryData where \"ProbeName=<hostname>\" stdout is: "
+        print stdout
+  
+        self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
+        os.remove(filename)
+
+        

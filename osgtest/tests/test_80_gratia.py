@@ -250,3 +250,20 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
         command = ('rm', '-rf', '/etc/gratia/bdii-status')
         core.check_system(command, 'Unable to clean up /etc/gratia/bdii-status!')
+        
+        
+    #===========================================================================
+    # This test cleans up files in core.config['gratia.pbs-temp-dir']
+    #===========================================================================
+    def test_22_cleanup_temp_gratiafiles_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        command = ('rm', '-rf', core.config['gratia.pbs-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.pbs-temp-dir\'] !')
+        
+    #===========================================================================
+    # This test cleans up /etc/gratia/pbs-lsf
+    #===========================================================================
+    def test_23_cleanup_etcgratia_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        command = ('rm', '-rf', '/etc/gratia/pbs-lsf')
+        core.check_system(command, 'Unable to clean up /etc/gratia/pbs-lsf!')
