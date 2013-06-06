@@ -267,3 +267,11 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
         command = ('rm', '-rf', '/etc/gratia/pbs-lsf')
         core.check_system(command, 'Unable to clean up /etc/gratia/pbs-lsf!')
+        
+    #===========================================================================
+    # This test cleans up /var/spool/pbs/server_priv/accounting
+    #===========================================================================
+    def test_27_cleanup_etcgratia_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        command = ('rm', '-rf', '/var/spool/pbs/server_priv/accounting')
+        core.check_system(command, 'Unable to clean up /var/spool/pbs/server_priv/accounting!')

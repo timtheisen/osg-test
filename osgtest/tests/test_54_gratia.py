@@ -681,7 +681,14 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_29_copy_pbs_logs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        pbs_log = os.path.join(get_python_lib(), 'files', '20130603')
+        dst_dir = '/var/spool/pbs/server_priv/accounting'
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        shutil.copy(pbs_log, dst_dir)
+        print("test_29_copy_pbs_logs - content of /var/spool/pbs/server_priv/accounting\n" + str(os.listdir('/var/spool/pbs/server_priv/accounting')))
         self.copy_user_vo_map_file()
+        
 
     #===============================================================================
     # This test executes pbs probe
@@ -722,10 +729,12 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"" + query + "\"mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
-        print "test_31_checkdatabase_pbs sum(nJobs) from MasterSummaryData where \"ProbeName=<hostname>\" stdout is: "
+        print "test_31_checkdatabase_pbs sum(nJobs) from MasterSummaryData where \"ProbeName=pbs-lsf:<hostname>\" stdout is: "
         print stdout
   
-        self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
+        result = re.search('30', stdout, re.IGNORECASE)
+        self.assert_(result is not None)
+        #self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
         os.remove(filename)
 
         

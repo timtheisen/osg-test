@@ -224,6 +224,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     # This test starts the Tomcat service
     #===========================================================================
     def test_08_start_tomcat(self):
+        core.skip_ok_unless_installed('gratia-service')
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
    
