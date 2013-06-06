@@ -698,7 +698,7 @@ class TestGratia(osgunittest.OSGTestCase):
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
         host = socket.gethostname()
-        core.config['gratia.pbs-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.pbs_" + host + "_" + host + "_8880"
+        core.config['gratia.pbs-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.pbs-lsf_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.pbs-temp-dir'] + "/outbox/"
             print("test_30_execute_pbs outboxdir is: " + outboxdir)
