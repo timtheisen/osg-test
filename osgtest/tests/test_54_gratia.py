@@ -724,7 +724,7 @@ class TestGratia(osgunittest.OSGTestCase):
         time.sleep(60)
         host = socket.gethostname()
         probename="pbs-lsf:" + host
-        query="use gratia; sum(nJobs) from MasterSummaryData where ProbeName=" + probename + ";"
+        query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + ";"
         
         command = "echo \"" + query + "\"mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
