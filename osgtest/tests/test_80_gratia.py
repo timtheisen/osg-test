@@ -289,7 +289,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     def test_29_cleanup_etcgratia_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        command = ('rm', '-rf', '/var/lib/gratia/urCollector')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/urCollector!')
-        command = ('rm', '-rf', '/var/lib/gratia/urCollectorBuffer.pbs')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/urCollectorBuffer.pbs!')
+        command = ('rm', '-rf', '/var/lib/gratia/tmp/urCollector')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/urCollector!')
+        command = ('rm', '-rf', '/var/lib/gratia/tmp/urCollectorBuffer.pbs')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/urCollectorBuffer.pbs!')
