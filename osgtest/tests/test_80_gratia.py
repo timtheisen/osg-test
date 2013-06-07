@@ -271,7 +271,25 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test cleans up /var/spool/pbs/server_priv/accounting
     #===========================================================================
-    def test_27_cleanup_etcgratia_pbs(self):
+    def test_27_cleanup_serverpriv_accounting_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
         command = ('rm', '-rf', '/var/spool/pbs/server_priv/accounting')
         core.check_system(command, 'Unable to clean up /var/spool/pbs/server_priv/accounting!')
+
+    #===========================================================================
+    # This test cleans up /var/lib/gratia/pbs-lsf
+    #===========================================================================
+    def test_28_cleanup_varlibgratia_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        command = ('rm', '-rf', '/var/lib/gratia/pbs-lsf')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/pbs-lsf!')
+
+    #===========================================================================
+    # This test cleans up urCollector logs
+    #===========================================================================
+    def test_29_cleanup_etcgratia_pbs(self):
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        command = ('rm', '-rf', '/var/lib/gratia/urCollector')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/urCollector!')
+        command = ('rm', '-rf', '/var/lib/gratia/urCollectorBuffer.pbs')
+        core.check_system(command, 'Unable to clean up /var/lib/gratia/urCollectorBuffer.pbs!')

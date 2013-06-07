@@ -723,10 +723,9 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         host = socket.gethostname()
-        probename="pbs-lsf:" + host
-        query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + ";"
-        
-        command = "echo \"" + query + "\"mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        probename="'pbs-lsf:" + host
+        query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
+        command = "echo " + "\""+ query + "\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
         print "test_31_checkdatabase_pbs sum(nJobs) from MasterSummaryData where \"ProbeName=pbs-lsf:<hostname>\" stdout is: "
