@@ -726,7 +726,7 @@ class TestGratia(osgunittest.OSGTestCase):
         probename="pbs-lsf:" + host
         query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + ";"
         
-        command = "echo \"" + query + "\"mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"" + query + "\"mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
         print "test_31_checkdatabase_pbs sum(nJobs) from MasterSummaryData where \"ProbeName=pbs-lsf:<hostname>\" stdout is: "
