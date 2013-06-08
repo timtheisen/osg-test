@@ -383,7 +383,7 @@ class TestGratia(osgunittest.OSGTestCase):
         print UsedSpace
         
         #Need to assert only after converting string to integers...
-        self.assert_(int(TotalSpace) == (int(FreeSpace) + int(UsedSpace)))
+        self.assert_(long(TotalSpace) == (long(FreeSpace) + long(UsedSpace)))
         os.remove(filename)
         
     #===============================================================================
