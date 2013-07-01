@@ -4,6 +4,7 @@ import osgtest.library.osgunittest as osgunittest
 import pwd
 import socket
 import unittest
+import re
 
 class TestVOMS(osgunittest.OSGTestCase):
 
@@ -62,3 +63,33 @@ class TestVOMS(osgunittest.OSGTestCase):
                                    user=True)[0]
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout,
                      'voms-proxy-info output extended attribute')
+
+    def test_06_voms_proxy_check(self):
+    	"""
+    	Check generated proxies to make sure that they use the same signing
+    	algorithm as the certificate
+    	"""
+        core.skip_ok_unless_installed('voms-clients')
+        self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
+
+        pwd_entry = pwd.getpwnam(core.options.username)
+        cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
+        command = ['openssl', 'x509', '-in', cert_path, '-text']
+        signature_re = re.compile('Signature Algorithm:\s+(\w+)\s')
+        stdout = core.check_system(command,
+                                   'Check X.509 certificate algorithm',
+                                   user=True)[0]
+        match = signature_re.search(stdout)
+        if match is None:
+            self.fail("Can't find user cert's signing algorithm")
+        cert_algorithm = match.group(1)
+        command[3] = os.path.join('/', 'tmp', "x509up_u%s" % pwd_entry[2])
+        stdout = core.check_system(command, 
+                                   'Check X.509 proxy algorithm',
+                                   user=True)[0]
+        match = signature_re.search(stdout)
+        if match is None:
+            self.fail("Can't find proxy's signing algorithm")
+        proxy_algorithm = match.group(1)
+        self.assertEqual(cert_algorithm, proxy_algorithm)
+
