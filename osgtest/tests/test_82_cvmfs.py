@@ -6,7 +6,7 @@ import unittest
 
 class TestStopCvmfs(osgunittest.OSGTestCase):
 
-    def test_01_stop_xrootd(self):
+    def test_01_stop_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')
         self.skip_ok_if(['cvmfs.started-server'] == False, 'did not start server')
 
@@ -17,7 +17,7 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
         stdout, _, fail = core.check_system(command, 'Stop Cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
 
-        files.restore("/etc/fuse.conf","root")
-        files.restore("/etc/auto.master","root")
-        files.restore("/etc/cvmfs/default.local","root")
-        files.restore("/etc/cvmfs/domain.d/cern.ch.local","root")
+        files.restore("/etc/fuse.conf","cvmfs")
+        files.restore("/etc/auto.master","cvmfs")
+        files.restore("/etc/cvmfs/default.local","cvmfs")
+        files.restore("/etc/cvmfs/domain.d/cern.ch.local","cvmfs")
