@@ -11,21 +11,20 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
 
-    def test_01_cvmfs(self):
+    def test_01_cvmfs_probe(self):
         core.skip_ok_unless_installed('cvmfs', 'cvmfs-keys')
 
-        #TESTING 
         command = ('cat','/etc/cvmfs/default.local')
         status, stdout, stderr = core.system(command, False)
-#        command = ('mkdir','-p', '/mnt/testcvmfs')
-#        status, stdout, stderr = core.system(command, False)
-#        command = ('mount','-t','cvmfs','cms.cern.ch','/mnt/testcvmfs')
-#        status, stdout, stderr = core.system(command, False)
-#        command = ('ls', '/mnt/testcvmfs')
-#        status, stdout, stderr = core.system(command, False)
-        command = ('service','cvmfs', 'probe')
-        status, stdout, stderr = core.system(command, False)
-        #END TESTING
+
+        if core.state['cvmfs.version'] < ('2', '1'):
+            command = ('service','cvmfs', 'probe')
+            status, stdout, stderr = core.system(command, False)
+        else:
+            self.skip_ok('TODO: This test not implemented yet for CVMFS 2.1.X')
+
+    def test_02_cvmfs(self):
+        core.skip_ok_unless_installed('cvmfs', 'cvmfs-keys')
 
         command = ('ls', '/cvmfs')
         status, stdout, stderr = core.system(command, False)
@@ -40,7 +39,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         command = ('ls', self.__check_path)
         status, stdout, stderr = core.system(command, False)
         self.assert_(file_exists, 'Test cvmfs file missing')
-        
+
         command = ('bash', '-c', 'source ' + self.__check_path)
         status, stdout, stderr = core.system(command, False)
         fail = core.diagnose('cvmfs example source a file on fs',

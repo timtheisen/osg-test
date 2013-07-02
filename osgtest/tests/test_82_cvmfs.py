@@ -10,7 +10,10 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('cvmfs')
         self.skip_ok_if(['cvmfs.started-server'] == False, 'did not start server')
 
-        command = ('service', 'cvmfs', 'stop')
+        if core.state['cvmfs.version'] < ('2', '1'):
+            command = ('service', 'cvmfs', 'stop')
+        else:
+            command = ('cvmfs_config', 'umount')
         stdout, _, fail = core.check_system(command, 'Stop Cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
 
