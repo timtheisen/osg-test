@@ -338,27 +338,11 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor')        
         self.copy_user_vo_map_file()
         
-    #===============================================================================
-    # This test starts condor service, if not already running
-    #===============================================================================
-    def test_18_execute_condor(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')  
-        
-        self.skip_ok_if(core.state['condor.running-service'] == True, 'Already started condor service')
-        
-        #If the service was not already started, start it now...
-        command = ('service', 'condor', 'start')
-        stdout, _, fail = core.check_system(command, 'Start Condor')
-        self.assert_(stdout.find('error') == -1, fail)
-        #self.assert_(os.path.exists(core.config['condor.lockfile']),
-        #            'Condor run lock file missing')
-        core.state['condor.started-service'] = True
-        core.state['condor.running-service'] = True
         
     #===============================================================================
     # This test executes condor_meter
     #===============================================================================
-    def test_19_execute_condor_meter(self):
+    def test_18_execute_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor')  
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
@@ -375,7 +359,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test checks database after condor_meter is run
     #===============================================================================
-    def test_20_checkdatabase_condor_meter(self):
+    def test_19_checkdatabase_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
         filename = self.write_sql_credentials_file()
@@ -402,7 +386,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test customizes /etc/gratia/psacct/ProbeConfig file
     #===============================================================================
-    def test_21_modify_psacct_probeconfig(self):
+    def test_20_modify_psacct_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
         probeconfig = "/etc/gratia/psacct/ProbeConfig"
         self.modify_probeconfig(probeconfig)
@@ -412,7 +396,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test starts the psacct service
     #===========================================================================
-    def test_22_start_psacct_service(self):
+    def test_21_start_psacct_service(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
         command = ('service', 'psacct', 'start')
         stdout, _, fail = core.check_system(command, 'Start psacct')
@@ -421,7 +405,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test executes psacct
     #===============================================================================
-    def test_23_execute_psacct(self):
+    def test_22_execute_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')  
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
@@ -437,7 +421,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test checks database after psacct is run
     #===============================================================================
-    def test_24_checkdatabase_psacct(self):
+    def test_23_checkdatabase_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         filename = self.write_sql_credentials_file()
@@ -456,7 +440,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test customizes /etc/gratia/bdii-status/ProbeConfig file
     #===============================================================================
-    def test_25_modify_bdii_probeconfig(self):
+    def test_24_modify_bdii_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
         probeconfig = "/etc/gratia/bdii-status/ProbeConfig"
         self.modify_probeconfig(probeconfig)
@@ -464,7 +448,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test executes bdii-status
     #===============================================================================
-    def test_26_execute_bdii_status(self):
+    def test_25_execute_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')  
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
         core.check_system(command, 'Unable to execute bdii-status!')
@@ -485,7 +469,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test checks database after bdii-status is run
     #===============================================================================
-    def test_27_checkdatabase_bdii_status(self):
+    def test_26_checkdatabase_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
         filename = self.write_sql_credentials_file()
@@ -504,7 +488,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test customizes /etc/gratia/condor/ProbeConfig file
     #===============================================================================
-    def test_28_modify_pbs_probeconfig(self):
+    def test_27_modify_pbs_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
         probeconfig = "/etc/gratia/pbs-lsf/ProbeConfig"
         self.modify_probeconfig(probeconfig)
@@ -512,7 +496,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test copies pbs probe related logs
     #===============================================================================
-    def test_29_copy_pbs_logs(self):
+    def test_28_copy_pbs_logs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
         pbs_log = os.path.join(get_python_lib(), 'files', '20130603')
         dst_dir = '/var/spool/pbs/server_priv/accounting'
@@ -525,7 +509,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test executes pbs probe
     #===============================================================================
-    def test_30_execute_pbs(self):
+    def test_29_execute_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
@@ -540,7 +524,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     # This test checks database after pbs is run
     #===============================================================================
-    def test_31_checkdatabase_pbs(self):
+    def test_30_checkdatabase_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
         filename = self.write_sql_credentials_file()
