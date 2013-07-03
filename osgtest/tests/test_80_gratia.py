@@ -2,6 +2,7 @@ import os
 import shutil
 
 import osgtest.library.core as core
+import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
 class TestStopGratia(osgunittest.OSGTestCase):
@@ -23,6 +24,15 @@ class TestStopGratia(osgunittest.OSGTestCase):
             target_dir = core.state[target_key + '-dir']
             if len(os.listdir(target_dir)) == 0:
                 os.rmdir(target_dir)
+                
+    #====================================================================================
+    # This helper method writes a file with sql credentials and returns back the filename
+    #====================================================================================
+    def write_sql_credentials_file(self):
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        contents="[client]\n" + "password=reader\n"
+        files.write(filename, contents)
+        return filename
 
     #===========================================================================
     # This test removes the http certificates
@@ -40,18 +50,13 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_02_uninstall_gratia_database(self):
         core.skip_ok_unless_installed('gratia-service')    
        
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
         command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
         core.check_system(command, 'Unable to drop Gratia Database !', shell=True)
-        os.remove(filename)
+        files.remove(filename)
         
     #===========================================================================
     # This test cleans up the appropriate gratia directory
