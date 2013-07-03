@@ -60,6 +60,22 @@ class TestGratia(osgunittest.OSGTestCase):
         contents="[client]\n" + "password=reader\n"
         files.write(filename, contents)
         return filename
+    
+    #====================================================================================
+    # This helper method modifies the Probe Configuration, generally needed by many probes
+    #====================================================================================
+    def modify_probeconfig(self, probeconfig):
+        host = core.get_hostname()
+        collectorhost = "    CollectorHost=\"" + host + ":8880\""
+        sslhost = "    SSLHost=\"" + host + ":8443\""
+        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
+        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
+        self.patternreplace(probeconfig, "SSLHost", sslhost)
+        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
+        self.patternreplace(probeconfig, "SiteName", "SiteName=\"OSG Test site\"")
+        self.patternreplace(probeconfig, "EnableProbe", "EnableProbe=\"1\"")
+        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "QuarantineUnknownVORecords=\"0\"")
+
         
     #===============================================================================
     # This test tries to launch a gratia admin webpage
@@ -76,7 +92,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_02_show_databases(self):
         core.skip_ok_unless_installed('gratia-service')    
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         #Command to show the databases is:
         #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=reader --port=3306         
         command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
@@ -92,7 +108,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')    
         
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Command to show the tabes in the gratia database is:
         #echo "use gratia;show tables;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
@@ -110,19 +126,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_04_modify_gridftptransfer_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/gridftp-transfer/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+        modify_probeconfig(probeconfig)
         
     #===============================================================================
     # This test copies the necessary files for gridftp test
@@ -155,7 +160,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
        
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Command to check the database is:
         #echo "use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" --skip-column-names -B --unbuffered  --user=root --port=3306         
@@ -197,20 +202,10 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_08_modify_glexec_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/glexec/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "gLExecMonitorLog", "    gLExecMonitorLog=\"/var/log/glexec.log\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+        self.modify_probeconfig(probeconfig)
+        self.patternreplace(probeconfig, "gLExecMonitorLog", "gLExecMonitorLog=\"/var/log/glexec.log\"")
+
         
     #===============================================================================
     # This test copies glexec.log file from SVN to /var/log
@@ -245,7 +240,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
        
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -270,21 +265,9 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_12_modify_dcache_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/dCache-storage/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "InfoProviderUrl", "    InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
-
+        self.modify_probeconfig(probeconfig)
+        self.patternreplace(probeconfig, "InfoProviderUrl", "InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
 
     #===============================================================================
     # This test copies logs for dcache probe
@@ -318,7 +301,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
        
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -345,19 +328,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_16_modify_condor_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-condor')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/condor/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+        self.modify_probeconfig(probeconfig)
         
     #===============================================================================
     # This test copies condor probe related files from SVN to /var/log
@@ -406,7 +378,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_20_checkdatabase_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -432,20 +404,9 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_21_modify_psacct_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/psacct/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "Grid=", "    Grid=\"Local\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+        self.modify_probeconfig(probeconfig)
+        self.patternreplace(probeconfig, "Grid=", "Grid=\"Local\"")
 
         
     #===========================================================================
@@ -479,7 +440,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_24_checkdatabase_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -497,19 +458,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_25_modify_bdii_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/bdii-status/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+        self.modify_probeconfig(probeconfig)
         
     #===============================================================================
     # This test executes bdii-status
@@ -538,7 +488,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_27_checkdatabase_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -556,19 +506,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_28_modify_pbs_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        host = core.get_hostname()
         probeconfig = "/etc/gratia/pbs-lsf/ProbeConfig"
-        #Note that the blank spaces in some of the lines below have been
-        #intentionally added to align with rest of the file
-        collectorhost = "    CollectorHost=\"" + host + ":8880\""
-        sslhost = "    SSLHost=\"" + host + ":8443\""
-        sslregistrationhost = "    SSLRegistrationHost=\"" + host + ":8880\""
-        self.patternreplace(probeconfig, "CollectorHost", collectorhost)
-        self.patternreplace(probeconfig, "SSLHost", sslhost)
-        self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
-        self.patternreplace(probeconfig, "SiteName", "    SiteName=\"OSG Test site\"")
-        self.patternreplace(probeconfig, "EnableProbe", "    EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
+        self.modify_probeconfig(probeconfig)
 
     #===============================================================================
     # This test copies pbs probe related logs
@@ -604,7 +543,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_31_checkdatabase_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
