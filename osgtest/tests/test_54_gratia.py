@@ -142,6 +142,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_06_execute_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
+        core.state['gratia.gridftp-transfer-running'] = False
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
         host = core.get_hostname()
@@ -222,6 +223,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_10_execute_glexec_meter(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
+        core.state['gratia.glexec_meter-running'] = False
         command = ('/usr/share/gratia/glexec/glexec_meter',)
         core.check_system(command, 'Unable to execute glexec_meter!')
         host = core.get_hostname()
@@ -281,6 +283,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_14_execute_dcache_storage(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
+        core.state['gratia.dcache-storage-running'] = False
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
         core.check_system(command, 'Unable to execute dCache-storage!')
         # clean up the following directory:
@@ -343,7 +346,8 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes condor_meter
     #===============================================================================
     def test_18_execute_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')  
+        core.skip_ok_unless_installed('gratia-probe-condor')
+        core.state['gratia.condor-meter-running'] = False
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')
@@ -406,7 +410,8 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes psacct
     #===============================================================================
     def test_22_execute_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')  
+        core.skip_ok_unless_installed('gratia-probe-psacct') 
+        core.state['gratia.psacct-running'] = False 
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
         host = core.get_hostname()
@@ -449,7 +454,8 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes bdii-status
     #===============================================================================
     def test_25_execute_bdii_status(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status')  
+        core.skip_ok_unless_installed('gratia-probe-bdii-status') 
+        core.state['gratia.bdii-status-running'] = False 
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
         core.check_system(command, 'Unable to execute bdii-status!')
         host = core.get_hostname()
@@ -511,6 +517,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_29_execute_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
+        core.state['gratia.pbs-running'] = False
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
         host = core.get_hostname()
