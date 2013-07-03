@@ -52,6 +52,15 @@ class TestGratia(osgunittest.OSGTestCase):
         else: #both directory and file are present and so, do nothing...
             pass
 
+    #====================================================================================
+    # This helper method writes a file with sql credentials and returns back the filename
+    #====================================================================================
+    def write_sql_credentials_file(self):
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        contents="[client]\n" + "password=reader\n"
+        files.write(filename, contents)
+        return filename
+        
     #===============================================================================
     # This test tries to launch a gratia admin webpage
     #===============================================================================
@@ -67,12 +76,9 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_02_show_databases(self):
         core.skip_ok_unless_installed('gratia-service')    
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        contents="[client]\n" + "password=reader\n"
-        files.write(filename, contents)
-
+        filename = write_sql_credentials_file()
         #Command to show the databases is:
-        #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
+        #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=reader --port=3306         
         command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
@@ -86,12 +92,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')    
         
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Command to show the tabes in the gratia database is:
         #echo "use gratia;show tables;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
@@ -124,17 +125,10 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "    QuarantineUnknownVORecords=\"0\"")
         
     #===============================================================================
-    # This test copies the necessary files to to /var/log and /var/lib/osg/ directories
+    # This test copies the necessary files for gridftp test
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        #=======================================================================
-        # grid_ftp_log = os.path.join(get_python_lib(), 'files', 'gridftp.log')
-        # grid_ftp_auth_log = os.path.join(get_python_lib(), 'files', 'gridftp-auth.log')
-        # dst_dir = '/var/log'
-        # shutil.copy(grid_ftp_log, dst_dir)
-        # shutil.copy(grid_ftp_auth_log, dst_dir)
-        #=======================================================================
         self.copy_user_vo_map_file()
 
     
@@ -161,12 +155,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
        
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Command to check the database is:
         #echo "use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" --skip-column-names -B --unbuffered  --user=root --port=3306         
@@ -256,12 +245,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
        
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -334,12 +318,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
        
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -427,12 +406,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_20_checkdatabase_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -505,12 +479,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_24_checkdatabase_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -569,12 +538,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_27_checkdatabase_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -640,12 +604,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_31_checkdatabase_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        #open the above file and write admin password information on the go
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        filename = write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
