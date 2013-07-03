@@ -46,14 +46,10 @@ class TestGratia(osgunittest.OSGTestCase):
         if not (os.path.exists(user_vo_map_dir)):
             os.makedirs(user_vo_map_dir)
             shutil.copy(user_vo_map_file, user_vo_map_dir)
-            print ("/var/lib/osg/ did not exist before - created it and added the file")
         elif not (os.path.exists(os.path.join(user_vo_map_dir,'user-vo-map'))): #directory exists, copy file, if the file is not already present
             shutil.copy(user_vo_map_file, user_vo_map_dir)
-            print ("/var/lib/osg/ existed but the file did NOT exist before - added the file")
         else: #both directory and file are present and so, do nothing...
-            print ("/var/lib/osg/ AND the file existed before - No further action needed")
             pass
-        print("content of /var/lib/osg/:\n" + str(os.listdir('/var/lib/osg/')))
 
     #===============================================================================
     # This test tries to launch a gratia admin webpage
@@ -80,7 +76,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
-        print "show_databases stdout is: " + stdout
         result = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result is not None)
         os.remove(filename)
@@ -103,7 +98,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia;show tables;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
-        print "show_gratia_database_tables stdout is: " + stdout
         #Note that the actual output is 81 but the search below
         #is for 82 to account for the header row
         result = re.search('82', stdout, re.IGNORECASE)
@@ -141,7 +135,6 @@ class TestGratia(osgunittest.OSGTestCase):
         # shutil.copy(grid_ftp_log, dst_dir)
         # shutil.copy(grid_ftp_auth_log, dst_dir)
         #=======================================================================
-        print("test_05_copy_gridftp_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
         self.copy_user_vo_map_file()
 
     
@@ -156,7 +149,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
-            print("test_06_execute_gridftptransfer_probedriver outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
             self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
         core.state['gratia.gridftp-transfer-running'] = True
@@ -199,8 +191,6 @@ class TestGratia(osgunittest.OSGTestCase):
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
-        print "select sum(Njobs) stdout is: "
-        print stdout
         result1 = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
@@ -210,8 +200,6 @@ class TestGratia(osgunittest.OSGTestCase):
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         result2 = re.search('232', stdout, re.IGNORECASE)
-        print "select sum(TransferSize) stdout is: "
-        print stdout
         self.assert_(result2 is not None)
         os.remove(filename)
         
@@ -243,7 +231,6 @@ class TestGratia(osgunittest.OSGTestCase):
         glexec_log = os.path.join(get_python_lib(), 'files', 'glexec.log')
         dst_dir = '/var/log'
         shutil.copy(glexec_log, dst_dir)
-        print("test_09_copy_glexec_logs - content of /var/log:\n" + str(os.listdir('/var/log')))
         self.copy_user_vo_map_file()
 
     #===============================================================================
@@ -257,7 +244,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
-            print("test_10_execute_glexec_meter outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
             self.assert_(not os.listdir(outboxdir), 'glexec_meter outbox NOT empty !')
         core.state['gratia.glexec_meter-running'] = True
@@ -284,8 +270,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
-        print "select Njobs stdout is: "
-        print stdout
         result1 = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
@@ -293,8 +277,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
-        print "select WallDuration stdout is: "
-        print stdout
         result2 = re.search('302', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
         os.remove(filename)
@@ -340,7 +322,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
-            print("test_14_execute_dcache_storage outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
             self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
         core.state['gratia.dcache-storage-running'] = True
@@ -367,20 +348,14 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, TotalSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
-        print "TotalSpace is: "
-        print TotalSpace
 
         command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, FreeSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
-        print "FreeSpace is: "
-        print FreeSpace
         
         command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, UsedSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
-        print "UsedSpace is: "
-        print UsedSpace
         
         #Need to assert only after converting string to integers...
         self.assert_(long(TotalSpace) == (long(FreeSpace) + long(UsedSpace)))
@@ -443,7 +418,6 @@ class TestGratia(osgunittest.OSGTestCase):
 #         shutil.copy(history_12116, dst_dir)
 #===============================================================================
         
-        print("test_17_copy_condor_logs - content of /var/lib/gratia/data:\n" + str(os.listdir('/var/lib/gratia/data')))
         self.copy_user_vo_map_file()
         
     #===============================================================================
@@ -475,7 +449,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
-            print("test_18_execute_condor_meter outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
             self.assert_(not os.listdir(outboxdir), 'condor outbox NOT empty !')
         core.state['gratia.condor-meter-running'] = True
@@ -501,8 +474,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
-        print "select sum(Njobs) stdout is: "
-        print stdout
         result1 = re.search('1', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
@@ -510,8 +481,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
-        print "select sum(WallDuration) stdout is: "
-        print stdout
         #result2 = re.search('69', stdout, re.IGNORECASE)
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
         #self.assert_(result2 is not None)
@@ -558,7 +527,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
-            print("test_23_execute_psacct outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
             self.assert_(not os.listdir(outboxdir), 'psacct outbox NOT empty !')
         core.state['gratia.psacct-running'] = True
@@ -584,8 +552,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
-        print "ProbeName like 'psac%' and ResourceType=\"RawCPU\" stdout is: "
-        print stdout
   
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
         os.remove(filename)
@@ -622,7 +588,6 @@ class TestGratia(osgunittest.OSGTestCase):
             for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
                 if fnmatch.fnmatch(file, '*bdii*'):
                     outboxdir = "/var/lib/gratia/tmp/gratiafiles/" + file + "/outbox/"
-                    print("test_26_execute_bdii_status outboxdir is: " + outboxdir)
                     #Apparently, there's a bug in the probe, due to which outbox is NOT getting cleaned up
                     #Tanya is investigating it and hence, commenting the outbox check for now
                     #Need to check if the above outboxdir is empty
@@ -651,8 +616,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
-        print "count(*) from ComputeElement where LRMSType='condor' stdout is: "
-        print stdout
   
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
         os.remove(filename)
@@ -686,7 +649,6 @@ class TestGratia(osgunittest.OSGTestCase):
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
         shutil.copy(pbs_log, dst_dir)
-        print("test_29_copy_pbs_logs - content of /var/spool/pbs/server_priv/accounting\n" + str(os.listdir('/var/spool/pbs/server_priv/accounting')))
         self.copy_user_vo_map_file()
         
 
@@ -701,7 +663,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.config['gratia.pbs-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.pbs-lsf_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.pbs-temp-dir'] + "/outbox/"
-            print("test_30_execute_pbs outboxdir is: " + outboxdir)
             #Need to check if the above outboxdir is empty
             self.assert_(not os.listdir(outboxdir), 'pbs outbox NOT empty !')
         core.state['gratia.pbs-running'] = True
@@ -728,8 +689,6 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo " + "\""+ query + "\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
-        print "test_31_checkdatabase_pbs sum(nJobs) from MasterSummaryData where \"ProbeName=pbs-lsf:<hostname>\" stdout is: "
-        print stdout
   
         result = re.search('30', stdout, re.IGNORECASE)
         self.assert_(result is not None)
