@@ -56,7 +56,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_01_gratia_admin_webpage (self):
         core.skip_ok_unless_installed('gratia-service')
-        host = socket.gethostname()
+        host = core.get_hostname()
         admin_webpage = 'http://' + host + ':8880/gratia-administration/status.html?wantDetails=0'
         command = ('curl', admin_webpage)
         core.check_system(command, 'Unable to launch gratia admin webpage')
@@ -109,7 +109,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_04_modify_gridftptransfer_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/gridftp-transfer/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -145,7 +145,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
@@ -208,7 +208,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_08_modify_glexec_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/glexec/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -240,7 +240,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec')
         command = ('/usr/share/gratia/glexec/glexec_meter',)
         core.check_system(command, 'Unable to execute glexec_meter!')
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
@@ -286,7 +286,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_12_modify_dcache_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/dCache-storage/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -318,7 +318,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute dCache-storage!')
         # clean up the following directory:
         # /var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_fermicloud339.fnal.gov_fermicloud339.fnal.gov_8880
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
@@ -366,7 +366,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_16_modify_condor_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-condor')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/condor/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -384,40 +384,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies condor probe related files from SVN to /var/log
     #===============================================================================
     def test_17_copy_condor_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')
-#===============================================================================
-#         certinfo_12110 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12110')
-#         certinfo_12111 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12111')
-#         certinfo_12112 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12112')
-#         certinfo_12113 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12113')
-#         certinfo_12114 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12114')
-#         certinfo_12115 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12115')
-#         certinfo_12116 = os.path.join(get_python_lib(), 'files', 'gratia_certinfo_condor_12116')
-#         history_12110 = os.path.join(get_python_lib(), 'files', 'history.12110.0')
-#         history_12111 = os.path.join(get_python_lib(), 'files', 'history.12111.0')
-#         history_12112 = os.path.join(get_python_lib(), 'files', 'history.12112.0')
-#         history_12113 = os.path.join(get_python_lib(), 'files', 'history.12113.0')
-#         history_12114 = os.path.join(get_python_lib(), 'files', 'history.12114.0')
-#         history_12115 = os.path.join(get_python_lib(), 'files', 'history.12115.0')
-#         history_12116 = os.path.join(get_python_lib(), 'files', 'history.12116.0')
-# 
-#         dst_dir = '/var/lib/gratia/data'
-#         shutil.copy(certinfo_12110, dst_dir)
-#         shutil.copy(certinfo_12111, dst_dir)
-#         shutil.copy(certinfo_12112, dst_dir)
-#         shutil.copy(certinfo_12113, dst_dir)
-#         shutil.copy(certinfo_12114, dst_dir)
-#         shutil.copy(certinfo_12115, dst_dir)
-#         shutil.copy(certinfo_12116, dst_dir)
-#         shutil.copy(history_12110, dst_dir)
-#         shutil.copy(history_12111, dst_dir)
-#         shutil.copy(history_12112, dst_dir)
-#         shutil.copy(history_12113, dst_dir)
-#         shutil.copy(history_12114, dst_dir)
-#         shutil.copy(history_12115, dst_dir)
-#         shutil.copy(history_12116, dst_dir)
-#===============================================================================
-        
+        core.skip_ok_unless_installed('gratia-probe-condor')        
         self.copy_user_vo_map_file()
         
     #===============================================================================
@@ -445,7 +412,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
@@ -491,7 +458,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_21_modify_psacct_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/psacct/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -523,7 +490,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-psacct')  
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
@@ -561,7 +528,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_25_modify_bdii_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/bdii-status/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -582,7 +549,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')  
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
         core.check_system(command, 'Unable to execute bdii-status!')
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.bdii-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.bdii_" + "*" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
@@ -625,7 +592,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_28_modify_pbs_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        host = socket.gethostname()
+        host = core.get_hostname()
         probeconfig = "/etc/gratia/pbs-lsf/ProbeConfig"
         #Note that the blank spaces in some of the lines below have been
         #intentionally added to align with rest of the file
@@ -659,7 +626,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
-        host = socket.gethostname()
+        host = core.get_hostname()
         core.config['gratia.pbs-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.pbs-lsf_" + host + "_" + host + "_8880"
         if(core.state['gratia.database-installed'] == True):
             outboxdir = core.config['gratia.pbs-temp-dir'] + "/outbox/"
@@ -683,7 +650,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
-        host = socket.gethostname()
+        host = core.get_hostname()
         probename="'pbs-lsf:" + host
         query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
         command = "echo " + "\""+ query + "\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
