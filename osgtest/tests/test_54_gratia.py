@@ -1,4 +1,5 @@
 import osgtest.library.core as core
+import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import os
 import re
@@ -67,10 +68,9 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_02_show_databases(self):
         core.skip_ok_unless_installed('gratia-service')    
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        f = open(filename,'w')
-        f.write("[client]\n")
-        f.write("password=reader\n")
-        f.close()
+        contents="[client]\n" + "password=reader\n"
+        files.write(filename, contents)
+
         #Command to show the databases is:
         #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
         command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
@@ -78,7 +78,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         result = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result is not None)
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test counts the number of lines in the gratia database tables output
@@ -102,7 +102,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #is for 82 to account for the header row
         result = re.search('82', stdout, re.IGNORECASE)
         self.assert_(result is not None)
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
@@ -201,7 +201,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         result2 = re.search('232', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/glexec/ProbeConfig file
@@ -279,7 +279,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         result2 = re.search('302', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/dCache-storage/ProbeConfig file
@@ -359,7 +359,7 @@ class TestGratia(osgunittest.OSGTestCase):
         
         #Need to assert only after converting string to integers...
         self.assert_(long(TotalSpace) == (long(FreeSpace) + long(UsedSpace)))
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/condor/ProbeConfig file
@@ -451,7 +451,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #result2 = re.search('69', stdout, re.IGNORECASE)
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
         #self.assert_(result2 is not None)
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/psacct/ProbeConfig file
@@ -521,7 +521,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
-        os.remove(filename)
+        files.remove(filename)
 
     #===============================================================================
     # This test customizes /etc/gratia/bdii-status/ProbeConfig file
@@ -585,7 +585,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
-        os.remove(filename)
+        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/condor/ProbeConfig file
@@ -660,6 +660,6 @@ class TestGratia(osgunittest.OSGTestCase):
         result = re.search('30', stdout, re.IGNORECASE)
         self.assert_(result is not None)
         #self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
-        os.remove(filename)
+        files.remove(filename)
 
         
