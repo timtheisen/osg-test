@@ -50,7 +50,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_02_uninstall_gratia_database(self):
         core.skip_ok_unless_installed('gratia-service')    
        
-        filename = write_sql_credentials_file()
+        filename = self.write_sql_credentials_file()
         
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
