@@ -145,7 +145,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
       
     def test_02_service_authorization(self):
         core.skip_ok_unless_installed('gratia-service')
-        gratia_auth = core.config['gratia.config.dir'] + core.config['gratia.directory'] + "/service-authorization.properties"
+        gratia_auth = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-authorization.properties"
         self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=")
         self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
@@ -156,7 +156,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         
     def test_03_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
-        gratia_conf = core.config['gratia.config.dir'] + core.config['gratia.directory'] + "/service-configuration.properties"
+        gratia_conf = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-configuration.properties"
         host = core.get_hostname()
         mysqlurl="service.mysql.url=jdbc:mysql://" +  host + ":3306/gratia"
         self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
