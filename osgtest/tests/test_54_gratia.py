@@ -126,7 +126,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_04_modify_gridftptransfer_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        probeconfig = "/etc/gratia/gridftp-transfer/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
     #===============================================================================
@@ -203,7 +203,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_08_modify_glexec_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
-        probeconfig = "/etc/gratia/glexec/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "gLExecMonitorLog", "gLExecMonitorLog=\"/var/log/glexec.log\"")
 
@@ -267,7 +267,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_12_modify_dcache_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        probeconfig = "/etc/gratia/dCache-storage/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "InfoProviderUrl", "InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
 
@@ -331,7 +331,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_16_modify_condor_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-condor')
-        probeconfig = "/etc/gratia/condor/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
     #===============================================================================
@@ -392,7 +392,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_20_modify_psacct_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
-        probeconfig = "/etc/gratia/psacct/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "Grid=", "Grid=\"Local\"")
 
@@ -447,7 +447,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_24_modify_bdii_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
-        probeconfig = "/etc/gratia/bdii-status/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
     #===============================================================================
@@ -496,7 +496,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_27_modify_pbs_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        probeconfig = "/etc/gratia/pbs-lsf/ProbeConfig"
+        probeconfig = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
         self.modify_probeconfig(probeconfig)
 
     #===============================================================================

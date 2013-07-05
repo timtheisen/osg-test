@@ -35,7 +35,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         return filename
 
     #===========================================================================
-    # This test removes the http certificates
+    # This test removes the http certificates, if not already removed earlier
     #===========================================================================
     def test_01_remove_certs(self):
         core.skip_ok_unless_installed('gratia-service')
@@ -63,238 +63,130 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     def test_03_cleanup_etcgratia_directory(self):
         core.skip_ok_unless_installed('gratia-service')
-        directory = '/etc/gratia/' + core.config['gratia.directory']
-        command = ('rm', '-rf', directory)
-        core.check_system(command, 'Unable to clean up gratia directory!')
+        directory = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory']
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(directory)
+        except:
+            shutil.rmtree(directory)
         
-    #===========================================================================
-    # This test cleans up files in core.config['gratia.gridftp-temp-dir']
-    #===========================================================================
-    def test_04_cleanup_temp_gratiafiles_gridftp(self):
+    #==========================================
+    # This test cleans up gridftp related files 
+    #==========================================
+    def test_04_cleanup_gridftp(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', core.config['gratia.gridftp-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.gridftp-temp-dir\'] !')
-    
-    #===========================================================================
-    # This test removes /var/lib/gratia/tmp/GridftpAccountingProbeState
-    #===========================================================================
-    def test_05_cleanup_temp_gridftpaccountingprobestate(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/var/lib/gratia/tmp/GridftpAccountingProbeState')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/GridftpAccountingProbeState !')
+        files.remove("/var/lib/gratia/tmp/GridftpAccountingProbeState")
+        files.remove("/var/log/gridftp.log")
+        files.remove("/var/log/gridftp-auth.log")
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(core.config['gratia.gridftp-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/gridftp-transfer")
+        except:
+            shutil.rmtree(core.config['gratia.gridftp-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/gridftp-transfer")
+        
+    #=========================================
+    # This test cleans up glexec related files
+    #=========================================
+    def test_05_cleanup_glexec(self):
+        core.skip_ok_unless_installed('gratia-probe-glexec')
+        files.remove("/var/lib/gratia/tmp/GlexecAccountingProbeState")
+        files.remove("/var/log/glexec.log")
+        files.remove("/var/lib/gratia/data/glexec_plugin.chk")
 
-    #===========================================================================
-    # This test removes /var/log/gridftp.log
-    #===========================================================================
-    def test_06_cleanup_varlog_gridftplog(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/var/log/gridftp.log')
-        core.check_system(command, 'Unable to clean up  /var/log/gridftp.log!')
-    
-    #===========================================================================
-    # This test removes /var/log/gridftp-auth.log
-    #===========================================================================
-    def test_07_cleanup_varlog_gridftpauthlog(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/var/log/gridftp-auth.log')
-        core.check_system(command, 'Unable to clean up  /var/log/gridftp-auth.log!')
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(core.config['gratia.glexec-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/glexec")
+        except:
+            shutil.rmtree(core.config['gratia.glexec-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/glexec")
         
-   
-    #===========================================================================
-    # This test cleans up /etc/gratia/gridftp-transfer
-    #===========================================================================
-    def test_08_cleanup_etcgratia_gridftp_transfer(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        command = ('rm', '-rf', '/etc/gratia/gridftp-transfer')
-        core.check_system(command, 'Unable to clean up  /etc/gratia/gridftp-transfer!')
-        
-    #===========================================================================
-    # This test cleans up files in core.config['gratia.glexec-temp-dir']
-    #===========================================================================
-    def test_09_cleanup_temp_gratiafiles_glexec(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
-        command = ('rm', '-rf', core.config['gratia.glexec-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.glexec-temp-dir\'] !')
-
-    #===========================================================================
-    # This test removes /var/lib/gratia/tmp/GlexecAccountingProbeState
-    #===========================================================================
-    def test_10_cleanup_temp_glexecprobestate(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
-        command = ('rm', '-rf', '/var/lib/gratia/tmp/GlexecAccountingProbeState')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/GlexecAccountingProbeState !')
-        
-    #===========================================================================
-    # This test removes /var/log/glexec.log
-    #===========================================================================
-    def test_11_cleanup_varlog_glexeclog(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
-        command = ('rm', '-rf', '/var/log/glexec.log')
-        core.check_system(command, 'Unable to clean up  /var/log/glexec.log!')
-        
-    
-    #===========================================================================
-    # This test cleans up /var/lib/gratia/data/glexec_plugin.chk
-    #===========================================================================
-    def test_12_cleanup_varlibgratia_glexec(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
-        command = ('rm', '-rf', '/var/lib/gratia/data/glexec_plugin.chk')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/data/glexec_plugin.chk!')
-
-    #===========================================================================
-    # This test cleans up /etc/gratia/glexec
-    #===========================================================================
-    def test_13_cleanup_etcgratia_glexec(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
-        command = ('rm', '-rf', '/etc/gratia/glexec')
-        core.check_system(command, 'Unable to clean up  /etc/gratia/glexec!')
-        
-    #===========================================================================
-    # This test cleans up files in core.config['gratia.dcache-temp-dir']
-    #===========================================================================
-    def test_14_cleanup_temp_gratiafiles_dcache(self):
+    #=========================================
+    # This test cleans up dcache related files 
+    #=========================================
+    def test_06_cleanup_dcache(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        command = ('rm', '-rf', core.config['gratia.dcache-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.dcache-temp-dir\'] !')
-   
-    #===========================================================================
-    # This test cleans up /var/lib/gratia/tmp/dCache-storage_meter.cron.pid
-    #===========================================================================
-    def test_15_cleanup_varlibgratiatmp_dcache(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        command = ('rm', '-rf', '/var/lib/gratia/tmp/dCache-storage_meter.cron.pid')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/dCache-storage_meter.cron.pid!')
+        files.remove("/var/lib/gratia/tmp/dCache-storage_meter.cron.pid")
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(core.config['gratia.dcache-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/dCache-storage")
+        except:
+            shutil.rmtree(core.config['gratia.dcache-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/dCache-storage")
 
-        
-    #===========================================================================
-    # This test cleans up /etc/gratia/dCache-storage
-    #===========================================================================
-    def test_16_cleanup_etcgratia_dcache(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        command = ('rm', '-rf', '/etc/gratia/dCache-storage')
-        core.check_system(command, 'Unable to clean up /etc/gratia/dCache-storage !')
-        
-    #===========================================================================
-    # This test cleans up files in core.config['gratia.condor-temp-dir']
-    #===========================================================================
-    def test_17_cleanup_temp_gratiafiles_condor(self):
+    #=========================================
+    # This test cleans up condor related files
+    #=========================================
+    def test_07_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor')
-        command = ('rm', '-rf', core.config['gratia.condor-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.condor-temp-dir\'] !')
+        files.remove("/var/lib/gratia/data/gratia_certinfo_condor*")
+        files.remove("/var/lib/gratia/data/history.1211*")
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(core.config['gratia.condor-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/condor")
+        except:
+            shutil.rmtree(core.config['gratia.condor-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/condor")
         
-        
-    #===========================================================================
-    # This test removes condor logs
-    #===========================================================================
-    def test_18_cleanup_varlib_condorlogs(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')
-        command = ('rm', '-rf', '/var/lib/gratia/data/gratia_certinfo_condor*')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/data/gratia_certinfo_condor*!')
-        command = ('rm', '-rf', '/var/lib/gratia/data/history.1211*')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/data/history.1211*!')
-
-    #===========================================================================
-    # This test cleans up /etc/gratia/condor
-    #===========================================================================
-    def test_19_cleanup_etcgratia_condor(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')
-        command = ('rm', '-rf', '/etc/gratia/condor')
-        core.check_system(command, 'Unable to clean up /etc/gratia/condor!')
-        
-    #===========================================================================
+    #===============================
     # This test stops psacct service
-    #===========================================================================
-    def test_20_stop_psacct_service(self):
+    #===============================
+    def test_08_stop_psacct_service(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')        
         command = ('service', 'psacct', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop psacct')
         self.assert_(stdout.find('FAILED') == -1, fail)
 
-    #===========================================================================
-    # This test removes psacct logs
-    #===========================================================================
-    def test_21_cleanup_psacct_logs(self):
+    #=========================================
+    # This test cleans up psacct related files
+    #=========================================
+    def test_09_cleanup_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
-        command = ('rm', '-rf', '/var/lib/gratia/account/pacct')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct!')
-        command = ('rm', '-rf', '/var/lib/gratia/account/pacct.creation')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/account/pacct.creation!')
-        command = ('rm', '-rf', '/var/lib/gratia/backup/*')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/backup/*!')
+        files.remove("/var/lib/gratia/account/pacct")
+        files.remove("/var/lib/gratia/account/pacct.creation")
+        files.remove("/var/lib/gratia/backup/*")
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(core.config['gratia.psacct-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/psacct")
+        except:
+            shutil.rmtree(core.config['gratia.psacct-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/psacct")
 
-        
-        
-    #===========================================================================
-    # This test cleans up files in core.config['gratia.psacct-temp-dir']
-    #===========================================================================
-    def test_22_cleanup_temp_gratiafiles_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')
-        command = ('rm', '-rf', core.config['gratia.psacct-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.psacct-temp-dir\'] !')
-        
-    #===========================================================================
-    # This test cleans up /etc/gratia/psacct
-    #===========================================================================
-    def test_23_cleanup_etcgratia_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')
-        command = ('rm', '-rf', '/etc/gratia/psacct')
-        core.check_system(command, 'Unable to clean up /etc/gratia/psacct!')
-
-    #===========================================================================
-    # This test cleans up files in core.config['gratia-probe-bdii-status']
-    #===========================================================================
-    def test_24_cleanup_temp_gratiafiles_bdii(self):
+    #=======================================
+    # This test cleans up bdii related files
+    #=======================================
+    def test_10_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
         command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
-        
-    #===========================================================================
-    # This test cleans up /etc/gratia/bdii-status
-    #===========================================================================
-    def test_25_cleanup_etcgratia_bdii(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status')
-        command = ('rm', '-rf', '/etc/gratia/bdii-status')
-        core.check_system(command, 'Unable to clean up /etc/gratia/bdii-status!')
+        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+        try:
+            files.remove(core.config['gratia.bdii-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/bdii-status")
+        except:
+            shutil.rmtree(core.config['gratia.bdii-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/bdii-status")
         
         
-    #===========================================================================
-    # This test cleans up files in core.config['gratia.pbs-temp-dir']
-    #===========================================================================
-    def test_26_cleanup_temp_gratiafiles_pbs(self):
+    #======================================
+    # This test cleans up pbs related files
+    #======================================
+    def test_11_cleanup_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        command = ('rm', '-rf', core.config['gratia.pbs-temp-dir'])
-        core.check_system(command, 'Unable to clean up core.config[\'gratia.pbs-temp-dir\'] !')
-        
-    #===========================================================================
-    # This test cleans up /etc/gratia/pbs-lsf
-    #===========================================================================
-    def test_27_cleanup_etcgratia_pbs(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        command = ('rm', '-rf', '/etc/gratia/pbs-lsf')
-        core.check_system(command, 'Unable to clean up /etc/gratia/pbs-lsf!')
-        
-    #===========================================================================
-    # This test cleans up /var/spool/pbs/server_priv/accounting
-    #===========================================================================
-    def test_27_cleanup_serverpriv_accounting_pbs(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        command = ('rm', '-rf', '/var/spool/pbs/server_priv/accounting')
-        core.check_system(command, 'Unable to clean up /var/spool/pbs/server_priv/accounting!')
-
-    #===========================================================================
-    # This test cleans up /var/lib/gratia/pbs-lsf
-    #===========================================================================
-    def test_28_cleanup_varlibgratia_pbs(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        command = ('rm', '-rf', '/var/lib/gratia/pbs-lsf')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/pbs-lsf!')
-
-    #===========================================================================
-    # This test cleans up urCollector logs
-    #===========================================================================
-    def test_29_cleanup_etcgratia_pbs(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
-        command = ('rm', '-rf', '/var/lib/gratia/tmp/urCollector')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/urCollector!')
-        command = ('rm', '-rf', '/var/lib/gratia/tmp/urCollectorBuffer.pbs')
-        core.check_system(command, 'Unable to clean up /var/lib/gratia/tmp/urCollectorBuffer.pbs!')
+        files.remove("/var/lib/gratia/tmp/urCollectorBuffer.pbs")
+        try:
+            files.remove(core.config['gratia.pbs-temp-dir'])
+            files.remove(core.config['gratia.config.dir'] + "/pbs-lsf")
+            files.remove("/var/lib/gratia/pbs-lsf")
+            files.remove("/var/spool/pbs/server_priv/accounting")
+            files.remove("/var/lib/gratia/tmp/urCollector")
+        except:
+            shutil.rmtree(core.config['gratia.pbs-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/pbs-lsf")
+            shutil.rmtree("/var/lib/gratia/pbs-lsf")
+            shutil.rmtree("/var/spool/pbs/server_priv/accounting")
+            shutil.rmtree("/var/lib/gratia/tmp/urCollector")

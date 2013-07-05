@@ -120,23 +120,32 @@ class TestStartGratia(osgunittest.OSGTestCase):
                 else: #t1_2 == t2_2
                     return 0
         
+
     #===========================================================================
-    # This test modifies "/etc/gratia/collector/service-authorization.properties" file
+    # This test sets gratia-directory + certificates related parameters
     #===========================================================================
-      
-    def test_01_service_authorization(self):
+    def test_01_config_parameters(self):
         core.skip_ok_unless_installed('gratia-service')
-        
+        core.config['gratia.config.dir'] = '/etc/gratia'
         # The name of the gratia directory changed
         gratia_version = core.get_package_envra('gratia-service')[2]
         gratia_version_split = gratia_version.split('.')
-       
         if (self.tuple_cmp(gratia_version_split, ['1', '13', '5']) < 0):
             core.config['gratia.directory'] = "collector"
         else:
             core.config['gratia.directory'] = "services"
-            
-        gratia_auth = "/etc/gratia/" + core.config['gratia.directory'] + "/service-authorization.properties"
+        core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
+        core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
+        core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
+        core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
+        
+    #===========================================================================
+    # This test modifies "/etc/gratia/collector/service-authorization.properties" file
+    #===========================================================================
+      
+    def test_02_service_authorization(self):
+        core.skip_ok_unless_installed('gratia-service')
+        gratia_auth = core.config['gratia.config.dir'] + core.config['gratia.directory'] + "/service-authorization.properties"
         self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=")
         self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
@@ -145,9 +154,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
     # This test modifies "/etc/gratia/collector/service-configuration.properties" file
     #===========================================================================
         
-    def test_02_service_configuration(self):
+    def test_03_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
-        gratia_conf = "/etc/gratia/" + core.config['gratia.directory'] + "/service-configuration.properties"
+        gratia_conf = core.config['gratia.config.dir'] + core.config['gratia.directory'] + "/service-configuration.properties"
         host = core.get_hostname()
         mysqlurl="service.mysql.url=jdbc:mysql://" +  host + ":3306/gratia"
         self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
@@ -159,22 +168,14 @@ class TestStartGratia(osgunittest.OSGTestCase):
     #===========================================================================
     # This test executes the install-database command
     #===========================================================================
-    def test_03_install_database(self):
+    def test_04_install_database(self):
         core.state['gratia.database-installed'] = False
         core.skip_ok_unless_installed('gratia-service')    
         command = ('/usr/share/gratia/install-database',)
         core.check_system(command, 'Unable to install Gratia Database !')
         core.state['gratia.database-installed'] = True
         
-    #===========================================================================
-    # This test sets certificates related parameters
-    #===========================================================================
-    def test_04_config_certs(self):
-        core.skip_ok_unless_installed('gratia-service')    
-        core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
-        core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
-        core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
-        core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
+ 
 
     #===========================================================================
     # This test sets installs http certificates
