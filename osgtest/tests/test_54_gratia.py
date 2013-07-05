@@ -127,7 +127,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_04_modify_gridftptransfer_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         probeconfig = "/etc/gratia/gridftp-transfer/ProbeConfig"
-        modify_probeconfig(probeconfig)
+        self.modify_probeconfig(probeconfig)
         
     #===============================================================================
     # This test copies the necessary files for gridftp test
