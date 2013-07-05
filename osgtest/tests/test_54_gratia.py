@@ -58,7 +58,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def write_sql_credentials_file(self):
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
         contents="[client]\n" + "password=reader\n"
-        files.write(filename, contents)
+        files.write(filename, contents, backup=False)
         return filename
     
     #====================================================================================
