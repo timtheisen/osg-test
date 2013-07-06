@@ -162,13 +162,13 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #=======================================
     def test_10_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status')
+        #resorting to shell remove command due to wildcharacter in the name       
         command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
+        core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
         try:
-            files.remove(core.config['gratia.bdii-temp-dir'])
             files.remove(core.config['gratia.config.dir'] + "/bdii-status")
         except:
-            shutil.rmtree(core.config['gratia.bdii-temp-dir'])
             shutil.rmtree(core.config['gratia.config.dir'] + "/bdii-status")
         
         
