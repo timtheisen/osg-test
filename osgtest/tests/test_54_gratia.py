@@ -52,6 +52,16 @@ class TestGratia(osgunittest.OSGTestCase):
         else: #both directory and file are present and so, do nothing...
             pass
     
+    #================================================================
+    # This helper method copies Probe Logs to the passed in directory
+    #================================================================
+    def copy_probe_logs(self, log='', logdirectory=''):
+        self.copy_user_vo_map_file()
+        if ((log != '') and (logdirectory != '')):
+            if not os.path.exists(logdirectory):
+                os.makedirs(logdirectory)
+            shutil.copy(log, logdirectory)
+    
     #====================================================================================
     # This helper method modifies the Probe Configuration, generally needed by many probes
     #====================================================================================
@@ -68,7 +78,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "QuarantineUnknownVORecords=\"0\"")
         
     #=================================================================================================
-    # This helper method returns true if the outbox directory for the probe, is empty; False otherwise
+    # This helper method returns True if the outbox directory for the probe, is empty; False otherwise
     #=================================================================================================
     def isProbeOutboxDirEmpty(self, gratiaProbeTempDir):
             outboxdir = gratiaProbeTempDir + "/outbox/"
@@ -129,7 +139,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        self.copy_user_vo_map_file()
+        self.copy_probe_logs()
 
     #===============================================================================
     # This test executes the GridftpTransferProbeDriver
@@ -204,8 +214,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec')
         glexec_log = os.path.join(get_python_lib(), 'files', 'glexec.log')
         dst_dir = '/var/log'
-        shutil.copy(glexec_log, dst_dir)
-        self.copy_user_vo_map_file()
+        self.copy_probe_logs(glexec_log, dst_dir)
 
     #===============================================================================
     # This test executes glexec_meter
@@ -260,7 +269,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_13_copy_dcache_logs(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        self.copy_user_vo_map_file()
+        self.copy_probe_logs()
 
     #===============================================================================
     # This test executes dCache-storage
@@ -317,8 +326,8 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies condor probe related files from SVN to /var/log
     #===============================================================================
     def test_17_copy_condor_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')        
-        self.copy_user_vo_map_file()
+        core.skip_ok_unless_installed('gratia-probe-condor') 
+        self.copy_probe_logs()       
         
         
     #===============================================================================
@@ -474,10 +483,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
         pbs_log = os.path.join(get_python_lib(), 'files', '20130603')
         dst_dir = '/var/spool/pbs/server_priv/accounting'
-        if not os.path.exists(dst_dir):
-            os.makedirs(dst_dir)
-        shutil.copy(pbs_log, dst_dir)
-        self.copy_user_vo_map_file()
+        self.copy_probe_logs(pbs_log, dst_dir)
         
 
     #===============================================================================
