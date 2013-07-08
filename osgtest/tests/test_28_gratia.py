@@ -148,6 +148,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
         core.config['gratia.sql.file'] = self.write_sql_credentials_file()
+        core.config['gratia.sql.querystring'] = "\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306"
         
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file

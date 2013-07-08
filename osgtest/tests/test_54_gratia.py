@@ -85,7 +85,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')    
         #Command to show the databases is:
         #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=reader --port=3306         
-        command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"show databases;" + core.config['gratia.sql.querystring'] + "| wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         result = re.search('4', stdout, re.IGNORECASE)
@@ -99,7 +99,7 @@ class TestGratia(osgunittest.OSGTestCase):
                 
         #Command to show the tabes in the gratia database is:
         #echo "use gratia;show tables;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"use gratia;show tables;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"use gratia;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         #Note that the actual output is 81 but the search below
@@ -166,7 +166,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
@@ -174,7 +174,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
@@ -229,14 +229,14 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         result1 = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         result2 = re.search('302', stdout, re.IGNORECASE)
@@ -288,15 +288,15 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, TotalSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
 
-        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, FreeSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
         
-        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, UsedSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
         
@@ -348,14 +348,14 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\""  + core.config['gratia.sql.file'] +  "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         result1 = re.search('1', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         #result2 = re.search('69', stdout, re.IGNORECASE)
@@ -409,7 +409,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';" + core.config['gratia.sql.querystring'] +  "| wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
@@ -456,7 +456,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
@@ -512,7 +512,7 @@ class TestGratia(osgunittest.OSGTestCase):
         host = core.get_hostname()
         probename="'pbs-lsf:" + host
         query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
-        command = "echo " + "\""+ query + "\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo " + "\""+ query + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
