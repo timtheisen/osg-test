@@ -174,6 +174,8 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.patternreplace(gratia_conf, "service.open.connection", openconn)
         secureconn="service.secure.connection=https://" + host + ":8443"
         self.patternreplace(gratia_conf, "service.secure.connection", secureconn)
+        #Changing the log level to capture Probe related messages, needed later
+        self.patternreplace(gratia_conf, "service.service.level=", "service.service.level=ALL")
     
     #===========================================================================
     # This test executes the install-database command
