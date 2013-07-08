@@ -4,6 +4,7 @@ import shutil
 import socket
 import stat
 import osgtest.library.core as core
+import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
