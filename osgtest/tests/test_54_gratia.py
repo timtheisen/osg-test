@@ -141,7 +141,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
         core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            result = isProbeOutboxDirEmpty(core.config['gratia.gridftp-temp-dir'])
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.gridftp-temp-dir'])
             self.assert_(result == True, 'gridftp-transfer outbox check failed !')
         core.state['gratia.gridftp-transfer-running'] = True
         
@@ -217,7 +217,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute glexec_meter!')      
         core.config['gratia.glexec-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.glexec" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            result = isProbeOutboxDirEmpty(core.config['gratia.glexec-temp-dir'])
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.glexec-temp-dir'])
             self.assert_(result == True, 'glexec_meter outbox check failed !')
         core.state['gratia.glexec_meter-running'] = True
         
@@ -274,7 +274,7 @@ class TestGratia(osgunittest.OSGTestCase):
         # /var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_fermicloud339.fnal.gov_fermicloud339.fnal.gov_8880        
         core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            result = isProbeOutboxDirEmpty(core.config['gratia.dcache-temp-dir'])
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.dcache-temp-dir'])
             self.assert_(result == True, 'dCache-storage outbox check failed !')
         core.state['gratia.dcache-storage-running'] = True
     
@@ -332,7 +332,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute condor_meter !')    
         core.config['gratia.condor-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.condor" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            result = isProbeOutboxDirEmpty(core.config['gratia.condor-temp-dir'])
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.condor-temp-dir'])
             self.assert_(result == True, 'condor outbox check failed !')
         core.state['gratia.condor-meter-running'] = True
 
@@ -391,7 +391,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute psacct!')
         core.config['gratia.psacct-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.psacct" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            result = isProbeOutboxDirEmpty(core.config['gratia.psacct-temp-dir'])
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.psacct-temp-dir'])
             self.assert_(result == True, 'psacct outbox check failed !')
         core.state['gratia.psacct-running'] = True
 
@@ -490,7 +490,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
         core.config['gratia.pbs-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.pbs-lsf" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            result = isProbeOutboxDirEmpty(core.config['gratia.pbs-temp-dir'])
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.pbs-temp-dir'])
             self.assert_(result == True,'pbs outbox check failed !')
         core.state['gratia.pbs-running'] = True
 
