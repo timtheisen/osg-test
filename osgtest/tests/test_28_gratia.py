@@ -135,6 +135,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     #===========================================================================
     def test_01_config_parameters(self):
         core.skip_ok_unless_installed('gratia-service')
+        core.config['gratia.host']= core.get_hostname()
         core.config['gratia.config.dir'] = '/etc/gratia'
         # The name of the gratia directory changed
         gratia_version = core.get_package_envra('gratia-service')[2]
@@ -149,7 +150,9 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
         core.config['gratia.sql.file'] = self.write_sql_credentials_file()
         core.config['gratia.sql.querystring'] = "\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306"
-        
+        core.config['gratia.tmpdir.prefix'] = "/var/lib/gratia/tmp/gratiafiles/"
+        core.config['gratia.tmpdir.postfix'] = "_" + core.config['gratia.host'] + "_" + core.config['gratia.host'] + "_8880"
+                
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file
     #===========================================================================
@@ -168,12 +171,11 @@ class TestStartGratia(osgunittest.OSGTestCase):
     def test_03_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_conf = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-configuration.properties"
-        host = core.get_hostname()
-        mysqlurl="service.mysql.url=jdbc:mysql://" +  host + ":3306/gratia"
+        mysqlurl="service.mysql.url=jdbc:mysql://" +  core.config['gratia.host'] + ":3306/gratia"
         self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
-        openconn="service.open.connection=http://" + host + ":8880"
+        openconn="service.open.connection=http://" + core.config['gratia.host'] + ":8880"
         self.patternreplace(gratia_conf, "service.open.connection", openconn)
-        secureconn="service.secure.connection=https://" + host + ":8443"
+        secureconn="service.secure.connection=https://" + core.config['gratia.host'] + ":8443"
         self.patternreplace(gratia_conf, "service.secure.connection", secureconn)
         #Changing the log level to capture Probe related messages, needed later
         self.patternreplace(gratia_conf, "service.service.level=", "service.service.level=ALL")

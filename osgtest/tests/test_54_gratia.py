@@ -66,6 +66,17 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SiteName", "SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "EnableProbe=\"1\"")
         self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "QuarantineUnknownVORecords=\"0\"")
+        
+    #=================================================================================================
+    # This helper method returns true if the outbox directory for the probe, is empty; False otherwise
+    #=================================================================================================
+    def isProbeOutboxDirEmpty(self, gratiaProbeTempDir):
+            outboxdir = gratiaProbeTempDir + "/outbox/"
+            #Need to check if the above outboxdir is empty
+            if(not os.listdir(outboxdir)):
+                return True
+            else:
+                return False
 
         
     #===============================================================================
@@ -88,7 +99,7 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"show databases;" + core.config['gratia.sql.querystring'] + "| wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
-        result = re.search('4', stdout, re.IGNORECASE)
+        result = re.search('3', stdout, re.IGNORECASE)
         self.assert_(result is not None)
         
     #===============================================================================
@@ -102,9 +113,7 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo \"use gratia;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
-        #Note that the actual output is 81 but the search below
-        #is for 82 to account for the header row
-        result = re.search('82', stdout, re.IGNORECASE)
+        result = re.search('81', stdout, re.IGNORECASE)
         self.assert_(result is not None)
         
     #===============================================================================
@@ -122,7 +131,6 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         self.copy_user_vo_map_file()
 
-    
     #===============================================================================
     # This test executes the GridftpTransferProbeDriver
     #===============================================================================
@@ -131,12 +139,10 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.gridftp-transfer-running'] = False
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
-        host = core.get_hostname()
-        core.config['gratia.gridftp-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.gridftp-transfer_" + host + "_" + host + "_8880"
+        core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            outboxdir = core.config['gratia.gridftp-temp-dir'] + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            self.assert_(not os.listdir(outboxdir), 'gridftp-transfer outbox NOT empty !')
+            result = isProbeOutboxDirEmpty(core.config['gratia.gridftp-temp-dir'])
+            self.assert_(result == True, 'gridftp-transfer outbox check failed !')
         core.state['gratia.gridftp-transfer-running'] = True
         
     #===============================================================================
@@ -208,13 +214,11 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec')
         core.state['gratia.glexec_meter-running'] = False
         command = ('/usr/share/gratia/glexec/glexec_meter',)
-        core.check_system(command, 'Unable to execute glexec_meter!')
-        host = core.get_hostname()
-        core.config['gratia.glexec-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.glexec_" + host + "_" + host + "_8880"
+        core.check_system(command, 'Unable to execute glexec_meter!')      
+        core.config['gratia.glexec-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.glexec" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            outboxdir = core.config['gratia.glexec-temp-dir'] + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            self.assert_(not os.listdir(outboxdir), 'glexec_meter outbox NOT empty !')
+            result = isProbeOutboxDirEmpty(core.config['gratia.glexec-temp-dir'])
+            self.assert_(result == True, 'glexec_meter outbox check failed !')
         core.state['gratia.glexec_meter-running'] = True
         
     #===============================================================================
@@ -267,13 +271,11 @@ class TestGratia(osgunittest.OSGTestCase):
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
         core.check_system(command, 'Unable to execute dCache-storage!')
         # clean up the following directory:
-        # /var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_fermicloud339.fnal.gov_fermicloud339.fnal.gov_8880
-        host = core.get_hostname()
-        core.config['gratia.dcache-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_" + host + "_" + host + "_8880"
+        # /var/lib/gratia/tmp/gratiafiles/subdir.dCache-storage_fermicloud339.fnal.gov_fermicloud339.fnal.gov_8880        
+        core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            outboxdir = core.config['gratia.dcache-temp-dir'] + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            self.assert_(not os.listdir(outboxdir), 'dCache-storage outbox NOT empty !')
+            result = isProbeOutboxDirEmpty(core.config['gratia.dcache-temp-dir'])
+            self.assert_(result == True, 'dCache-storage outbox check failed !')
         core.state['gratia.dcache-storage-running'] = True
     
     #===============================================================================
@@ -327,13 +329,11 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.condor-meter-running'] = False
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
-        core.check_system(command, 'Unable to execute condor_meter !')
-        host = core.get_hostname()
-        core.config['gratia.condor-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.condor_" + host + "_" + host + "_8880"
+        core.check_system(command, 'Unable to execute condor_meter !')    
+        core.config['gratia.condor-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.condor" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            outboxdir = core.config['gratia.condor-temp-dir'] + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            self.assert_(not os.listdir(outboxdir), 'condor outbox NOT empty !')
+            result = isProbeOutboxDirEmpty(core.config['gratia.condor-temp-dir'])
+            self.assert_(result == True, 'condor outbox check failed !')
         core.state['gratia.condor-meter-running'] = True
 
 
@@ -389,12 +389,10 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.psacct-running'] = False 
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
-        host = core.get_hostname()
-        core.config['gratia.psacct-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.psacct_" + host + "_" + host + "_8880"
+        core.config['gratia.psacct-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.psacct" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            outboxdir = core.config['gratia.psacct-temp-dir'] + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            self.assert_(not os.listdir(outboxdir), 'psacct outbox NOT empty !')
+            result = isProbeOutboxDirEmpty(core.config['gratia.psacct-temp-dir'])
+            self.assert_(result == True, 'psacct outbox check failed !')
         core.state['gratia.psacct-running'] = True
 
 
@@ -430,18 +428,17 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status') 
         core.state['gratia.bdii-status-running'] = False 
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
-        core.check_system(command, 'Unable to execute bdii-status!')
-        host = core.get_hostname()
-        core.config['gratia.bdii-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.bdii_" + "*" + host + "_" + host + "_8880"
+        core.check_system(command, 'Unable to execute bdii-status!')        
+        core.config['gratia.bdii-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.bdii_" + "*" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
                 if fnmatch.fnmatch(file, '*bdii*'):
-                    outboxdir = "/var/lib/gratia/tmp/gratiafiles/" + file + "/outbox/"
+                    outboxdir = core.config['gratia.tmpdir.prefix'] + file + "/outbox/"
                     #Apparently, there's a bug in the probe, due to which outbox is NOT getting cleaned up
                     #Tanya is investigating it and hence, commenting the outbox check for now
                     #Need to check if the above outboxdir is empty
                     #time.sleep(60)
-                    #self.assert_(not os.listdir(outboxdir), 'bdii outbox NOT empty !')
+                    #self.assert_(not os.listdir(outboxdir), 'bdii outbox check failed !')
         core.state['gratia.bdii-status-running'] = True
         
         
@@ -491,12 +488,10 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.pbs-running'] = False
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
-        host = core.get_hostname()
-        core.config['gratia.pbs-temp-dir'] = "/var/lib/gratia/tmp/gratiafiles/subdir.pbs-lsf_" + host + "_" + host + "_8880"
+        core.config['gratia.pbs-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.pbs-lsf" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
-            outboxdir = core.config['gratia.pbs-temp-dir'] + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            self.assert_(not os.listdir(outboxdir), 'pbs outbox NOT empty !')
+            result = isProbeOutboxDirEmpty(core.config['gratia.pbs-temp-dir'])
+            self.assert_(result == True,'pbs outbox check failed !')
         core.state['gratia.pbs-running'] = True
 
     #===============================================================================
