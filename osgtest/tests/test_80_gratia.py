@@ -57,6 +57,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
         command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
         core.check_system(command, 'Unable to drop Gratia Database !', shell=True)
         files.remove(filename)
+        #At this time, remove the gratia reader password file also
+        files.remove(core.config['gratia.sql.file'])
         
     #===========================================================================
     # This test cleans up the appropriate gratia directory

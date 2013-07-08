@@ -120,7 +120,15 @@ class TestStartGratia(osgunittest.OSGTestCase):
                 else: #t1_2 == t2_2
                     return 0
         
-
+    #====================================================================================
+    # This helper method writes a file with sql credentials and returns back the filename
+    #====================================================================================
+    def write_sql_credentials_file(self):
+        filename = "/tmp/gratia_reader_pass." + str(os.getpid()) + ".txt"
+        contents="[client]\n" + "password=reader\n"
+        files.write(filename, contents, backup=False)
+        return filename
+    
     #===========================================================================
     # This test sets gratia-directory + certificates related parameters
     #===========================================================================
@@ -138,6 +146,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
+        core.config['gratia.sql.file'] = self.write_sql_credentials_file()
         
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file

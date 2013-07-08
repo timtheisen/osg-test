@@ -51,15 +51,6 @@ class TestGratia(osgunittest.OSGTestCase):
             shutil.copy(user_vo_map_file, user_vo_map_dir)
         else: #both directory and file are present and so, do nothing...
             pass
-
-    #====================================================================================
-    # This helper method writes a file with sql credentials and returns back the filename
-    #====================================================================================
-    def write_sql_credentials_file(self):
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        contents="[client]\n" + "password=reader\n"
-        files.write(filename, contents, backup=False)
-        return filename
     
     #====================================================================================
     # This helper method modifies the Probe Configuration, generally needed by many probes
@@ -92,34 +83,29 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_02_show_databases(self):
         core.skip_ok_unless_installed('gratia-service')    
-        filename = self.write_sql_credentials_file()
         #Command to show the databases is:
         #echo "show databases;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=reader --port=3306         
-        command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"show databases;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         result = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result is not None)
-        files.remove(filename)
         
     #===============================================================================
     # This test counts the number of lines in the gratia database tables output
     #===============================================================================
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')    
-        
-        filename = self.write_sql_credentials_file()
-        
+                
         #Command to show the tabes in the gratia database is:
         #echo "use gratia;show tables;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"use gratia;show tables;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"use gratia;show tables;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to install Gratia Database !')
         #Note that the actual output is 81 but the search below
         #is for 82 to account for the header row
         result = re.search('82', stdout, re.IGNORECASE)
         self.assert_(result is not None)
-        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
@@ -160,9 +146,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
-       
-        filename = self.write_sql_credentials_file()
-        
+               
         #Command to check the database is:
         #echo "use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" --skip-column-names -B --unbuffered  --user=root --port=3306         
         #command = "echo \"use gratia; select sum(Njobs), sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=root --port=3306",
@@ -182,7 +166,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
@@ -190,13 +174,12 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database MasterTransferSummary table !')
         result2 = re.search('232', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
-        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/glexec/ProbeConfig file
@@ -241,26 +224,23 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_11_checkdatabase_glexec_meter(self):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
-       
-        filename = self.write_sql_credentials_file()
-        
+               
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         result1 = re.search('4', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         result2 = re.search('302', stdout, re.IGNORECASE)
         self.assert_(result2 is not None)
-        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/dCache-storage/ProbeConfig file
@@ -303,28 +283,25 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_15_checkdatabase_dcache_storage(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
-       
-        filename = self.write_sql_credentials_file()
-        
+               
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, TotalSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
 
-        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, FreeSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
         
-        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, UsedSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
         
         #Need to assert only after converting string to integers...
         self.assert_(long(TotalSpace) == (long(FreeSpace) + long(UsedSpace)))
-        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/condor/ProbeConfig file
@@ -366,26 +343,24 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_19_checkdatabase_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
-        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\""  + core.config['gratia.sql.file'] +  "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
         result1 = re.search('1', stdout, re.IGNORECASE)
         self.assert_(result1 is not None)
         
         
-        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database WallDuration from MasterSummaryData table !')
         #result2 = re.search('69', stdout, re.IGNORECASE)
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
         #self.assert_(result2 is not None)
-        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/psacct/ProbeConfig file
@@ -429,18 +404,16 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_23_checkdatabase_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
-        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
+        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306 | wc -l",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
-        files.remove(filename)
 
     #===============================================================================
     # This test customizes /etc/gratia/bdii-status/ProbeConfig file
@@ -478,18 +451,16 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_26_checkdatabase_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
-        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
         time.sleep(60)
         
-        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
         self.assert_(int(stdout) >= 1, 'Query should return at least ONE record') #Assert that the query returned at least ONE record
-        files.remove(filename)
         
     #===============================================================================
     # This test customizes /etc/gratia/condor/ProbeConfig file
@@ -534,7 +505,6 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_30_checkdatabase_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
-        filename = self.write_sql_credentials_file()
         
         #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
         #Need a more deterministic way to make this work other than waiting for a random time...
@@ -542,13 +512,12 @@ class TestGratia(osgunittest.OSGTestCase):
         host = core.get_hostname()
         probename="'pbs-lsf:" + host
         query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
-        command = "echo " + "\""+ query + "\" | mysql --defaults-extra-file=\"" + filename + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
+        command = "echo " + "\""+ query + "\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306",
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database table !')
   
         result = re.search('30', stdout, re.IGNORECASE)
         self.assert_(result is not None)
         #self.assert_(int(stdout) >= 1, 'Query should return at least ONE record !') #Assert that the query returned at least ONE record
-        files.remove(filename)
 
         
