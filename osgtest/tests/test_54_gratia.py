@@ -87,7 +87,21 @@ class TestGratia(osgunittest.OSGTestCase):
                 return True
             else:
                 return False
-
+            
+    #=================================================================================================
+    # This helper method looks for the pattern 'RecordProcessor: 0: ProbeDetails' in gratia log, 
+    # which signifies that Gratia has processed the probe information
+    #=================================================================================================
+    def isProbeInfoProcessed(self):
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], 'RecordProcessor: 0: ProbeDetails', 60.0)
+        if(line is not None):
+            core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
+            core.log_message('Gratia processed probe data - Line is ' + str(line))
+            return True
+        else:
+            return False
         
     #===============================================================================
     # This test tries to launch a gratia admin webpage
@@ -178,9 +192,7 @@ class TestGratia(osgunittest.OSGTestCase):
         #1 row in set (0.00 sec)
         #The assertions below try to search for the numbers presented above
         
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
         #_, stdout, _ = core.check_system(command, 'Unable to query Gratia Database MasterTransferSummary table !', shell=True)
@@ -236,12 +248,9 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_11_checkdatabase_glexec_meter(self):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)   
-               
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
-        
+        self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)        
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
+
         command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
@@ -295,9 +304,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
                
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, TotalSpace, _ = core.system(command, shell=True)
@@ -353,10 +360,8 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
         
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
-        
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
+   
         command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database Njobs from MasterSummaryData table !')
@@ -412,9 +417,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';" + core.config['gratia.sql.querystring'] +  "| wc -l",
         status, stdout, _ = core.system(command, shell=True)
@@ -458,9 +461,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
         
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';" + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)
@@ -507,11 +508,9 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
         
-        #Per Tanya, need to sleep for a minute or so to allow gratia to "digest" probe data
-        #Need a more deterministic way to make this work other than waiting for a random time...
-        time.sleep(60)
-        host = core.get_hostname()
-        probename="'pbs-lsf:" + host
+        self.assert_(self.isProbeInfoProcessed() == True, 'Sentinel signifying Probe Information was processed NOT found !')
+        
+        probename="'pbs-lsf:" + core.config['gratia.host']
         query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
         command = "echo " + "\""+ query + core.config['gratia.sql.querystring'],
         status, stdout, _ = core.system(command, shell=True)

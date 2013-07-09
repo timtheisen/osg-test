@@ -152,7 +152,10 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['gratia.sql.querystring'] = "\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306"
         core.config['gratia.tmpdir.prefix'] = "/var/lib/gratia/tmp/gratiafiles/"
         core.config['gratia.tmpdir.postfix'] = "_" + core.config['gratia.host'] + "_" + core.config['gratia.host'] + "_8880"
-                
+        core.config['gratia.log.file'] = "/var/log/gratia-service/gratia.log"
+        core.state['gratia.log.stat'] = None
+
+      
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file
     #===========================================================================
