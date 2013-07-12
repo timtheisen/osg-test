@@ -1,6 +1,3 @@
-import osgtest.library.core as core
-import osgtest.library.files as files
-import osgtest.library.osgunittest as osgunittest
 import os
 import re
 from distutils.sysconfig import get_python_lib
@@ -8,7 +5,10 @@ import shutil
 import socket
 import time
 import fnmatch
-
+import osgtest.library.core as core
+import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
 
 class TestGratia(osgunittest.OSGTestCase):
     
@@ -364,9 +364,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #===========================================================================
     def test_21_start_psacct_service(self):
         core.skip_ok_unless_installed('gratia-probe-psacct')
-        command = ('service', 'psacct', 'start')
-        stdout, _, fail = core.check_system(command, 'Start psacct')
-        self.assert_(stdout.find('error') == -1, fail)
+        service.start('psacct', 'error')
         
     #===============================================================================
     # This test executes psacct

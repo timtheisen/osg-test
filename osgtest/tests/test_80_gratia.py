@@ -1,9 +1,9 @@
 import os
 import shutil
-
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
 
 class TestStopGratia(osgunittest.OSGTestCase):
 
@@ -25,15 +25,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
             if len(os.listdir(target_dir)) == 0:
                 os.rmdir(target_dir)
                 
-    #====================================================================================
-    # This helper method writes a file with sql credentials and returns back the filename
-    #====================================================================================
-    def write_sql_credentials_file(self):
-        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        contents="[client]\n" + "password=\n"
-        files.write(filename, contents, backup=False)
-        return filename
-
     #===========================================================================
     # This test removes the http certificates, if not already removed earlier
     #===========================================================================
@@ -50,7 +41,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_02_uninstall_gratia_database(self):
         core.skip_ok_unless_installed('gratia-service')    
        
-        filename = self.write_sql_credentials_file()
+        filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
+        contents="[client]\n" + "password=\n"
+        files.write(filename, contents, backup=False)
         
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
@@ -67,10 +60,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         directory = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory']
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(directory)
-        except:
-            shutil.rmtree(directory)
+        shutil.rmtree(directory)
         
     #==========================================
     # This test cleans up gridftp related files 
@@ -81,13 +71,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
         files.remove("/var/log/gridftp.log")
         files.remove("/var/log/gridftp-auth.log")
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(core.config['gratia.gridftp-temp-dir'])
-            files.remove(core.config['gratia.config.dir'] + "/gridftp-transfer")
-        except:
-            shutil.rmtree(core.config['gratia.gridftp-temp-dir'])
-            shutil.rmtree(core.config['gratia.config.dir'] + "/gridftp-transfer")
-        
+        shutil.rmtree(core.config['gratia.gridftp-temp-dir'])
+        shutil.rmtree(core.config['gratia.config.dir'] + "/gridftp-transfer")
+
     #=========================================
     # This test cleans up glexec related files
     #=========================================
@@ -98,12 +84,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
         files.remove("/var/lib/gratia/data/glexec_plugin.chk")
 
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(core.config['gratia.glexec-temp-dir'])
-            files.remove(core.config['gratia.config.dir'] + "/glexec")
-        except:
-            shutil.rmtree(core.config['gratia.glexec-temp-dir'])
-            shutil.rmtree(core.config['gratia.config.dir'] + "/glexec")
+        shutil.rmtree(core.config['gratia.glexec-temp-dir'])
+        shutil.rmtree(core.config['gratia.config.dir'] + "/glexec")
         
     #=========================================
     # This test cleans up dcache related files 
@@ -112,12 +94,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
         files.remove("/var/lib/gratia/tmp/dCache-storage_meter.cron.pid")
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(core.config['gratia.dcache-temp-dir'])
-            files.remove(core.config['gratia.config.dir'] + "/dCache-storage")
-        except:
-            shutil.rmtree(core.config['gratia.dcache-temp-dir'])
-            shutil.rmtree(core.config['gratia.config.dir'] + "/dCache-storage")
+        shutil.rmtree(core.config['gratia.dcache-temp-dir'])
+        shutil.rmtree(core.config['gratia.config.dir'] + "/dCache-storage")
 
     #=========================================
     # This test cleans up condor related files
@@ -127,21 +105,15 @@ class TestStopGratia(osgunittest.OSGTestCase):
         files.remove("/var/lib/gratia/data/gratia_certinfo_condor*")
         files.remove("/var/lib/gratia/data/history.1211*")
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(core.config['gratia.condor-temp-dir'])
-            files.remove(core.config['gratia.config.dir'] + "/condor")
-        except:
-            shutil.rmtree(core.config['gratia.condor-temp-dir'])
-            shutil.rmtree(core.config['gratia.config.dir'] + "/condor")
+        shutil.rmtree(core.config['gratia.condor-temp-dir'])
+        shutil.rmtree(core.config['gratia.config.dir'] + "/condor")
         
     #===============================
     # This test stops psacct service
     #===============================
     def test_08_stop_psacct_service(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')        
-        command = ('service', 'psacct', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop psacct')
-        self.assert_(stdout.find('FAILED') == -1, fail)
+        core.skip_ok_unless_installed('gratia-probe-psacct')
+        service.stop('psacct')
 
     #=========================================
     # This test cleans up psacct related files
@@ -152,12 +124,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
         files.remove("/var/lib/gratia/account/pacct.creation")
         files.remove("/var/lib/gratia/backup/*")
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(core.config['gratia.psacct-temp-dir'])
-            files.remove(core.config['gratia.config.dir'] + "/psacct")
-        except:
-            shutil.rmtree(core.config['gratia.psacct-temp-dir'])
-            shutil.rmtree(core.config['gratia.config.dir'] + "/psacct")
+        shutil.rmtree(core.config['gratia.psacct-temp-dir'])
+        shutil.rmtree(core.config['gratia.config.dir'] + "/psacct")
 
     #=======================================
     # This test cleans up bdii related files
@@ -168,10 +136,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
         core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
         #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        try:
-            files.remove(core.config['gratia.config.dir'] + "/bdii-status")
-        except:
-            shutil.rmtree(core.config['gratia.config.dir'] + "/bdii-status")
+        shutil.rmtree(core.config['gratia.config.dir'] + "/bdii-status")
         
         
     #======================================
@@ -180,15 +145,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_11_cleanup_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
         files.remove("/var/lib/gratia/tmp/urCollectorBuffer.pbs")
-        try:
-            files.remove(core.config['gratia.pbs-temp-dir'])
-            files.remove(core.config['gratia.config.dir'] + "/pbs-lsf")
-            files.remove("/var/lib/gratia/pbs-lsf")
-            files.remove("/var/spool/pbs/server_priv/accounting")
-            files.remove("/var/lib/gratia/tmp/urCollector")
-        except:
-            shutil.rmtree(core.config['gratia.pbs-temp-dir'])
-            shutil.rmtree(core.config['gratia.config.dir'] + "/pbs-lsf")
-            shutil.rmtree("/var/lib/gratia/pbs-lsf")
-            shutil.rmtree("/var/spool/pbs/server_priv/accounting")
-            shutil.rmtree("/var/lib/gratia/tmp/urCollector")
+        shutil.rmtree(core.config['gratia.pbs-temp-dir'])
+        shutil.rmtree(core.config['gratia.config.dir'] + "/pbs-lsf")
+        shutil.rmtree("/var/lib/gratia/pbs-lsf")
+        shutil.rmtree("/var/spool/pbs/server_priv/accounting")
+        shutil.rmtree("/var/lib/gratia/tmp/urCollector")

@@ -30,7 +30,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
         except OSError: # file does not exist
             return False
 
-
 #===============================================================================
 # install_cert has been taken from test_20_voms.py
 # We should consider putting this code in the core library
@@ -121,15 +120,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
                 else: #t1_2 == t2_2
                     return 0
         
-    #====================================================================================
-    # This helper method writes a file with sql credentials and returns back the filename
-    #====================================================================================
-    def write_sql_credentials_file(self):
-        filename = "/tmp/gratia_reader_pass." + str(os.getpid()) + ".txt"
-        contents="[client]\n" + "password=reader\n"
-        files.write(filename, contents, backup=False)
-        return filename
-    
     #===========================================================================
     # This test sets gratia-directory + certificates related parameters
     #===========================================================================
@@ -140,21 +130,26 @@ class TestStartGratia(osgunittest.OSGTestCase):
         # The name of the gratia directory changed
         gratia_version = core.get_package_envra('gratia-service')[2]
         gratia_version_split = gratia_version.split('.')
+        
         if (self.tuple_cmp(gratia_version_split, ['1', '13', '5']) < 0):
             core.config['gratia.directory'] = "collector"
         else:
             core.config['gratia.directory'] = "services"
+            
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
-        core.config['gratia.sql.file'] = self.write_sql_credentials_file()
+        
+        filename = "/tmp/gratia_reader_pass." + str(os.getpid()) + ".txt"
+        contents="[client]\n" + "password=reader\n"
+        files.write(filename, contents, backup=False)
+        core.config['gratia.sql.file'] = filename
         core.config['gratia.sql.querystring'] = "\" | mysql --defaults-extra-file=\"" + core.config['gratia.sql.file'] + "\" --skip-column-names -B --unbuffered  --user=reader --port=3306"
         core.config['gratia.tmpdir.prefix'] = "/var/lib/gratia/tmp/gratiafiles/"
         core.config['gratia.tmpdir.postfix'] = "_" + core.config['gratia.host'] + "_" + core.config['gratia.host'] + "_8880"
         core.config['gratia.log.file'] = "/var/log/gratia-service/gratia.log"
         core.state['gratia.log.stat'] = None
-
       
     #===========================================================================
     # This test modifies "/etc/gratia/collector/service-authorization.properties" file
@@ -192,8 +187,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
         command = ('/usr/share/gratia/install-database',)
         core.check_system(command, 'Unable to install Gratia Database !')
         core.state['gratia.database-installed'] = True
-        
- 
 
     #===========================================================================
     # This test sets installs http certificates
