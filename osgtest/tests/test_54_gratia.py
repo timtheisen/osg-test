@@ -197,10 +197,10 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '4'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '8'), 'Failed Probe Data Validation in Database !')       
         
         command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],        
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '232'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '20971868'), 'Failed Probe Data Validation in Database !')       
 
     #===============================================================================
     # This test customizes /etc/gratia/glexec/ProbeConfig file
