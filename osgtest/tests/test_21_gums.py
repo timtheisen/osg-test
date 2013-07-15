@@ -107,6 +107,12 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     def test_06_write_gums_config(self):
         core.skip_ok_unless_installed('gums-service')
 
+        # gums_config_path = '/etc/gums/gums.config'
+        # gums_old = '/root/gums.config'
+
+        # # Backup default file
+        # shutil.copy(gums_old, gums_config_path)
+        
         # Debugging -- can be deleted later
         command = ('cat', '/etc/gums/gums.config')
         core.check_system(command, 'Dump gums.config')

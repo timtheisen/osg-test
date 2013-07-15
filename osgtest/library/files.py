@@ -174,19 +174,28 @@ def restore(path, owner):
     del _backups[backup_id]
 
 
-def remove(path):
-    """Remove the path, which could be a file, empty directory, or file glob."""
+def remove(path, force=False):
+    """Remove the path, which could be a file, empty directory, or file glob.
+
+    If the force argument is True, then this function will remove non-empty directories.
+    """
     if re.search(r'[\]*?]', path):
         for glob_path in glob.glob(path):
             if os.path.isfile(glob_path):
                 os.unlink(glob_path)
+            elif os.path.isdir(glob_path):
+                if force:
+                    shutil.rmtree(glob_path)
+                else:
+                    os.rmdir(glob_path)                    
     elif os.path.isdir(path):
         if not os.listdir(path):
             os.rmdir(path)
         else:
-            #shutil.rmtree(path)
-            print "Cowardly refusing to delete a non-empty directory using rmtree"
-            # Go ahead and try the rmdir to raise an exception
-            os.rmdir(path)
+            if force:
+                shutil.rmtree(path)
+            else:
+                # Go ahead and try the rmdir to raise an exception
+                os.rmdir(path)
     elif os.path.isfile(path):
         os.unlink(path)
