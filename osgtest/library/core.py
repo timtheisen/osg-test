@@ -116,6 +116,7 @@ def monitor_file(filename, old_stat, sentinel, timeout):
     seconds that passed before the sentinel was found.  Otherwise, the tuple
     (None, None) is returned.
     """
+    sentinel_regex = re.compile(r'%s' % sentinel)
     start_time = time.time()
     end_time = start_time + timeout
     monitored_file = None
@@ -137,7 +138,7 @@ def monitor_file(filename, old_stat, sentinel, timeout):
         where = monitored_file.tell()
         line = monitored_file.readline()
         if line:
-            if sentinel in line:
+            if sentinel_regex.search(line):
                 monitored_file.close()
                 return (line, time.time() - start_time)
         else:
