@@ -89,19 +89,41 @@ class TestGratia(osgunittest.OSGTestCase):
                 return False
             
     #=================================================================================================
-    # This helper method looks for the pattern 'RecordProcessor: 0: ProbeDetails' in gratia log, 
-    # which signifies that Gratia has processed the probe information
+    # This helper method parses gratia log for patterns signifying that Gratia has processed the probe information
+    # A. It loops through the lines with the pattern 'RecordProcessor: 0: ProbeDetails'
+    # B. Examines the output line to check if it contains the passed in Probe specific pattern, "/" AND the word "saved"
+    # Sample target lines from a gratia log is:
+    #    2013-07-14 17:21:48,073 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 9 / 9 (gridftp-transfer:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3274.0 CreateTime: 14 July 2013 at 22:21:37 GMT KeyInfo: null) ) saved.
+    #    2013-07-14 17:22:18,161 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 5 / 5 (glexec:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3299.0 CreateTime: 14 July 2013 at 22:21:48 GMT KeyInfo: null) ) saved.
+    #    2013-07-14 17:22:48,204 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 3 / 3 (dCache-storage:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3356.0 CreateTime: 14 July 2013 at 22:22:18 GMT KeyInfo: null) ) saved
+    #    2013-07-14 17:23:18,294 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2 (condor:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3390.0 CreateTime: 14 July 2013 at 22:22:48 GMT KeyInfo: null) ) saved.
+    #    2013-07-14 17:23:48,346 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2 (psacct:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3423.0 CreateTime: 14 July 2013 at 22:23:18 GMT KeyInfo: null) ) saved.
+    #    2013-07-14 17:24:18,376 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails (bdii-status:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3446.0 CreateTime: 14 July 2013 at 22:23:48 GMT KeyInfo: null) ) saved.
+    #    2013-07-14 17:24:19,631 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 100 / 100 (bdii_compute:BNL-ATLAS-Condor:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3446.1 CreateTime: 14 July 2013 at 22:23:56 GMT KeyInfo: null) ) saved.
+    #    2013-07-14 17:24:50,465 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 31 / 31 (pbs-lsf:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:4549.0 CreateTime: 14 July 2013 at 22:24:19 GMT KeyInfo: null) ) saved. 
     #=================================================================================================
-    def isProbeInfoProcessed(self):
+    def isProbeInfoProcessed(self, ProbePattern):
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
         line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], 'RecordProcessor: 0: ProbeDetails', 60.0)
-        if(line is not None):
-            core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
-            core.log_message('Gratia processed probe data - Line is ' + str(line))
-            return True
-        else:
-            return False
+        while(line is not None):
+            core.log_message('Not sure if Gratia Probe Processed Pattern found - Line is ' + str(line))
+            if((ProbePattern in line) and ('/' in line) and ('saved' in line)):
+                core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
+                core.log_message('Gratia processed probe data - Line is ' + str(line))
+                return True
+            #for bdii-probe, do not check for 'saved'
+            elif(('bdii' in ProbePattern) and (ProbePattern in line) and ('/' in line)):
+                core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
+                core.log_message('Gratia processed probe data - Line is ' + str(line))
+                return True
+            else:
+                #No need to check for the existence of core.config['gratia.log.file'] file again
+                core.log_message('Gratia Probe Processed Pattern NOT found - Line is ' + str(line))
+                core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+                line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], 'RecordProcessor: 0: ProbeDetails', 60.0)
+        #The while loop ended signifying that the "end of probe information processed" signature was NOT found...
+        return False
 
     #=================================================================================================
     # This helper method queries the database for probe related information and based on the passed-in
@@ -194,7 +216,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
                        
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('gridftp-transfer'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '8'), 'Failed Probe Data Validation in Database !')       
@@ -242,7 +264,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)        
         
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('glexec'), 'Sentinel signifying Probe Information was processed NOT found !')
 
         command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table !', '4'), 'Failed Probe Data Validation in Database !')       
@@ -288,7 +310,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
                
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('dCache-storage'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, TotalSpace, _ = core.system(command, shell=True)
@@ -342,7 +364,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('condor'), 'Sentinel signifying Probe Information was processed NOT found !')
    
         command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database Njobs from MasterSummaryData table !', '1'), 'Failed Probe Data Validation in Database !')       
@@ -387,7 +409,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('psacct'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';" + core.config['gratia.sql.querystring'] +  "| wc -l",
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
@@ -427,7 +449,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('bdii'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query count from ComputeElement table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
@@ -470,7 +492,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed(), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('pbs-lsf'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         probename="'pbs-lsf:" + core.config['gratia.host']
         query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
