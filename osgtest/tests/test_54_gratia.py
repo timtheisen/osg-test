@@ -93,37 +93,50 @@ class TestGratia(osgunittest.OSGTestCase):
     # A. It loops through the lines with the pattern 'RecordProcessor: 0: ProbeDetails'
     # B. Examines the output line to check if it contains the passed in Probe specific pattern, "/" AND the word "saved"
     # Sample target lines from a gratia log is:
-    #    2013-07-14 17:21:48,073 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 9 / 9 (gridftp-transfer:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3274.0 CreateTime: 14 July 2013 at 22:21:37 GMT KeyInfo: null) ) saved.
-    #    2013-07-14 17:22:18,161 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 5 / 5 (glexec:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3299.0 CreateTime: 14 July 2013 at 22:21:48 GMT KeyInfo: null) ) saved.
-    #    2013-07-14 17:22:48,204 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 3 / 3 (dCache-storage:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3356.0 CreateTime: 14 July 2013 at 22:22:18 GMT KeyInfo: null) ) saved
-    #    2013-07-14 17:23:18,294 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2 (condor:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3390.0 CreateTime: 14 July 2013 at 22:22:48 GMT KeyInfo: null) ) saved.
-    #    2013-07-14 17:23:48,346 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2 (psacct:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3423.0 CreateTime: 14 July 2013 at 22:23:18 GMT KeyInfo: null) ) saved.
-    #    2013-07-14 17:24:18,376 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails (bdii-status:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3446.0 CreateTime: 14 July 2013 at 22:23:48 GMT KeyInfo: null) ) saved.
-    #    2013-07-14 17:24:19,631 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 100 / 100 (bdii_compute:BNL-ATLAS-Condor:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:3446.1 CreateTime: 14 July 2013 at 22:23:56 GMT KeyInfo: null) ) saved.
-    #    2013-07-14 17:24:50,465 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 31 / 31 (pbs-lsf:fermicloud101.fnal.gov, recordId= Record (Id: fermicloud101.fnal.gov:4549.0 CreateTime: 14 July 2013 at 22:24:19 GMT KeyInfo: null) ) saved. 
+    #    2013-07-14 17:21:48,073 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 9 / 9 
+    #    (gridftp-transfer:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3274.0 CreateTime: 14 July 2013 at 22:21:37 GMT KeyInfo: null) ) saved.
+    #
+    #    2013-07-14 17:22:18,161 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 5 / 5
+    #    (glexec:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3299.0 CreateTime: 14 July 2013 at 22:21:48 GMT KeyInfo: null) ) saved.
+    #
+    #    2013-07-14 17:22:48,204 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 3 / 3
+    #    (dCache-storage:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3356.0 CreateTime: 14 July 2013 at 22:22:18 GMT KeyInfo: null) ) saved
+    #
+    #    2013-07-14 17:23:18,294 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2
+    #    (condor:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3390.0 CreateTime: 14 July 2013 at 22:22:48 GMT KeyInfo: null) ) saved.
+    #
+    #    2013-07-14 17:23:48,346 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2
+    #    (psacct:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3423.0 CreateTime: 14 July 2013 at 22:23:18 GMT KeyInfo: null) ) saved.
+    #
+    #    2013-07-14 17:24:18,376 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 
+    #    (bdii-status:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3446.0 CreateTime: 14 July 2013 at 22:23:48 GMT KeyInfo: null) ) saved.
+    #
+    #    2013-07-14 17:24:19,631 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails
+    #    100 / 100 (bdii_compute:BNL-ATLAS-Condor:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:3446.1 CreateTime: 14 July 2013 at 22:23:56 GMT KeyInfo: null) ) saved.
+    #
+    #    2013-07-14 17:24:50,465 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 31 / 31
+    #    (pbs-lsf:fermicloud101.fnal.gov, recordId= Record 
+    #    (Id: fermicloud101.fnal.gov:4549.0 CreateTime: 14 July 2013 at 22:24:19 GMT KeyInfo: null) ) saved. 
     #=================================================================================================
     def isProbeInfoProcessed(self, ProbePattern):
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
-        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], 'RecordProcessor: 0: ProbeDetails', 60.0)
-        while(line is not None):
-            core.log_message('Not sure if Gratia Probe Processed Pattern found - Line is ' + str(line))
-            if((ProbePattern in line) and ('/' in line) and ('saved' in line)):
+            SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
+            core.log_message('SearchPattern is:' + str(SearchPattern))
+        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 60.0)
+        if(line is not None):
                 core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
                 return True
-            #for bdii-probe, do not check for 'saved' and '/'
-            elif(('bdii' in ProbePattern) and (ProbePattern in line)):
-                core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
-                core.log_message('Gratia processed probe data - Line is ' + str(line))
-                return True
-            else:
-                #No need to check for the existence of core.config['gratia.log.file'] file again
-                core.log_message('Gratia Probe Processed Pattern NOT found - Line is ' + str(line))
-                core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
-                line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], 'RecordProcessor: 0: ProbeDetails', 60.0)
-        #The while loop ended signifying that the "end of probe information processed" signature was NOT found...
-        return False
+        else:
+            return False
 
     #=================================================================================================
     # This helper method queries the database for probe related information and based on the passed-in
@@ -219,10 +232,10 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(True, self.isProbeInfoProcessed('gridftp-transfer'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '8'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
         
         command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],        
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', '20971868'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
 
     #===============================================================================
     # This test customizes /etc/gratia/glexec/ProbeConfig file
