@@ -112,8 +112,8 @@ class TestGratia(osgunittest.OSGTestCase):
                 core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
                 return True
-            #for bdii-probe, do not check for 'saved'
-            elif(('bdii' in ProbePattern) and (ProbePattern in line) and ('/' in line)):
+            #for bdii-probe, do not check for 'saved' and '/'
+            elif(('bdii' in ProbePattern) and (ProbePattern in line)):
                 core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
                 return True
