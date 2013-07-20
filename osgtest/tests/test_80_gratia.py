@@ -1,5 +1,7 @@
 import os
 import shutil
+#import time
+#import datetime
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
@@ -30,6 +32,13 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #===========================================================================
     def test_01_remove_certs(self):
         core.skip_ok_unless_installed('gratia-service')
+        #The following code can be uncommented for troubleshooting purposes
+        #utc_datetime = datetime.datetime.utcnow()
+        #formated_string = utc_datetime.strftime("%Y-%m-%d-%H%MZ") #Result: '2011-12-12-0939Z'
+        #gratia_log_current = '/var/log/gratia-service/gratia.log'
+        #gratia_log_archive = '/root/gratia_logs' +'/gratia_log_%s.txt'% formated_string
+        #shutil.copy2(gratia_log_current, gratia_log_archive)
+
         self.skip_ok_if(core.state['voms.removed-certs'] == True, 'Certs were already removed')
         # Do the keys first, so that the directories will be empty for the certs.
         self.remove_cert('certs.httpkey')
