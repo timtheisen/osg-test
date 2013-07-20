@@ -46,21 +46,41 @@ class TestGratia(osgunittest.OSGTestCase):
         user_vo_map_file = os.path.join(get_python_lib(), 'files', 'user-vo-map')
         if not (os.path.exists(user_vo_map_dir)):
             os.makedirs(user_vo_map_dir)
-            shutil.copy(user_vo_map_file, user_vo_map_dir)
+            try:
+                shutil.copy(user_vo_map_file, user_vo_map_dir)
+            except IOError, e:
+                core.log_message("Unable to copy file. %s" % e)
+                return False
         elif not (os.path.exists(os.path.join(user_vo_map_dir,'user-vo-map'))): #directory exists, copy file, if the file is not already present
-            shutil.copy(user_vo_map_file, user_vo_map_dir)
+            try:
+                shutil.copy(user_vo_map_file, user_vo_map_dir)
+            except IOError, e:
+                core.log_message("Unable to copy file. %s" % e)
+                return False
         else: #both directory and file are present and so, do nothing...
-            pass
+            core.log_message(str(os.listdir(user_vo_map_dir)))
+            return True
+        
+        
     
     #================================================================
     # This helper method copies Probe Logs to the passed in directory
     #================================================================
     def copy_probe_logs(self, log='', logdirectory=''):
-        self.copy_user_vo_map_file()
-        if ((log != '') and (logdirectory != '')):
-            if not os.path.exists(logdirectory):
-                os.makedirs(logdirectory)
-            shutil.copy(log, logdirectory)
+        if (self.copy_user_vo_map_file() == False):
+            return False
+        else:
+            if ((log != '') and (logdirectory != '')):
+                try:
+                    if not os.path.exists(logdirectory):
+                        os.makedirs(logdirectory)
+                    shutil.copy(log, logdirectory)
+                    core.log_message(str(os.listdir(logdirectory)))
+                except IOError, e:
+                    core.log_message("Unable to copy log. %s" % e)
+                    return False
+        #If we've reached this far, it's a success
+        return True
     
     #====================================================================================
     # This helper method modifies the Probe Configuration, generally needed by many probes
@@ -83,11 +103,15 @@ class TestGratia(osgunittest.OSGTestCase):
     def isProbeOutboxDirEmpty(self, gratiaProbeTempDir):
             outboxdir = gratiaProbeTempDir + "/outbox/"
             #Need to check if the above outboxdir is empty
-            if(not os.listdir(outboxdir)):
-                return True
-            else:
-                return False
-            
+            try:
+                core.log_message('isProbeOutboxDirEmpty method - outboxdir is: ' + str(outboxdir))
+                if(not os.listdir(outboxdir)):
+                    return True
+                else:
+                    return False
+            except:
+                raise
+                return False            
     #=================================================================================================
     # This helper method parses gratia log for patterns signifying that Gratia has processed the probe information
     # A. It loops through the lines with the pattern 'RecordProcessor: 0: ProbeDetails'
@@ -205,7 +229,10 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
-        self.copy_probe_logs()
+        core.state['gratia.gridftp-logs-copied'] = False
+        self.assert_((self.copy_probe_logs() == True), "Log copy operation failed !")
+        core.state['gratia.gridftp-logs-copied'] = True
+
 
     #===============================================================================
     # This test executes the GridftpTransferProbeDriver
@@ -213,6 +240,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_06_execute_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         core.state['gratia.gridftp-transfer-running'] = False
+        self.skip_bad_if(core.state['gratia.gridftp-logs-copied'] == False)   
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
         core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + core.config['gratia.tmpdir.postfix']
@@ -251,9 +279,11 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_09_copy_glexec_logs(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
+        core.state['gratia.glexec-logs-copied'] = False
         glexec_log = os.path.join(get_python_lib(), 'files', 'glexec.log')
         dst_dir = '/var/log'
-        self.copy_probe_logs(glexec_log, dst_dir)
+        self.assert_((self.copy_probe_logs(glexec_log, dst_dir) == True), "Log copy operation failed !")
+        core.state['gratia.glexec-logs-copied'] = True
 
     #===============================================================================
     # This test executes glexec_meter
@@ -261,6 +291,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_10_execute_glexec_meter(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
         core.state['gratia.glexec_meter-running'] = False
+        self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)   
         command = ('/usr/share/gratia/glexec/glexec_meter',)
         core.check_system(command, 'Unable to execute glexec_meter!')      
         core.config['gratia.glexec-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.glexec" + core.config['gratia.tmpdir.postfix']
@@ -299,7 +330,9 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_13_copy_dcache_logs(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
-        self.copy_probe_logs()
+        core.state['gratia.dcache-logs-copied'] = False
+        self.assert_((self.copy_probe_logs() == True), "Log copy operation failed !")
+        core.state['gratia.dcache-logs-copied'] = True
 
     #===============================================================================
     # This test executes dCache-storage
@@ -307,6 +340,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_14_execute_dcache_storage(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
         core.state['gratia.dcache-storage-running'] = False
+        self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
         core.check_system(command, 'Unable to execute dCache-storage!')
         core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
@@ -353,7 +387,9 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_17_copy_condor_logs(self):
         core.skip_ok_unless_installed('gratia-probe-condor') 
-        self.copy_probe_logs()       
+        core.state['gratia.condor-logs-copied'] = False
+        self.assert_((self.copy_probe_logs() == True), "Log copy operation failed !")
+        core.state['gratia.condor-logs-copied'] = True
         
     #===============================================================================
     # This test executes condor_meter
@@ -361,6 +397,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_18_execute_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor')
         core.state['gratia.condor-meter-running'] = False
+        self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')    
@@ -380,7 +417,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(True, self.isProbeInfoProcessed('condor'), 'Sentinel signifying Probe Information was processed NOT found !')
    
         command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database Njobs from MasterSummaryData table !', '1'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database Njobs from MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
         
         command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query WallDuration from MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')  
@@ -480,9 +517,12 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_28_copy_pbs_logs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        core.state['gratia.pbs-logs-copied'] = False
         pbs_log = os.path.join(get_python_lib(), 'files', '20130603')
         dst_dir = '/var/spool/pbs/server_priv/accounting'
-        self.copy_probe_logs(pbs_log, dst_dir)
+        self.assert_((self.copy_probe_logs(pbs_log, dst_dir) == True), "Log copy operation failed !")
+        core.state['gratia.pbs-logs-copied'] = True   
+
     
     #===============================================================================
     # This test executes pbs probe
@@ -490,6 +530,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_29_execute_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
         core.state['gratia.pbs-running'] = False
+        self.skip_bad_if(core.state['gratia.pbs-logs-copied'] == False)
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
         core.config['gratia.pbs-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.pbs-lsf" + core.config['gratia.tmpdir.postfix']
