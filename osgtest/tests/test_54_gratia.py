@@ -150,11 +150,12 @@ class TestGratia(osgunittest.OSGTestCase):
     #    (Id: fermicloud101.fnal.gov:4549.0 CreateTime: 14 July 2013 at 22:24:19 GMT KeyInfo: null) ) saved. 
     #=================================================================================================
     def isProbeInfoProcessed(self, ProbePattern):
-        if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
-            SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
-            core.log_message('SearchPattern is:' + str(SearchPattern))
-        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 60.0)
+        #if os.path.exists(core.config['gratia.log.file']):
+        #    core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+        SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
+        core.log_message('SearchPattern is:' + str(SearchPattern))
+        #line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 60.0)
+        line, gap = core.monitor_file(core.config['gratia.log.file'], None, SearchPattern, 60.0)
         if(line is not None):
                 core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
@@ -501,7 +502,8 @@ class TestGratia(osgunittest.OSGTestCase):
         
         self.assertEqual(True, self.isProbeInfoProcessed('bdii'), 'Sentinel signifying Probe Information was processed NOT found !')
         
-        command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';" + core.config['gratia.sql.querystring'],
+        #command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia; select count(*) from ComputeElement;" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query count from ComputeElement table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
         
     #===============================================================================
