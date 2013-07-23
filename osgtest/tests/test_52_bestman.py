@@ -18,7 +18,7 @@ class TestBestman(osgunittest.OSGTestCase):
 
     def test_01_ping(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
-        self.skip_bad_unless(core.state['bestman.started-server'], 'bestman server not started')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         srm_url = 'srm://%s:' % (TestBestman.__hostname)
         command = ('srm-ping', srm_url + TestBestman.__port + '/' + TestBestman.__sfn )
         status, stdout, stderr = core.system(command, True)
@@ -28,7 +28,7 @@ class TestBestman(osgunittest.OSGTestCase):
  
     def test_02_copy_local_to_server(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
-        self.skip_bad_unless(core.state['bestman.started-server'], 'bestman server not started')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         os.chmod(TestBestman.__temp_dir, 0777)
         srm_url = 'srm://%s:%s/%s?SFN=%s' % (TestBestman.__hostname, TestBestman.__port, TestBestman.__sfn, TestBestman.__remote_path)
         command = ('srm-copy', 'file:///' + TestBestman.__data_path,srm_url)
@@ -41,7 +41,7 @@ class TestBestman(osgunittest.OSGTestCase):
 
     def test_03_copy_server_to_local(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
-        self.skip_bad_unless(core.state['bestman.started-server'], 'bestman server not started')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
 	srm_url = 'srm://%s:%s/%s?SFN=%s' % (TestBestman.__hostname, TestBestman.__port, TestBestman.__sfn, TestBestman.__remote_path)
 	command = ('srm-copy', srm_url, 'file:///' + TestBestman.__local_path)
         status, stdout, stderr = core.system(command, True)
@@ -54,7 +54,7 @@ class TestBestman(osgunittest.OSGTestCase):
 
     def test_04_remove_server_file(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
-        self.skip_bad_unless(core.state['bestman.started-server'], 'bestman server not started')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         srm_url = 'srm://%s:%s/%s?SFN=%s' % (TestBestman.__hostname, TestBestman.__port, TestBestman.__sfn, TestBestman.__remote_path)
         command = ('srm-rm', srm_url)
         status, stdout, stderr = core.system(command, True)
