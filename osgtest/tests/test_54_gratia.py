@@ -152,7 +152,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def isProbeInfoProcessed(self, ProbePattern):
         SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
         core.log_message('SearchPattern is:' + str(SearchPattern))
-        line, gap = core.monitor_file(core.config['gratia.log.file'], None, SearchPattern, 60.0)
+        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 60.0)
         if(line is not None):
                 core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
@@ -238,7 +238,11 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_06_execute_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
         core.state['gratia.gridftp-transfer-running'] = False
-        self.skip_bad_if(core.state['gratia.gridftp-logs-copied'] == False)   
+        self.skip_bad_if(core.state['gratia.gridftp-logs-copied'] == False)
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
         core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
         core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + core.config['gratia.tmpdir.postfix']
@@ -289,7 +293,11 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_10_execute_glexec_meter(self):
         core.skip_ok_unless_installed('gratia-probe-glexec')
         core.state['gratia.glexec_meter-running'] = False
-        self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)   
+        self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))   
         command = ('/usr/share/gratia/glexec/glexec_meter',)
         core.check_system(command, 'Unable to execute glexec_meter!')      
         core.config['gratia.glexec-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.glexec" + core.config['gratia.tmpdir.postfix']
@@ -339,6 +347,10 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage')
         core.state['gratia.dcache-storage-running'] = False
         self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
         core.check_system(command, 'Unable to execute dCache-storage!')
         core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
@@ -396,7 +408,11 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor')
         core.state['gratia.condor-meter-running'] = False
         self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
-        self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')    
+        self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))       
         command = ('/usr/share/gratia/condor/condor_meter',)
         core.check_system(command, 'Unable to execute condor_meter !')    
         core.config['gratia.condor-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.condor" + core.config['gratia.tmpdir.postfix']
@@ -441,7 +457,11 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_22_execute_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct') 
-        core.state['gratia.psacct-running'] = False 
+        core.state['gratia.psacct-running'] = False
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
         core.check_system(command, 'Unable to execute psacct!')
         core.config['gratia.psacct-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.psacct" + core.config['gratia.tmpdir.postfix']
@@ -475,7 +495,11 @@ class TestGratia(osgunittest.OSGTestCase):
     #===============================================================================
     def test_25_execute_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status') 
-        core.state['gratia.bdii-status-running'] = False 
+        core.state['gratia.bdii-status-running'] = False
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
         core.check_system(command, 'Unable to execute bdii-status!')        
         core.config['gratia.bdii-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.bdii_" + "*" + core.config['gratia.tmpdir.postfix']
@@ -499,7 +523,6 @@ class TestGratia(osgunittest.OSGTestCase):
         
         self.assertEqual(True, self.isProbeInfoProcessed('bdii'), 'Sentinel signifying Probe Information was processed NOT found !')
         
-        #command = "echo \"use gratia; select count(*) from ComputeElement where LRMSType='condor';" + core.config['gratia.sql.querystring'],
         command = "echo \"use gratia; select count(*) from ComputeElement;" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query count from ComputeElement table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
         
@@ -530,6 +553,10 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
         core.state['gratia.pbs-running'] = False
         self.skip_bad_if(core.state['gratia.pbs-logs-copied'] == False)
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))   
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
         core.check_system(command, 'Unable to execute pbs-lsf_meter !')
         core.config['gratia.pbs-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.pbs-lsf" + core.config['gratia.tmpdir.postfix']
