@@ -218,7 +218,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
     #===============================================================================
     def test_04_modify_gridftptransfer_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         probeconfig = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
@@ -226,7 +226,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies the necessary files for gridftp test
     #===============================================================================
     def test_05_copy_gridftp_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         core.state['gratia.gridftp-logs-copied'] = False
         self.assert_((self.copy_probe_logs() == True), "Log copy operation failed !")
         core.state['gratia.gridftp-logs-copied'] = True
@@ -236,7 +236,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes the GridftpTransferProbeDriver
     #===============================================================================
     def test_06_execute_gridftptransfer_probedriver(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer')
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         core.state['gratia.gridftp-transfer-running'] = False
         self.skip_bad_if(core.state['gratia.gridftp-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
@@ -271,7 +271,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/glexec/ProbeConfig file
     #===============================================================================
     def test_08_modify_glexec_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "gLExecMonitorLog", "gLExecMonitorLog=\"/var/log/glexec.log\"")
@@ -280,7 +280,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies glexec.log file from SVN to /var/log
     #===============================================================================
     def test_09_copy_glexec_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         core.state['gratia.glexec-logs-copied'] = False
         glexec_log = os.path.join(get_python_lib(), 'files', 'glexec.log')
         dst_dir = '/var/log'
@@ -291,7 +291,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes glexec_meter
     #===============================================================================
     def test_10_execute_glexec_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec')
+        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         core.state['gratia.glexec_meter-running'] = False
         self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
@@ -326,7 +326,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/dCache-storage/ProbeConfig file
     #===============================================================================
     def test_12_modify_dcache_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         probeconfig = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "InfoProviderUrl", "InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
@@ -335,7 +335,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies logs for dcache probe
     #===============================================================================
     def test_13_copy_dcache_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         core.state['gratia.dcache-logs-copied'] = False
         self.assert_((self.copy_probe_logs() == True), "Log copy operation failed !")
         core.state['gratia.dcache-logs-copied'] = True
@@ -344,7 +344,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes dCache-storage
     #===============================================================================
     def test_14_execute_dcache_storage(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage')
+        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         core.state['gratia.dcache-storage-running'] = False
         self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
@@ -388,7 +388,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/condor/ProbeConfig file
     #===============================================================================
     def test_16_modify_condor_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')
+        core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         probeconfig = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
@@ -396,7 +396,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies condor probe related files from SVN to /var/log
     #===============================================================================
     def test_17_copy_condor_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-condor') 
+        core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         core.state['gratia.condor-logs-copied'] = False
         self.assert_((self.copy_probe_logs() == True), "Log copy operation failed !")
         core.state['gratia.condor-logs-copied'] = True
@@ -405,7 +405,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes condor_meter
     #===============================================================================
     def test_18_execute_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-condor')
+        core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         core.state['gratia.condor-meter-running'] = False
         self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
         self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')
@@ -440,7 +440,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/psacct/ProbeConfig file
     #===============================================================================
     def test_20_modify_psacct_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "Grid=", "Grid=\"Local\"")
@@ -449,14 +449,14 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test starts the psacct service
     #===========================================================================
     def test_21_start_psacct_service(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct')
+        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         service.start('psacct', 'error')
         
     #===============================================================================
     # This test executes psacct
     #===============================================================================
     def test_22_execute_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct') 
+        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
         core.state['gratia.psacct-running'] = False
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
@@ -486,7 +486,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/bdii-status/ProbeConfig file
     #===============================================================================
     def test_24_modify_bdii_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status')
+        core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         probeconfig = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
@@ -494,7 +494,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes bdii-status
     #===============================================================================
     def test_25_execute_bdii_status(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status') 
+        core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
         core.state['gratia.bdii-status-running'] = False
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
@@ -530,7 +530,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test customizes /etc/gratia/condor/ProbeConfig file
     #===============================================================================
     def test_27_modify_pbs_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         probeconfig = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
         self.modify_probeconfig(probeconfig)
 
@@ -538,7 +538,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test copies pbs probe related logs
     #===============================================================================
     def test_28_copy_pbs_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         core.state['gratia.pbs-logs-copied'] = False
         pbs_log = os.path.join(get_python_lib(), 'files', '20130603')
         dst_dir = '/var/spool/pbs/server_priv/accounting'
@@ -550,7 +550,7 @@ class TestGratia(osgunittest.OSGTestCase):
     # This test executes pbs probe
     #===============================================================================
     def test_29_execute_pbs(self):
-        core.skip_ok_unless_installed('gratia-probe-pbs-lsf')  
+        core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')    
         core.state['gratia.pbs-running'] = False
         self.skip_bad_if(core.state['gratia.pbs-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
