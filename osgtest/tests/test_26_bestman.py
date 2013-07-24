@@ -89,15 +89,18 @@ class TestStartBestman(osgunittest.OSGTestCase):
 	files.replace(bestman_rc_path, old_port, new_port, backup=False)
 	files.replace(bestman_rc_path, old_gridmap, new_gridmap, backup=False)
 	files.replace(env_file, old_auth, new_auth, backup=False)
-    
+
     def test_05_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
         core.state['bestman.started-server'] = False
+        core.state['bestman.running-server'] = True
 
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
-        self.skip_ok_if(os.path.exists(core.config['bestman.pid-file']), 'apparently running') 
+        if os.path.exists(core.config['bestman.pid-file']):
+            core.state['bestman.server-running'] = True
+            self.skip_ok('apparently running')
         #commenting and replacing with system command for temp troubleshooting purpose
-        #command = ('service', 'bestman2', 'start') 	
+        #command = ('service', 'bestman2', 'start')
         #stdout, _, fail = core.check_system(command, 'Starting bestman2')
         #self.assert_(stdout.find('FAILED') == -1, fail)
         #self.assert_(os.path.exists(core.config['bestman.pid-file']),
@@ -110,3 +113,5 @@ class TestStartBestman(osgunittest.OSGTestCase):
            core.state['bestman.started-server'] = False
         else:
            core.state['bestman.started-server'] = True
+           if os.path.exists(core.config['bestman.pid-file']):
+               core.state['bestman.server-running'] = True

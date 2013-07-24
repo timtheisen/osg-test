@@ -16,5 +16,5 @@ class TestGUMS(osgunittest.OSGTestCase):
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, _ = core.certificate_info(cert_path)
-        command = ('gums', 'mapUser', '--service', host_dn, user_dn)
+        command = ('gums', 'mapUser', '--serv', host_dn, user_dn)
         core.check_system(command, 'Map GUMS user')

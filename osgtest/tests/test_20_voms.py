@@ -155,7 +155,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         files.write(path, contents, backup=False)
 
     def test_08_advertise(self):
-        core.skip_ok_unless_installed('voms-admin-server')
+        core.skip_ok_unless_installed('voms-admin-server', 'vo-client')
         
         hostname = socket.getfqdn()
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])

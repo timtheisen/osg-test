@@ -48,7 +48,7 @@ def parse_command_line():
 
     parser.set_defaults(updaterepo=None)
     parser.add_option('-g','--update-repo', action='store', type='string', dest='updaterepo', metavar='REPO',
-                      help='REPO to use when updating packages'
+                      help='REPO to use when updating packages '
                       'specified with the -i flag.')
 
     parser.set_defaults(password='vdttest')

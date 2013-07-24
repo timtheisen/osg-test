@@ -28,7 +28,7 @@ class TestGlexec(osgunittest.OSGTestCase):
 
     def test_01_check_gridmap(self):
         core.skip_ok_unless_installed('glexec')
-
+        
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_cert_dn, user_cert_issuer = core.certificate_info(cert_path)
@@ -49,6 +49,7 @@ class TestGlexec(osgunittest.OSGTestCase):
 
     def test_03_create_user_proxy(self):
         core.skip_ok_unless_installed('globus-proxy-utils')
+        self.skip_ok_if(self.__user_proxy_path == '' , "User proxy path does not exist.")
 
         # OK, software is present, now just check it previous tests did create the proxy already so
         # we don't do it twice

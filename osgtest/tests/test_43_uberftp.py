@@ -10,10 +10,10 @@ import unittest
 
 class TestUberFTP(osgunittest.OSGTestCase):
 
-    required_rpms = ['globus-gridftp-server-progs', 'globus-ftp-client'
+    required_rpms = ['globus-gridftp-server-progs', 'globus-ftp-client',
                      'globus-proxy-utils', 'globus-gass-copy-progs',
                      'uberftp']
-    
+
     def test_01_copy_local_to_server_uberftp(self):
         core.skip_ok_unless_installed(*self.required_rpms)
 
