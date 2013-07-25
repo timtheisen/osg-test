@@ -96,7 +96,11 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.state['bestman.running-server'] = True
 
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
-        if os.path.exists(core.config['bestman.pid-file']):
+        retcode, _, _ = core.system(('service', 'bestman2', 'status'))
+        # bestman2 init script follows LSB standards for return codes:
+        # 0 = running, 1 = not running, 3 = stale pidfile (i.e. it crashed)
+        # We want to start it up if it's not running or had crashed
+        if retcode == 0:
             core.state['bestman.server-running'] = True
             self.skip_ok('apparently running')
         #commenting and replacing with system command for temp troubleshooting purpose
