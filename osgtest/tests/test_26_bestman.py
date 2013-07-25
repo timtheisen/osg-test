@@ -103,19 +103,27 @@ class TestStartBestman(osgunittest.OSGTestCase):
         if retcode == 0:
             core.state['bestman.server-running'] = True
             self.skip_ok('apparently running')
-        #commenting and replacing with system command for temp troubleshooting purpose
-        #command = ('service', 'bestman2', 'start')
-        #stdout, _, fail = core.check_system(command, 'Starting bestman2')
-        #self.assert_(stdout.find('FAILED') == -1, fail)
-        #self.assert_(os.path.exists(core.config['bestman.pid-file']),
-        #             'Bestman server PID file missing')
-        start_bestman='service bestman2 start'
-        bestman_exitcode=os.system(start_bestman)
-        if bestman_exitcode != 0:
-           get_debug_output='cat /var/log/bestman2/bestman2.log; cat /var/log/bestman2/event.srm.log'
-	   os.system(get_debug_output)
-           core.state['bestman.started-server'] = False
-        else:
-           core.state['bestman.started-server'] = True
-           if os.path.exists(core.config['bestman.pid-file']):
-               core.state['bestman.server-running'] = True
+
+        # Dump the bestman logs into the test logs for debugging
+        def _dump_logfiles():
+            logdir = '/var/log/bestman2'
+            for logfile in ('bestman2.log', 'event.srm.log'):
+                core.system(('cat', os.path.join(logdir, logfile)))
+
+        command = ('service', 'bestman2', 'start')
+        try:
+            stdout, _, fail = core.check_system(command, 'Starting bestman2')
+            self.assert_(stdout.find('FAILED') == -1, fail)
+            self.assert_(os.path.exists(core.config['bestman.pid-file']),
+                         'Bestman server PID file missing')
+            # 'service bestman2 status' checks if the process mentioned in the pid
+            # file is actually running, which can detect if bestman crashed right
+            # after startup. In theory it's vulnerable to problems caused by pid
+            # re-use, but those are unlikely
+            command = ('service', 'bestman2', 'status')
+            stdout, _, fail = core.check_system(command, 'Verifying bestman2 started')
+        except AssertionError:
+            _dump_logfiles()
+            raise
+        core.state['bestman.started-server'] = True
+        core.state['bestman.server-running'] = True
