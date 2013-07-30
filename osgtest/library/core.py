@@ -236,28 +236,43 @@ def missing_rpm(*packages):
     return False
 
 
-def skip_ok_unless_installed(*packages, **kwargs):
-    """Check that all given RPM packages are installed and skip the test
-    if not. Accepts the keyword argument 'message' for an optional message.
-    Raise osgunittest.OkSkipException if packages are missing, otherwise
-    return None.
+def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
+    """Check that all given RPM packages or dependencies are installed and skip
+    the test if not.
+
+    Accepts the following keyword arguments:
+    - 'message' is the text to include in the Exception (a generic 'missing
+      $package' will be used otherwise)
+    - 'by_dependency' is a bool which, if True, will cause dependencies to be
+      queried instead of packages
+    Raise osgunittest.OkSkipException if packages/dependencies are missing,
+    otherwise return None.
     """
-    # Handle the keyword argument. There is some magic here to make it work
-    # with the variable number of arguments that we are using for 'packages'.
-    # Make sure that we accept the argument not being there, but also raise
-    # an error on unexpected keyword arguments.
+    # Handle the keyword arguments. There is some magic here to make it work
+    # with the variable number of arguments that we are using for
+    # 'packages_or_dependencies'.  Make sure that we accept the argument not
+    # being there, but also raise an error on unexpected keyword arguments.
     message = kwargs.pop('message', None)
+    by_dependency = kwargs.pop('by_dependency', False)
     if kwargs:
         raise TypeError("skip_ok_unless_installed() got unexpected keyword argument(s) '%s'" %
                         ("', '".join(kwargs.keys())))
 
-    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
-        packages = packages[0]
+    if isinstance(packages_or_dependencies[0], list) or isinstance(packages_or_dependencies[0], tuple):
+        packages_or_dependencies = packages_or_dependencies[0]
 
-    missing = []    
-    for package in packages:
-        if not rpm_is_installed(package):
-            missing.append(package)
+    missing = []
+    if by_dependency:
+        dependencies = packages_or_dependencies
+        for dependency in dependencies:
+            if not dependency_is_installed(dependency):
+                missing.append(dependency)
+    else:
+        packages = packages_or_dependencies
+        for package in packages:
+            if not rpm_is_installed(package):
+                missing.append(package)
+
     if len(missing) > 0:
         raise osgunittest.OkSkipException(message or 'missing %s' % ' '.join(missing))
 
