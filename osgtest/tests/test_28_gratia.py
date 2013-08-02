@@ -11,11 +11,6 @@ import osgtest.library.service as service
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
-#===============================================================================
-# check_file_and_perms has been taken from test_20_voms.py
-# We should consider putting this code in the core library
-#===============================================================================
- 
     def check_file_and_perms(self, file_path, owner_name, permissions):
         """Return True if the file at 'file_path' exists, is owned by
         'owner_name', is a file, and has the given permissions; False otherwise
@@ -30,18 +25,14 @@ class TestStartGratia(osgunittest.OSGTestCase):
         except OSError: # file does not exist
             return False
 
-#===============================================================================
-# install_cert has been taken from test_20_voms.py
-# We should consider putting this code in the core library
-#===============================================================================
-    #===========================================================================
-    # Carefully install a certificate with the given key from the given
-    # source path, then set ownership and permissions as given.  Record
-    # each directory and file created by this process into the config
-    # dictionary; do so immediately after creation, so that the
-    # remove_cert() function knows exactly what to remove/restore.
-    #===========================================================================
     def install_cert(self, target_key, source_key, owner_name, permissions):
+        """Install_cert has been taken from test_20_voms.py  We should consider putting this code in the core library.
+     Carefully install a certificate with the given key from the given
+     source path, then set ownership and permissions as given.  Record
+     each directory and file created by this process into the config
+     dictionary; do so immediately after creation, so that the
+     remove_cert() function knows exactly what to remove/restore."""
+
         target_path = core.config[target_key]
         target_dir = os.path.dirname(target_path)
         source_path = core.config[source_key]
@@ -64,15 +55,12 @@ class TestStartGratia(osgunittest.OSGTestCase):
         os.chown(target_path, user.pw_uid, user.pw_gid)
         os.chmod(target_path, permissions)
 
-    # ==================================================================
-    
-    #===========================================================================
-    # This helper method loops through the passed in infile line by line. 
-    # If it finds the passed in pattern, it replaces the whole line with
-    # the passed in full_line.
-    #===========================================================================
     
     def patternreplace(self, infile_name, pattern, full_line):
+        """This helper method loops through the passed in infile line by line. 
+     If it finds the passed in pattern, it replaces the whole line with
+     the passed in full_line."""
+
         infile = open(infile_name, "r")
         outfile_name = infile_name + ".tmp"
         outfile = file(outfile_name, 'w')
@@ -86,15 +74,14 @@ class TestStartGratia(osgunittest.OSGTestCase):
         shutil.move(outfile_name, infile_name)
         
 
-    #===========================================================================
-    # This tuple comparsion method assumes: 
-    # A. Tuple has 3 entries 
-    # B. An integer comparsion is desired
-    # Note that the python "cmp" method does NOT perform integer comparison
-    # Similar to python "cmp" method, 
-    # The return value is negative if t1 < t2, zero if t1 == t2 and strictly positive if t1 > t2.
-    #===========================================================================
     def tuple_cmp (self, t1, t2):
+        """ This tuple comparsion method assumes: 
+     A. Tuple has 3 entries 
+     B. An integer comparsion is desired
+     Note that the python "cmp" method does NOT perform integer comparison
+     Similar to python "cmp" method, 
+     The return value is negative if t1 < t2, zero if t1 == t2 and strictly positive if t1 > t2."""
+
         t1_0 = int(t1[0])
         t1_1 = int(t1[1])
         t1_2 = int(t1[2])
@@ -120,9 +107,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
                 else: #t1_2 == t2_2
                     return 0
         
-    #===========================================================================
-    # This test sets gratia-directory + certificates related parameters
-    #===========================================================================
+    #This test sets gratia-directory + certificates related parameters
     def test_01_config_parameters(self):
         core.skip_ok_unless_installed('gratia-service')
         core.config['gratia.host']= core.get_hostname()
@@ -151,10 +136,8 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['gratia.log.file'] = "/var/log/gratia-service/gratia.log"
         core.state['gratia.log.stat'] = None
       
-    #===========================================================================
-    # This test modifies "/etc/gratia/collector/service-authorization.properties" file
-    #===========================================================================
       
+    #This test modifies "/etc/gratia/collector/service-authorization.properties" file
     def test_02_service_authorization(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_auth = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-authorization.properties"
@@ -162,10 +145,8 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.patternreplace(gratia_auth, "service.mysql.user", "service.mysql.user=gratia")
         self.patternreplace(gratia_auth, "service.mysql.password", "service.mysql.password=password")
         
-    #===========================================================================
-    # This test modifies "/etc/gratia/collector/service-configuration.properties" file
-    #===========================================================================
         
+    #This test modifies "/etc/gratia/collector/service-configuration.properties" file
     def test_03_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_conf = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-configuration.properties"
@@ -178,9 +159,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         #Changing the log level to capture Probe related messages, needed later
         self.patternreplace(gratia_conf, "service.service.level=", "service.service.level=FINE")
     
-    #===========================================================================
-    # This test executes the install-database command
-    #===========================================================================
+    #This test executes the install-database command
     def test_04_install_database(self):
         core.state['gratia.database-installed'] = False
         core.skip_ok_unless_installed('gratia-service')    
@@ -188,9 +167,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.check_system(command, 'Unable to install Gratia Database !')
         core.state['gratia.database-installed'] = True
 
-    #===========================================================================
-    # This test sets installs http certificates
-    #===========================================================================
+    #This test sets installs http certificates
     def test_05_install_http_certs(self):
         core.skip_ok_unless_installed('gratia-service')
         httpcert = core.config['certs.httpcert']
@@ -201,25 +178,19 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
         
-    #===========================================================================
-    # This test stops the Tomcat service
-    #===========================================================================
+    #This test stops the Tomcat service
     def test_06_stop_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')    
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.stop('tomcat')
 
-    #===========================================================================
-    # This test configures Tomcat
-    #===========================================================================
+    #This test configures Tomcat
     def test_07_configure_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')
         command = ('/usr/share/gratia/configure_tomcat',)
         core.check_system(command, 'Unable to configure Tomcat !')
 
-    #===========================================================================
-    # This test starts the Tomcat service
-    #===========================================================================
+    #This test starts the Tomcat service
     def test_08_start_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')
         core.skip_ok_unless_installed(tomcat.pkgname())
