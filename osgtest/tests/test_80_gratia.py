@@ -71,46 +71,78 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_04_cleanup_gridftp(self):
 
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
-        files.remove("/var/lib/gratia/tmp/GridftpAccountingProbeState")
-        files.remove("/var/log/gridftp.log")
-        files.remove("/var/log/gridftp-auth.log")
-        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        if 'gratia.gridftp-temp-dir' in core.config:
-            shutil.rmtree(core.config['gratia.gridftp-temp-dir'])
-        shutil.rmtree(core.config['gratia.config.dir'] + "/gridftp-transfer")
+        try:
+            files.remove("/var/lib/gratia/tmp/GridftpAccountingProbeState")
+            files.remove("/var/log/gridftp.log")
+            files.remove("/var/log/gridftp-auth.log")
+            #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+            if 'gratia.gridftp-temp-dir' in core.config:
+                shutil.rmtree(core.config['gratia.gridftp-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/gridftp-transfer")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
 
     #This test cleans up glexec related files
     def test_05_cleanup_glexec(self):
 
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        files.remove("/var/lib/gratia/tmp/GlexecAccountingProbeState")
-        files.remove("/var/log/glexec.log")
-        files.remove("/var/lib/gratia/data/glexec_plugin.chk")
+        try:
+            files.remove("/var/lib/gratia/tmp/GlexecAccountingProbeState")
+            files.remove("/var/log/glexec.log")
+            files.remove("/var/lib/gratia/data/glexec_plugin.chk")
 
-        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        if 'gratia.glexec-temp-dir' in core.config:
-            shutil.rmtree(core.config['gratia.glexec-temp-dir'])
-        shutil.rmtree(core.config['gratia.config.dir'] + "/glexec")
+            #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+            if 'gratia.glexec-temp-dir' in core.config:
+                shutil.rmtree(core.config['gratia.glexec-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/glexec")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
         
     #This test cleans up dcache related files
     def test_06_cleanup_dcache(self):
 
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        files.remove("/var/lib/gratia/tmp/dCache-storage_meter.cron.pid")
-        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        if 'gratia.dcache-temp-dir' in core.config:
-            shutil.rmtree(core.config['gratia.dcache-temp-dir'])
-        shutil.rmtree(core.config['gratia.config.dir'] + "/dCache-storage")
+        try:
+            files.remove("/var/lib/gratia/tmp/dCache-storage_meter.cron.pid")
+            #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+            if 'gratia.dcache-temp-dir' in core.config:
+                shutil.rmtree(core.config['gratia.dcache-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/dCache-storage")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
 
     #This test cleans up condor related files
     def test_07_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
-        files.remove("/var/lib/gratia/data/gratia_certinfo_condor*")
-        files.remove("/var/lib/gratia/data/history.1211*")
-        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        if 'gratia.condor-temp-dir' in core.config:
-            shutil.rmtree(core.config['gratia.condor-temp-dir'])
-        shutil.rmtree(core.config['gratia.config.dir'] + "/condor")
+        try:
+            files.remove("/var/lib/gratia/data/gratia_certinfo_condor*")
+            files.remove("/var/lib/gratia/data/history.1211*")
+            #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+            if 'gratia.condor-temp-dir' in core.config:
+                shutil.rmtree(core.config['gratia.condor-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/condor")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
         
     #This test stops psacct service
     def test_08_stop_psacct_service(self):
@@ -120,32 +152,55 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #This test cleans up psacct related files
     def test_09_cleanup_psacct(self):
         core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')
-        files.remove("/var/lib/gratia/account/pacct")
-        files.remove("/var/lib/gratia/account/pacct.creation")
-        files.remove("/var/lib/gratia/backup/*")
-        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        if 'gratia.psacct-temp-dir' in core.config:
-            shutil.rmtree(core.config['gratia.psacct-temp-dir'])
-        shutil.rmtree(core.config['gratia.config.dir'] + "/psacct")
+        try:
+            files.remove("/var/lib/gratia/account/pacct")
+            files.remove("/var/lib/gratia/account/pacct.creation")
+            files.remove("/var/lib/gratia/backup/*")
+            #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+            if 'gratia.psacct-temp-dir' in core.config:
+                shutil.rmtree(core.config['gratia.psacct-temp-dir'])
+            shutil.rmtree(core.config['gratia.config.dir'] + "/psacct")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
 
     #This test cleans up bdii related files
     def test_10_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
-        if 'gratia.bdii-temp-dir' in core.config:
-            #resorting to shell remove command due to wildcharacter in the name       
-            command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
-            core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
-        #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
-        shutil.rmtree(core.config['gratia.config.dir'] + "/bdii-status")
-        
+        try:
+            if 'gratia.bdii-temp-dir' in core.config:
+                #resorting to shell remove command due to wildcharacter in the name       
+                command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
+                core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
+            #files.remove doesn't remove non-empty directories. In such a case, use shutil.rmtree command
+            shutil.rmtree(core.config['gratia.config.dir'] + "/bdii-status")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
         
     #This test cleans up pbs related files
     def test_11_cleanup_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
-        files.remove("/var/lib/gratia/tmp/urCollectorBuffer.pbs")
-        if 'gratia.pbs-temp-dir' in core.config:
-            shutil.rmtree(core.config['gratia.pbs-temp-dir'])
+        try:
+            files.remove("/var/lib/gratia/tmp/urCollectorBuffer.pbs")
+            if 'gratia.pbs-temp-dir' in core.config:
+                shutil.rmtree(core.config['gratia.pbs-temp-dir'])
             shutil.rmtree("/var/lib/gratia/tmp/urCollector")
-        shutil.rmtree(core.config['gratia.config.dir'] + "/pbs-lsf")
-        shutil.rmtree("/var/lib/gratia/pbs-lsf")
-        shutil.rmtree("/var/spool/pbs/server_priv/accounting")
+            shutil.rmtree(core.config['gratia.config.dir'] + "/pbs-lsf")
+            shutil.rmtree("/var/lib/gratia/pbs-lsf")
+            shutil.rmtree("/var/spool/pbs/server_priv/accounting")
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
