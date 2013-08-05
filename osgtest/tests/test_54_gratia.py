@@ -41,7 +41,7 @@ class TestGratia(osgunittest.OSGTestCase):
         """This helper method copies user-vo-map in /var/lib/osg, if not already present"""
 
         user_vo_map_dir = '/var/lib/osg/'
-        user_vo_map_file = '/usr/share/osg-test/user-vo-map'
+        user_vo_map_file = '/usr/share/osg-test/gratia/user-vo-map'
         if not (os.path.exists(user_vo_map_dir)):
             os.makedirs(user_vo_map_dir)
             try:
@@ -263,7 +263,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_09_copy_glexec_logs(self):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         core.state['gratia.glexec-logs-copied'] = False
-        glexec_log =  '/usr/share/osg-test/glexec.log'
+        glexec_log =  '/usr/share/osg-test/gratia/glexec.log'
         dst_dir = '/var/log'
         self.assert_(self.copy_probe_logs(glexec_log, dst_dir), "glexec log copy failed !")
         core.state['gratia.glexec-logs-copied'] = True
@@ -398,19 +398,19 @@ class TestGratia(osgunittest.OSGTestCase):
         
     #This test customizes /etc/gratia/psacct/ProbeConfig file
     def test_20_modify_psacct_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
+        core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "Grid=", "Grid=\"Local\"")
 
     #This test starts the psacct service
     def test_21_start_psacct_service(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
+        core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         service.start('psacct', 'error')
         
     #This test executes psacct
     def test_22_execute_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
+        core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         core.state['gratia.psacct-running'] = False
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
@@ -426,7 +426,7 @@ class TestGratia(osgunittest.OSGTestCase):
 
     #This test checks database after psacct is run
     def test_23_checkdatabase_psacct(self):
-        core.skip_ok_unless_installed('gratia-probe-psacct', 'gratia-service')  
+        core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         
         self.assertEqual(True, self.isProbeInfoProcessed('psacct'), 'Sentinel signifying Probe Information was processed NOT found !')
@@ -482,7 +482,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_28_copy_pbs_logs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
         core.state['gratia.pbs-logs-copied'] = False
-        pbs_log = '/usr/share/osg-test/20130603'
+        pbs_log = '/usr/share/osg-test/gratia/20130603'
         dst_dir = '/var/spool/pbs/server_priv/accounting'
         self.assert_(self.copy_probe_logs(pbs_log, dst_dir), "pbs log copy failed !")
         core.state['gratia.pbs-logs-copied'] = True   
