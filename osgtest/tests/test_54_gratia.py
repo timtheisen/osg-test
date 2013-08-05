@@ -41,7 +41,7 @@ class TestGratia(osgunittest.OSGTestCase):
         """This helper method copies user-vo-map in /var/lib/osg, if not already present"""
 
         user_vo_map_dir = '/var/lib/osg/'
-        user_vo_map_file = '/usr/share/osg-test/gratia/user-vo-map'
+        user_vo_map_file = '/usr/share/osg-test/user-vo-map'
         if not (os.path.exists(user_vo_map_dir)):
             os.makedirs(user_vo_map_dir)
             try:
