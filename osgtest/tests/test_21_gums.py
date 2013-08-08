@@ -88,7 +88,9 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gums-service')
         command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
                    '--password', core.config['gums.password'])
-        core.check_system(command, 'Set up GUMS MySQL database')
+        stdout = core.check_system(command, 'Set up GUMS MySQL database')[0]
+        self.assert_('ERROR' not in stdout,
+                     'gums-setup-mysql-database failure message')
 
     def test_05_add_mysql_admin(self):
         core.skip_ok_unless_installed('gums-service')
