@@ -141,13 +141,12 @@ class TestStopGratia(osgunittest.OSGTestCase):
         
     #This test stops psacct service
     def test_08_stop_psacct_service(self):
-        self.skip_ok_if(core.el_release() != 5, 'This test is currently supported only on release 5')
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
-        service.stop('psacct')
+        command = ('/etc/init.d/psacct', 'stop')
+        core.check_system(command, 'Unable to stop psacct!')
 
     #This test cleans up psacct related files
     def test_09_cleanup_psacct(self):
-        self.skip_ok_if(core.el_release() != 5, 'This test is currently supported only on release 5')
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         try:
             files.remove("/var/lib/gratia/account/pacct")

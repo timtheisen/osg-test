@@ -398,7 +398,6 @@ class TestGratia(osgunittest.OSGTestCase):
         
     #This test customizes /etc/gratia/psacct/ProbeConfig file
     def test_20_modify_psacct_probeconfig(self):
-        self.skip_ok_if(core.el_release() != 5, 'This test is currently supported only on release 5')  
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
         self.modify_probeconfig(probeconfig)
@@ -406,13 +405,12 @@ class TestGratia(osgunittest.OSGTestCase):
 
     #This test starts the psacct service
     def test_21_start_psacct_service(self):
-        self.skip_ok_if(core.el_release() != 5, 'This test is currently supported only on release 5')  
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
-        service.start('psacct', 'error')
+        command = ('/etc/init.d/psacct', 'start')
+        core.check_system(command, 'Unable to start psacct!')
         
     #This test executes psacct
     def test_22_execute_psacct(self):
-        self.skip_ok_if(core.el_release() != 5, 'This test is currently supported only on release 5')  
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         core.state['gratia.psacct-running'] = False
         if os.path.exists(core.config['gratia.log.file']):
@@ -429,7 +427,6 @@ class TestGratia(osgunittest.OSGTestCase):
 
     #This test checks database after psacct is run
     def test_23_checkdatabase_psacct(self):
-        self.skip_ok_if(core.el_release() != 5, 'This test is currently supported only on release 5')  
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
         
