@@ -50,7 +50,7 @@ class TestUser(unittest.TestCase):
         os.chown(os.path.join(globus_dir, 'userkey.pem'), user.pw_uid, user.pw_gid)
 
     def test_02_user(self):
-        if not (core.options.runtests or core.options.adduser):
+        if core.options.skiptests or not core.options.adduser:
             core.skip('no user needed')
             return
         try:
