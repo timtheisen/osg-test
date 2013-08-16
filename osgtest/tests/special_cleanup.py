@@ -44,6 +44,10 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.log_message('%d RPMs installed but not in yum output' % count)
             rpm_erase_candidates += remaining_new_rpms
 
+        # Samba dependencies break cleanup on fermicloud SL6 VM's (SOFTWARE-1140)
+        if 'samba-winbind' in rpm_erase_candidates:
+            rpm_erase_candidates.remove('samba-winbind')
+            
         # Creating the list of RPMs to erase is more complicated than just using
         # the list of new RPMs, because there may be RPMs with both 32- and
         # 64-bit versions installed.  In that case, rpm will fail if given just
