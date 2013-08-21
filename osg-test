@@ -41,25 +41,25 @@ def parse_command_line():
     
     # Read the config file
     if opts.config:
-        config = ConfigParser.RawConfigParser()
+        config_file = ConfigParser.RawConfigParser()
         try:
-            config.read(opts.config)
+            config_file.read(opts.config)
         except ConfigParser.ParsingError, e:
             sys.stderr.write("Error while parsing: %s\n%s\n" % (opts.config, e))
             sys.stderr.write("Lines with options should not start with a space\n")
             sys.exit(1)
             
-        # Get intersection of config and defaults
-        for key,value in config.items('Config'):
-            if key in defaults: # Only accept keys that are command line options
+        # Get union of config file values and defaults
+        for key,value in config_file.items('Config'):
+            if key in defaults: 
                 if key == 'packages':
                     defaults[key] = re.split(',\s*', value)
                 elif key == 'extrarepos':
                     defaults[key] = re.split(',\s*', value)
                 elif defaults[key] is False: # Grab values as booleans if we expect them to be
-                    defaults[key] = config.getboolean('Config', key)
-                else:
-                    defaults[key] = value
+                    defaults[key] = config_file.getboolean('Config', key)
+            else:
+                defaults[key] = value
         
     # Read the rest of the command line options
     parser = read_args()
