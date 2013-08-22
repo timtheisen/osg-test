@@ -58,6 +58,8 @@ def parse_command_line():
                     defaults[key] = re.split(',\s*', value)
                 elif defaults[key] is False: # Grab values as booleans if we expect them to be
                     defaults[key] = config_file.getboolean('Config', key)
+                elif key != 'config': # Ignore setting the config option through the config file
+                    defaults[key] = value
             else:
                 defaults[key] = value
         
