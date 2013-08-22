@@ -155,6 +155,8 @@ class TestGratia(osgunittest.OSGTestCase):
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
                 return True
         else:
+            core.log_message('Did not find the search pattern within the given time limit !')
+            core.state['gratia.save-logs'] = True #Setting state so that the appropriate logs could be saved 
             return False
 
     def isProbeDataValidInDatabase(self, command, queryFailureString, assertionValue='', atLeastOneRecord=False):
