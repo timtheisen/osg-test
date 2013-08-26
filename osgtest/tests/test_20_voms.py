@@ -158,11 +158,13 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server')
 
         hostname = socket.getfqdn()
+        vomses_path = '/etc/vomses'
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
                     (core.config['voms.vo'], hostname, 15151, host_dn, core.config['voms.vo']))
-        files.write('/etc/vomses', contents, owner='voms')
-
+        files.write(vomses_path, contents, owner='voms')
+        os.chmod(vomses_path, 0644)
+        
         if not os.path.isdir(core.config['voms.lsc-dir']):
             os.makedirs(core.config['voms.lsc-dir'])
         vo_lsc_path = os.path.join(core.config['voms.lsc-dir'], hostname + '.lsc')
