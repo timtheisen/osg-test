@@ -82,6 +82,10 @@ def write(path, contents, owner=None, backup=True):
     must be defined.  Typically, a caller specifies either 'backup=False' to
     turn off backups (not recommended) or 'owner=[some string]' to set the owner
     for the backup.
+
+    NOTE: If the file doesn't exist, the default permissions are '0600' and
+    owned by root/root. Make sure to properly set the permissions of the file
+    afterwards if you need specific permissions or ownership.
     """
 
     # The default arguments are invalid: Either "backup" must be false or the
