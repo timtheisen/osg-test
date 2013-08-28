@@ -12,7 +12,7 @@ import osgtest.library.service as service
 
 class TestGratia(osgunittest.OSGTestCase):
     
-    def patternreplace(self, infile_name, pattern, full_line, insert_after="no"):
+    def patternreplace(self, infile_name, pattern, full_line, insert_after=False):
         """This method is taken from test_28 - we can consider moving it to core.py module
      This helper method loops through the passed in infile line by line. 
      If it finds the passed in pattern in a line, it EITHER replaces the whole line 
@@ -22,19 +22,22 @@ class TestGratia(osgunittest.OSGTestCase):
         infile = open(infile_name, "r")
         outfile_name = infile_name + ".tmp"
         outfile = file(outfile_name, 'w')
+        retval = False
         
         #If the pattern is found in a non-comment line, replace the line with the passed in "full_line"
         for line in infile:
             if pattern in line and not line.startswith('#'):
-                if(insert_after=="no"): #Default case, just replace the line
+                if(insert_after==False): #Default case, just replace the line
                     line = full_line + "\n"
                 else: #Insert the passed in line AFTER the line in which the pattern was found
                     line = line + full_line + "\n"
+                retval = True #If the pattern was found, it's a success
             outfile.writelines(line)
         outfile.close()
         infile.close()
         
         shutil.move(outfile_name, infile_name)
+        return retval
 
 
     def copy_user_vo_map_file(self):
@@ -91,7 +94,9 @@ class TestGratia(osgunittest.OSGTestCase):
         self.patternreplace(probeconfig, "SSLRegistrationHost", sslregistrationhost)
         self.patternreplace(probeconfig, "SiteName", "SiteName=\"OSG Test site\"")
         self.patternreplace(probeconfig, "EnableProbe", "EnableProbe=\"1\"")
-        self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "QuarantineUnknownVORecords=\"0\"")
+        #If a line with QuarantineUnknownVORecords pattern is not found, insert it after QuarantineSize line
+        if(self.patternreplace(probeconfig, "QuarantineUnknownVORecords=", "QuarantineUnknownVORecords=\"0\"") == False):
+            self.patternreplace(probeconfig, "QuarantineSize=", "QuarantineUnknownVORecords=\"0\"", insert_after=True)
         
     def isProbeOutboxDirEmpty(self, gratiaProbeTempDir):
             """This helper method returns True if the outbox directory for the probe, is empty; False otherwise"""
