@@ -8,7 +8,6 @@ import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
-import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
 
 class TestStartGUMS(osgunittest.OSGTestCase):
@@ -84,7 +83,31 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     def test_03_gums_configuration(self):
         core.config['gums.password'] = 'osgGUMS!'
 
-    def test_04_setup_gums_database(self):
+    def test_04_gums_cert_symlinks(self):
+        core.skip_ok_unless_installed('gums-service')
+
+        # gums-service expects a cert in /root/.globus/ for the admin added in test_05
+        root_pwd = pwd.getpwnam('root')
+        core.config['gums.certdir'] = os.path.join(root_pwd.pw_dir, '.globus')
+        core.config['gums.backup-certdir'] = core.config['gums.certdir'] + '.gums'
+        self.assert_(os.path.exists(core.config['gums.backup-certdir']) == False, 'Backup dir already exists')
+        try:
+            shutil.move(core.config['gums.certdir'], core.config['gums.backup-certdir'])
+        except IOError as e:
+            if e.errno == 2:
+                # suppress no such file or directory error
+                pass
+            else:
+                raise
+
+        # Create links to hostcert since we added it as an admin in test_05 
+        os.mkdir(core.config['gums.certdir'])
+        cert_link_path = os.path.join(core.config['gums.certdir'], 'usercert.pem')
+        key_link_path = os.path.join(core.config['gums.certdir'], 'userkey.pem')
+        os.symlink(core.config['certs.hostcert'], cert_link_path)
+        os.symlink(core.config['certs.hostkey'], key_link_path)
+
+    def test_05_setup_gums_database(self):
         core.skip_ok_unless_installed('gums-service')
         command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
                    '--password', core.config['gums.password'])
@@ -92,7 +115,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         self.assert_('ERROR' not in stdout,
                      'gums-setup-mysql-database failure message')
 
-    def test_05_add_mysql_admin(self):
+    def test_06_add_mysql_admin(self):
         core.skip_ok_unless_installed('gums-service')
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
@@ -104,17 +127,5 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         core.log_message(mysql_command)
 
         command = ('mysql', '--user=gums', '-p' + core.config['gums.password'], '--execute=' + mysql_command)
-        core.check_system(command, 'Add GUMS MySQL admin')
+        core.check_system(command, 'Could not add GUMS MySQL admin')
 
-    def test_06_write_gums_config(self):
-        core.skip_ok_unless_installed('gums-service')
-
-        # gums_config_path = '/etc/gums/gums.config'
-        # gums_old = '/root/gums.config'
-
-        # # Backup default file
-        # shutil.copy(gums_old, gums_config_path)
-        
-        # Debugging -- can be deleted later
-        command = ('cat', '/etc/gums/gums.config')
-        core.check_system(command, 'Dump gums.config')
