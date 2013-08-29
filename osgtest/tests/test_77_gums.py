@@ -16,7 +16,7 @@ class TestStopGUMS(osgunittest.OSGTestCase):
         # Restore backup if one exists.
         try:
             shutil.move(core.config['gums.backup-certdir'], core.config['gums.certdir'])
-        except IOError as e:
+        except IOError, e:
             if e.errno == 2:
                 # suppress no such file or directory error
                 pass

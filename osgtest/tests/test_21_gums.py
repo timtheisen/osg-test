@@ -93,7 +93,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         self.assert_(os.path.exists(core.config['gums.backup-certdir']) == False, 'Backup dir already exists')
         try:
             shutil.move(core.config['gums.certdir'], core.config['gums.backup-certdir'])
-        except IOError as e:
+        except IOError, e:
             if e.errno == 2:
                 # suppress no such file or directory error
                 pass
