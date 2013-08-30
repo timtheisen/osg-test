@@ -59,9 +59,15 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
         command = ('ls', '/cvmfs/cms.cern.ch')
         status, stdout, stderr = core.system(command, False)
-	file_exists = os.path.exists('/cvmfs/cms.cern.ch')
-        self.assert_(file_exists, 'Cvmfs cern mount point missing')
 
+        # If the previous command failed, output better debug info
+        if status != 0:
+            core.config['cvmfs.temp-dir'] = tempfile.mkdtemp()
+            command = ('mount', '-t', 'cvmfs', 'cms.cern.ch', core.config['cvmfs.temp-dir'])
+            core.check_system(command, 'Manual cvmfs mount failed')
+            # If manual mount works, autofs is broken
+            self.assert_(False, 'Autofs failed to mount /cvmfs/cms.cern.ch')
+        
         command = ('ls', self.__check_path)
         status, stdout, stderr = core.system(command, False)
         self.assert_(file_exists, 'Test cvmfs file missing')
@@ -71,5 +77,3 @@ class TestCvmfs(osgunittest.OSGTestCase):
         fail = core.diagnose('cvmfs example source a file on fs',
                              status, stdout, stderr)
         self.assertEqual(status, 0, fail)
-
-

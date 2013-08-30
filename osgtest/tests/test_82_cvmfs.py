@@ -10,6 +10,13 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('cvmfs')
         self.skip_ok_if(['cvmfs.started-server'] == False, 'did not start server')
 
+        try:
+            command = ('umount', core.config['cvmfs.temp-dir'])
+            core.check_system(command, 'Manual cvmfs unmount failed')
+            files.remove(core.config['cvmfs.temp-dir'], force=True)
+        except KeyError:
+            pass # tempdir was never created
+        
         if core.state['cvmfs.version'] < ('2', '1'):
             command = ('service', 'cvmfs', 'stop')
         else:
