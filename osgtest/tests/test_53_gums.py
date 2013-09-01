@@ -11,6 +11,8 @@ class TestGUMS(osgunittest.OSGTestCase):
     def test_01_manual_group_add(self):
         core.skip_ok_unless_installed('gums-service')
 
+        core.state['gums.added_user'] = False
+
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, _ = core.certificate_info(cert_path)
@@ -20,7 +22,7 @@ class TestGUMS(osgunittest.OSGTestCase):
 
     def test_02_map_user(self):
         core.skip_ok_unless_installed('gums-service')
-        self.skip_bad_if(core.state['gums.added_user'] == False, 'User not added to manualUserGroup')
+        self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manualUserGroup')
         
         host_dn, _ = core.certificate_info(core.config['certs.hostcert'])
         pwd_entry = pwd.getpwnam(core.options.username)

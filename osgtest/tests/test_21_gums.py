@@ -86,9 +86,16 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     def test_04_gums_cert_symlinks(self):
         core.skip_ok_unless_installed('gums-service')
 
-        # gums-service expects a cert in /root/.globus/ for the admin added in test_05
         root_pwd = pwd.getpwnam('root')
-        core.config['gums.certdir'] = os.path.join(root_pwd.pw_dir, '.globus')
+        root_cert_dir = os.path.join(root_pwd.pw_dir, '.globus')
+
+        # If X509_USER_{CERT,KEY} are defined, use them. Otherwise use $HOME/.globus/user{cert,key}.pem
+        cert_link_path = os.getenv('X509_USER_CERT', root_cert_dir + '/usercert.pem')
+        key_link_path = os.getenv('X509_USER_CERT', root_cert_dir + '/userkey.pem')
+        core.log_message(cert_link_path)
+        core.log_message(key_link_path)
+    
+        core.config['gums.certdir'] = os.path.dirname(cert_link_path)
         core.config['gums.backup-certdir'] = core.config['gums.certdir'] + '.gums'
         self.assert_(os.path.exists(core.config['gums.backup-certdir']) == False, 'Backup dir already exists')
         try:
@@ -99,11 +106,8 @@ class TestStartGUMS(osgunittest.OSGTestCase):
                 pass
             else:
                 raise
-
-        # Create links to hostcert since we added it as an admin in test_05 
         os.mkdir(core.config['gums.certdir'])
-        cert_link_path = os.path.join(core.config['gums.certdir'], 'usercert.pem')
-        key_link_path = os.path.join(core.config['gums.certdir'], 'userkey.pem')
+            
         os.symlink(core.config['certs.hostcert'], cert_link_path)
         os.symlink(core.config['certs.hostkey'], key_link_path)
 
