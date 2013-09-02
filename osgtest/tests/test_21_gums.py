@@ -91,7 +91,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
 
         # If X509_USER_{CERT,KEY} are defined, use them. Otherwise use $HOME/.globus/user{cert,key}.pem
         cert_link_path = os.getenv('X509_USER_CERT', root_cert_dir + '/usercert.pem')
-        key_link_path = os.getenv('X509_USER_CERT', root_cert_dir + '/userkey.pem')
+        key_link_path = os.getenv('X509_USER_KEY', root_cert_dir + '/userkey.pem')
         core.log_message(cert_link_path)
         core.log_message(key_link_path)
     
