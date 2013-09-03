@@ -86,8 +86,8 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     def test_04_gums_cert_symlinks(self):
         core.skip_ok_unless_installed('gums-service')
 
-        root_pwd = pwd.getpwnam('root')
-        root_cert_dir = os.path.join(root_pwd.pw_dir, '.globus')
+        root_home = os.getenv('HOME')
+        root_cert_dir = os.path.join(root_home, '.globus')
 
         # If X509_USER_{CERT,KEY} are defined, use them. Otherwise use $HOME/.globus/user{cert,key}.pem
         cert_link_path = os.getenv('X509_USER_CERT', root_cert_dir + '/usercert.pem')
