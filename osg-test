@@ -134,24 +134,28 @@ def read_args():
 
 def discover_tests():
     test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
+    tarball_test_dir = os.path.join(get_python_lib(), 'osgtest', 'tarball_tests')
     if not core.options.tarballs:
         test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
                       if d.startswith('test_') and d.endswith('.py')]
-        test_files.sort()
-        args = []
-        args.append('osgtest.tests.special_user') # always safe
+    else:
+        test_files = ['osgtest.tarball_tests.' + d[:-3] for d in os.listdir(tarball_test_dir)
+                      if d.startswith('test_') and d.endswith('.py')]
+    test_files.sort()
+    args = []
+    args.append('osgtest.tests.special_user') # always safe
+    if not core.options.tarballs:
         if len(core.options.packages) > 0:
             args.append('osgtest.tests.special_install')
-        if not core.options.skiptests:
-            args += test_files
-        if not core.options.skip_cleanup:
-            args.append('osgtest.tests.special_cleanup') # always safe
-        return args
     else:
-        args = ['osgtest.tests.special_user', 'osgtest.tests.special_tarballs']
-        if not core.options.skip_cleanup:
-            args.append('osgtest.tests.special_cleanup') # always safe
-        return args
+        args.append('osgtest.tarball_tests.special_install')
+    if not core.options.skiptests:
+        args += test_files
+    if not core.options.skip_cleanup:
+        if core.options.tarballs:
+            args.append('osgtest.tarball_tests.special_cleanup')
+        args.append('osgtest.tests.special_cleanup') # always safe
+    return args
 
 def run_tests(a_argv):
     if core.options.verbose:
