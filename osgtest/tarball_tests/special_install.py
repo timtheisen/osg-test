@@ -1,4 +1,18 @@
-"""Setup for the tarball client tests."""
+"""Setup for the tarball client tests.
+
+Create a temporary directory to work in, and extract the tarball client into
+it. The tarball is taken from the current directory, with the name specified
+by the config file.
+
+This uses the following config file entries:
+
+tarball_metapackage (required) -- either osg-wn-client or osg-client
+tarball_version -- e.g. 3.1.22.
+tarball_release -- e.g. 1.
+
+A glob is used to match the filename -- if tarball_version or tarball_release
+are not specified, * is used instead.
+"""
 
 import glob
 import os

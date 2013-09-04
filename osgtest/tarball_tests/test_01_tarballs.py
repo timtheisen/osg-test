@@ -1,6 +1,6 @@
-"""Test cases for the tarball client. These should run in a separate code path
+"""Test cases for the tarball client. These run in a separate code path
 than the regular osg-test tests, since having OSG packages installed into
-system locations might interfere with the tarballs.
+system locations interferes with the tarballs.
 
 """
 import glob
@@ -19,17 +19,8 @@ setup_csh_test_helper = os.path.join(helper_files_dir, 'setup_csh_test.csh')
 class TestTarball(osgunittest.OSGTestCase):
     # unittest creates a new instance of each test case for each test_* method
     # it runs, so I can't use instance variables to store state.
-    work_dir = None
-    install_dir = None
     install_ok = False
-
-    def get_tarball_filename(self):
-        dver = 'el' + str(core.el_release())
-        arch = platform.machine()
-        return "%s-%s-%s.%s.%s.tar.gz" % (tarball_metapackage, tarball_version, tarball_release, dver, arch)
-
-    def get_tarball_url(self):
-        return tarball_url_base + self.get_tarball_filename()
+    proxy_ok = False
 
     def assertExists(self, path, message=None):
         if message is None:
@@ -38,6 +29,9 @@ class TestTarball(osgunittest.OSGTestCase):
 
     def skip_bad_if_broken_install(self):
         self.skip_bad_if(not TestTarball.install_ok, 'install unsuccessful')
+
+    def skip_bad_if_no_proxy(self):
+        self.skip_bad_if(not TestTarball.proxy_ok, 'no grid proxy')
 
     def skip_ok_if_not_full_client(self):
         self.skip_ok_if(getattr(core.options, 'tarball_metapackage', '') == 'osg-wn-client', 'not full client')
@@ -79,14 +73,12 @@ class TestTarball(osgunittest.OSGTestCase):
         self.skip_bad_if_broken_install()
 
         files.write('setup-local.sh', 'export LOCAL_VAR=1\n', backup=False)
-
         core.check_system([setup_sh_test_helper, core.config['tb_install_dir']], 'setup.sh test script failed', user=True)
 
     def test_03_setup_csh(self):
         self.skip_bad_if_broken_install()
 
         files.write('setup-local.csh', 'setenv LOCAL_VAR 1\n', backup=False)
-
         core.check_system([setup_csh_test_helper, core.config['tb_install_dir']], 'setup.csh test script failed', user=True)
 
     def test_04_grid_proxy_init(self):
@@ -95,33 +87,44 @@ class TestTarball(osgunittest.OSGTestCase):
         password = core.options.password + '\n'
         self.check_osgrun(['grid-proxy-init'], 'grid-proxy-init failed', stdin=password)
 
+        TestTarball.proxy_ok = True
+
     def test_05_osg_ca_manage_setupca(self):
         self.skip_bad_if_broken_install()
 
-        self.check_osgrun(['which', 'osg-ca-manage'], 'osg-ca-manage not in path')
         self.check_osgrun(['osg-ca-manage', 'setupCA', '--url', 'osg'], 'osg-ca-manage setupCA --url osg failed')
-
         dot0files = glob.glob(os.path.join(core.config['tb_install_dir'], 'etc/grid-security/certificates/*.0'))
-
         self.assertTrue(dot0files, 'certificate dir does not contain *.0 files')
 
     def test_06_voms_proxy_init(self):
-        # TODO Implement this
         self.skip_ok_if_not_full_client()
-        self.skip_ok_unless(hasattr(core.options, 'tarball-vo'), "tarball-vo not specified")
+        self.skip_ok_unless(hasattr(core.options, 'tarball_vo'), "tarball_vo not specified")
+        self.skip_bad_if_broken_install()
+
+        self.check_osgrun(['voms-proxy-init', '-voms', core.options.tarball_vo], 'voms-proxy-init failed')
+        self.check_osgrun(['voms-proxy-info'], 'voms-proxy-info failed')
 
     # Globus tests are going to need the URL of a gatekeeper set up somewhere.
     def test_07_globusrun_a(self):
-        # TODO implement this
         self.skip_ok_if_not_full_client()
-        self.skip_ok_unless(hasattr(core.options, 'tarball-contact-string'), "tarball-contact-string not specified")
+        self.skip_ok_unless(hasattr(core.options, 'tarball_contact_string'), "tarball_contact_string not specified")
+        self.skip_bad_if_broken_install()
+        self.skip_bad_if_no_proxy()
+
+        self.check_osgrun(['globusrun', '-a', '-r', core.options.tarball_contact_string], "globusrun -a failed")
 
     def test_08_globus_job_run(self):
-        # TODO implement this
         self.skip_ok_if_not_full_client()
-        self.skip_ok_unless(hasattr(core.options, 'tarball-contact-string'), "tarball-contact-string not specified")
+        self.skip_ok_unless(hasattr(core.options, 'tarball_contact_string'), "tarball_contact_string not specified")
+        self.skip_bad_if_broken_install()
+        self.skip_bad_if_no_proxy()
 
+        self.check_osgrun(['globus-job-run', core.options.tarball_contact_string, '/usr/bin/id'], "globus-job-run failed")
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_09_srm_ping(self):
+        self.skip_ok_unless(hasattr(core.options, 'tarball_srm_url'), "tarball_srm_url not specified")
+        self.skip_bad_if_broken_install()
+        self.skip_bad_if_no_proxy()
+
+        self.check_osgrun(['srm-ping', core.options.tarball_srm_url], "srm-ping failed")
 
