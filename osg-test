@@ -28,6 +28,7 @@ def parse_command_line():
                 "extrarepos" : [],
                 "printtest" : True,
                 "skiptests" : False,
+                "tarballs" : False,
                 "username" : 'vdttest',
                 "verbose" : False
                 }
@@ -113,6 +114,9 @@ def read_args():
     p.add_option('--no-print-test-name', action='store_false', dest='printtest',
                        help='Do not print test name before command output')
 
+    p.add_option('--tarballs', action='store_true', dest='tarballs',
+                       help='Test client tarballs instead of RPM-based installation')
+
     p.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
                       action='store_true', dest='skiptests',
                       help='Do not run the functional tests; ' +
@@ -130,18 +134,24 @@ def read_args():
 
 def discover_tests():
     test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
-    test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
-                  if d.startswith('test_') and d.endswith('.py')]
-    test_files.sort()
-    args = []
-    args.append('osgtest.tests.special_user') # always safe
-    if len(core.options.packages) > 0:
-        args.append('osgtest.tests.special_install')
-    if not core.options.skiptests:
-        args += test_files
-    if not core.options.skip_cleanup:
-        args.append('osgtest.tests.special_cleanup') # always safe
-    return args
+    if not core.options.tarballs:
+        test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
+                      if d.startswith('test_') and d.endswith('.py')]
+        test_files.sort()
+        args = []
+        args.append('osgtest.tests.special_user') # always safe
+        if len(core.options.packages) > 0:
+            args.append('osgtest.tests.special_install')
+        if not core.options.skiptests:
+            args += test_files
+        if not core.options.skip_cleanup:
+            args.append('osgtest.tests.special_cleanup') # always safe
+        return args
+    else:
+        args = ['osgtest.tests.special_user', 'osgtest.tests.special_tarballs']
+        if not core.options.skip_cleanup:
+            args.append('osgtest.tests.special_cleanup') # always safe
+        return args
 
 def run_tests(a_argv):
     if core.options.verbose:
