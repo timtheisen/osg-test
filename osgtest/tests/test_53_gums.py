@@ -17,9 +17,6 @@ class TestGUMS(osgunittest.OSGTestCase):
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         user_dn, _ = core.certificate_info(cert_path)
         
-        command = ('env')
-        core.system(command, shell=True)
-        
         command = ('gums-service', 'manualGroupAdd', 'gums-test', user_dn)
         stdout = core.check_system(command, 'Add VDT DN to manual group')[0]
         core.state['gums.added_user'] = True
