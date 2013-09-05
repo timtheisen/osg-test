@@ -117,6 +117,9 @@ def read_args():
     p.add_option('--tarballs', action='store_true', dest='tarballs',
                        help='Test client tarballs instead of RPM-based installation')
 
+    p.add_option('--tarball-test-dir', default=None,
+                       help='The location of the tarball test files (if non-standard)')
+
     p.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
                       action='store_true', dest='skiptests',
                       help='Do not run the functional tests; ' +
@@ -134,7 +137,10 @@ def read_args():
 
 def discover_tests():
     test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
-    tarball_test_dir = os.path.join(get_python_lib(), 'osgtest', 'tarball_tests')
+    if core.options.tarball_test_dir:
+        tarball_test_dir = core.options.tarball_test_dir
+    else:
+        tarball_test_dir = os.path.join(get_python_lib(), 'osgtest', 'tarball_tests')
     if not core.options.tarballs:
         test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
                       if d.startswith('test_') and d.endswith('.py')]
@@ -173,7 +179,7 @@ def run_tests(a_argv):
 
 if __name__ == '__main__':
     parse_command_line()
-    if os.getuid() != 0:
+    if os.getuid() != 0 and not core.options.tarballs:
         print 'Must be run as root'
         sys.exit(1)
     core.start_log()
