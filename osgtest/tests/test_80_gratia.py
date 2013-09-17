@@ -217,3 +217,10 @@ class TestStopGratia(osgunittest.OSGTestCase):
             else:
                 # reraise the exception, as it's an unexpected error
                 raise
+            
+    #This test restores the mentioned gratia directory, if it was backed up 
+    def test_12_restore_varlibgratia(self):
+        if 'gratia.varlibgratia-backedup' in core.state:
+            files.remove('/var/lib/gratia', True)
+            command = ("mv /var/lib/gratia_production /var/lib/gratia",)
+            core.check_system(command, 'Unable to restore /var/lib/gratia !', shell=True)

@@ -106,9 +106,16 @@ class TestStartGratia(osgunittest.OSGTestCase):
                     return 1
                 else: #t1_2 == t2_2
                     return 0
+                
+    #This test preserves the mentioned gratia directory, if it exists 
+    def test_01_backup_varlibgratia(self):
+        if os.path.exists('/var/lib/gratia'):
+            command = ("cp -pr /var/lib/gratia /var/lib/gratia_production",)
+            core.check_system(command, 'Unable to backup /var/lib/gratia !', shell=True)
+            core.state['gratia.varlibgratia-backedup'] = True
         
     #This test sets gratia-directory + certificates related parameters
-    def test_01_config_parameters(self):
+    def test_02_config_parameters(self):
         core.skip_ok_unless_installed('gratia-service')
         core.config['gratia.host']= core.get_hostname()
         core.config['gratia.config.dir'] = '/etc/gratia'
@@ -138,7 +145,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
       
       
     #This test modifies "/etc/gratia/collector/service-authorization.properties" file
-    def test_02_service_authorization(self):
+    def test_03_service_authorization(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_auth = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-authorization.properties"
         self.patternreplace(gratia_auth, "service.mysql.rootpassword", "service.mysql.rootpassword=")
@@ -147,7 +154,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         
         
     #This test modifies "/etc/gratia/collector/service-configuration.properties" file
-    def test_03_service_configuration(self):
+    def test_04_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_conf = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-configuration.properties"
         mysqlurl="service.mysql.url=jdbc:mysql://" +  core.config['gratia.host'] + ":3306/gratia"
@@ -160,7 +167,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.patternreplace(gratia_conf, "service.service.level=", "service.service.level=FINE")
     
     #This test executes the install-database command
-    def test_04_install_database(self):
+    def test_05_install_database(self):
         core.state['gratia.database-installed'] = False
         core.skip_ok_unless_installed('gratia-service')    
         command = ('/usr/share/gratia/install-database',)
@@ -168,7 +175,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.state['gratia.database-installed'] = True
 
     #This test sets installs http certificates
-    def test_05_install_http_certs(self):
+    def test_06_install_http_certs(self):
         core.skip_ok_unless_installed('gratia-service')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
@@ -179,19 +186,19 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
         
     #This test stops the Tomcat service
-    def test_06_stop_tomcat(self):
+    def test_07_stop_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')    
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.stop('tomcat')
 
     #This test configures Tomcat
-    def test_07_configure_tomcat(self):
+    def test_08_configure_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')
         command = ('/usr/share/gratia/configure_tomcat',)
         core.check_system(command, 'Unable to configure Tomcat !')
 
     #This test starts the Tomcat service
-    def test_08_start_tomcat(self):
+    def test_09_start_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
