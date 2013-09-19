@@ -120,11 +120,6 @@ def monitor_file(filename, old_stat, sentinel, timeout):
     complete line on which the sentinel occurred and 'delay' is the number of
     seconds that passed before the sentinel was found.  Otherwise, the tuple
     (None, None) is returned.
-
-    NOTE: This function handles logrotation when files are moved to a separate
-    location and a new file is started in its place. However, it does NOT handle
-    the copy and truncate method of logrotation (i.e. the file is copied to a
-    different location and the original file is truncated to 0).
     """
     sentinel_regex = re.compile(r'%s' % sentinel)
     start_time = time.time()
@@ -145,26 +140,15 @@ def monitor_file(filename, old_stat, sentinel, timeout):
             monitored_file = open(filename, 'r')
             monitored_file.seek(initial_position)
 
-        old_stat = new_stat
-        new_stat = os.stat(filename)
         where = monitored_file.tell()
-
-        if new_stat.st_ino == old_stat.st_ino:
-            if monitored_file.readline():
-                if sentinel_regex.search(line):
-                    monitored_file.close()
-                    return (line, time.time() - start_time)
-                else:
-                    time.sleep(0.5)
-                    monitored_file.seek(where)
+        line = monitored_file.readline()
+        if line:
+            if sentinel_regex.search(line):
+                monitored_file.close()
+                return (line, time.time() - start_time)
         else:
-            # If the file got moved from under us, finish reading the old file before starting on the new one
-            while monitored_file.readline():
-                if sentinel_regex.search(line):
-                    monitored_file.close()
-                    return (line, time.time() - start_time)
-            old_stat = None
-            monitored_file = None
+            time.sleep(0.2)
+            monitored_file.seek(where)
     if monitored_file is not None:
         monitored_file.close()
     return (None, None)
