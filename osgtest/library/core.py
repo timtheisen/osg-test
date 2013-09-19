@@ -148,10 +148,9 @@ def monitor_file(filename, old_stat, sentinel, timeout):
         old_stat = new_stat
         new_stat = os.stat(filename)
         where = monitored_file.tell()
-        line = monitored_file.readline()
 
         if new_stat.st_ino == old_stat.st_ino:
-            if line:
+            if monitored_file.readline():
                 if sentinel_regex.search(line):
                     monitored_file.close()
                     return (line, time.time() - start_time)
