@@ -39,9 +39,11 @@ class TestInstall(osgunittest.OSGTestCase):
         core.state['install.success'] = True
 
     def test_04_update_packages(self):
-        self.skip_ok_unless(core.options.updaterepo, 'Update option not specified')
+        if not (core.options.updaterepo and core.state['install.installed']):
+            return
+        
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
-        self.skip_ok_unless(core.state['install.installed'], 'No packages were installed')
+
         update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
         core.state['install.updated'] = []
         command = ['yum', 'update', '-y']
@@ -65,6 +67,7 @@ class TestInstall(osgunittest.OSGTestCase):
         java7 = 'java-1.7.0-openjdk'
         java7_devel = 'java-1.7.0-openjdk-devel'
 
+        # We don't use skip_ok_unless_installed because we want to limit the number of ok skips
         jdk_installed = False
         command = ('rpm', '--query', 'jdk')
         _, stdout, _ = core.system(command)
