@@ -100,11 +100,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/GridftpAccountingProbeState")
             files.remove("/var/log/gridftp.log")
             files.remove("/var/log/gridftp-auth.log")
-            if 'gratia.gridftp-temp-dir' in core.config:
-                files.remove(core.config['gratia.gridftp-temp-dir'], True)
             probeconfigpath = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
         except OSError, e:
@@ -120,12 +117,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/GlexecAccountingProbeState")
             files.remove("/var/log/glexec.log")
             files.remove("/var/lib/gratia/data/glexec_plugin.chk")
-
-            if 'gratia.glexec-temp-dir' in core.config:
-                files.remove(core.config['gratia.glexec-temp-dir'], True)
             probeconfigpath = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
         except OSError, e:
@@ -141,9 +134,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/dCache-storage_meter.cron.pid")
-            if 'gratia.dcache-temp-dir' in core.config:
-                files.remove(core.config['gratia.dcache-temp-dir'], True)
             probeconfigpath = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
         except OSError, e:
@@ -158,10 +148,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_07_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/data/gratia_certinfo_condor*")
-            files.remove("/var/lib/gratia/data/history.1211*")
-            if 'gratia.condor-temp-dir' in core.config:
-                files.remove(core.config['gratia.condor-temp-dir'], True)
             probeconfigpath = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
         except OSError, e:
@@ -182,11 +168,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_09_cleanup_psacct(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/account/pacct")
-            files.remove("/var/lib/gratia/account/pacct.creation")
-            files.remove("/var/lib/gratia/backup/*")
-            if 'gratia.psacct-temp-dir' in core.config:
-                files.remove(core.config['gratia.psacct-temp-dir'], True)
             probeconfigpath = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
         except OSError, e:
@@ -201,10 +182,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_10_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
         try:
-            if 'gratia.bdii-temp-dir' in core.config:
-                #resorting to shell remove command due to wildcharacter in the name       
-                command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
-                core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
             probeconfigpath = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
         except OSError, e:
@@ -219,11 +196,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_11_cleanup_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/urCollectorBuffer.pbs")
-            if 'gratia.pbs-temp-dir' in core.config:
-                files.remove(core.config['gratia.pbs-temp-dir'], True)
-            files.remove("/var/lib/gratia/tmp/urCollector", True)
-            files.remove("/var/lib/gratia/pbs-lsf", True)
             files.remove("/var/spool/pbs/server_priv/accounting", True)
             probeconfigpath = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
             self.restoreProbeConfig(probeconfigpath)
@@ -237,6 +209,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             
     #This test restores the mentioned gratia directory, if it was backed up 
     def test_12_restore_varlibgratia(self):
+        core.skip_ok_unless_installed('gratia-service')
         if 'gratia.varlibgratia-backedup' in core.state:
             files.remove('/var/lib/gratia', True)
             command = ("mv /var/lib/gratia_production /var/lib/gratia",)

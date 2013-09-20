@@ -109,6 +109,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
                 
     #This test preserves the mentioned gratia directory, if it exists 
     def test_01_backup_varlibgratia(self):
+        core.skip_ok_unless_installed('gratia-service')
         if os.path.exists('/var/lib/gratia'):
             command = ("cp -pr /var/lib/gratia /var/lib/gratia_production",)
             core.check_system(command, 'Unable to backup /var/lib/gratia !', shell=True)
