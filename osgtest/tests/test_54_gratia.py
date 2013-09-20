@@ -84,7 +84,12 @@ class TestGratia(osgunittest.OSGTestCase):
     
     def modify_probeconfig(self, probeconfig):
         """This helper method modifies the Probe Configuration, generally needed by many probes"""
-
+        
+        #Backup the existing ProbeConfig, before any modification, so that it can be restored later
+        probeconfigbak = probeconfig + ".bak"
+        command = ("cp -p " + probeconfig + " " + probeconfigbak,)
+        core.check_system(command, 'Unable to backup ' + probeconfig, shell=True)
+        
         host = core.get_hostname()
         collectorhost = "    CollectorHost=\"" + host + ":8880\""
         sslhost = "    SSLHost=\"" + host + ":8443\""
