@@ -255,8 +255,8 @@ class TestRSV(osgunittest.OSGTestCase):
         self.run_metric('org.osg.local.hostcert-expiry')
         return
 
+    # Print Java version info, mostly useful for debugging test runs.
     def test_032_java_version_metric(self):
-        """Print Java version info, mostly useful for debugging test runs."""
         core.skip_ok_unless_installed('rsv')
         self.run_metric('org.osg.general.java-version')
         return
