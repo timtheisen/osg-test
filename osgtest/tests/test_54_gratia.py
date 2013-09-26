@@ -86,9 +86,10 @@ class TestGratia(osgunittest.OSGTestCase):
         """This helper method modifies the Probe Configuration, generally needed by many probes"""
         
         #Backup the existing ProbeConfig, before any modification, so that it can be restored later
-        probeconfigbak = probeconfig + ".bak"
-        command = ("cp -p " + probeconfig + " " + probeconfigbak,)
-        core.check_system(command, 'Unable to backup ' + probeconfig, shell=True)
+        #Note that "owner" has to be a unique string since "ProbeConfig" filename is the same for all probes
+        #If ProbeConfig path is: /etc/gratia/gridftp-transfer/ProbeConfig, "owner" = "gridftp-transfer"
+        owner = os.path.basename(os.path.dirname(probeconfig))
+        files.preserve(probeconfig, owner)
         
         host = core.get_hostname()
         collectorhost = "    CollectorHost=\"" + host + ":8880\""

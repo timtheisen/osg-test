@@ -27,15 +27,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
             if len(os.listdir(target_dir)) == 0:
                 os.rmdir(target_dir)
     
-    def restoreProbeConfig(self, probeconfigpath):
-        """This helper method restores any previously backed up ProbeConfig"""
-        
-        probeconfigbackuppath = probeconfigpath + ".bak"
-        if os.path.exists(probeconfigbackuppath):
-            command = ("mv " + probeconfigbackuppath + " " + probeconfigpath,)
-            core.check_system(command, 'Unable to restore ' + probeconfigpath, shell=True)
-        else:
-            core.log_message(probeconfigbackuppath + " did not exist and so, nothing to restore.")
 
     #This test removes the http certificates, if not already removed earlier
     def test_01_remove_certs(self):
@@ -102,8 +93,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
         try:
             files.remove("/var/log/gridftp.log")
             files.remove("/var/log/gridftp-auth.log")
-            probeconfigpath = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -119,8 +111,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
         try:
             files.remove("/var/log/glexec.log")
             files.remove("/var/lib/gratia/data/glexec_plugin.chk")
-            probeconfigpath = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -134,8 +127,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         try:
-            probeconfigpath = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -148,8 +142,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_07_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
         try:
-            probeconfigpath = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -168,8 +163,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_09_cleanup_psacct(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         try:
-            probeconfigpath = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -182,8 +178,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_10_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
         try:
-            probeconfigpath = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -197,8 +194,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         try:
             files.remove("/var/spool/pbs/server_priv/accounting", True)
-            probeconfigpath = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
-            self.restoreProbeConfig(probeconfigpath)
+            probeconfig = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
