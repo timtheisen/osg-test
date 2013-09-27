@@ -176,7 +176,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
     def test_06_service_configuration(self):
         core.skip_ok_unless_installed('gratia-service')
         gratia_conf = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory'] + "/service-configuration.properties"
-        mysqlurl="service.mysql.url=jdbc:mysql://" +  core.config['gratia.host'] + ":3306/gratia"
+        mysqlurl="service.mysql.url=jdbc:mysql://" +  core.config['gratia.host'] + ":3306/gratia_osgtest"
         self.patternreplace(gratia_conf, "service.mysql.url", mysqlurl)
         openconn="service.open.connection=http://" + core.config['gratia.host'] + ":8880"
         self.patternreplace(gratia_conf, "service.open.connection", openconn)

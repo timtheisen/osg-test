@@ -215,7 +215,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #This test counts the number of lines in the gratia database tables output
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')     
-        command = "echo \"use gratia;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
+        command = "echo \"use gratia_osgtest;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database !', '81'), 'Unable to install Gratia Database !')       
         
     #This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
@@ -259,10 +259,10 @@ class TestGratia(osgunittest.OSGTestCase):
                        
         self.assertEqual(True, self.isProbeInfoProcessed('gridftp-transfer'), 'Sentinel signifying Probe Information was processed NOT found !')
         
-        command = "echo \"use gratia; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
         
-        command = "echo \"use gratia; select sum(TransferSize) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],        
+        command = "echo \"use gratia_osgtest; select sum(TransferSize) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],        
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
 
     #This test customizes /etc/gratia/glexec/ProbeConfig file
@@ -305,10 +305,10 @@ class TestGratia(osgunittest.OSGTestCase):
         
         self.assertEqual(True, self.isProbeInfoProcessed('glexec'), 'Sentinel signifying Probe Information was processed NOT found !')
 
-        command = "echo \"use gratia; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table !', '4'), 'Failed Probe Data Validation in Database !')       
         
-        command = "echo \"use gratia; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table !', '302'), 'Failed Probe Data Validation in Database !')       
 
     #This test customizes /etc/gratia/dCache-storage/ProbeConfig file
@@ -350,15 +350,15 @@ class TestGratia(osgunittest.OSGTestCase):
                
         self.assertEqual(True, self.isProbeInfoProcessed('dCache-storage'), 'Sentinel signifying Probe Information was processed NOT found !')
         
-        command = "echo \"use gratia; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, TotalSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
 
-        command = "echo \"use gratia; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, FreeSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
         
-        command = "echo \"use gratia; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, UsedSpace, _ = core.system(command, shell=True)
         self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
         
@@ -403,10 +403,10 @@ class TestGratia(osgunittest.OSGTestCase):
         
         self.assertEqual(True, self.isProbeInfoProcessed('condor'), 'Sentinel signifying Probe Information was processed NOT found !')
    
-        command = "echo \"use gratia; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database Njobs from MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
         
-        command = "echo \"use gratia; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query WallDuration from MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')  
         
     #This test customizes /etc/gratia/psacct/ProbeConfig file
@@ -447,7 +447,7 @@ class TestGratia(osgunittest.OSGTestCase):
         
         self.assertEqual(True, self.isProbeInfoProcessed('psacct'), 'Sentinel signifying Probe Information was processed NOT found !')
         
-        command = "echo \"use gratia; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';" + core.config['gratia.sql.querystring'] +  "| wc -l",
+        command = "echo \"use gratia_osgtest; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';" + core.config['gratia.sql.querystring'] +  "| wc -l",
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
 
     #This test customizes /etc/gratia/bdii-status/ProbeConfig file
@@ -485,7 +485,7 @@ class TestGratia(osgunittest.OSGTestCase):
         
         self.assertEqual(True, self.isProbeInfoProcessed('bdii'), 'Sentinel signifying Probe Information was processed NOT found !')
         
-        command = "echo \"use gratia; select count(*) from ComputeElement;" + core.config['gratia.sql.querystring'],
+        command = "echo \"use gratia_osgtest; select count(*) from ComputeElement;" + core.config['gratia.sql.querystring'],
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query count from ComputeElement table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
         
     #This test customizes /etc/gratia/condor/ProbeConfig file
@@ -529,7 +529,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(True, self.isProbeInfoProcessed('pbs-lsf'), 'Sentinel signifying Probe Information was processed NOT found !')
         
         probename="'pbs-lsf:" + core.config['gratia.host']
-        query="use gratia; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
+        query="use gratia_osgtest; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
         command = "echo " + "\""+ query + core.config['gratia.sql.querystring'],
         
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table !', '30'), 'Failed Probe Data Validation in Database !') 

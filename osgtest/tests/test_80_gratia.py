@@ -73,7 +73,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
+        command = "echo \"drop database gratia_osgtest;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
         core.check_system(command, 'Unable to drop Gratia Database !', shell=True)
         files.remove(filename)
         #At this time, remove the gratia reader password file also
