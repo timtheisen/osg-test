@@ -78,16 +78,9 @@ class TestStopGratia(osgunittest.OSGTestCase):
         files.remove(filename)
         #At this time, remove the gratia reader password file also
         files.remove(core.config['gratia.sql.file'])
-        
-    #This test cleans up the appropriate gratia directory
-    def test_03_cleanup_etcgratia_directory(self):
-
-        core.skip_ok_unless_installed('gratia-service')
-        directory = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory']
-        files.remove(directory, True)
-        
+                
     #This test cleans up gridftp related files
-    def test_04_cleanup_gridftp(self):
+    def test_03_cleanup_gridftp(self):
 
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         try:
@@ -105,7 +98,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
 
     #This test cleans up glexec related files
-    def test_05_cleanup_glexec(self):
+    def test_04_cleanup_glexec(self):
 
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         try:
@@ -123,7 +116,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
         
     #This test cleans up dcache related files
-    def test_06_cleanup_dcache(self):
+    def test_05_cleanup_dcache(self):
 
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         try:
@@ -139,7 +132,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
 
     #This test cleans up condor related files
-    def test_07_cleanup_condor(self):
+    def test_06_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
         try:
             probeconfig = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
@@ -154,13 +147,13 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
         
     #This test stops psacct service
-    def test_08_stop_psacct_service(self):
+    def test_07_stop_psacct_service(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         command = ('/etc/init.d/psacct', 'stop')
         core.check_system(command, 'Unable to stop psacct!')
 
     #This test cleans up psacct related files
-    def test_09_cleanup_psacct(self):
+    def test_08_cleanup_psacct(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         try:
             probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
@@ -175,7 +168,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
 
     #This test cleans up bdii related files
-    def test_10_cleanup_bdii(self):
+    def test_09_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
         try:
             probeconfig = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
@@ -190,7 +183,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
         
     #This test cleans up pbs related files
-    def test_11_cleanup_pbs(self):
+    def test_10_cleanup_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         try:
             files.remove("/var/spool/pbs/server_priv/accounting", True)
@@ -206,9 +199,27 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
             
     #This test restores the mentioned gratia directory, if it was backed up 
-    def test_12_restore_varlibgratia(self):
+    def test_11_restore_varlibgratia(self):
         core.skip_ok_unless_installed('gratia-service')
         if 'gratia.varlibgratia-backedup' in core.state:
             files.remove('/var/lib/gratia', True)
             command = ("mv /var/lib/gratia_production /var/lib/gratia",)
-            core.check_system(command, 'Unable to restore /var/lib/gratia !', shell=True)
+            core.check_system(command, 'Could not restore /var/lib/gratia', shell=True)
+            
+    #This test restores the mentioned gratia-service directory, if it was backed up 
+    def test_12_restore_varlibgratiaservice(self):
+        core.skip_ok_unless_installed('gratia-service')
+        if 'gratia.varlibgratia-service-backedup' in core.state:
+            files.remove('/var/lib/gratia-service', True)
+            command = ("mv /var/lib/gratia-service_production /var/lib/gratia-service",)
+            core.check_system(command, 'Could not restore /var/lib/gratia-service', shell=True)
+            
+    #This test restores the mentioned gratia-service directory, if it was backed up 
+    def test_13_restore_etcgratia_collector_or_services(self):
+        core.skip_ok_unless_installed('gratia-service')
+        if 'gratia.etcgratia_collector_or_services-backedup' in core.state:
+            gratia_directory_to_preserve = core.state['gratia.etcgratia_collector_or_services-backedup']
+            backup_path = gratia_directory_to_preserve + '_production'
+            files.remove(gratia_directory_to_preserve, True)
+            command = ("mv " + backup_path + " " + gratia_directory_to_preserve,)
+            core.check_system(command, 'Could not restore ' + gratia_directory_to_preserve, shell=True)
