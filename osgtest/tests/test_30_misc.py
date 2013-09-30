@@ -6,7 +6,7 @@ from osgtest.library import core, osgunittest
 class TestMisc(osgunittest.OSGTestCase):
 
     def test_01_web100clt(self):
-        core.skip_ok_unless_installed('ndt')
+        core.skip_ok_unless_installed('ndt-client')
 
         command = ('web100clt', '-v')
         stdout = core.check_system(command, 'NDT client')[0]
@@ -70,5 +70,3 @@ class TestMisc(osgunittest.OSGTestCase):
             stdout, _, _ = core.check_system(cmdbase + ['lfc-python26.x86_64'], 'lfc-python26 multilib (64bit)')
             if stdout.strip() == '':
                 self.fail('64-bit lfc-python not found in 64-bit repo')
-
-

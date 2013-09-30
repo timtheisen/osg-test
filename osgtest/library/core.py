@@ -106,7 +106,7 @@ def remove_log():
     os.remove(_log_filename)
 
 def monitor_file(filename, old_stat, sentinel, timeout):
-    """Monitors a file for the sentinel text.
+    """Monitors a file for the sentinel regex
 
     This function tries to monitor a growing file for a bit of text.  Because
     the file may already exist prior to the monitoring process, the second
@@ -120,8 +120,14 @@ def monitor_file(filename, old_stat, sentinel, timeout):
     complete line on which the sentinel occurred and 'delay' is the number of
     seconds that passed before the sentinel was found.  Otherwise, the tuple
     (None, None) is returned.
+
+    NOTE: This function handles logrotation when files are moved to a separate
+    location and a new file is started in its place. However, it does NOT handle
+    the copy and truncate method of logrotation (i.e. the file is copied to a
+    different location and the original file is truncated to 0).
     """
-    sentinel_regex = re.compile(r'%s' % sentinel)
+    read_delay = 0.5 # Time to wait after reaching EOF and not finding the sentinel before trying again
+    sentinel_regex = re.compile(sentinel)
     start_time = time.time()
     end_time = start_time + timeout
     monitored_file = None
@@ -147,7 +153,13 @@ def monitor_file(filename, old_stat, sentinel, timeout):
                 monitored_file.close()
                 return (line, time.time() - start_time)
         else:
-            time.sleep(0.2)
+            # If the file got moved from under us, close the old file. Previous iterations of the loop ensure that the
+            # remaining contents of the old file got read. On the next iteration, the new file gets opened.
+            if os.stat(filename).st_ino != new_stat.st_ino:
+                monitored_file.close()
+                old_stat = None
+                monitored_file = None
+            time.sleep(read_delay)
             monitored_file.seek(where)
     if monitored_file is not None:
         monitored_file.close()

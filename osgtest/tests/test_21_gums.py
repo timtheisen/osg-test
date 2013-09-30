@@ -83,33 +83,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     def test_03_gums_configuration(self):
         core.config['gums.password'] = 'osgGUMS!'
 
-    def test_04_gums_cert_symlinks(self):
-        core.skip_ok_unless_installed('gums-service')
-
-        root_home = os.getenv('HOME')
-        root_cert_dir = os.path.join(root_home, '.globus')
-
-        # If X509_USER_{CERT,KEY} are defined, use them. Otherwise use $HOME/.globus/user{cert,key}.pem
-        cert_link_path = os.getenv('X509_USER_CERT', root_cert_dir + '/usercert.pem')
-        key_link_path = os.getenv('X509_USER_KEY', root_cert_dir + '/userkey.pem')
-    
-        core.config['gums.certdir'] = os.path.dirname(cert_link_path)
-        core.config['gums.backup-certdir'] = core.config['gums.certdir'] + '.gums'
-        self.assert_(os.path.exists(core.config['gums.backup-certdir']) == False, 'Backup dir already exists')
-        try:
-            shutil.move(core.config['gums.certdir'], core.config['gums.backup-certdir'])
-        except IOError, e:
-            if e.errno == 2:
-                # suppress no such file or directory error
-                pass
-            else:
-                raise
-        os.mkdir(core.config['gums.certdir'])
-            
-        os.symlink(core.config['certs.hostcert'], cert_link_path)
-        os.symlink(core.config['certs.hostkey'], key_link_path)
-
-    def test_05_setup_gums_database(self):
+    def test_04_setup_gums_database(self):
         core.skip_ok_unless_installed('gums-service')
         command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
                    '--password', core.config['gums.password'])
@@ -117,7 +91,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         self.assert_('ERROR' not in stdout,
                      'gums-setup-mysql-database failure message')
 
-    def test_06_add_mysql_admin(self):
+    def test_05_add_mysql_admin(self):
         core.skip_ok_unless_installed('gums-service')
         host_dn, host_issuer = core.certificate_info(core.config['certs.hostcert'])
         mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
