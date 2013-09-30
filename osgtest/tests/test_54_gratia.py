@@ -166,7 +166,7 @@ class TestGratia(osgunittest.OSGTestCase):
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
                 return True
         else:
-            core.log_message('Did not find the search pattern within the given time limit !')
+            core.log_message('Did not find the search pattern within the given time limit.')
             core.state['gratia.save-logs'] = True #Setting state so that the appropriate logs could be saved 
             return False
 
@@ -190,7 +190,7 @@ class TestGratia(osgunittest.OSGTestCase):
         else: #No assertionValue passed in
             if(atLeastOneRecord == True):
                 if(int(stdout) < 1):
-                    core.log_message("Query should return at least ONE record !")
+                    core.log_message("Query did not return one or more records.")
                     return False #Query should return at least one record
                 else:
                     return True #Query returned at least one record
@@ -210,13 +210,13 @@ class TestGratia(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('gratia-service')    
         command = "echo \"show databases;" + core.config['gratia.sql.querystring'] + "| wc -l",
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database !', '3'), 'Unable to install Gratia Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database.', '3'), 'Unable to install Gratia Database.')       
 
     #This test counts the number of lines in the gratia database tables output
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')     
         command = "echo \"use gratia_osgtest;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database !', '81'), 'Unable to install Gratia Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database.', '81'), 'Unable to install Gratia Database.')       
         
     #This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
     def test_04_modify_gridftptransfer_probeconfig(self):
@@ -230,7 +230,7 @@ class TestGratia(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         core.state['gratia.gridftp-logs-copied'] = False
-        self.assert_(self.copy_probe_logs(), "gridftp log copy failed !")
+        self.assert_(self.copy_probe_logs(), "gridftp log copy failed.")
         core.state['gratia.gridftp-logs-copied'] = True
 
 
@@ -244,11 +244,11 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
-        core.check_system(command, 'Unable to execute GridftpTransferProbeDriver!')
+        core.check_system(command, 'Unable to execute GridftpTransferProbeDriver.')
         core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.gridftp-temp-dir'])
-            self.assert_(result, 'gridftp-transfer outbox check failed !')
+            self.assert_(result, 'gridftp-transfer outbox check failed.')
         core.state['gratia.gridftp-transfer-running'] = True
         
     #This test checks the database after the successful execution of GridftpTransferProbeDriver
@@ -257,13 +257,13 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
                        
-        self.assertEqual(True, self.isProbeInfoProcessed('gridftp-transfer'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('gridftp-transfer'), 'Sentinel signifying that Probe Information was processed NOT found.')
         
         command = "echo \"use gratia_osgtest; select sum(Njobs) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')       
         
         command = "echo \"use gratia_osgtest; select sum(TransferSize) from MasterTransferSummary;" + core.config['gratia.sql.querystring'],        
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterTransferSummary table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')       
 
     #This test customizes /etc/gratia/glexec/ProbeConfig file
     def test_08_modify_glexec_probeconfig(self):
@@ -278,7 +278,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.glexec-logs-copied'] = False
         glexec_log =  '/usr/share/osg-test/gratia/glexec.log'
         dst_dir = '/var/log'
-        self.assert_(self.copy_probe_logs(glexec_log, dst_dir), "glexec log copy failed !")
+        self.assert_(self.copy_probe_logs(glexec_log, dst_dir), "glexec log copy failed.")
         core.state['gratia.glexec-logs-copied'] = True
 
     #This test executes glexec_meter
@@ -291,11 +291,11 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))   
         command = ('/usr/share/gratia/glexec/glexec_meter',)
-        core.check_system(command, 'Unable to execute glexec_meter!')      
+        core.check_system(command, 'Unable to execute glexec_meter.')      
         core.config['gratia.glexec-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.glexec" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.glexec-temp-dir'])
-            self.assert_(result, 'glexec_meter outbox check failed !')
+            self.assert_(result, 'glexec_meter outbox check failed.')
         core.state['gratia.glexec_meter-running'] = True
         
     #This test checks the database after the successful execution of glexec_meter
@@ -303,13 +303,13 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)        
         
-        self.assertEqual(True, self.isProbeInfoProcessed('glexec'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('glexec'), 'Sentinel signifying Probe Information was processed NOT found.')
 
         command = "echo \"use gratia_osgtest; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table !', '4'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table.', '4'), 'Failed Probe Data Validation in Database.')       
         
         command = "echo \"use gratia_osgtest; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table !', '302'), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table.', '302'), 'Failed Probe Data Validation in Database.')       
 
     #This test customizes /etc/gratia/dCache-storage/ProbeConfig file
     def test_12_modify_dcache_probeconfig(self):
@@ -322,7 +322,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_13_copy_dcache_logs(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         core.state['gratia.dcache-logs-copied'] = False
-        self.assert_(self.copy_probe_logs(), "dcache log copy failed !")
+        self.assert_(self.copy_probe_logs(), "dcache log copy failed.")
         core.state['gratia.dcache-logs-copied'] = True
 
     #This test executes dCache-storage
@@ -335,11 +335,11 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
-        core.check_system(command, 'Unable to execute dCache-storage!')
+        core.check_system(command, 'Unable to execute dCache-storage.')
         core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.dcache-temp-dir'])
-            self.assert_(result, 'dCache-storage outbox check failed !')
+            self.assert_(result, 'dCache-storage outbox check failed.')
         core.state['gratia.dcache-storage-running'] = True
     
     
@@ -348,19 +348,19 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
                
-        self.assertEqual(True, self.isProbeInfoProcessed('dCache-storage'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('dCache-storage'), 'Sentinel signifying that Probe Information was processed NOT found.')
         
         command = "echo \"use gratia_osgtest; select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, TotalSpace, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table !')
+        self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table.')
 
         command = "echo \"use gratia_osgtest; select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, FreeSpace, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table !')
+        self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table.')
         
         command = "echo \"use gratia_osgtest; select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + core.config['gratia.sql.querystring'],
         status, UsedSpace, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table !')
+        self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table.')
         
         #Need to assert only after converting string to long...
         self.assert_(long(TotalSpace) == (long(FreeSpace) + long(UsedSpace)))
@@ -375,7 +375,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_17_copy_condor_logs(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         core.state['gratia.condor-logs-copied'] = False
-        self.assert_(self.copy_probe_logs(), "condor log copy failed !")
+        self.assert_(self.copy_probe_logs(), "condor log copy failed.")
         core.state['gratia.condor-logs-copied'] = True
         
     #This test executes condor_meter
@@ -383,31 +383,31 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         core.state['gratia.condor-meter-running'] = False
         self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
-        self.skip_ok_if(core.state['condor.running-service'] == False, 'Need to have condor service running !')
+        self.skip_ok_if(core.state['condor.running-service'] == False, 'Condor service is not running.')
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))       
         command = ('/usr/share/gratia/condor/condor_meter',)
-        core.check_system(command, 'Unable to execute condor_meter !')    
+        core.check_system(command, 'Unable to execute condor_meter.')    
         core.config['gratia.condor-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.condor" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.condor-temp-dir'])
-            self.assert_(result, 'condor outbox check failed !')
+            self.assert_(result, 'condor outbox check failed.')
         core.state['gratia.condor-meter-running'] = True
 
     #This test checks database after condor_meter is run
     def test_19_checkdatabase_condor_meter(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
-        self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Need to have condor-meter running !')           
+        self.skip_bad_if(core.state['gratia.condor-meter-running'] == False, 'Condor-meter is not running.')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed('condor'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('condor'), 'Sentinel signifying that Probe Information was processed NOT found.')
    
         command = "echo \"use gratia_osgtest; select sum(Njobs) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database Njobs from MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')       
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database Njobs from MasterSummaryData table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')       
         
         command = "echo \"use gratia_osgtest; select sum(WallDuration) from MasterSummaryData where ProbeName like 'condor%';" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query WallDuration from MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')  
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query WallDuration from MasterSummaryData table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')  
         
     #This test customizes /etc/gratia/psacct/ProbeConfig file
     def test_20_modify_psacct_probeconfig(self):
@@ -420,7 +420,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_21_start_psacct_service(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         command = ('/etc/init.d/psacct', 'start')
-        core.check_system(command, 'Unable to start psacct!')
+        core.check_system(command, 'Unable to start psacct.')
         
     #This test executes psacct
     def test_22_execute_psacct(self):
@@ -432,23 +432,23 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/psacct/psacct_probe.cron.sh',)
-        core.check_system(command, 'Unable to execute psacct!')
+        core.check_system(command, 'Unable to execute psacct.')
         core.config['gratia.psacct-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.psacct" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.psacct-temp-dir'])
-            self.assert_(result, 'psacct outbox check failed !')
+            self.assert_(result, 'psacct outbox check failed.')
         core.state['gratia.psacct-running'] = True
 
     #This test checks database after psacct is run
     def test_23_checkdatabase_psacct(self):
         self.skip_ok("psacct probe fix is in osg-development 1.13.16-1 version")
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
-        self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Need to have psacct running !')           
+        self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Psacct service is not running.')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed('psacct'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('psacct'), 'Sentinel signifying Probe Information was processed NOT found.')
         
         command = "echo \"use gratia_osgtest; select * from MasterSummaryData where ProbeName like 'psac%' and ResourceType='RawCPU';" + core.config['gratia.sql.querystring'] +  "| wc -l",
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')   
 
     #This test customizes /etc/gratia/bdii-status/ProbeConfig file
     def test_24_modify_bdii_probeconfig(self):
@@ -465,7 +465,7 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
-        core.check_system(command, 'Unable to execute bdii-status!')        
+        core.check_system(command, 'Unable to execute bdii-status.')        
         core.config['gratia.bdii-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.bdii_" + "*" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             for file in os.listdir('/var/lib/gratia/tmp/gratiafiles/'):
@@ -475,18 +475,18 @@ class TestGratia(osgunittest.OSGTestCase):
                     #Tanya is investigating it and hence, commenting the outbox check for now
                     #Need to check if the above outboxdir is empty
                     #time.sleep(60)
-                    #self.assert_(not os.listdir(outboxdir), 'bdii outbox check failed !')
+                    #self.assert_(not os.listdir(outboxdir), 'bdii outbox check failed.')
         core.state['gratia.bdii-status-running'] = True
         
     #This test checks database after bdii-status is run
     def test_26_checkdatabase_bdii_status(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')  
-        self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running !')           
+        self.skip_bad_if(core.state['gratia.bdii-status-running'] == False, 'Need to have gratia-probe-bdii-status running.')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed('bdii'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('bdii'), 'Sentinel signifying that Probe Information was processed NOT found.')
         
         command = "echo \"use gratia_osgtest; select count(*) from ComputeElement;" + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query count from ComputeElement table !', atLeastOneRecord=True), 'Failed Probe Data Validation in Database !')   
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query count from ComputeElement table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')   
         
     #This test customizes /etc/gratia/condor/ProbeConfig file
     def test_27_modify_pbs_probeconfig(self):
@@ -500,7 +500,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.pbs-logs-copied'] = False
         pbs_log = '/usr/share/osg-test/gratia/20130603'
         dst_dir = '/var/spool/pbs/server_priv/accounting'
-        self.assert_(self.copy_probe_logs(pbs_log, dst_dir), "pbs log copy failed !")
+        self.assert_(self.copy_probe_logs(pbs_log, dst_dir), "pbs log copy failed.")
         core.state['gratia.pbs-logs-copied'] = True   
 
     
@@ -514,22 +514,22 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))   
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
-        core.check_system(command, 'Unable to execute pbs-lsf_meter !')
+        core.check_system(command, 'Unable to execute pbs-lsf_meter.')
         core.config['gratia.pbs-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.pbs-lsf" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.pbs-temp-dir'])
-            self.assert_(result,'pbs outbox check failed !')
+            self.assert_(result,'pbs outbox check failed.')
         core.state['gratia.pbs-running'] = True
 
     #This test checks database after pbs is run
     def test_30_checkdatabase_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')  
-        self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running !')           
+        self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running.')           
         
-        self.assertEqual(True, self.isProbeInfoProcessed('pbs-lsf'), 'Sentinel signifying Probe Information was processed NOT found !')
+        self.assertEqual(True, self.isProbeInfoProcessed('pbs-lsf'), 'Sentinel signifying that Probe Information was processed NOT found.')
         
         probename="'pbs-lsf:" + core.config['gratia.host']
         query="use gratia_osgtest; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"        
         command = "echo " + "\""+ query + core.config['gratia.sql.querystring'],
         
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table !', '30'), 'Failed Probe Data Validation in Database !') 
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table.', '30'), 'Failed Probe Data Validation in Database.') 

@@ -55,7 +55,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 core.log_message("\n%%%%%START_GRATIA_DATED_LOG%%%%%\n" + str(gratia_dated_log_string))
                 core.log_message("\n%%%%%END_GRATIA_DATED_LOG%%%%%\n")
             except Exception, e:
-                core.log_message("Unable to save gratia logs ! Ignoring this error, beyond logging this message..." + str(e))
+                core.log_message("Unable to save gratia logs. Ignoring this error, beyond logging this message..." + str(e))
 
         self.skip_ok_if(core.state['voms.removed-certs'] == True, 'Certs were already removed')
         # Do the keys first, so that the directories will be empty for the certs.
@@ -74,7 +74,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
         command = "echo \"drop database gratia_osgtest;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
-        core.check_system(command, 'Unable to drop Gratia Database !', shell=True)
+        core.check_system(command, 'Unable to drop Gratia Database.', shell=True)
         files.remove(filename)
         #At this time, remove the gratia reader password file also
         files.remove(core.config['gratia.sql.file'])
@@ -150,7 +150,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_07_stop_psacct_service(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         command = ('/etc/init.d/psacct', 'stop')
-        core.check_system(command, 'Unable to stop psacct!')
+        core.check_system(command, 'Unable to stop psacct.')
 
     #This test cleans up psacct related files
     def test_08_cleanup_psacct(self):
