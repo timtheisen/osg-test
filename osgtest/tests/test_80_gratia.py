@@ -26,6 +26,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             target_dir = core.state[target_key + '-dir']
             if len(os.listdir(target_dir)) == 0:
                 os.rmdir(target_dir)
+    
 
     #This test removes the http certificates, if not already removed earlier
     def test_01_remove_certs(self):
@@ -54,7 +55,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 core.log_message("\n%%%%%START_GRATIA_DATED_LOG%%%%%\n" + str(gratia_dated_log_string))
                 core.log_message("\n%%%%%END_GRATIA_DATED_LOG%%%%%\n")
             except Exception, e:
-                core.log_message("Unable to save gratia logs ! Ignoring this error, beyond logging this message..." + str(e))
+                core.log_message("Unable to save gratia logs. Ignoring this error, beyond logging this message..." + str(e))
 
         self.skip_ok_if(core.state['voms.removed-certs'] == True, 'Certs were already removed')
         # Do the keys first, so that the directories will be empty for the certs.
@@ -72,30 +73,22 @@ class TestStopGratia(osgunittest.OSGTestCase):
         
         #Command to drop the gratia database is:
         #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"drop database gratia;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
-        core.check_system(command, 'Unable to drop Gratia Database !', shell=True)
+        command = "echo \"drop database gratia_osgtest;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
+        core.check_system(command, 'Unable to drop Gratia Database.', shell=True)
         files.remove(filename)
         #At this time, remove the gratia reader password file also
         files.remove(core.config['gratia.sql.file'])
-        
-    #This test cleans up the appropriate gratia directory
-    def test_03_cleanup_etcgratia_directory(self):
-
-        core.skip_ok_unless_installed('gratia-service')
-        directory = core.config['gratia.config.dir'] + "/" + core.config['gratia.directory']
-        files.remove(directory, True)
-        
+                
     #This test cleans up gridftp related files
-    def test_04_cleanup_gridftp(self):
+    def test_03_cleanup_gridftp(self):
 
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/GridftpAccountingProbeState")
             files.remove("/var/log/gridftp.log")
             files.remove("/var/log/gridftp-auth.log")
-            if 'gratia.gridftp-temp-dir' in core.config:
-                files.remove(core.config['gratia.gridftp-temp-dir'], True)
-            files.remove(core.config['gratia.config.dir'] + "/gridftp-transfer", True)
+            probeconfig = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -105,17 +98,15 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
 
     #This test cleans up glexec related files
-    def test_05_cleanup_glexec(self):
+    def test_04_cleanup_glexec(self):
 
         core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/GlexecAccountingProbeState")
             files.remove("/var/log/glexec.log")
             files.remove("/var/lib/gratia/data/glexec_plugin.chk")
-
-            if 'gratia.glexec-temp-dir' in core.config:
-                files.remove(core.config['gratia.glexec-temp-dir'], True)
-            files.remove(core.config['gratia.config.dir'] + "/glexec", True)
+            probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -125,14 +116,13 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
         
     #This test cleans up dcache related files
-    def test_06_cleanup_dcache(self):
+    def test_05_cleanup_dcache(self):
 
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/dCache-storage_meter.cron.pid")
-            if 'gratia.dcache-temp-dir' in core.config:
-                files.remove(core.config['gratia.dcache-temp-dir'], True)
-            files.remove(core.config['gratia.config.dir'] + "/dCache-storage", True)
+            probeconfig = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -142,14 +132,12 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
 
     #This test cleans up condor related files
-    def test_07_cleanup_condor(self):
+    def test_06_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/data/gratia_certinfo_condor*")
-            files.remove("/var/lib/gratia/data/history.1211*")
-            if 'gratia.condor-temp-dir' in core.config:
-                files.remove(core.config['gratia.condor-temp-dir'], True)
-            files.remove(core.config['gratia.config.dir'] + "/condor", True)
+            probeconfig = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -159,21 +147,18 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
         
     #This test stops psacct service
-    def test_08_stop_psacct_service(self):
+    def test_07_stop_psacct_service(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         command = ('/etc/init.d/psacct', 'stop')
-        core.check_system(command, 'Unable to stop psacct!')
+        core.check_system(command, 'Unable to stop psacct.')
 
     #This test cleans up psacct related files
-    def test_09_cleanup_psacct(self):
+    def test_08_cleanup_psacct(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/account/pacct")
-            files.remove("/var/lib/gratia/account/pacct.creation")
-            files.remove("/var/lib/gratia/backup/*")
-            if 'gratia.psacct-temp-dir' in core.config:
-                files.remove(core.config['gratia.psacct-temp-dir'], True)
-            files.remove(core.config['gratia.config.dir'] + "/psacct", True)
+            probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -183,14 +168,12 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
 
     #This test cleans up bdii related files
-    def test_10_cleanup_bdii(self):
+    def test_09_cleanup_bdii(self):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
         try:
-            if 'gratia.bdii-temp-dir' in core.config:
-                #resorting to shell remove command due to wildcharacter in the name       
-                command = ('rm', '-rf', core.config['gratia.bdii-temp-dir'])
-                core.check_system(command, 'Unable to clean up core.config[\'gratia.bdii-temp-dir\'] !')
-            files.remove(core.config['gratia.config.dir'] + "/bdii-status", True)
+            probeconfig = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -200,16 +183,13 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 raise
         
     #This test cleans up pbs related files
-    def test_11_cleanup_pbs(self):
+    def test_10_cleanup_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         try:
-            files.remove("/var/lib/gratia/tmp/urCollectorBuffer.pbs")
-            if 'gratia.pbs-temp-dir' in core.config:
-                files.remove(core.config['gratia.pbs-temp-dir'], True)
-            files.remove("/var/lib/gratia/tmp/urCollector", True)
-            files.remove(core.config['gratia.config.dir'] + "/pbs-lsf", True)
-            files.remove("/var/lib/gratia/pbs-lsf", True)
             files.remove("/var/spool/pbs/server_priv/accounting", True)
+            probeconfig = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
         except OSError, e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
@@ -217,3 +197,29 @@ class TestStopGratia(osgunittest.OSGTestCase):
             else:
                 # reraise the exception, as it's an unexpected error
                 raise
+            
+    #This test restores the mentioned gratia directory, if it was backed up 
+    def test_11_restore_varlibgratia(self):
+        core.skip_ok_unless_installed('gratia-service')
+        if 'gratia.varlibgratia-backedup' in core.state:
+            files.remove('/var/lib/gratia', True)
+            command = ("mv /var/lib/gratia_production /var/lib/gratia",)
+            core.check_system(command, 'Could not restore /var/lib/gratia', shell=True)
+            
+    #This test restores the mentioned gratia-service directory, if it was backed up 
+    def test_12_restore_varlibgratiaservice(self):
+        core.skip_ok_unless_installed('gratia-service')
+        if 'gratia.varlibgratia-service-backedup' in core.state:
+            files.remove('/var/lib/gratia-service', True)
+            command = ("mv /var/lib/gratia-service_production /var/lib/gratia-service",)
+            core.check_system(command, 'Could not restore /var/lib/gratia-service', shell=True)
+            
+    #This test restores the mentioned gratia-service directory, if it was backed up 
+    def test_13_restore_etcgratia_collector_or_services(self):
+        core.skip_ok_unless_installed('gratia-service')
+        if 'gratia.etcgratia_collector_or_services-backedup' in core.state:
+            gratia_directory_to_preserve = core.state['gratia.etcgratia_collector_or_services-backedup']
+            backup_path = gratia_directory_to_preserve + '_production'
+            files.remove(gratia_directory_to_preserve, True)
+            command = ("mv " + backup_path + " " + gratia_directory_to_preserve,)
+            core.check_system(command, 'Could not restore ' + gratia_directory_to_preserve, shell=True)
