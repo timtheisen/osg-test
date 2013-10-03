@@ -159,8 +159,9 @@ def monitor_file(filename, old_stat, sentinel, timeout):
                 monitored_file.close()
                 old_stat = None
                 monitored_file = None
-            time.sleep(read_delay)
-            monitored_file.seek(where)
+            else:
+                time.sleep(read_delay)
+                monitored_file.seek(where)
     if monitored_file is not None:
         monitored_file.close()
     return (None, None)
