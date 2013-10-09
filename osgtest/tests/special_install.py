@@ -7,7 +7,7 @@ class TestInstall(osgunittest.OSGTestCase):
     install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
     
     def test_01_yum_repositories(self):
-        pre = ('rpm', '--verify', '--quiet', '--nomd5', '--nosize', '--nomtime')
+        pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
         core.check_system(pre + ('epel-release',), 'Verify epel-release')
         core.check_system(pre + ('osg-release',), 'Verify osg-release')
 
@@ -28,7 +28,7 @@ class TestInstall(osgunittest.OSGTestCase):
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
             stdout = core.check_system(command, 'Install %s' % (package))[0]
-            command = ('rpm', '--verify', '--quiet', package)
+            command = ('rpm', '--verify', package)
             core.check_system(command, 'Verify %s' % (package))
 
             # Parse output for order of installs
