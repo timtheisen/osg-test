@@ -316,7 +316,7 @@ def get_package_envra(package_name):
     output in the right format.
 
     """
-    command = ('rpm', '--query', package_name, '--queryformat=%{EPOCH} %{NAME} %{VERSION} %{RELEASE} %{ARCH}')
+    command = ('rpm', '--query', package_name, "--queryformat=%{EPOCH} %{NAME} %{VERSION} %{RELEASE} %{ARCH} ")
     status, stdout, stderr = system(command)
     # Not checking stderr because signature warnings get written there and
     # we do not care about those.
@@ -324,7 +324,14 @@ def get_package_envra(package_name):
         raise OSError(status, stdout)
 
     envra = stdout.strip().split(' ')
-    if len(envra) != 5:
+    # On EL5 machines, both i386 and x86_64 versions of packages get installed, causing this function to always fail
+    if (len(envra) == 10 and
+        envra[0] == envra[5] and
+        envra[1] == envra[6] and
+        envra[2] == envra[7] and
+        envra[3] == envra[8]):
+            envra = envra[0:5]
+    elif len(envra) != 5:
         raise OSError(status, stdout)
     (epoch, name, version, release, arch) = envra
     return (epoch, name, version, release, arch)
