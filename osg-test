@@ -19,20 +19,22 @@ from osgtest.library import osgunittest
 # ------------------------------------------------------------------------------
 
 def parse_command_line():
-    defaults = {"adduser" : False,
-                "config" : None,
-                "dumpout" : False,
-                "dumpfile" : None,
-                "packages" : [],
-                "updaterepo" : None,
-                "skip_cleanup" : False,
-                "password" : 'vdttest',
-                "extrarepos" : [],
-                "printtest" : True,
-                "skiptests" : False,
-                "tarballs" : False,
-                "username" : 'vdttest',
-                "verbose" : False
+    defaults = {
+                "adduser": False,
+                "config": None,
+                "dumpfile": None,
+                "dumpout": False,
+                "extrarepos": [],
+                "packages": [],
+                "password": 'vdttest',
+                "printtest": True,
+                "skip_cleanup": False,
+                "skiptests": False,
+                "tarballs": False,
+                "timeout": 5400,          # 1.5 hours
+                "updaterepo": None,
+                "username": 'vdttest',
+                "verbose": False
                 }
 
     # First pass through args to get config file
@@ -59,6 +61,8 @@ def parse_command_line():
                     defaults[key] = re.split(',\s*', value)
                 elif key == 'extrarepos':
                     defaults[key] = re.split(',\s*', value)
+                elif key == 'timeout':
+                    defaults[key] = config_file.getint('Config', key)
                 elif defaults[key] is False: # Grab values as booleans if we expect them to be
                     defaults[key] = config_file.getboolean('Config', key)
                 elif key != 'config': # Ignore setting the config option through the config file
@@ -205,7 +209,7 @@ if __name__ == '__main__':
     tests = discover_tests()
     if len(tests) > 1:
         signal.signal(signal.SIGALRM, signal_alarm_handler)
-        signal.alarm(5400) # 1.5 hours
+        signal.alarm(core.options.timeout)
         run_tests(tests)
         signal.alarm(0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
