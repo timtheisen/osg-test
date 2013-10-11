@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 
 PACKAGE := osg-test
-VERSION := 1.3.7
+VERSION := 1.4.0
 
 
 # ------------------------------------------------------------------------------
@@ -23,6 +23,8 @@ INSTALL_CA_CERT_DIR := etc/grid-security/certificates
 SHARE_DIR := files
 CERT_FILE := $(SHARE_DIR)/usercert.pem
 CERT_KEY := $(SHARE_DIR)/userkey.pem
+OPENSSL_EXT_FILE := $(SHARE_DIR)/openssl-cert-extensions.conf
+OSG_CA_FILES := $(SHARE_DIR)/OSG-Test-CA.*
 TEST_FILES := $(SHARE_DIR)/test_*
 GRATIA_TEST_FILES := $(SHARE_DIR)/gratia/*
 TARBALL_TEST_FILES := $(SHARE_DIR)/tarball/*
@@ -90,6 +92,8 @@ install:
 	mkdir -p $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(CERT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0400 $(CERT_KEY) $(DESTDIR)/$(INSTALL_SHARE_DIR)
+	install -p -m 0644 $(OPENSSL_EXT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
+	install -p -m 0644 $(OSG_CA_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(TEST_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	mkdir -p $(DESTDIR)/$(GRATIA_FILES_DIR)
 	install -p -m 0644 $(GRATIA_TEST_FILES) $(DESTDIR)/$(GRATIA_FILES_DIR)
