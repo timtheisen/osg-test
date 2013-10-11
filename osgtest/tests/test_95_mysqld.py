@@ -13,12 +13,8 @@ class TestStopMySQL(osgunittest.OSGTestCase):
         service.stop('mysqld')
 
     def test_02_restore_backup(self):
-        core.skip_ok_unless_installed('mysql-server')
+        core.skip_ok_unless_installed('mysql-server', 'mysql')
 
-        files.remove(core.config['mysql.datadir'], force=True)
-
-        try:
+        if not core.config['mysql.backup']:
+            files.remove(core.config['mysql.datadir'], force=True)
             shutil.move(backup, core.config['mysql.backup'])
-        except KeyError:
-            # Backup was never created
-            pass

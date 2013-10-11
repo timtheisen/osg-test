@@ -21,6 +21,7 @@ from osgtest.library import osgunittest
 def parse_command_line():
     defaults = {
                 "adduser": False,
+                "backupmysql": False,
                 "config": None,
                 "dumpfile": None,
                 "dumpout": False,

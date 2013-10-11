@@ -10,20 +10,25 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStartMySQL(osgunittest.OSGTestCase):
 
-    pidfile = '/var/run/mysqld/mysqld.pid'
 
     def test_01_backup_mysql(self):
-        core.skip_ok_unless_installed('mysql-server')
-
-        # If the service is already running, we should stop it
-        if os.path.exists(pidfile):
-            service.stop('mysqld', sentinel_file=pidfile)
+        core.skip_ok_unless_installed('mysql-server', 'mysql')
+        core.config['mysql.backup'] = False
+        
+        if not core.options.backupmysql:
+            return
 
         # Find the folder where the mysql files are stored
-        mysql_cfg = files.read('/etc/my.cnf')
+        pidfile = '/var/run/mysqld/mysqld.pid'
+        if not os.path.exists(pidfile):
+            service.start('mysqld', sentinel_file=pidfile) # Need mysql up to determine its datadir
+
+        command = ('mysql', '-e', "SHOW VARIABLES;")
+        mysql_cfg = core.check_system(command, 'dump mysql config')[0].strip().split("\n")
+        print(mysql_cfg)
         for line in mysql_cfg:
             try:
-                core.config['mysql.datadir'] = re.match('datadir=(.*)$', line.strip()).group(1)
+                core.config['mysql.datadir'] = re.match('datadir\s*([\w\/]*)\/$', line).group(1)
             except AttributeError, e:
                 if e.args[0] == "'NoneType' object has no attribute 'group'":
                     # No match was found, move onto the next line
@@ -32,8 +37,9 @@ class TestStartMySQL(osgunittest.OSGTestCase):
                     raise
             else:
                 break
-        
+
         # Backup the old mysql folder
+        service.stop('mysqld') 
         backup = core.config['mysql.datadir'] + '-backup'
         try:
             shutil.move(core.config['mysql.datadir'], backup)
@@ -45,5 +51,5 @@ class TestStartMySQL(osgunittest.OSGTestCase):
 
     def test_02_start_mysqld(self):
         core.skip_ok_unless_installed('mysql-server')
-        service.start('mysqld', sentinel_file=pidfile)
+        service.start('mysqld', sentinel_file='/var/run/mysqld/mysqld.pid')
 

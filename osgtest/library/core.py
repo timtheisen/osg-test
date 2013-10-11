@@ -69,7 +69,9 @@ def start_log():
     _log.write('  - Print test names: %s\n' % str(options.printtest))
     _log.write('  - Skip tests: %s\n' % str(options.skiptests))
     _log.write('  - Test user: %s\n' % options.username)
-    _log.write('  - Verbose: %s\n' % str(options.verbose))
+    _log.write('  - Timeout: %s\n' % str(options.timeout))
+    _log.write('  - Create hostcert: %s\n' % str(options.hostcert))
+    _log.write('  - Backup MySQL: %s\n' % str(options.backupmysql))
     _log.flush()
 
 def log_message(message):
