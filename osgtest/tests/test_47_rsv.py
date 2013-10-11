@@ -1,6 +1,7 @@
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.certificates as certs
 
 import re
 import os
@@ -128,7 +129,7 @@ class TestRSV(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('rsv')
 
         # Register the cert in the gridmap file
-        cert_subject = core.certificate_info(core.config['rsv.certfile'])[0]
+        cert_subject = certs.certificate_info(core.config['rsv.certfile'])[0]
         files.append(core.config['system.mapfile'], '"%s" rsv\n' % (cert_subject), owner='rsv')
 
 

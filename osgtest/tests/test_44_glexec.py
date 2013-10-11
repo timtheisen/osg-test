@@ -2,6 +2,7 @@ import glob
 import os
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.certificates as certs
 import pwd
 import re
 import shutil
@@ -31,7 +32,7 @@ class TestGlexec(osgunittest.OSGTestCase):
         
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_cert_dn, user_cert_issuer = core.certificate_info(cert_path)
+        user_cert_dn, user_cert_issuer = certs.certificate_info(cert_path)
 
         key_dn = '"'+user_cert_dn+'"'+' '+core.options.username
 

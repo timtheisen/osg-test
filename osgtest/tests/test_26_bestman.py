@@ -2,33 +2,10 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import pwd
-import shutil
+import osgtest.library.certificates as certs
 import unittest
 
 class TestStartBestman(osgunittest.OSGTestCase):
-
-    def install_cert(self, target_key, source_key, owner_name, permissions):
-        target_path = core.config[target_key]
-        target_dir = os.path.dirname(target_path)
-        source_path = core.config[source_key]
-        user = pwd.getpwnam(owner_name)
-
-        if os.path.exists(target_path):
-            backup_path = target_path + '.osgtest.backup'
-            shutil.move(target_path, backup_path)
-            core.state[target_key + '-backup'] = backup_path
-
-        if not os.path.exists(target_dir):
-            os.mkdir(target_dir)
-            core.state[target_key + '-dir'] = target_dir
-            os.chown(target_dir, user.pw_uid, user.pw_gid)
-            os.chmod(target_dir, 0755)
-
-        shutil.copy(source_path, target_path)
-        core.state[target_key] = target_path
-        os.chown(target_path, user.pw_uid, user.pw_gid)
-        os.chmod(target_path, permissions)
 
     def test_01_config_certs(self):
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
@@ -43,8 +20,8 @@ class TestStartBestman(osgunittest.OSGTestCase):
         if (os.path.exists(core.config['certs.bestmancert']) and
             os.path.exists(core.config['certs.bestmankey'])):
             return
-        self.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0644)
-        self.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
+        certs.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0644)
+        certs.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
 
     def test_03_modify_sudoers(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')

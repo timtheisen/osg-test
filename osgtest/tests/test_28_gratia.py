@@ -8,6 +8,7 @@ import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
+import osgtest.library.certificates as certs
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
@@ -24,37 +25,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
                     stat.S_ISREG(file_stat.st_mode))
         except OSError: # file does not exist
             return False
-
-    def install_cert(self, target_key, source_key, owner_name, permissions):
-        """Install_cert has been taken from test_20_voms.py  We should consider putting this code in the core library.
-     Carefully install a certificate with the given key from the given
-     source path, then set ownership and permissions as given.  Record
-     each directory and file created by this process into the config
-     dictionary; do so immediately after creation, so that the
-     remove_cert() function knows exactly what to remove/restore."""
-
-        target_path = core.config[target_key]
-        target_dir = os.path.dirname(target_path)
-        source_path = core.config[source_key]
-        user = pwd.getpwnam(owner_name)
- 
-        # Using os.path.lexists because os.path.exists return False for broken symlinks
-        if os.path.lexists(target_path):
-            backup_path = target_path + '.osgtest.backup'
-            shutil.move(target_path, backup_path)
-            core.state[target_key + '-backup'] = backup_path
- 
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-            core.state[target_key + '-dir'] = target_dir
-            os.chown(target_dir, user.pw_uid, user.pw_gid)
-            os.chmod(target_dir, 0755)
- 
-        shutil.copy(source_path, target_path)
-        core.state[target_key] = target_path
-        os.chown(target_path, user.pw_uid, user.pw_gid)
-        os.chmod(target_path, permissions)
-
     
     def patternreplace(self, infile_name, pattern, full_line):
         """This helper method loops through the passed in infile line by line. 
@@ -201,8 +171,8 @@ class TestStartGratia(osgunittest.OSGTestCase):
         self.skip_ok_if(self.check_file_and_perms(httpcert, 'tomcat', 0644) and
                         self.check_file_and_perms(httpkey, 'tomcat', 0400),
                         'HTTP cert exists and has proper permissions')
-        self.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
-        self.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+        certs.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
+        certs.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
         
     #This test stops the Tomcat service
     def test_09_stop_tomcat(self):

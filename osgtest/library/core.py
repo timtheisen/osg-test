@@ -295,21 +295,6 @@ def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
         raise osgunittest.OkSkipException(message or 'missing %s' % ' '.join(missing))
 
 
-def certificate_info(path):
-    """Extracts and returns the subject and issuer from an X.509 certificate."""
-    command = ('openssl', 'x509', '-noout', '-subject', '-issuer', '-in', path)
-    status, stdout, stderr = system(command)
-    if (status != 0) or (stdout is None) or (stderr is not None):
-        raise OSError(status, stderr)
-    if len(stdout.strip()) == 0:
-        raise OSError(status, stdout)
-    subject_issuer_re = r'subject\s*=\s*([^\n]+)\nissuer\s*=\s*([^\n]+)\n'
-    matches = re.match(subject_issuer_re, stdout)
-    if matches is None:
-        raise OSError(status, stdout)
-    return (matches.group(1), matches.group(2))
-
-
 def get_package_envra(package_name):
     """Query and return the ENVRA (Epoch, Name, Version, Release, Arch) of an
     installed package as a tuple. Can raise OSError if rpm does not return

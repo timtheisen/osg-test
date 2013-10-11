@@ -5,6 +5,7 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.certificates as certs
 
 class TestGUMS(osgunittest.OSGTestCase):
 
@@ -33,7 +34,7 @@ class TestGUMS(osgunittest.OSGTestCase):
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_dn, _ = core.certificate_info(cert_path)
+        user_dn, _ = certs.certificate_info(cert_path)
         
         command = ('gums-service', 'manualGroupAdd', 'gums-test', user_dn)
         stdout = core.check_system(command, 'Add VDT DN to manual group')[0]
@@ -43,10 +44,10 @@ class TestGUMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gums-service', 'gums-client')
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manualUserGroup')
         
-        host_dn, _ = core.certificate_info(core.config['certs.hostcert'])
+        host_dn, _ = certs.certificate_info(core.config['certs.hostcert'])
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_dn, _ = core.certificate_info(cert_path)
+        user_dn, _ = certs.certificate_info(cert_path)
         command = ('gums-host', 'mapUser', user_dn) # using gums-host since it defaults to the host cert
         stdout = core.check_system(command, 'Map GUMS user')[0]
         self.assert_('GumsTestUserMappingSuccessful' in stdout)

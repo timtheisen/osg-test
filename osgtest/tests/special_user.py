@@ -2,6 +2,7 @@ import os
 import os.path
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.certificates as certs
 import pwd
 import shutil
 import unittest
@@ -72,7 +73,7 @@ class TestUser(unittest.TestCase):
             core.skip('no user home dir')
             return
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_dn, user_cert_issuer = core.certificate_info(cert_path)
+        user_dn, user_cert_issuer = certs.certificate_info(cert_path)
         files.append(core.config['system.mapfile'], '"%s" %s\n' % (user_dn, pwd_entry.pw_name), owner='user')
         core.state['system.wrote_mapfile'] = True
         os.chmod(core.config['system.mapfile'], 0644)
