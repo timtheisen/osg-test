@@ -48,8 +48,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 core.log_message("\n%%%%%START_BDII_STATUS_LOG%%%%%\n" + str(bdii_status_log_string))
                 core.log_message("\n%%%%%END_BDII_STATUS_LOG%%%%%\n")
 
-                utc_datetime = datetime.datetime.utcnow()
-                date_string = utc_datetime.strftime("%Y-%m-%d") #Sample Result: '2013-08-21'
+                local_datetime = datetime.datetime.now()
+                date_string = local_datetime.strftime("%Y-%m-%d") #Sample Result: '2013-08-21'
                 gratia_dated_log = '/var/log/gratia/' + date_string + '.log'
                 gratia_dated_log_string = files.read(gratia_dated_log, as_single_string=True)
                 core.log_message("\n%%%%%START_GRATIA_DATED_LOG%%%%%\n" + str(gratia_dated_log_string))
