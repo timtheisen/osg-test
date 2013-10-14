@@ -19,24 +19,26 @@ class TestXrootd(osgunittest.OSGTestCase):
         """Checks that the xrootd server is started if it is supposed to be,
         and not started if it isn't supposed to be due to an expected failure
         on el6.
-        Returns True if the test should be continue, False if it should be
-        skipped. Raises AssertionError on an unexpected result.
+        Raises:
+        AssertionError if the server is running despite the expected failure
+        OkSkip if the server is not running due to the expected failure
+        BadSkip if the server is not running when it should be
         """
         xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd', '--qf=%{VERSION}'), 'Getting xrootd version')
         
         if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", xrootd_server_version):
-            self.assertEqual(core.state['xrootd.started-server'], False, 'Expected failure on el6 with this version of xrootd')
-            return False
+            msg = 'Expected failure on el6 with this version of xrootd'
+            self.assertEqual(core.state['xrootd.started-server'], False, msg)
+            self.skip_ok(msg)
         else:
-            self.assertEqual(core.state['xrootd.started-server'], True, 'Server not running')
-            return True
+            self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
 
 
     def test_01_xrdcp_local_to_server(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client')
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
-        self.skip_bad_unless(self.assert_server_started(),'Server not running')
+        self.assert_server_started()
 
         hostname = socket.getfqdn()
         if core.config['xrootd.gsi'] == "ON":
@@ -65,7 +67,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client')
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
-        self.skip_bad_unless(self.assert_server_started(),'Server not running')
+        self.assert_server_started()
 
         hostname = socket.getfqdn()
         temp_source_dir = tempfile.mkdtemp()
