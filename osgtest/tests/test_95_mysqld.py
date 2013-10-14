@@ -15,6 +15,6 @@ class TestStopMySQL(osgunittest.OSGTestCase):
     def test_02_restore_backup(self):
         core.skip_ok_unless_installed('mysql-server', 'mysql')
 
-        if not core.config['mysql.backup']:
+        if core.config['mysql.backup']:
             files.remove(core.config['mysql.datadir'], force=True)
             shutil.move(backup, core.config['mysql.backup'])

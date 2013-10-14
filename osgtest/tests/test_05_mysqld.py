@@ -13,7 +13,7 @@ class TestStartMySQL(osgunittest.OSGTestCase):
 
     def test_01_backup_mysql(self):
         core.skip_ok_unless_installed('mysql-server', 'mysql')
-        core.config['mysql.backup'] = False
+        core.config['mysql.backup'] = None
         
         if not core.options.backupmysql:
             return
@@ -23,20 +23,11 @@ class TestStartMySQL(osgunittest.OSGTestCase):
         if not os.path.exists(pidfile):
             service.start('mysqld', sentinel_file=pidfile) # Need mysql up to determine its datadir
 
-        command = ('mysql', '-e', "SHOW VARIABLES;")
-        mysql_cfg = core.check_system(command, 'dump mysql config')[0].strip().split("\n")
-        print(mysql_cfg)
-        for line in mysql_cfg:
-            try:
-                core.config['mysql.datadir'] = re.match('datadir\s*([\w\/]*)\/$', line).group(1)
-            except AttributeError, e:
-                if e.args[0] == "'NoneType' object has no attribute 'group'":
-                    # No match was found, move onto the next line
-                    continue
-                else:
-                    raise
-            else:
-                break
+        core.config['mysql.datadir'] = None
+        command = ('mysql', '-e', "SHOW VARIABLES where Variable_name='datadir';")
+        mysql_cfg = core.check_system(command, 'dump mysql config')[0]
+        core.config['mysql.datadir'] = re.match('datadir\s*(.+?*)\/\s*$', mysql_cfg).group(1)
+        self.assert_(core.config['mysql.datadir'] is not None, 'could not extract MySQL datadir')
 
         # Backup the old mysql folder
         service.stop('mysqld') 
