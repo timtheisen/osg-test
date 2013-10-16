@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 
 import osgtest.library.core as core
@@ -17,4 +18,4 @@ class TestStopMySQL(osgunittest.OSGTestCase):
 
         if core.config['mysql.backup']:
             files.remove(core.config['mysql.datadir'], force=True)
-            shutil.move(backup, core.config['mysql.backup'])
+            shutil.move(core.config['mysql.backup'], core.config['mysql.datadir'])

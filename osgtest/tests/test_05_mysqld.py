@@ -12,31 +12,33 @@ class TestStartMySQL(osgunittest.OSGTestCase):
 
 
     def test_01_backup_mysql(self):
-        core.skip_ok_unless_installed('mysql-server', 'mysql')
-        core.config['mysql.backup'] = None
-        
         if not core.options.backupmysql:
             return
 
+        core.skip_ok_unless_installed('mysql-server', 'mysql')
+        core.config['mysql.backup'] = None
+        
         # Find the folder where the mysql files are stored
         pidfile = '/var/run/mysqld/mysqld.pid'
         if not os.path.exists(pidfile):
             service.start('mysqld', sentinel_file=pidfile) # Need mysql up to determine its datadir
 
         core.config['mysql.datadir'] = None
-        command = ('mysql', '-e', "SHOW VARIABLES where Variable_name='datadir';")
+        command = ('mysql', '-sNe', "SHOW VARIABLES where Variable_name='datadir';")
         mysql_cfg = core.check_system(command, 'dump mysql config')[0]
-        core.config['mysql.datadir'] = re.match('datadir\s*(.+?*)\/\s*$', mysql_cfg).group(1)
+        core.config['mysql.datadir'] = re.match('datadir\s*(.+?)\/\s*$', mysql_cfg).group(1)
         self.assert_(core.config['mysql.datadir'] is not None, 'could not extract MySQL datadir')
 
         # Backup the old mysql folder
         service.stop('mysqld') 
         backup = core.config['mysql.datadir'] + '-backup'
+        self.assert_(not os.path.exists(backup), 'mysql-backup already exists')
         try:
             shutil.move(core.config['mysql.datadir'], backup)
-        except OSError:
-            # Folder doesn't exist so we don't have to worry about backups
-            pass
+        except IOError, e:
+            if e.errno == 2:
+                # Folder doesn't exist so we don't have to worry about backups
+                pass
         else:
             core.config['mysql.backup'] = backup
 
