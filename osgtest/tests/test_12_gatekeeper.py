@@ -55,5 +55,5 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
                                      config_file)
         else:
             config_file += "pbs_default=\"%s\"" % server_name
-        files.write(core.config['globus.pbs-config'], config_file, 'pbs')
+        files.write(core.config['globus.pbs-config'], config_file, owner='pbs')
         core.state['globus.pbs_configured'] = True

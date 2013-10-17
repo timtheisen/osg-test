@@ -18,8 +18,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
             if "user_allow_other" in line:
                 return
         contents.append("user_allow_other\n")
-        files.write(fuse_conf_path, contents, 'cvmfs', backup=False)
-        os.chmod(fuse_conf_path,0644)
+        files.write(fuse_conf_path, contents, owner='cvmfs', backup=False, chmod=0644)
 
     def setup_automount(self):
         automount_conf_path='/etc/auto.master'
@@ -33,8 +32,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
             if "cvmfs" in line:
                 return
         contents.append("/cvmfs /etc/auto.cvmfs\n")
-        files.write(automount_conf_path, contents, 'cvmfs', backup=False)
-        os.chmod(automount_conf_path,0644)
+        files.write(automount_conf_path, contents, owner='cvmfs', backup=False, chmod=0644)
 
     def setup_cvmfs(self):
         command = ('mkdir','-p', '/tmp/cvmfs')
@@ -44,12 +42,10 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         contents.append("CVMFS_CACHE_BASE=/tmp/cvmfs\n")
         contents.append("CVMFS_QUOTA_LIMIT=10000\n")
         contents.append("CVMFS_HTTP_PROXY=\"http://cache01.hep.wisc.edu:8001;http://cache02.hep.wisc.edu:8001\"\n")
-        files.write("/etc/cvmfs/default.local", contents, 'cvmfs')
-        os.chmod("/etc/cvmfs/default.local",0644)
+        files.write("/etc/cvmfs/default.local", contents, owner='cvmfs', chmod=0644)
         contents=[]
         contents.append("CVMFS_SERVER_URL=\"http://cvmfs.fnal.gov:8000/opt/@org@;http://cvmfs.racf.bnl.gov:8000/opt/@org@;http://cvmfs-stratum-one.cern.ch:8000/opt/@org@;http://cernvmfs.gridpp.rl.ac.uk:8000/opt/@org@\"\n")
-        files.write("/etc/cvmfs/domain.d/cern.ch.local", contents, 'cvmfs')
-        os.chmod("/etc/cvmfs/domain.d/cern.ch.local",0644)
+        files.write("/etc/cvmfs/domain.d/cern.ch.local", contents, owner='cvmfs', chmod=0644)
 
 
     def record_cvmfs_version(self):

@@ -72,10 +72,10 @@ def preserve(path, owner):
     else:
         _backups[backup_id] = None
 
-def write(path, contents, owner=None, backup=True):
+def write(path, contents, owner=None, backup=True, chown=(0,0), chmod=0600):
     """Write the contents to a file at the path.
 
-    The 'owner' argument (default: None), is a string that identifies the owner
+    The 'owner' argument (default: None) is a string that identifies the owner
     of the file.  If the 'backup' argument is True (default), then any existing
     file at the path will be backed up for later restoration.  However, because
     backups are identified in part by 'owner', if 'backup' is True, then 'owner'
@@ -83,9 +83,14 @@ def write(path, contents, owner=None, backup=True):
     turn off backups (not recommended) or 'owner=[some string]' to set the owner
     for the backup.
 
-    NOTE: If the file doesn't exist, the default permissions are '0600' and
-    owned by root/root. Make sure to properly set the permissions of the file
-    afterwards if you need specific permissions or ownership.
+    The 'chown' argument (default: (0, 0)) is a tuple of integers (uid, gid)
+    that assigns the owner and group of the written file if the file doesn't
+    exist. If the file does exist, the owner and group are copied from the
+    previous file.
+
+    The 'chmod' argument (default: 0600) is an integer that assigns the
+    permissions of the written file if it doesn't exist. If it does exist, then
+    the permissions are copied from the old file.
     """
 
     # The default arguments are invalid: Either "backup" must be false or the
@@ -108,6 +113,9 @@ def write(path, contents, owner=None, backup=True):
         old_stat = os.stat(path)
         os.chown(temp_path, old_stat.st_uid, old_stat.st_gid)
         os.chmod(temp_path, old_stat.st_mode)
+    else:
+        os.chown(temp_path, chown[0], chown[1])
+        os.chmod(temp_path, chmod)
 
     # Back up existing file
     if backup:

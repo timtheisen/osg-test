@@ -43,13 +43,12 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             cfgtext=cfgtext+'ofs.authorize\n'
             files.append(cfgfile,cfgtext,owner='xrootd',backup=True)
             authfile='/etc/xrootd/auth_file'
-            files.write(authfile,'u * /tmp a\nu = /tmp/@=/ a\nu xrootd /tmp a\n',owner="xrootd")
-            os.chown(authfile, user.pw_uid, user.pw_gid)
+            files.write(authfile,'u * /tmp a\nu = /tmp/@=/ a\nu xrootd /tmp a\n', owner="xrootd",
+                        chown=(user.pw_uid, user.pw_gid))
             
             user_dn = certs.certificate_info(core.config['certs.usercert'])[1]
-            files.write("/etc/grid-security/xrd/xrdmapfile","\"%s\" vdttest" % user_dn,owner="xrootd")
-            os.chown("/etc/grid-security/xrd/xrdmapfile",
-                user.pw_uid, user.pw_gid)
+            files.write("/etc/grid-security/xrd/xrdmapfile","\"%s\" vdttest" % user_dn, owner="xrootd",
+                        chown=(user.pw_uid, user.pw_gid))
             core.state['xrootd.backups-exist'] = True
 
         command = ('service', 'xrootd', 'start')

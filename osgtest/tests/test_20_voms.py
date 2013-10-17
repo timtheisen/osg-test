@@ -133,14 +133,12 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         host_dn, host_issuer = certs.certificate_info(core.config['certs.hostcert'])
         contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
                     (core.config['voms.vo'], hostname, 15151, host_dn, core.config['voms.vo']))
-        files.write(vomses_path, contents, owner='voms')
-        os.chmod(vomses_path, 0644)
+        files.write(vomses_path, contents, owner='voms', chmod=0644)
         
         if not os.path.isdir(core.config['voms.lsc-dir']):
             os.makedirs(core.config['voms.lsc-dir'])
         vo_lsc_path = os.path.join(core.config['voms.lsc-dir'], hostname + '.lsc')
-        files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False)
-        os.chmod(vo_lsc_path, 0644)
+        files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False, chmod=0644)
 
         core.system('ls -ldF /etc/*vom*', shell=True)
         core.system(('find', '/etc/grid-security/vomsdir', '-ls'))
