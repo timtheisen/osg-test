@@ -16,6 +16,7 @@ class TestStartMySQL(osgunittest.OSGTestCase):
             return
 
         core.skip_ok_unless_installed('mysql-server', 'mysql')
+        core.config['mysql.datadir'] = None
         core.config['mysql.backup'] = None
         
         # Find the folder where the mysql files are stored
@@ -23,7 +24,6 @@ class TestStartMySQL(osgunittest.OSGTestCase):
         if not os.path.exists(pidfile):
             service.start('mysqld', sentinel_file=pidfile) # Need mysql up to determine its datadir
 
-        core.config['mysql.datadir'] = None
         command = ('mysql', '-sNe', "SHOW VARIABLES where Variable_name='datadir';")
         mysql_cfg = core.check_system(command, 'dump mysql config')[0]
         core.config['mysql.datadir'] = re.match('datadir\s*(.+?)\/\s*$', mysql_cfg).group(1)

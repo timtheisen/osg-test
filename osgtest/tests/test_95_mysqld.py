@@ -14,6 +14,9 @@ class TestStopMySQL(osgunittest.OSGTestCase):
         service.stop('mysqld')
 
     def test_02_restore_backup(self):
+        if not core.options.backupmysql:
+            return
+
         core.skip_ok_unless_installed('mysql-server', 'mysql')
 
         if core.config['mysql.backup']:
