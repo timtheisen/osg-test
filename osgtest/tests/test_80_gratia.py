@@ -197,9 +197,25 @@ class TestStopGratia(osgunittest.OSGTestCase):
             else:
                 # reraise the exception, as it's an unexpected error
                 raise
+
+    #This test cleans up sge related files
+    def test_11_cleanup_sge(self):
+        core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
+        try:
+            files.remove("/var/log/accounting", True)
+            probeconfig = core.config['gratia.config.dir'] + "/sge/ProbeConfig"
+            owner = os.path.basename(os.path.dirname(probeconfig))
+            files.restore(probeconfig, owner)
+        except OSError, e:
+            if e.errno == 2:
+                # suppress "No such file or directory" error
+                pass
+            else:
+                # reraise the exception, as it's an unexpected error
+                raise
             
     #This test restores the mentioned gratia directory, if it was backed up 
-    def test_11_restore_varlibgratia(self):
+    def test_12_restore_varlibgratia(self):
         core.skip_ok_unless_installed('gratia-service')
         if 'gratia.varlibgratia-backedup' in core.state:
             files.remove('/var/lib/gratia', True)
@@ -207,7 +223,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             core.check_system(command, 'Could not restore /var/lib/gratia', shell=True)
             
     #This test restores the mentioned gratia-service directory, if it was backed up 
-    def test_12_restore_varlibgratiaservice(self):
+    def test_13_restore_varlibgratiaservice(self):
         core.skip_ok_unless_installed('gratia-service')
         if 'gratia.varlibgratia-service-backedup' in core.state:
             files.remove('/var/lib/gratia-service', True)
@@ -215,7 +231,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             core.check_system(command, 'Could not restore /var/lib/gratia-service', shell=True)
             
     #This test restores the mentioned gratia-service directory, if it was backed up 
-    def test_13_restore_etcgratia_collector_or_services(self):
+    def test_14_restore_etcgratia_collector_or_services(self):
         core.skip_ok_unless_installed('gratia-service')
         if 'gratia.etcgratia_collector_or_services-backedup' in core.state:
             gratia_directory_to_preserve = core.state['gratia.etcgratia_collector_or_services-backedup']

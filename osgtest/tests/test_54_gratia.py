@@ -533,3 +533,42 @@ class TestGratia(osgunittest.OSGTestCase):
         command = "echo " + "\""+ query + core.config['gratia.sql.querystring'],
         
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query MasterSummaryData table.', '30'), 'Failed Probe Data Validation in Database.') 
+
+    def test_31_modify_sge_probeconfig(self):
+        core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
+        probeconfig = core.config['gratia.config.dir'] + "/sge/ProbeConfig"
+        self.modify_probeconfig(probeconfig)
+        self.patternreplace(probeconfig, "SGEAccountingFile=\"\"", "SGEAccountingFile=\"/var/log/accounting\"")
+
+    def test_32_copy_sge_logs(self):
+        core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
+        core.state['gratia.sge-logs-copied'] = False
+        sge_log = '/usr/share/osg-test/gratia/accounting'
+        dst_dir = '/var/log'
+        self.assert_(self.copy_probe_logs(sge_log, dst_dir), "sge log copy failed.")
+        core.state['gratia.sge-logs-copied'] = True
+
+    def test_33_execute_sge(self):
+        core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
+        core.state['gratia.sge-running'] = False
+        self.skip_bad_if(core.state['gratia.sge-logs-copied'] == False)
+        if os.path.exists(core.config['gratia.log.file']):
+            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
+            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
+        command = ('/usr/share/gratia/sge/sge_meter.cron.sh',)
+        core.check_system(command, 'Unable to execute sge_meter.')
+        core.config['gratia.sge-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.sge" + core.config['gratia.tmpdir.postfix']
+        if(core.state['gratia.database-installed'] == True):
+            result = self.isProbeOutboxDirEmpty(core.config['gratia.sge-temp-dir'])
+            self.assert_(result,'sge outbox check failed.')
+        core.state['gratia.sge-running'] = True
+
+    def test_34_checkdatabase_sge(self):
+        core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
+        self.skip_bad_if(core.state['gratia.sge-running'] == False, 'Need to have sge running.')
+        self.assertEqual(True, self.isProbeInfoProcessed('sge'),     'Sentinel signifying that Probe Information was processed NOT found.')
+        probename="'sge:" + core.config['gratia.host']
+        query="use gratia_osgtest; select sum(nJobs) from MasterSummaryData where ProbeName=" + probename + "';"
+        command = "echo " + "\""+ query + core.config['gratia.sql.querystring'],
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to query Gratia Database MasterSummaryData table.', atLeastOneRecord=True), 'Failed Probe Data Validation in Database.')       
