@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # The way in which we download and/or install the YUM repository RPMs is unsafe,
 # because it assumes specific versions at specific URLs.  Ideally, we would have
@@ -15,14 +15,28 @@ on_error_die()
     fi
 }
 
+if [ $# -lt 1 ]; then
+    echo "Requires the major version number, i.e. 3.2 for 3.2.0"
+    echo "usage: $0 <major version> [testing|development]"
+    exit 1
+fi
+
+if [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
+    version=$1
+else
+    echo "Major version should be in the form of '<number>.<number>, i.e. 3.2"
+    echo "usage: $0 <major version> [testing|development]"
+    exit 1
+fi
+
 extra_repo=
-case $1 in
+case $2 in
     test|testing)     extra_repo='--enablerepo=osg-testing';;
     dev|development)  extra_repo='--enablerepo=osg-development';;
     '') ;;
     *)
         echo "$0: unknown option '$1'"
-        echo "usage: $0 [testing|development]"
+        echo "usage: $0 <major version> [testing|development]"
         exit 1
         ;;
 esac
@@ -33,12 +47,12 @@ case $release in
     *5.* )
         rpm_name='epel-release-5-4.noarch.rpm'
         rpm_path='http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
-        osg_name='osg-el5-release-latest.rpm'
+        osg_name="osg-$version-el5-release-latest.rpm"
         ;;
     *6.* )
         rpm_name='epel-release-6-8.noarch.rpm'
         rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
-        osg_name='osg-el6-release-latest.rpm'
+        osg_name="osg-$version-el6-release-latest.rpm"
         ;;
     * )
         echo 'Could not determine OS release'
@@ -66,7 +80,7 @@ fi
 osg_rpm=`rpm -q osg-release 2>/dev/null`
 if [ $? -eq 1 ]; then
     echo -n "Downloading $osg_name... "
-    curl --fail --location --output $osg_name --retry 10 --silent http://repo.grid.iu.edu/$osg_name
+    curl --fail --location --output $osg_name --retry 10 --silent http://repo.grid.iu.edu/osg/$version/$osg_name
     on_error_die "Could not download $osg_name"
     echo -n 'Installing osg-release... '
     rpm --install --nosignature $osg_name
