@@ -13,7 +13,7 @@ class TestInstall(osgunittest.OSGTestCase):
         try:
             core.check_system(pre + ('osg-release',), 'Verify osg-release')
         except AssertionError:
-            core.check_system(pre + ('osg-release',), 'Verify osg-release + osg-release-itb')
+            core.check_system(pre + ('osg-release-itb',), 'Verify osg-release + osg-release-itb')
 
     def test_02_clean_yum(self):
         pre = ('yum', '--enablerepo=*', 'clean')
