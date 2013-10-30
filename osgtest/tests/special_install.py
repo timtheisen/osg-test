@@ -9,7 +9,11 @@ class TestInstall(osgunittest.OSGTestCase):
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
         core.check_system(pre + ('epel-release',), 'Verify epel-release')
-        core.check_system(pre + ('osg-release',), 'Verify osg-release')
+        # If osg-release isn't installed, try osg-release-itb
+        try:
+            core.check_system(pre + ('osg-release',), 'Verify osg-release')
+        except AssertionError:
+            core.check_system(pre + ('osg-release',), 'Verify osg-release + osg-release-itb')
 
     def test_02_clean_yum(self):
         pre = ('yum', '--enablerepo=*', 'clean')
