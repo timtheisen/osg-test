@@ -28,37 +28,33 @@ class TestBestman(osgunittest.OSGTestCase):
         return self.get_srm_url_base() + TestBestman.__remote_path
 
     def test_01_ping(self):
-        command = ('srm-ping', self.get_srm_url_base())
+        command = ('srm-ping', self.get_srm_url_base(), '-debug')
         status, stdout, stderr = core.system(command, True)
-	fail = core.diagnose('Bestman Ping',
-                             status, stdout, stderr)
+        fail = core.diagnose('Bestman Ping', status, stdout, stderr)
         self.assertEqual(status, 0, fail) 
  
     def test_02_copy_local_to_server(self):
         os.chmod(TestBestman.__temp_dir, 0777)
-        command = ('srm-copy', 'file:///' + TestBestman.__data_path, self.get_srm_url())
+        command = ('srm-copy', 'file:///' + TestBestman.__data_path, self.get_srm_url(), '-debug')
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('Bestman copy, local to URL',
-                             status, stdout, stderr)
+        fail = core.diagnose('Bestman copy, local to URL', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__remote_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_03_copy_server_to_local(self):
-	command = ('srm-copy', self.get_srm_url(), 'file:///' + TestBestman.__local_path)
+        command = ('srm-copy', self.get_srm_url(), 'file:///' + TestBestman.__local_path, '-debug')
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('Bestman copy, URL to local',
-                             status, stdout, stderr)
+        fail = core.diagnose('Bestman copy, URL to local', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__local_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
-	files.remove(TestBestman.__local_path)
+        files.remove(TestBestman.__local_path)
 
     def test_04_remove_server_file(self):
-        command = ('srm-rm', self.get_srm_url())
+        command = ('srm-rm', self.get_srm_url(), '-debug')
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('Bestman remove, URL file',
-                             status, stdout, stderr)
+        fail = core.diagnose('Bestman remove, URL file', status, stdout, stderr)
         file_removed = not os.path.exists(TestBestman.__remote_path)    
         self.assertEqual(status, 0, fail)
         self.assert_(file_removed, 'Copied file still exists') 

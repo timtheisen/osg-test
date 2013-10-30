@@ -55,18 +55,27 @@ class TestStartBestman(osgunittest.OSGTestCase):
 
     def test_04_modify_bestman_conf(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
+
         bestman_rc_path = '/etc/bestman2/conf/bestman2.rc'
-	env_file = '/etc/sysconfig/bestman2'
         old_port = 'securePort=8443'
         new_port = 'securePort=10443'
+        files.replace(bestman_rc_path, old_port, new_port, backup=False)
         old_gridmap = 'GridMapFileName=/etc/bestman2/conf/grid-mapfile.empty'
         new_gridmap = 'GridMapFileName=/etc/grid-security/grid-mapfile'
-	old_auth = 'BESTMAN_GUMS_ENABLED=yes'
-	new_auth = 'BESTMAN_GUMS_ENABLED=no'
-	files.replace(bestman_rc_path, old_port, new_port, backup=False)
-	files.replace(bestman_rc_path, old_gridmap, new_gridmap, backup=False)
-	files.replace(env_file, old_auth, new_auth, backup=False)
+        files.replace(bestman_rc_path, old_gridmap, new_gridmap, backup=False)
+        files.replace(bestman_rc_path, 'eventLogLevel=INFO', 'eventLogLevel=DEBUG', backup=False)
+        core.system(('cat', bestman_rc_path))
 
+        env_file = '/etc/sysconfig/bestman2'
+        old_auth = 'BESTMAN_GUMS_ENABLED=yes'
+        new_auth = 'BESTMAN_GUMS_ENABLED=no'
+        files.replace(env_file, old_auth, new_auth, backup=False)
+
+        log4j_path = '/etc/bestman2/properties/log4j.properties'
+        log4j_contents = files.read(log4j_path, as_single_string=True)
+        log4j_contents = log4j_contents.replace('FATAL', 'INFO')
+        files.write(log4j_path, log4j_contents, backup=False)
+        
     def test_05_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
         core.state['bestman.started-server'] = False
