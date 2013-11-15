@@ -97,8 +97,10 @@ set server acl_host_enable = True
         core.state['torque.nodes-up'] = False
         if core.el_release() == 5:
             core.config['torque.pbs-nodes-file'] = '/var/torque/server_priv/nodes'
+            core.config['torque.pbs-servername-file'] = '/var/torque/server_name'
         elif core.el_release() == 6:
             core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
+            core.config['torque.pbs-servername-file'] = '/var/lib/torque/server_name'
         else:
             self.skip_ok('Distribution version not supported')
 
@@ -108,7 +110,11 @@ set server acl_host_enable = True
         # add the local node as a compute node
         files.write(core.config['torque.pbs-nodes-file'],
                     "%s np=1\n" % core.get_hostname(),
-                    owner='pbs') 
+                    owner='pbs')
+        # set hostname as servername instead of localhost
+        files.write(core.config['torque.pbs-servername-file'],
+                    "%s" % core.get_hostname(),
+                    owner='pbs')
         command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)
