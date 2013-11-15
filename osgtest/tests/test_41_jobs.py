@@ -1,6 +1,9 @@
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import unittest
+import tempfile
+import os
+import shutil
 
 class TestGlobusJobRun(osgunittest.OSGTestCase):
 
@@ -43,3 +46,34 @@ class TestGlobusJobRun(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'globus-job-run on PBS job', user=True)[0]
         self.assertEqual(stdout, 'hello\n',
                          'Incorrect output from globus-job-run on PBS job')
+
+    def test_04_blahp_pbs_job(self):
+        if core.missing_rpm('condor', 'blahp',
+                            'torque-mom', 'torque-server',
+                            'torque-scheduler'):
+            return
+
+        if (not core.state['torque.pbs-mom-running'] or
+            not core.state['torque.pbs-server-running']):
+          core.skip('pbs not running')
+          return
+
+        if (not core.state['condor.running-service']):
+          core.skip('condor not running')
+          return
+        
+        tmp_dir = tempfile.mkdtemp()
+        old_cwd = os.getcwd()
+        os.chdir(tmp_dir)
+        os.chmod(tmp_dir, 0777)
+        
+        command = "/usr/bin/condor_run -u grid -a grid_resource=pbs -a periodic_remove=JobStatus==5 /bin/echo hello".split()
+        stdout = core.check_system(command, 'condor_run on pbs job', user=True)[0]
+
+        os.chdir(old_cwd)
+        shutil.rmtree(tmp_dir)
+        
+        self.assertEqual(stdout, 'hello\n', 'Incorrect output from condor_run on pbs job')
+
+
+
