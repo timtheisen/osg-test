@@ -54,7 +54,7 @@ class TestGlexec(osgunittest.OSGTestCase):
 
         # OK, software is present, now just check it previous tests did create the proxy already so
         # we don't do it twice
-        command = ('grid-proxy-info','-f',self.__user_proxy_path)
+        command = ('grid-proxy-info', '-bits', '1024', '-f',self.__user_proxy_path)
         status, stdout, stderr = core.system(command, True)
 
         if int(status)!=0: # no proxy found for some reason, try to construct a new one
