@@ -213,7 +213,15 @@ if __name__ == '__main__':
     if len(tests) > 1:
         signal.signal(signal.SIGALRM, signal_alarm_handler)
         signal.alarm(core.options.timeout)
-        run_tests(tests)
+        try:
+            run_tests(tests)
+        except KeyboardInterrupt:
+            tests = []
+            if not core.options.skip_cleanup:
+                if core.options.tarballs:
+                    tests.append('osgtest.tarball_tests.special_cleanup')
+                tests.append('osgtest.tests.special_cleanup') # always safe
+            run_tests(tests)
         signal.alarm(0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
     else:
