@@ -34,6 +34,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['torque.pbs-lockfile']),
                      'PBS server run lock file still present')
 
+        files.restore(core.config['torque.pbs-servername-file'], 'pbs')
         core.state['torque.pbs-server-running'] = False
         core.state['torque.nodes-up'] = False
 
