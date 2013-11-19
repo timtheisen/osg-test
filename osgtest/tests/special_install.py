@@ -42,6 +42,21 @@ class TestInstall(osgunittest.OSGTestCase):
                     core.state['install.installed'].append(matches.group(1))
         core.state['install.success'] = True
 
+    def test_04_update_osg_release(self):
+        if not (core.options.updaterelease):
+            return
+
+        self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
+
+        self.assert_(re.match('\d+\.\d+', core.options.updaterelease), "Unrecognized updaterelease format")
+        rpm_url = 'http://repo.grid.iu.edu/osg/' + core.options.updaterelease + '/osg-' + core.options.updaterelease \
+            + '-' + str(core.el_release()) + '-release-latest.rpm'
+        command = ['rpm', '-Uvh', rpm_url]
+
+        # If update repos weren't specified, just use osg-release
+        if not core.options.updaterepo:
+            core.options.updaterepo='osg'
+        
     def test_04_update_packages(self):
         if not (core.options.updaterepo and core.state['install.installed']):
             return

@@ -34,6 +34,7 @@ def parse_command_line():
                 "skiptests": False,
                 "tarballs": False,
                 "timeout": 5400,          # 1.5 hours
+                "updaterelease": None,
                 "updaterepo": None,
                 "username": 'vdttest',
                 "verbose": False
@@ -113,6 +114,10 @@ def read_args():
                       dest='password',
                       help='Password for the grid certificate of the test user '
                       '(see -u below)')
+
+    p.add_option('--update-release', action='store', type='string', dest='updaterelease', metavar='RELEASE',
+                      help='osg RELEASE version to use when updating packages '
+                      'specified with the -i flag.')
 
     p.add_option('-r', '--extra-repo', action='append', type='string',
                       dest='extrarepos', metavar='REPO',

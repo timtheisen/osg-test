@@ -64,6 +64,7 @@ def start_log():
     _log.write('  - Dump file: %s\n' % options.dumpfile)
     _log.write('  - Install: %s\n' % ', '.join(options.packages))
     _log.write('  - Update repo: %s\n' % options.updaterepo)
+    _log.write('  - Update release: %s\n' % options.updaterelease)
     _log.write('  - No cleanup: %s\n' % str(options.skip_cleanup))
     _log.write('  - Extra repos: %s\n' % ', '.join(options.extrarepos))
     _log.write('  - Print test names: %s\n' % str(options.printtest))
