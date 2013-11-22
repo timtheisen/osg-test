@@ -42,7 +42,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         # the chances of a clean erase.
 
         rpm_erase_candidates = []
-        if core.options.updaterepo:
+        if core.options.updaterepo and 'install.updated' in core.state:
             special_install_rpms = core.state['install.installed'] + core.state['install.updated']
         else:
             special_install_rpms = core.state['install.installed']
