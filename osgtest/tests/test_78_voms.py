@@ -10,22 +10,9 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.certificates as certs
 
 class TestStopVOMS(osgunittest.OSGTestCase):
-
-    # Carefully removes a certificate with the given key.  Removes all
-    # paths associated with the key, as created by the install_cert()
-    # function.
-    def remove_cert(self, target_key):
-        if core.state.has_key(target_key):
-            os.remove(core.state[target_key])
-        if core.state.has_key(target_key + '-backup'):
-            shutil.move(core.state[target_key + '-backup'],
-                        core.state[target_key])
-        if core.state.has_key(target_key + '-dir'):
-            target_dir = core.state[target_key + '-dir']
-            if len(os.listdir(target_dir)) == 0:
-                os.rmdir(target_dir)
 
     # ==========================================================================
 
@@ -68,8 +55,8 @@ class TestStopVOMS(osgunittest.OSGTestCase):
 
     def test_04_remove_certs(self):
         # Do the keys first, so that the directories will be empty for the certs.
-        self.remove_cert('certs.vomskey')
-        self.remove_cert('certs.vomscert')
-        self.remove_cert('certs.httpkey')
-        self.remove_cert('certs.httpcert')
+        certs.remove_cert('certs.vomskey')
+        certs.remove_cert('certs.vomscert')
+        certs.remove_cert('certs.httpkey')
+        certs.remove_cert('certs.httpcert')
         core.state['voms.removed-certs'] = True

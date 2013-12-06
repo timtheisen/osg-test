@@ -138,3 +138,19 @@ def install_cert(target_key, source_key, owner_name, permissions):
     core.state[target_key] = target_path
     os.chown(target_path, user.pw_uid, user.pw_gid)
     os.chmod(target_path, permissions)
+
+def remove_cert(self, target_key):
+    """
+    Carefully removes a certificate with the given key.  Removes all
+    paths associated with the key, as created by the install_cert()
+    function.
+    """
+    if core.state.has_key(target_key):
+        os.remove(core.state[target_key])
+    if core.state.has_key(target_key + '-backup'):
+        shutil.move(core.state[target_key + '-backup'],
+                    core.state[target_key])
+    if core.state.has_key(target_key + '-dir'):
+        target_dir = core.state[target_key + '-dir']
+        if len(os.listdir(target_dir)) == 0:
+            os.rmdir(target_dir)
