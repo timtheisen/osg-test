@@ -54,6 +54,7 @@ class TestStopVOMS(osgunittest.OSGTestCase):
 
 
     def test_04_remove_certs(self):
+        core.state['voms.removed-certs'] = False
         # Do the keys first, so that the directories will be empty for the certs.
         certs.remove_cert('certs.vomskey')
         certs.remove_cert('certs.vomscert')

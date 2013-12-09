@@ -139,7 +139,7 @@ def install_cert(target_key, source_key, owner_name, permissions):
     os.chown(target_path, user.pw_uid, user.pw_gid)
     os.chmod(target_path, permissions)
 
-def remove_cert(self, target_key):
+def remove_cert(target_key):
     """
     Carefully removes a certificate with the given key.  Removes all
     paths associated with the key, as created by the install_cert()
