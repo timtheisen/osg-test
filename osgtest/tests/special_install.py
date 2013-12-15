@@ -42,6 +42,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
         # Install packages
         core.state['install.installed'] = []
+        failed = []
         for package in core.options.packages:
             if core.rpm_is_installed(package):
                 continue
@@ -49,15 +50,24 @@ class TestInstall(osgunittest.OSGTestCase):
             for repo in core.options.extrarepos:
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
-            stdout = core.check_system(command, 'Install %s' % (package))[0]
-            command = ('rpm', '--verify', package)
-            core.check_system(command, 'Verify %s' % (package))
+            status, stdout, sterr = core.system(command)
 
-            # Parse output for order of installs
-            for line in stdout.strip().split('\n'):
-                matches = self.install_regexp.match(line)
-                if matches is not None:
-                    core.state['install.installed'].append(matches.group(1))     
+            if status != 0:
+                failed.append(package)
+            else:
+                command = ('rpm', '--verify', package)
+                core.check_system(command, 'Verify %s' % (package))
+
+                # Parse output for order of installs
+                for line in stdout.strip().split('\n'):
+                    matches = self.install_regexp.match(line)
+                    if matches is not None:
+                        core.state['install.installed'].append(matches.group(1))
+        if failed:
+            fail_msg = 'Install:'
+            for package in failed:
+                fail_msg = fail_msg + ' %s' % package
+            self.fail(fail_msg)
         core.state['install.success'] = True
 
     def test_04_update_osg_release(self):
