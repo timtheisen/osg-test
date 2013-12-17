@@ -29,19 +29,15 @@ class TestInstall(osgunittest.OSGTestCase):
         el_version = core.el_release()
         if el_version == 5:
             # enable rollback
-            files.append('/etc/yum.conf', 'tsflags=repackage', owner='install')
-            files.append('/etc/rpm/macros', '%_repackage_all_erasures 1', owner='install')
+            core.config['install.yum_conf'] = '/etc/yum.conf'
+            core.config['install.rpm_macros'] = '/etc/rpm/macros'
+            files.append(core.config['install.yum_conf'], 'tsflags=repackage', owner='install')
+            files.append(core.config['install.rpm_macros'], '%_repackage_all_erasures 1', owner='install')
             core.state['install.rollback_time'] = time.strftime('%F %H:%M:%S')
-        elif el_version == 6:
-            command = ('yum', 'history', 'info')
-            stdout = core.check_system(command, 'Get yum Transaction ID')[0]
-            m = re.search('Transaction ID : (\d*)', stdout)
-            core.state['install.transaction_id'] = m.group(1)
-        else:
-            self.fail('Unknown EL release')
 
         # Install packages
         core.state['install.installed'] = []
+        core.state['install.transaction_ids'] = []
         failed = []
         for package in core.options.packages:
             if core.rpm_is_installed(package):
@@ -55,6 +51,14 @@ class TestInstall(osgunittest.OSGTestCase):
             if status != 0:
                 failed.append(package)
             else:
+                # RHEL6 doesn't have the rollback option so we have to store the transaction id's so
+                # we can undo each transaction in the proper order
+                if el_version == 6:
+                    command = ('yum', 'history', 'info')
+                    history_out = core.check_system(command, 'Get yum Transaction ID')[0]
+                    m = re.search('Transaction ID : (\d*)', history_out)
+                    core.state['install.transaction_ids'].append(m.group(1))
+
                 command = ('rpm', '--verify', package)
                 core.check_system(command, 'Verify %s' % (package))
 

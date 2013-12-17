@@ -25,13 +25,17 @@ class TestCleanup(osgunittest.OSGTestCase):
         el_version = core.el_release()
 
         if el_version == 6:
-            command = ('yum', 'history', 'rollback', '-y', core.state['install.transaction_id'])
-            core.check_system(command, 'Rollback installs and upates')
+            core.state['install.transaction_ids'].reverse()
+            for transaction in core.state['install.transaction_ids']:
+                command = ('yum', 'history', 'undo', '-y', transaction)
+                core.check_system(command, 'Undo yum transaction')
         elif el_version == 5:
             # Rollback on EL5 only rolls back updates so we need to keep the logic
             # for new packages we've actually installed
             command = ('rpm', '-Uvh', '--rollback', core.state['install.rollback_time'])
             core.check_system(command, 'Rollback upates')
+            files.restore(core.config['install.yum_conf'], 'install')
+            files.restore(core.config['install.rpm_macros'], 'install')
             
             new_rpms = set(core.state['install.installed'])
             if len(new_rpms) == 0:
@@ -86,9 +90,6 @@ class TestCleanup(osgunittest.OSGTestCase):
             package_count = len(rpm_erase_list)
             command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
             core.check_system(command, 'Remove %d packages' % (package_count))
-        else:
-            self.fail('Unknown EL release')            
-
 
     def test_02_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
