@@ -11,9 +11,8 @@ class TestSetupVomsAdmin(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('voms-admin-server')
 
-        line, gap = core.monitor_file(core.config['voms.webapp-log'],
-                                      core.state['voms.webapp-log-stat'],
-                                      'VOMS-Admin started succesfully', 60.0)
+        line, gap = core.monitor_file(core.config['voms.webapp-log'], core.state['voms.webapp-log-stat'],
+                                      'VOMS-Admin started succesfully', 120.0)
         self.assert_(line is not None, 'VOMS Admin webapp started')
         core.state['voms.started-webapp'] = True
         core.log_message('VOMS Admin started after %.1f seconds' % gap)
@@ -22,8 +21,6 @@ class TestSetupVomsAdmin(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
         self.skip_ok_unless(core.state['voms.started-webapp'], 'VOMS Admin webapp not started')
 
-        command = ('voms-admin', '--nousercert',
-                   '--vo', core.config['voms.vo'],
-                   'add-ACL-entry', '/' + core.config['voms.vo'], 'ANYONE',
-                   'VOMS_CA', 'CONTAINER_READ,MEMBERSHIP_READ', 'true')
+        command = ('voms-admin', '--nousercert', '--vo', core.config['voms.vo'], 'add-ACL-entry',
+                   '/' + core.config['voms.vo'], 'ANYONE', 'VOMS_CA', 'CONTAINER_READ,MEMBERSHIP_READ', 'true')
         core.check_system(command, 'Add VOMS Admin ACL entry')
