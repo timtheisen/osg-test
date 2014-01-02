@@ -38,7 +38,7 @@ class TestInstall(osgunittest.OSGTestCase):
         # Install packages
         core.state['install.installed'] = []
         core.state['install.transaction_ids'] = []
-        failed = []
+        fail_msg = ''
         for package in core.options.packages:
             if core.rpm_is_installed(package):
                 continue
@@ -46,10 +46,10 @@ class TestInstall(osgunittest.OSGTestCase):
             for repo in core.options.extrarepos:
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
-            status, stdout, sterr = core.system(command)
+            status, stdout, stderr = core.system(command)
 
             if status != 0:
-                failed.append(package)
+                fail_msg = fail_msg + core.diagnose('Installation of %s failed' % package, status, stdout, stderr)
             else:
                 # RHEL6 doesn't have the rollback option so we have to store the transaction id's so
                 # we can undo each transaction in the proper order
@@ -67,10 +67,7 @@ class TestInstall(osgunittest.OSGTestCase):
                     matches = self.install_regexp.match(line)
                     if matches is not None:
                         core.state['install.installed'].append(matches.group(1))
-        if failed:
-            fail_msg = 'Install:'
-            for package in failed:
-                fail_msg = fail_msg + ' %s' % package
+        if fail_msg:
             self.fail(fail_msg)
         core.state['install.success'] = True
 
