@@ -7,7 +7,12 @@ import unittest
 
 class TestInstall(osgunittest.OSGTestCase):
     install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
-    
+
+    def clean_yum(self):
+        pre = ('yum', '--enablerepo=*', 'clean')
+        core.check_system(pre + ('all',), 'YUM clean all')
+        core.check_system(pre + ('expire-cache',), 'YUM clean cache')
+
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
         core.check_system(pre + ('epel-release',), 'Verify epel-release')
@@ -18,10 +23,8 @@ class TestInstall(osgunittest.OSGTestCase):
             core.check_system(pre + ('osg-release-itb',), 'Verify osg-release + osg-release-itb')
 
     def test_02_clean_yum(self):
-        pre = ('yum', '--enablerepo=*', 'clean')
-        core.check_system(pre + ('all',), 'YUM clean all')
-        core.check_system(pre + ('expire-cache',), 'YUM clean cache')
-
+        self.clean_yum()
+        
     def test_03_install_packages(self):
         core.state['install.success'] = False
 
@@ -85,6 +88,7 @@ class TestInstall(osgunittest.OSGTestCase):
             + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Update osg-release')
+        self.clean_yum()
         
         # If update repos weren't specified, just use osg-release
         if not core.options.updaterepo:
