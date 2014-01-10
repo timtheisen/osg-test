@@ -3,15 +3,19 @@ import osgtest.library.osgunittest as osgunittest
 import osgtest.library.files as files
 import re
 import time
-import unittest
 
 class TestInstall(osgunittest.OSGTestCase):
-    install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
-
     def clean_yum(self):
         pre = ('yum', '--enablerepo=*', 'clean')
         core.check_system(pre + ('all',), 'YUM clean all')
         core.check_system(pre + ('expire-cache',), 'YUM clean cache')
+
+    def parse_install_output(self, stdout):
+        install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
+        for line in stdout:
+            matches = install_regexp.match(line)
+            if matches is not None:
+                core.state['install.installed'].append(matches.group(1))
 
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
@@ -65,11 +69,8 @@ class TestInstall(osgunittest.OSGTestCase):
                 command = ('rpm', '--verify', package)
                 core.check_system(command, 'Verify %s' % (package))
 
-                # Parse output for order of installs
-                for line in stdout.strip().split('\n'):
-                    matches = self.install_regexp.match(line)
-                    if matches is not None:
-                        core.state['install.installed'].append(matches.group(1))
+                self.parse_install_output(stdout.strip().split('\n'))
+                
         if fail_msg:
             self.fail(fail_msg)
         core.state['install.success'] = True
@@ -92,7 +93,7 @@ class TestInstall(osgunittest.OSGTestCase):
         
         # If update repos weren't specified, just use osg-release
         if not core.options.updaterepo:
-            core.options.updaterepo='osg'
+            core.options.updaterepo = 'osg'
         
     def test_04_update_packages(self):
         if not (core.options.updaterepo and core.state['install.installed']):
@@ -107,10 +108,8 @@ class TestInstall(osgunittest.OSGTestCase):
             command += [package]
         stdout = core.check_system(command, 'Update packages')[0]
 
-        # Parse output for order of installs and to differentiate between update and installs
-        for line in stdout.strip().split('\n'):
-            if self.install_regexp.match(line) is not None:
-                core.state['install.installed'].append(install_matches.group(1))
+        # Parse output for order of installs
+        self.parse_install_output(stdout.strip().split('\n'))
 
     def test_05_fix_java_symlinks(self):
         # This implements Section 5.1.2 of
