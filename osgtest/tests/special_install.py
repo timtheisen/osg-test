@@ -1,8 +1,6 @@
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.files as files
 import re
-import time
 
 class TestInstall(osgunittest.OSGTestCase):
     def clean_yum(self):
@@ -11,12 +9,18 @@ class TestInstall(osgunittest.OSGTestCase):
         core.check_system(pre + ('expire-cache',), 'YUM clean cache')
 
     def parse_install_output(self, stdout):
+        core.state['install.installed'] = []
+        core.state['install.updated'] = []
         install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
+        update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
         for line in stdout:
-            matches = install_regexp.match(line)
-            if matches is not None:
-                core.state['install.installed'].append(matches.group(1))
-
+            install_matches = install_regexp.match(line)
+            update_matches = update_regexp.match(line)
+            if install_matches is not None:
+                core.state['install.installed'].append(install_matches.group(1))
+            if update_matches is not None:
+                core.state['install.updated'].append(update_matches.group(1))
+                
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
         core.check_system(pre + ('epel-release',), 'Verify epel-release')
@@ -34,16 +38,8 @@ class TestInstall(osgunittest.OSGTestCase):
 
         # Grab pre-install state
         el_version = core.el_release()
-        if el_version == 5:
-            # enable rollback
-            core.config['install.yum_conf'] = '/etc/yum.conf'
-            core.config['install.rpm_macros'] = '/etc/rpm/macros'
-            files.append(core.config['install.yum_conf'], 'tsflags=repackage', owner='install')
-            files.append(core.config['install.rpm_macros'], '%_repackage_all_erasures 1', owner='install')
-            core.state['install.rollback_time'] = time.strftime('%F %H:%M:%S')
 
         # Install packages
-        core.state['install.installed'] = []
         core.state['install.transaction_ids'] = []
         fail_msg = ''
         for package in core.options.packages:
@@ -101,7 +97,6 @@ class TestInstall(osgunittest.OSGTestCase):
         
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
-        update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
         command = ['yum', 'update', '-y']
         command.append('--enablerepo=%s' % core.options.updaterepo)
         for package in core.state['install.installed']:

@@ -3,7 +3,6 @@ import os.path
 import pwd
 import re
 import shutil
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -17,6 +16,49 @@ class TestCleanup(osgunittest.OSGTestCase):
     # But in this module, functions are skipped due to other runtime conditions,
     # so the correct behavior is to log a message and return.
 
+    def list_special_install_rpms(self, rpm_list):
+        # For the "rpm -e" command, RPMs should be listed in the same order as
+        # installed.  Why?  The erase command processes files in reverse order
+        # as listed on the command line, mostly; it seems to do a bit of
+        # reordering (search -vv output for "tsort"), but it is not clear what
+        # the algorithm is.  So, rpm will cheerfully erase a package, the
+        # contents of which are needed by the pre- or post-uninstall scriptlets
+        # of a package that will be erased later in sequence.  By listing them
+        # in yum install order, we presumably get a valid ordering and increase
+        # the chances of a clean erase.
+        
+        rpm_candidates = []
+        for package in rpm_list:
+            status, stdout, _ = core.system(('rpm', '--query', package, '--queryformat', r'%{NAME}'))
+            if status == 0 and stdout in rpm_list:
+                rpm_candidates.append(stdout)
+        remaining_rpms = set(rpm_list) - set(rpm_candidates)
+        count = len(remaining_rpms)
+        if count > 0:
+            core.log_message('%d RPMs installed but not in yum output' % count)
+            rpm_candidates += remaining_rpms
+
+        # Creating the list of RPMs to erase/downgrade is more complicated than just using
+        # the list of new RPMs, because there may be RPMs with both 32- and
+        # 64-bit versions installed.  In that case, rpm will fail if given just
+        # the base package name; instead, the architecture must be specified,
+        # and an easy way to get that information is from 'rpm -q'.  So we use
+        # the bare name when possible, and the fully versioned one when
+        # necessary.
+            
+        final_rpm_list = []
+        for package in rpm_candidates:
+            command = ('rpm', '--query', package, '--queryformat',
+                       r'%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n')
+            status, stdout, _  = core.system(command, log_output=False)
+            versioned_rpms = re.split('\n', stdout.strip())
+            if len(versioned_rpms) > 1:
+                final_rpm_list += versioned_rpms
+            else:
+                final_rpm_list.append(package)
+
+        return final_rpm_list
+
     def test_01_remove_packages(self):
         if 'install.installed' not in core.state:
             core.log_message('No packages installed')
@@ -25,68 +67,25 @@ class TestCleanup(osgunittest.OSGTestCase):
         el_version = core.el_release()
 
         if el_version == 6:
+            # Rolling back is a lot more reliable in yum post EL5
             core.state['install.transaction_ids'].reverse()
             for transaction in core.state['install.transaction_ids']:
                 command = ('yum', 'history', 'undo', '-y', transaction)
                 core.check_system(command, 'Undo yum transaction')
         elif el_version == 5:
-            # Rollback on EL5 only rolls back updates so we need to keep the logic
-            # for new packages we've actually installed
-            command = ('rpm', '-Uvh', '--rollback', core.state['install.rollback_time'])
-            core.check_system(command, 'Rollback upates')
-            files.restore(core.config['install.yum_conf'], 'install')
-            files.restore(core.config['install.rpm_macros'], 'install')
-            
-            new_rpms = set(core.state['install.installed'])
+            # rpm -Uvh --rollback was very finicky so we had to
+            # spin up our own method of rolling back installations
+            new_rpms = set(core.state['install.installed']) 
             if len(new_rpms) == 0:
                 core.log_message('No new RPMs')
                 return
 
-            # For the "rpm -e" command, RPMs should be listed in the same order as
-            # installed.  Why?  The erase command processes files in reverse order
-            # as listed on the command line, mostly; it seems to do a bit of
-            # reordering (search -vv output for "tsort"), but it is not clear what
-            # the algorithm is.  So, rpm will cheerfully erase a package, the
-            # contents of which are needed by the pre- or post-uninstall scriptlets
-            # of a package that will be erased later in sequence.  By listing them
-            # in yum install order, we presumably get a valid ordering and increase
-            # the chances of a clean erase.
+            rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
+            package_count = len(rpm_downgrade_list)
+            command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
+            core.check_system(command, 'Remove %d packages' % (package_count))
 
-            rpm_erase_candidates = []
-            special_install_rpms = core.state['install.installed']
-            for package in special_install_rpms:
-                status, stdout, stderr = core.system(('rpm', '--query', package, '--queryformat', r'%{NAME}'))
-                if status == 0 and stdout in new_rpms:
-                    rpm_erase_candidates.append(stdout)
-            remaining_new_rpms = new_rpms - set(rpm_erase_candidates)
-            count = len(remaining_new_rpms)
-            if count > 0:
-                core.log_message('%d RPMs installed but not in yum output' % count)
-                rpm_erase_candidates += remaining_new_rpms
-
-            # Samba dependencies break cleanup on fermicloud SL6 VM's (SOFTWARE-1140)
-            if 'samba-winbind' in rpm_erase_candidates:
-                rpm_erase_candidates.remove('samba-winbind')
-            
-            # Creating the list of RPMs to erase is more complicated than just using
-            # the list of new RPMs, because there may be RPMs with both 32- and
-            # 64-bit versions installed.  In that case, rpm will fail if given just
-            # the base package name; instead, the architecture must be specified,
-            # and an easy way to get that information is from 'rpm -q'.  So we use
-            # the bare name when possible, and the fully versioned one when
-            # necessary.
-
-            rpm_erase_list = []
-            for package in rpm_erase_candidates:
-                command = ('rpm', '--query', package, '--queryformat',
-                           r'%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n')
-                status, stdout, stderr = core.system(command, log_output=False)
-                versioned_rpms = re.split('\n', stdout.strip())
-                if len(versioned_rpms) > 1:
-                    rpm_erase_list += versioned_rpms
-                else:
-                    rpm_erase_list.append(package)
-
+            rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
             package_count = len(rpm_erase_list)
             command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
             core.check_system(command, 'Remove %d packages' % (package_count))
