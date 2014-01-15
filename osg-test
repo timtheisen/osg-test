@@ -171,10 +171,7 @@ def discover_tests():
         args.append('osgtest.tarball_tests.special_install')
     if not core.options.skiptests:
         args += test_files
-    if not core.options.skip_cleanup:
-        if core.options.tarballs:
-            args.append('osgtest.tarball_tests.special_cleanup')
-        args.append('osgtest.tests.special_cleanup') # always safe
+    self.add_cleanup(args)
     return args
 
 def run_tests(a_argv):
@@ -196,14 +193,19 @@ def wrap_up():
 
 def signal_alarm_handler(signal_number, stack_frame):
     if stack_frame is not None:
-        core.log_message('Caught alarm:\n' + ''.join(traceback.format_stack(None)))
+        core.log_message('\nCaught alarm:\n' + ''.join(traceback.format_stack(None)))
     wrap_up()
 
     # Use a hard abort here, because sys.exit() just raises an exception, which
     # is caught by the runner, which then cheerfully continues running all tests
     os.abort()
 
-
+def add_cleanup(self, tests):
+    if not core.options.skip_cleanup:
+        if core.options.tarballs:
+            tests.append('osgtest.tarball_tests.special_cleanup')
+        tests.append('osgtest.tests.special_cleanup') # always safe
+    
 # ------------------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------------------
@@ -222,10 +224,7 @@ if __name__ == '__main__':
             run_tests(tests)
         except KeyboardInterrupt:
             tests = []
-            if not core.options.skip_cleanup:
-                if core.options.tarballs:
-                    tests.append('osgtest.tarball_tests.special_cleanup')
-                tests.append('osgtest.tests.special_cleanup') # always safe
+            self.add_cleanup(tests)
             run_tests(tests)
         signal.alarm(0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
