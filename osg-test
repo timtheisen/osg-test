@@ -171,7 +171,7 @@ def discover_tests():
         args.append('osgtest.tarball_tests.special_install')
     if not core.options.skiptests:
         args += test_files
-    self.add_cleanup(args)
+    add_cleanup(args)
     return args
 
 def run_tests(a_argv):
@@ -200,7 +200,7 @@ def signal_alarm_handler(signal_number, stack_frame):
     # is caught by the runner, which then cheerfully continues running all tests
     os.abort()
 
-def add_cleanup(self, tests):
+def add_cleanup(tests):
     if not core.options.skip_cleanup:
         if core.options.tarballs:
             tests.append('osgtest.tarball_tests.special_cleanup')
@@ -224,7 +224,7 @@ if __name__ == '__main__':
             run_tests(tests)
         except KeyboardInterrupt:
             tests = []
-            self.add_cleanup(tests)
+            add_cleanup(tests)
             run_tests(tests)
         signal.alarm(0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
