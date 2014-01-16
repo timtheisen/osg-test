@@ -75,12 +75,6 @@ class TestCleanup(osgunittest.OSGTestCase):
         elif el_version == 5:
             # rpm -Uvh --rollback was very finicky so we had to
             # spin up our own method of rolling back installations
-            if len(core.state['install.updated']) != 0:
-                rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
-                package_count = len(rpm_downgrade_list)
-                command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
-                core.check_system(command, 'Remove %d packages' % (package_count))
-
             if len(core.state['install.installed']) != 0:
                 rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
                 package_count = len(rpm_erase_list)
@@ -89,6 +83,12 @@ class TestCleanup(osgunittest.OSGTestCase):
             else:
                 core.log_message('No new RPMs')
                 return
+            
+            if len(core.state['install.updated']) != 0:
+                rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
+                package_count = len(rpm_downgrade_list)
+                command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
+                stdout, _, _ = core.check_system(command, 'Remove %d packages' % (package_count))
 
     def test_02_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
