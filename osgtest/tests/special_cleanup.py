@@ -75,6 +75,16 @@ class TestCleanup(osgunittest.OSGTestCase):
         elif el_version == 5:
             # rpm -Uvh --rollback was very finicky so we had to
             # spin up our own method of rolling back installations
+            if len(core.state['install.updated']) != 0:
+                rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
+                package_count = len(rpm_downgrade_list)
+                command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
+                stdout, _, _ = core.check_system(command, 'Remove %d packages' % (package_count))
+                # Yum will happily remove dependencies of packages we want to downgrade
+                # so we need to remove these packages from the installed list
+                for package in re.finditer('Erasing\s*: ([-\.-w]*)', stdout):
+                    core.state['install.installed'].remove(package.group(1))
+
             if len(core.state['install.installed']) != 0:
                 rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
                 package_count = len(rpm_erase_list)
@@ -84,12 +94,6 @@ class TestCleanup(osgunittest.OSGTestCase):
                 core.log_message('No new RPMs')
                 return
             
-            if len(core.state['install.updated']) != 0:
-                rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
-                package_count = len(rpm_downgrade_list)
-                command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
-                stdout, _, _ = core.check_system(command, 'Remove %d packages' % (package_count))
-
     def test_02_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
             files.restore(core.config['system.mapfile'], 'user')
