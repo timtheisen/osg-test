@@ -51,7 +51,7 @@ class TestInstall(osgunittest.OSGTestCase):
         # Install packages
         core.state['install.transaction_ids'] = []
         fail_msg = ''
-        deadline = time.time() + 1800   # 30 minutes from now
+        deadline = time.time() + 3600   # 1 hour from now
         for package in core.options.packages:
 
             # Do not try to re-install packages
