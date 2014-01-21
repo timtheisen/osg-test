@@ -24,7 +24,7 @@ class TestInstall(osgunittest.OSGTestCase):
             if update_matches is not None:
                 core.state['install.updated'].append(update_matches.group(1))
 
-    def install_failure_can_be_retried(output):
+    def install_failure_can_be_retried(self, output):
         """Scan 'yum install' output to see if a retry might succeed."""
         if re.search(r'Error Downloading Packages:\n.*No more mirrors to try', output):
             return True
@@ -89,7 +89,7 @@ class TestInstall(osgunittest.OSGTestCase):
                     break
 
                 # Deal with failures that can be retried
-                elif install_failure_can_be_retried(stdout):
+                elif self.install_failure_can_be_retried(stdout):
                     time.sleep(30)
                     core.log_message('Retrying install of %s' % (package))
                     continue
