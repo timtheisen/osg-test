@@ -15,6 +15,7 @@ class TestGlobusJobRun(osgunittest.OSGTestCase):
             'globus-gatekeeper', 'globus-gram-client-tools',
             'globus-proxy-utils', 'globus-gram-job-manager',
             'globus-gram-job-manager-fork-setup-poll')
+        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
         
         command = ('globus-job-run', self.contact_string('fork'), '/bin/echo', 'hello')
         stdout = core.check_system(command, 'globus-job-run on fork job', user=True)[0]
@@ -23,7 +24,7 @@ class TestGlobusJobRun(osgunittest.OSGTestCase):
 
     def test_02_condor_job(self):
         core.skip_ok_unless_installed('globus-gram-job-manager-condor', 'globus-gram-client-tools', 'globus-proxy-utils')
-        
+        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
         self.skip_bad_unless(core.state['condor.running-service'], message='Condor service not running')
 
         command = ('globus-job-run', self.contact_string('condor'), '/bin/echo', 'hello')
@@ -34,7 +35,7 @@ class TestGlobusJobRun(osgunittest.OSGTestCase):
     def test_03_pbs_job(self):
         core.skip_ok_unless_installed('globus-gram-job-manager-pbs', 'globus-gram-client-tools', 'globus-proxy-utils')
         # ^ should also check for torque rpms?
-
+        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
         if (not core.state['torque.pbs-configured'] or
             not core.state['torque.pbs-mom-running'] or
             not core.state['torque.pbs-server-running'] or
@@ -48,19 +49,11 @@ class TestGlobusJobRun(osgunittest.OSGTestCase):
                          'Incorrect output from globus-job-run on PBS job')
 
     def test_04_blahp_pbs_job(self):
-        if core.missing_rpm('condor', 'blahp',
-                            'torque-mom', 'torque-server',
-                            'torque-scheduler'):
-            return
-
-        if (not core.state['torque.pbs-mom-running'] or
-            not core.state['torque.pbs-server-running']):
-          core.skip('pbs not running')
-          return
-
-        if (not core.state['condor.running-service']):
-          core.skip('condor not running')
-          return
+        core.skip_ok_unless_installed('condor', 'blahp','torque-mom', 'torque-server', 'torque-scheduler')
+        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['condor.running-service'], 'condor not running')
+        self.skip_bad_unless(core.state['torque.pbs-mom-running'] and core.state['torque.pbs-server-running'],
+                             'pbs not running')
         
         tmp_dir = tempfile.mkdtemp()
         old_cwd = os.getcwd()
