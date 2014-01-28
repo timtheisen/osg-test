@@ -351,7 +351,7 @@ def __format_command(command):
         if part == '':
             result.append("''")
         elif re.search(r"[' \\]", part):
-            result.append("'" + part + "'")
+            result.append('"' + part + '"')
         else:
             result.append(part)
     return result
