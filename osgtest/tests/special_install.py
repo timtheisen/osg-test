@@ -12,8 +12,6 @@ class TestInstall(osgunittest.OSGTestCase):
         core.check_system(pre + ('expire-cache',), 'YUM clean cache')
 
     def parse_install_output(self, stdout):
-        core.state['install.installed'] = []
-        core.state['install.updated'] = []
         install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
         update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
         for line in stdout:
@@ -44,6 +42,8 @@ class TestInstall(osgunittest.OSGTestCase):
 
     def test_03_install_packages(self):
         core.state['install.success'] = False
+        core.state['install.installed'] = []
+        core.state['install.updated'] = []
 
         # Grab pre-install state
         el_version = core.el_release()
