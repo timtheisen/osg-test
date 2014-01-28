@@ -1,5 +1,5 @@
 import os
-import os.path
+import re
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.certificates as certs
@@ -45,11 +45,18 @@ class TestUser(unittest.TestCase):
         # Set up certificate
         shutil.copy2('/usr/share/osg-test/usercert.pem', globus_dir)
         shutil.copy2('/usr/share/osg-test/userkey.pem', globus_dir)
-        os.chmod(os.path.join(globus_dir, 'usercert.pem'), 0644)
-        os.chmod(os.path.join(globus_dir, 'userkey.pem'), 0400)
-        os.chown(os.path.join(globus_dir, 'usercert.pem'), user.pw_uid, user.pw_gid)
-        os.chown(os.path.join(globus_dir, 'userkey.pem'), user.pw_uid, user.pw_gid)
+        user_cert = os.path.join(globus_dir, 'usercert.pem')
+        user_key = os.path.join(globus_dir, 'userkey.pem')
+        os.chmod(user_cert, 0644)
+        os.chmod(user_key, 0400)
+        os.chown(user_cert, user.pw_uid, user.pw_gid)
+        os.chown(user_key, user.pw_uid, user.pw_gid)
 
+        command = ('openssl', 'x509', '-in', user_cert, '-noout', '-subject')
+        stdout , _, _ = core.check_system(command, 'could not read user cert')
+        stdout = re.sub('subject= ', '', stdout)
+        core.config['user.cert_subject'] = re.sub('\n', '', stdout)
+        
     def test_02_user(self):
         if core.options.skiptests or not core.options.adduser:
             core.skip('no user needed')

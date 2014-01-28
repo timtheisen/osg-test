@@ -1,7 +1,7 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import unittest
 
 class TestStopCondor(osgunittest.OSGTestCase):
 
@@ -14,5 +14,7 @@ class TestStopCondor(osgunittest.OSGTestCase):
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(not os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file still present')
+
+        files.restore(core.config['condor.condor-cfg'], 'condor')
 
         core.state['condor.running-service'] = False

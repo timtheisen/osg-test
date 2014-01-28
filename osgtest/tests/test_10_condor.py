@@ -1,11 +1,24 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import unittest
 
 class TestStartCondor(osgunittest.OSGTestCase):
 
-    def test_01_start_condor(self):
+    def test_01_write_config(self):
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+
+        core.config['condor.condor-cfg'] = '/etc/condor/config.d/99-osgtest.conf'
+        contents = """
+QUEUE_SUPER_USER_MAY_IMPERSONATE = vdttest
+SCHEDD_INTERVAL=5
+"""
+        files.write(core.config['condor.condor-cfg'],
+                    contents,
+                    owner='condor',
+                    chmod=0644)
+
+    def test_02_start_condor(self):
         core.config['condor.lockfile'] = ''
         core.state['condor.started-service'] = False
         core.state['condor.running-service'] = False
