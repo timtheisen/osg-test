@@ -15,6 +15,9 @@ class TestStopCondor(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file still present')
 
-        files.restore(core.config['condor.condor-cfg'], 'condor')
-
         core.state['condor.running-service'] = False
+
+    def test_02_restore_config(self):
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')        
+
+        files.restore(core.config['condor.condor-cfg'], 'condor')
