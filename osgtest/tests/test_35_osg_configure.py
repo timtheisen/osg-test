@@ -56,6 +56,9 @@ class TestOSGConfigure(osgunittest.OSGTestCase):
     
     def test_02_cemon(self):
         core.skip_ok_unless_installed(*self.required_rpms_ce)
+
+        self.skip_ok_if(core.osg_release(self) == '3.2', 'cemon not supported in OSG > 3.1')
+        
         try:
             import test_cemon
             mesg = self.__run_unit_tests(test_cemon.TestCEMon)

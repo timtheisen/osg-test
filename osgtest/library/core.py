@@ -443,6 +443,16 @@ def el_release():
             sys.exit(1)
     return _el_release
 
+def osg_release(test_module):
+    """
+    Return the version of osg-release. If the query fails, the test module fails.
+    """
+    try:
+        _, _, osg_release_ver, _, _  = get_package_envra('osg-release')
+    except OSError:
+        osgunittest.unittest.TestCase.fail(test_module, 'Could not query osg-release') # aka...how...why?
+    return osg_release_ver
+
 def get_hostname():
     """
     Returns the hostname of the current system, returns None if it can't
