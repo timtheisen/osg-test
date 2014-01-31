@@ -60,7 +60,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         return final_rpm_list
 
     def test_01_remove_packages(self):
-        if 'install.installed' not in core.state:
+        if len(core.state['install.installed']) == 0:
             core.log_message('No packages installed')
             return
 

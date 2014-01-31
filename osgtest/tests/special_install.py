@@ -45,9 +45,6 @@ class TestInstall(osgunittest.OSGTestCase):
         core.state['install.installed'] = []
         core.state['install.updated'] = []
 
-        # Grab pre-install state
-        el_version = core.el_release()
-
         # Install packages
         core.state['install.transaction_ids'] = []
         fail_msg = ''
@@ -78,7 +75,7 @@ class TestInstall(osgunittest.OSGTestCase):
                     # RHEL 6 does not have the rollback option, so store the
                     # transaction IDs so we can undo each transaction in the
                     # proper order
-                    if el_version == 6:
+                    if core.el_release() == 6:
                         command = ('yum', 'history', 'info')
                         history_out = core.check_system(command, 'Get yum Transaction ID')[0]
                         m = re.search('Transaction ID : (\d*)', history_out)
@@ -130,14 +127,41 @@ class TestInstall(osgunittest.OSGTestCase):
         
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
-        command = ['yum', 'update', '-y']
-        command.append('--enablerepo=%s' % core.options.updaterepo)
-        for package in core.state['install.installed']:
-            command += [package]
-        stdout = core.check_system(command, 'Update packages')[0]
+        # Update packages
+        fail_msg = ''
+        deadline = time.time() + 3600   # 1 hour from now
+        while True:
+            
+            # Stop (re)trying if the deadline has passed
+            if time.time() > deadline:
+                fail_msg += 'Update attempt(s) terminated after timeout period'
+                break
 
-        # Parse output for order of installs
-        self.parse_install_output(stdout.strip().split('\n'))
+            command = ['yum', 'update', '-y']
+            command.append('--enablerepo=%s' % core.options.updaterepo)
+            for package in core.state['install.installed']:
+                command += [package]
+            status, stdout, stderr = core.system(command)
+
+            # Deal with success
+            if status == 0:
+                self.parse_install_output(stdout.strip().split('\n'))
+                break
+
+            # Deal with failures that can be retried
+            elif self.install_failure_can_be_retried(stdout):
+                time.sleep(30)
+                core.log_message('Retrying update') 
+                continue
+
+            # Otherwise, we do not expect a retry to succeed, ever, so fail
+            # this package
+            else:
+                fail_msg = fail_msg + core.diagnose('Update failed', status, stdout, stderr)
+                break
+
+        if fail_msg:
+            self.fail(fail_msg)
 
     def test_06_fix_java_symlinks(self):
         # This implements Section 5.1.2 of
