@@ -10,6 +10,14 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestVOMS(osgunittest.OSGTestCase):
 
+    def proxy_info(self,msg):
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
+        self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
+
+        command = ('voms-proxy-info', '-all')
+        stdout = core.check_system(command, 'Run voms-proxy-info', user=True)[0]
+        self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, msg)
+
     def test_01_add_user(self):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
 
@@ -22,7 +30,7 @@ class TestVOMS(osgunittest.OSGTestCase):
                    user_cert_dn, user_cert_issuer, 'OSG Test User', 'root@localhost')
         core.check_system(command, 'Add VO user')
 
-    def test_02_voms_proxy_init(self):
+    def test_02_good_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
 
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
@@ -33,14 +41,9 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.state['voms.got-proxy'] = True
 
     def test_03_voms_proxy_info(self):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
-        self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
+        self.proxy_info('voms-proxy-info output has sentinel')
 
-        command = ('voms-proxy-info', '-all')
-        stdout = core.check_system(command, 'Run voms-proxy-info', user=True)[0]
-        self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, 'voms-proxy-info output has sentinel')
-
-    def test_04_voms_proxy_init(self):
+    def test_04_bad_voms_proxy_init(self):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
@@ -51,14 +54,19 @@ class TestVOMS(osgunittest.OSGTestCase):
 
     # Copy of 03 above, to make sure failure did not affect good proxy
     def test_05_voms_proxy_info(self):
+        self.proxy_info('second voms-proxy-info output is ok')
+
+    def test_06_rfc_voms_proxy_init(self):
+        core.state['voms.got-proxy'] = False
+
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
-        self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
-        command = ('voms-proxy-info', '-all')
-        stdout = core.check_system(command, 'Run voms-proxy-info', user=True)[0]
-        self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, 'second voms-proxy-info output is ok')
+        command = ('voms-proxy-init', '-voms', core.config['voms.vo'], '-rfc')
+        password = core.options.password + '\n'
+        core.check_system(command, 'Run voms-proxy-init', user=True, stdin=password)
+        core.state['voms.got-proxy'] = True
 
-    def test_06_voms_proxy_check(self):
+    def test_07_voms_proxy_check(self):
     	"""
     	Check generated proxies to make sure that they use the same signing
     	algorithm as the certificate
