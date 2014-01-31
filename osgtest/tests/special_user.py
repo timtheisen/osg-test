@@ -43,8 +43,7 @@ class TestUser(unittest.TestCase):
             os.chmod(globus_dir, 0755)
 
         # Set up certificate
-        shutil.copy2('/usr/share/osg-test/usercert.pem', globus_dir)
-        shutil.copy2('/usr/share/osg-test/userkey.pem', globus_dir)
+        certs.create_user_cert(globus_dir, core.options.username)
         user_cert = os.path.join(globus_dir, 'usercert.pem')
         user_key = os.path.join(globus_dir, 'userkey.pem')
         os.chmod(user_cert, 0644)
@@ -52,10 +51,7 @@ class TestUser(unittest.TestCase):
         os.chown(user_cert, user.pw_uid, user.pw_gid)
         os.chown(user_key, user.pw_uid, user.pw_gid)
 
-        command = ('openssl', 'x509', '-in', user_cert, '-noout', '-subject')
-        stdout , _, _ = core.check_system(command, 'could not read user cert')
-        stdout = re.sub('subject= ', '', stdout)
-        core.config['user.cert_subject'] = re.sub('\n', '', stdout)
+        core.config['user.cert_subject'], _ = certs.certificate_info(user_cert)
         
     def test_02_user(self):
         if core.options.skiptests or not core.options.adduser:
