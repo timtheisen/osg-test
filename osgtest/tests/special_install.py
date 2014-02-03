@@ -22,10 +22,13 @@ class TestInstall(osgunittest.OSGTestCase):
             if update_matches is not None:
                 core.state['install.updated'].append(update_matches.group(1))
 
-    def install_failure_can_be_retried(self, output):
-        """Scan 'yum install' output to see if a retry might succeed."""
-        if re.search(r'Error Downloading Packages:\n.*No more mirrors to try', output):
-            return True
+    def yum_failure_can_be_retried(self, output):
+        """Scan yum output to see if a retry might succeed."""
+        whitelist = [r'Error Downloading Packages:\n.*No more mirrors to try',
+                     r'Could not retrieve mirrorlist.*\nerror was \[Errno 12\] Timeout: <urlopen error timed out>']
+        for regex in whitelist:
+            if re.search(regex, output):
+                return True
         return False
 
     def get_yum_transaction_id(self):
@@ -90,7 +93,7 @@ class TestInstall(osgunittest.OSGTestCase):
                     break
 
                 # Deal with failures that can be retried
-                elif self.install_failure_can_be_retried(stdout):
+                elif self.yum_failure_can_be_retried(stdout):
                     time.sleep(30)
                     core.log_message('Retrying install of %s' % (package))
                     continue
@@ -158,7 +161,7 @@ class TestInstall(osgunittest.OSGTestCase):
                 break
 
             # Deal with failures that can be retried
-            elif self.install_failure_can_be_retried(stdout):
+            elif self.yum_failure_can_be_retried(stdout):
                 time.sleep(30)
                 core.log_message('Retrying update') 
                 continue
