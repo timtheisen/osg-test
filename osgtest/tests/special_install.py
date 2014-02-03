@@ -7,11 +7,12 @@ import osgtest.library.osgunittest as osgunittest
 class TestInstall(osgunittest.OSGTestCase):
 
     def clean_yum(self):
+        deadline = time.time() + 3600
         pre = ('yum', '--enablerepo=*', 'clean')
-        core.check_system(pre + ('all',), 'YUM clean all')
-        core.check_system(pre + ('expire-cache',), 'YUM clean cache')
+        self.retry_command(pre + ('all',), deadline)
+        self.retry_command(pre + ('expire-cache',), deadline)
 
-    def parse_install_output(self, stdout):
+    def parse_output_for_packages(self, stdout):
         install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
         update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
         for line in stdout:
@@ -22,6 +23,36 @@ class TestInstall(osgunittest.OSGTestCase):
             if update_matches is not None:
                 core.state['install.updated'].append(update_matches.group(1))
 
+    def retry_command(self, command, deadline):
+        fail_msg, status, stdout, stderr = '', '', '', ''
+        # Loop for retries
+        while True:
+            
+            # Stop (re)trying if the deadline has passed
+            if time.time() > deadline:
+                fail_msg += "Retries terminated after timeout period" 
+                break
+
+            status, stdout, stderr = core.system(command)
+
+            # Deal with success
+            if status == 0:
+                break
+
+            # Deal with failures that can be retried
+            elif self.yum_failure_can_be_retried(stdout):
+                time.sleep(30)
+                core.log_message("Retrying command")
+                continue
+
+            # Otherwise, we do not expect a retry to succeed, ever, so fail
+            # this package
+            else:
+                fail_msg = core.diagnose("Command failed", status, stdout, stderr)
+                break
+            
+        return fail_msg, status, stdout, stderr
+                
     def yum_failure_can_be_retried(self, output):
         """Scan yum output to see if a retry might succeed."""
         whitelist = [r'Error Downloading Packages:\n.*No more mirrors to try',
@@ -65,44 +96,25 @@ class TestInstall(osgunittest.OSGTestCase):
             if core.rpm_is_installed(package):
                 continue
 
-            # Loop for retries
-            while True:
+            # Attempt installation
+            command = ['yum', '-y']
+            for repo in core.options.extrarepos:
+                command.append('--enablerepo=%s' % repo)
+            command += ['install', package]
 
-                # Stop (re)trying if the deadline has passed
-                if time.time() > deadline:
-                    fail_msg += 'Installation attempt(s) terminated after timeout period'
-                    break
-
-                # Attempt installation
-                command = ['yum', '-y']
-                for repo in core.options.extrarepos:
-                    command.append('--enablerepo=%s' % repo)
-                command += ['install', package]
-                status, stdout, stderr = core.system(command)
-
-                # Deal with success
-                if status == 0:
+            retry_fail, status, stdout, stderr = self.retry_command(command, deadline)
+            if retry_fail == '':
+            # This means retry the command succeeded
+                if core.el_release() == 6:
                     # RHEL 6 does not have the rollback option, so store the
                     # transaction IDs so we can undo each transaction in the
                     # proper order
-                    if core.el_release() == 6:
-                        core.state['install.transaction_ids'].append(self.get_yum_transaction_id())
-                    command = ('rpm', '--verify', package)
-                    core.check_system(command, 'Verify %s' % (package))
-                    self.parse_install_output(stdout.strip().split('\n'))
-                    break
+                    core.state['install.transaction_ids'].append(self.get_yum_transaction_id())
+                command = ('rpm', '--verify', package)
+                core.check_system(command, 'Verify %s' % (package))
+                self.parse_output_for_packages(stdout.strip().split('\n'))
 
-                # Deal with failures that can be retried
-                elif self.yum_failure_can_be_retried(stdout):
-                    time.sleep(30)
-                    core.log_message('Retrying install of %s' % (package))
-                    continue
-
-                # Otherwise, we do not expect a retry to succeed, ever, so fail
-                # this package
-                else:
-                    fail_msg = fail_msg + core.diagnose('Installation of %s failed' % package, status, stdout, stderr)
-                    break
+            fail_msg += retry_fail
                 
         if fail_msg:
             self.fail(fail_msg)
@@ -140,37 +152,15 @@ class TestInstall(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
         # Update packages
-        fail_msg = ''
         deadline = time.time() + 3600   # 1 hour from now
-        while True:
-            
-            # Stop (re)trying if the deadline has passed
-            if time.time() > deadline:
-                fail_msg += 'Update attempt(s) terminated after timeout period'
-                break
 
-            command = ['yum', 'update', '-y']
-            command.append('--enablerepo=%s' % core.options.updaterepo)
-            for package in core.state['install.installed']:
-                command += [package]
-            status, stdout, stderr = core.system(command)
+        command = ['yum', 'update', '-y']
+        command.append('--enablerepo=%s' % core.options.updaterepo)
+        for package in core.state['install.installed']:
+            command += [package]
 
-            # Deal with success
-            if status == 0:
-                self.parse_install_output(stdout.strip().split('\n'))
-                break
-
-            # Deal with failures that can be retried
-            elif self.yum_failure_can_be_retried(stdout):
-                time.sleep(30)
-                core.log_message('Retrying update') 
-                continue
-
-            # Otherwise, we do not expect a retry to succeed, ever, so fail
-            # this package
-            else:
-                fail_msg = fail_msg + core.diagnose('Update failed', status, stdout, stderr)
-                break
+        fail_msg, status, stdout, stderr = self.retry_command(command, deadline)
+        self.parse_install_output(stdout.strip().split('\n'))
 
         if fail_msg:
             self.fail(fail_msg)
