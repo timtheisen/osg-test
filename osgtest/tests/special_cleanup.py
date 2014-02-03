@@ -59,7 +59,21 @@ class TestCleanup(osgunittest.OSGTestCase):
 
         return final_rpm_list
 
-    def test_01_remove_packages(self):
+    def test_01_downgrade_osg_release(self):
+        if not (core.options.updaterelease):
+            return
+
+        self.skip_ok_unless(core.state['install.release-updated'], 'release not updated')
+
+        command = ['rpm', '-e', 'osg-release']
+        core.check_system(command, 'Erase osg-release')
+        
+        rpm_url = 'http://repo.grid.iu.edu/osg/' + core.config['install.original-release-ver']+ '/osg-' + \
+            core.config['install.original-release-ver'] + '-el' + str(core.el_release()) + '-release-latest.rpm'
+        command = ['rpm', '-Uvh', rpm_url]
+        core.check_system(command, 'Downgrade osg-release')
+        
+    def test_02_remove_packages(self):
         if len(core.state['install.installed']) == 0:
             core.log_message('No packages installed')
             return
@@ -93,13 +107,13 @@ class TestCleanup(osgunittest.OSGTestCase):
             else:
                 core.log_message('No new RPMs')
                 return
-            
-    def test_02_restore_mapfile(self):
+
+    def test_03_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
             files.restore(core.config['system.mapfile'], 'user')
 
 
-    def test_03_cleanup_test_certs(self):
+    def test_04_cleanup_test_certs(self):
         if core.state['certs.dir_created']:
             files.remove('/etc/grid-security/certificates', force=True)
         else:
@@ -116,7 +130,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             
         certs.cleanup_files()
 
-    def test_04_remove_test_user(self):
+    def test_05_remove_test_user(self):
         if not core.state['general.user_added']:
             core.log_message('Did not add user')
             return
@@ -136,7 +150,7 @@ class TestCleanup(osgunittest.OSGTestCase):
 
     # The backups test should always be last, in case any prior tests restore
     # files from backup.
-    def test_05_backups(self):
+    def test_06_backups(self):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''

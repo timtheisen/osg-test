@@ -28,6 +28,13 @@ class TestInstall(osgunittest.OSGTestCase):
             return True
         return False
 
+    def get_yum_transaction_id(self):
+        """Grab the latest transaction ID from yum"""
+        command = ('yum', 'history', 'info')
+        history_out = core.check_system(command, 'Get yum Transaction ID')[0]
+        m = re.search('Transaction ID : (\d*)', history_out)
+        return m.group(1)
+
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
         core.check_system(pre + ('epel-release',), 'Verify epel-release')
@@ -76,10 +83,7 @@ class TestInstall(osgunittest.OSGTestCase):
                     # transaction IDs so we can undo each transaction in the
                     # proper order
                     if core.el_release() == 6:
-                        command = ('yum', 'history', 'info')
-                        history_out = core.check_system(command, 'Get yum Transaction ID')[0]
-                        m = re.search('Transaction ID : (\d*)', history_out)
-                        core.state['install.transaction_ids'].append(m.group(1))
+                        core.state['install.transaction_ids'].append(self.get_yum_transaction_id())
                     command = ('rpm', '--verify', package)
                     core.check_system(command, 'Verify %s' % (package))
                     self.parse_install_output(stdout.strip().split('\n'))
@@ -105,7 +109,10 @@ class TestInstall(osgunittest.OSGTestCase):
         if not (core.options.updaterelease):
             return
 
+        core.state['install.release-updated'] = False
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
+
+        core.config['install.original-release-ver'] = core.osg_release(self)
 
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')
@@ -120,6 +127,8 @@ class TestInstall(osgunittest.OSGTestCase):
         # If update repos weren't specified, just use osg-release
         if not core.options.updaterepo:
             core.options.updaterepo = 'osg'
+
+        core.state['install.release-updated'] = True
         
     def test_05_update_packages(self):
         if not (core.options.updaterepo and core.state['install.installed']):
