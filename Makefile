@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 
 PACKAGE := osg-test
-VERSION := 1.4.7
+VERSION := 1.4.8
 
 
 # ------------------------------------------------------------------------------
@@ -21,8 +21,6 @@ CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.*
 INSTALL_CA_CERT_DIR := etc/grid-security/certificates
 
 SHARE_DIR := files
-CERT_FILE := $(SHARE_DIR)/usercert.pem
-CERT_KEY := $(SHARE_DIR)/userkey.pem
 OPENSSL_EXT_FILE := $(SHARE_DIR)/openssl-cert-extensions.conf
 OSG_CA_FILES := $(SHARE_DIR)/OSG-Test-CA.*
 TEST_FILES := $(SHARE_DIR)/test_*
@@ -90,8 +88,6 @@ install:
 	install -p -m 0644 $(CA_CERT_FILES) $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
 	for f in $(CA_CERT_FILES); do b=`basename $$f`; n=`echo $$b | sed -e 's/4eca18ce/bffdd190/g'`; ln -sf $$b $(DESTDIR)/$(INSTALL_CA_CERT_DIR)/$$n; done
 	mkdir -p $(DESTDIR)/$(INSTALL_SHARE_DIR)
-	install -p -m 0644 $(CERT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
-	install -p -m 0400 $(CERT_KEY) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(OPENSSL_EXT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(OSG_CA_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(TEST_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
