@@ -1,6 +1,7 @@
 """Support and convenience functions for tests."""
 
 
+import errno
 import os
 import os.path
 import re
@@ -395,7 +396,13 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
 
     # Run and return command
     p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell)
-    (stdout, stderr) = p.communicate(a_input)
+    try:
+        (stdout, stderr) = p.communicate(a_input)
+    except OSError, e:
+        if e.errno == errno.EPIPE:
+            (stdout, stderr) = p.communicate()
+        else:
+            raise
 
     # Log
     stdout_length = 0
