@@ -220,24 +220,24 @@ class TestGratia(osgunittest.OSGTestCase):
         
     #This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
     def test_04_modify_gridftptransfer_probeconfig(self):
-
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         probeconfig = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         
     #This test copies the necessary files for gridftp test
     def test_05_copy_gridftp_logs(self):
-
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         core.state['gratia.gridftp-logs-copied'] = False
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.assert_(self.copy_probe_logs(), "gridftp log copy failed.")
         core.state['gratia.gridftp-logs-copied'] = True
 
 
     #This test executes the GridftpTransferProbeDriver
     def test_06_execute_gridftptransfer_probedriver(self):
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         core.state['gratia.gridftp-transfer-running'] = False
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service', 'globus-gridftp-server-progs'
+                                      'globus-ftp-client', 'globus-proxy-utils', 'globus-gass-copy-progs')
+        self.skip_ok_unless(core.state['gridftp.started-server'], 'gridftp server not running')
         self.skip_bad_if(core.state['gratia.gridftp-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
@@ -380,10 +380,12 @@ class TestGratia(osgunittest.OSGTestCase):
         
     #This test executes condor_meter
     def test_18_execute_condor_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')  
         core.state['gratia.condor-meter-running'] = False
+        core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service', 'globus-gram-job-manager-condor',
+                                      'globus-gram-client-tools', 'globus-proxy-utils')  
         self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
-        self.skip_ok_if(core.state['condor.running-service'] == False, 'Condor service is not running.')
+        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['condor.running-service'], message='Condor service not running')
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
