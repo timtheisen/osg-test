@@ -235,10 +235,10 @@ class TestGratia(osgunittest.OSGTestCase):
     #This test executes the GridftpTransferProbeDriver
     def test_06_execute_gridftptransfer_probedriver(self):
         core.state['gratia.gridftp-transfer-running'] = False
-        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service', 'globus-gridftp-server-progs'
+        core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service', 'globus-gridftp-server-progs',
                                       'globus-ftp-client', 'globus-proxy-utils', 'globus-gass-copy-progs')
         self.skip_ok_unless(core.state['gridftp.started-server'], 'gridftp server not running')
-        self.skip_bad_if(core.state['gratia.gridftp-logs-copied'] == False)
+        self.skip_bad_unless(core.state['gratia.gridftp-logs-copied'], 'gridftp logs not copied')
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
@@ -255,7 +255,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
 
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
-        self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False)   
+        self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False, 'gridftp transfer probe not running')
                        
         self.assertEqual(True, self.isProbeInfoProcessed('gridftp-transfer'), 'Sentinel signifying that Probe Information was processed NOT found.')
         
