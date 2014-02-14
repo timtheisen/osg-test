@@ -372,7 +372,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
     elif not (isinstance(command, list) or isinstance(command, tuple)):
         raise TypeError, 'Need list or tuple, got %s' % (repr(command))
     if use_test_user:
-        command = ['su', '-c', ' '.join(map(__prepare_shell_argument, command)), options.username]
+        command = ['runuser', options.username, '-c', ' '.join(map(__prepare_shell_argument, command))]
 
     # Figure out stdin
     stdin = None
