@@ -160,7 +160,7 @@ class TestInstall(osgunittest.OSGTestCase):
             command += [package]
 
         fail_msg, status, stdout, stderr = self.retry_command(command, deadline)
-        self.parse_install_output(stdout.strip().split('\n'))
+        self.parse_output_for_packages(stdout.strip().split('\n'))
 
         if fail_msg:
             self.fail(fail_msg)
