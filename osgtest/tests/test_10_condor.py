@@ -9,8 +9,7 @@ class TestStartCondor(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
 
         core.config['condor.condor-cfg'] = '/etc/condor/config.d/99-osgtest.conf'
-        contents = """
-QUEUE_SUPER_USER_MAY_IMPERSONATE = vdttest
+        contents = """QUEUE_SUPER_USER_MAY_IMPERSONATE = vdttest
 SCHEDD_INTERVAL=5
 """
         files.write(core.config['condor.condor-cfg'],

@@ -1,3 +1,4 @@
+import os
 import re
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
@@ -5,8 +6,9 @@ import osgtest.library.osgunittest as osgunittest
 class TestCondorCE(osgunittest.OSGTestCase):
     def general_requirements(self):
         self.skip_ok_unless('condor-ce.started', 'ce not running')
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')  
-        
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor', 'lcmaps'
+                                      'lcas-lcmaps-gt4-interface')  
+
     def test_01_status(self):
         self.general_requirements()
 
@@ -29,5 +31,10 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_04_trace(self):
         self.general_requirements()
 
+        cwd = os.getcwd()
+        os.chdir('/tmp')
+        
         command = ('condor_ce_trace', core.get_hostname())
         core.check_system(command, 'ce trace', user=True)
+
+        os.chdir(cwd)
