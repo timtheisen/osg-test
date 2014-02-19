@@ -316,7 +316,7 @@ class TestRSV(osgunittest.OSGTestCase):
         self.run_metric('org.osg.general.osg-version')
         return
 
-    def test_075_switch_to_globus_job_run(self):
+    def test_075_switch_to_condor_g(self):
         core.skip_ok_unless_installed('rsv')
 
         self.use_condor_g()
