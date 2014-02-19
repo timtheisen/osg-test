@@ -1,7 +1,6 @@
 """Support and convenience functions for tests."""
 
 
-import errno
 import os
 import os.path
 import re
@@ -372,7 +371,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
     elif not (isinstance(command, list) or isinstance(command, tuple)):
         raise TypeError, 'Need list or tuple, got %s' % (repr(command))
     if use_test_user:
-        command = ['runuser', options.username, '-c', ' '.join(map(__prepare_shell_argument, command))]
+        command = ['su', '-c', ' '.join(map(__prepare_shell_argument, command)), options.username]
 
     # Figure out stdin
     stdin = None
@@ -396,13 +395,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
 
     # Run and return command
     p = subprocess.Popen(command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell)
-    try:
-        (stdout, stderr) = p.communicate(a_input)
-    except OSError, e:
-        if e.errno == errno.EPIPE:
-            (stdout, stderr) = p.communicate()
-        else:
-            raise
+    (stdout, stderr) = p.communicate(a_input)
 
     # Log
     stdout_length = 0
