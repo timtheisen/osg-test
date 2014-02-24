@@ -262,7 +262,22 @@ class TestOSGConfigure(osgunittest.OSGTestCase):
                 self.fail(mesg)
         except ImportError, e:
             self.fail("Can't import xml_utilities unit test: " + str(e))
-    
+
+    def test_22_info_services(self):
+        core.skip_ok_unless_installed(*self.required_rpms_ce)
+        osg_configure_envra = core.get_package_envra('osg-configure')
+        osg_configure_version = osg_configure_envra[2]
+        if tuple('.'.split(osg_configure_version)) < (1, 0, 51):
+            self.skip_ok("info_services unit test was added in osg-configure-1.0.51")
+
+        try:
+            import test_info_services
+            mesg = self.__run_unit_tests(test_info_services.TestInfoServices)
+            if mesg is not None:
+                self.fail(mesg)
+        except ImportError, e:
+            self.fail("Can't import info_services unit test: " + str(e))
+
     def test_99_teardown(self):
         "restore system library path"
         cls = self.__class__
