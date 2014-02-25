@@ -267,7 +267,7 @@ class TestOSGConfigure(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms_ce)
         osg_configure_envra = core.get_package_envra('osg-configure')
         osg_configure_version = osg_configure_envra[2]
-        if tuple('.'.split(osg_configure_version)) < (1, 0, 51):
+        if tuple(osg_configure_version.split('.')) < (1, 0, 51):
             self.skip_ok("info_services unit test was added in osg-configure-1.0.51")
 
         try:
