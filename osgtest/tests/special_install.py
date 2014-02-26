@@ -9,8 +9,8 @@ class TestInstall(osgunittest.OSGTestCase):
     def clean_yum(self):
         deadline = time.time() + 3600
         pre = ('yum', '--enablerepo=*', 'clean')
-        self.retry_command(pre + ('all',), deadline)
-        self.retry_command(pre + ('expire-cache',), deadline)
+        core.system(pre + ('all',))
+        core.system(pre + ('expire-cache',))
 
     def parse_output_for_packages(self, stdout):
         install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
@@ -33,6 +33,7 @@ class TestInstall(osgunittest.OSGTestCase):
                 fail_msg += "Retries terminated after timeout period" 
                 break
 
+            self.clean_yum()
             status, stdout, stderr = core.system(command)
 
             # Deal with success
@@ -55,8 +56,8 @@ class TestInstall(osgunittest.OSGTestCase):
                 
     def yum_failure_can_be_retried(self, output):
         """Scan yum output to see if a retry might succeed."""
-        whitelist = [r'Error Downloading Packages:\n.*No more mirrors to try',
-                     r'Could not retrieve mirrorlist.*\nerror was \[Errno 12\] Timeout: <urlopen error timed out>']
+        whitelist = [r'No more mirrors to try',
+                     r'Timeout: <urlopen error timed out>']
         for regex in whitelist:
             if re.search(regex, output):
                 return True
@@ -78,10 +79,7 @@ class TestInstall(osgunittest.OSGTestCase):
         except AssertionError:
             core.check_system(pre + ('osg-release-itb',), 'Verify osg-release + osg-release-itb')
 
-    def test_02_clean_yum(self):
-        self.clean_yum()
-
-    def test_03_install_packages(self):
+    def test_02_install_packages(self):
         core.state['install.success'] = False
         core.state['install.installed'] = []
         core.state['install.updated'] = []
@@ -120,7 +118,7 @@ class TestInstall(osgunittest.OSGTestCase):
             self.fail(fail_msg)
         core.state['install.success'] = True
 
-    def test_04_update_osg_release(self):
+    def test_03_update_osg_release(self):
         if not (core.options.updaterelease):
             return
 
@@ -137,7 +135,6 @@ class TestInstall(osgunittest.OSGTestCase):
             + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Update osg-release')
-        self.clean_yum()
         
         # If update repos weren't specified, just use osg-release
         if not core.options.updaterepo:
@@ -145,7 +142,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
         core.state['install.release-updated'] = True
         
-    def test_05_update_packages(self):
+    def test_04_update_packages(self):
         if not (core.options.updaterepo and core.state['install.installed']):
             return
         
@@ -165,7 +162,7 @@ class TestInstall(osgunittest.OSGTestCase):
         if fail_msg:
             self.fail(fail_msg)
 
-    def test_06_fix_java_symlinks(self):
+    def test_05_fix_java_symlinks(self):
         # This implements Section 5.1.2 of
         # https://twiki.opensciencegrid.org/bin/view/Documentation/Release3/InstallSoftwareWithOpenJDK7
         java7 = 'java-1.7.0-openjdk'
