@@ -74,6 +74,11 @@ class TestCleanup(osgunittest.OSGTestCase):
         core.check_system(command, 'Downgrade osg-release')
         
     def test_02_remove_packages(self):
+        # We didn't ask to install anything
+        if len(core.options.packages) == 0:
+            return
+
+        # Nothing actually got installed
         if len(core.state['install.installed']) == 0:
             core.log_message('No packages installed')
             return
