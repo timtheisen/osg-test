@@ -46,11 +46,11 @@ def create_ca(path):
     core.config['certs.test-ca'] = path + "/OSG-Test-CA.pem"
     core.config['certs.test-ca-key'] = path + "/OSG-Test-CA.key"
 
-    command = ("openssl", "genrsa", "-out", core.config['certs.test-ca-key'], "2048")
+    command = ('openssl', 'genrsa', '-out', core.config['certs.test-ca-key'], '2048')
     core.check_system(command, 'generate CA private key')
 
-    command = ("openssl", "req", "-sha256", "-new", "-x509", "-out", core.config['certs.test-ca'], "-key", 
-               core.config['certs.test-ca-key'], "-subj", ca_subject, "-config", openssl_config, "-days", days)
+    command = ('openssl', 'req', '-sha256', '-new', '-x509', '-out', core.config['certs.test-ca'], '-key', 
+               core.config['certs.test-ca-key'], '-subj', ca_subject, '-config', openssl_config, '-days', days)
     core.check_system(command, 'generate CA')
 
 def create_host_cert(path):
@@ -60,44 +60,39 @@ def create_host_cert(path):
     core.config['certs.hostkey'] = path + "/hostkey.pem"
     core.config['certs.hostcert'] = path + "/hostcert.pem"
 
-    command = ("openssl", "req", "-new", "-nodes", "-out", host_request, "-keyout", host_pk_der, "-subj",
+    command = ('openssl', 'req', '-new', '-nodes', '-out', host_request, '-keyout', host_pk_der, '-subj',
                host_cert_subject)
     core.check_system(command, 'generate host cert request')
     # Have to run the private key through RSA to get proper format (-keyform doesn't work in openssl > 0.9.8)
-    command = ("openssl", "rsa", "-in", host_pk_der, "-outform", "PEM", "-out", core.config['certs.hostkey']) 
-    core.check_system(command, "generate host private key") 
+    command = ('openssl', 'rsa', '-in', host_pk_der, '-outform', 'PEM', '-out', core.config['certs.hostkey']) 
+    core.check_system(command, 'generate host private key') 
     files.remove(host_pk_der)
     os.chmod(core.config['certs.hostkey'], 0400)
 
-    command = ("openssl", "ca", "-config", openssl_config, "-cert", core.config['certs.test-ca'], "-keyfile",
-               core.config['certs.test-ca-key'], "-days", days, "-policy", "policy_anything", "-preserveDN", "-extfile",
-               cert_ext_config, "-in", host_request, "-notext","-out", core.config['certs.hostcert'], "-outdir", ".",
-               "-batch")
-    core.check_system(command, "generate host cert")
+    command = ('openssl', 'ca', '-md', 'sha256', '-config', openssl_config, '-cert', core.config['certs.test-ca'], '-keyfile',
+               core.config['certs.test-ca-key'], '-days', days, '-policy', 'policy_anything', '-preserveDN', '-extfile',
+               cert_ext_config, '-in', host_request, '-notext','-out', core.config['certs.hostcert'], '-outdir', '.',
+               '-batch')
+    core.check_system(command, 'generate host cert')
 
 def create_user_cert(path, username):
     """Create a usercert similar to DigiCert's"""
-    user_pk_der = "userkey.der"
     user_request = 'user_req'
-    user_cert_subject = '/DC=org/DC=Open Science Grid/O=OSG Test/OU=Services/CN=' + username
+    user_cert_subject = '/DC=org/DC=Open Science Grid/O=OSG Test/OU=People/CN=' + username
     userkey = path + "/userkey.pem"
     usercert = path + "/usercert.pem"
 
-    command = ("openssl", "req", "-sha256", "-new", "-nodes", "-out", user_request, "-keyout", user_pk_der, "-subj",
-               user_cert_subject)
-    core.check_system(command, 'generate user cert request')
-    # Have to run the private key through RSA to get proper format (-keyform doesn't work in openssl > 0.9.8)
-    command = ("openssl", "rsa", "-in", user_pk_der, "-outform", "PEM", "-out", userkey) 
-    core.check_system(command, "generate user private key") 
-    files.remove(user_pk_der)
+    command = ("openssl", "req", "-sha256", "-new", "-out", user_request, "-keyout", userkey, "-subj",
+               user_cert_subject, '-passout', 'pass:' + core.options.password)
+    core.check_system(command, 'generate user cert request and key')
     os.chmod(userkey, 0400)
-
-    command = ("openssl", "ca", "-md", "sha256", "-config", openssl_config, "-cert", core.config['certs.test-ca'], "-keyfile",
-               core.config['certs.test-ca-key'], "-days", days, "-policy", "policy_anything", "-preserveDN", "-extfile",
-               cert_ext_config, "-in", user_request, "-notext","-out", usercert, "-outdir", ".",
-               "-batch")
+    
+    command = ('openssl', 'ca', '-md', 'sha256', '-config', openssl_config, '-cert', core.config['certs.test-ca'],
+               '-keyfile', core.config['certs.test-ca-key'], '-days', days, '-policy', 'policy_anything',
+               '-preserveDN', '-extfile', cert_ext_config, '-in', user_request, '-notext','-out', usercert,
+               '-outdir', '.', '-batch')
     core.check_system(command, "generate user cert")
- 
+    
 def create_crl():
     """Create CRL to accompany our CA."""
     core.config['certs.test-crl'] = os.path.dirname(core.config['certs.test-ca']) + "/OSG-Test-CA.r0"
