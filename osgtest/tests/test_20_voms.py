@@ -12,22 +12,6 @@ import osgtest.library.certificates as certs
 
 class TestStartVOMS(osgunittest.OSGTestCase):
 
-    def check_file_and_perms(self, file_path, owner_name, permissions):
-        """Return True if the file at 'file_path' exists, is owned by
-        'owner_name', is a file, and has the given permissions; False otherwise
-
-        """
-        owner_uid = pwd.getpwnam(owner_name)
-        try:
-            file_stat = os.stat(file_path)
-            return (file_stat.st_uid == owner_uid and
-                    file_stat.st_mode & 07777 == permissions and
-                    stat.S_ISREG(file_stat.st_mode))
-        except OSError: # file does not exist
-            return False
-
-    # ==================================================================
-
     def test_01_config_certs(self):
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
@@ -40,8 +24,8 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-server')
         vomscert = core.config['certs.vomscert']
         vomskey = core.config['certs.vomskey']
-        self.skip_ok_if(self.check_file_and_perms(vomscert, 'voms', 0644) and
-                        self.check_file_and_perms(vomskey, 'voms', 0400),
+        self.skip_ok_if(core.check_file_and_perms(vomscert, 'voms', 0644) and
+                        core.check_file_and_perms(vomskey, 'voms', 0400),
                         'VOMS cert exists and has proper permissions')
         certs.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0644)
         certs.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0400)
@@ -50,8 +34,8 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
-        self.skip_ok_if(self.check_file_and_perms(httpcert, 'tomcat', 0644) and
-                        self.check_file_and_perms(httpkey, 'tomcat', 0400),
+        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0644) and
+                        core.check_file_and_perms(httpkey, 'tomcat', 0400),
                         'HTTP cert exists and has proper permissions')
         certs.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         certs.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)

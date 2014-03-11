@@ -12,20 +12,6 @@ import osgtest.library.certificates as certs
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
-    def check_file_and_perms(self, file_path, owner_name, permissions):
-        """Return True if the file at 'file_path' exists, is owned by
-        'owner_name', is a file, and has the given permissions; False otherwise
- 
-        """
-        owner_uid = pwd.getpwnam(owner_name)
-        try:
-            file_stat = os.stat(file_path)
-            return (file_stat.st_uid == owner_uid and
-                    file_stat.st_mode & 07777 == permissions and
-                    stat.S_ISREG(file_stat.st_mode))
-        except OSError: # file does not exist
-            return False
-    
     def patternreplace(self, infile_name, pattern, full_line):
         """This helper method loops through the passed in infile line by line. 
      If it finds the passed in pattern, it replaces the whole line with
@@ -168,8 +154,8 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
-        self.skip_ok_if(self.check_file_and_perms(httpcert, 'tomcat', 0644) and
-                        self.check_file_and_perms(httpkey, 'tomcat', 0400),
+        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0644) and
+                        core.check_file_and_perms(httpkey, 'tomcat', 0400),
                         'HTTP cert exists and has proper permissions')
         certs.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         certs.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)

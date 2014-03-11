@@ -463,3 +463,21 @@ def get_hostname():
     except Exception:
         return None
     return None
+
+def check_file_and_perms(file_path, owner_name, permissions):
+        """Return True if the file at 'file_path' exists, is owned by                                                                                  \
+                                                                                                                                                        
+        'owner_name', is a file, and has the given permissions; False otherwise                                                                        \
+                                                                                                                                                        
+                                                                                                                                                       \
+                                                                                                                                                        
+        """
+        owner_uid = pwd.getpwnam(owner_name)
+        try:
+            file_stat = os.stat(file_path)
+            return (file_stat.st_uid == owner_uid and
+                    file_stat.st_mode & 07777 == permissions and
+                    stat.S_ISREG(file_stat.st_mode))
+        except OSError: # file does not exist                                                                                                          \
+                                                                                                                                                        
+            return False
