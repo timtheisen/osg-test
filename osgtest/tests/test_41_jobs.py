@@ -49,7 +49,7 @@ class TestGlobusJobRun(osgunittest.OSGTestCase):
                          'Incorrect output from globus-job-run on PBS job')
 
     def test_04_blahp_pbs_job(self):
-        core.skip_ok_unless_installed('condor', 'blahp','torque-mom', 'torque-server', 'torque-scheduler')
+        core.skip_ok_unless_installed('condor', 'blahp','torque-mom', 'torque-server', 'torque-scheduler', 'globus-gatekeeper')
         self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
         self.skip_bad_unless(core.state['condor.running-service'], 'condor not running')
         self.skip_bad_unless(core.state['torque.pbs-mom-running'] and core.state['torque.pbs-server-running'],
