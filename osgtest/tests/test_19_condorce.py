@@ -54,21 +54,21 @@ SCHEDD_INTERVAL=5
                      'Condor run lock file missing')
         core.state['condor.running-service'] = True
 
-#     def test_04_configure_gridmapfile(self):
-#         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+    def test_04_configure_gridmapfile(self):
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
 
-#         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
-#         condor_contents = "GRIDMAP = /etc/grid-security/grid-mapfile"
-#         files.write(core.config['condor-ce.condor-ce-cfg'],
-#                     condor_contents,
-#                     owner='condor-ce',
-#                     chmod=0644)
+        core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
+        condor_contents = "GRIDMAP = /etc/grid-security/grid-mapfile"
+        files.write(core.config['condor-ce.condor-ce-cfg'],
+                    condor_contents,
+                    owner='condor-ce',
+                    chmod=0644)
 
-#         core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
-#         lcmaps_contents = """authorize_only:
-# gridmapfile -> good | bad
-# """
-        # files.append(core.config['condor-ce.lcmapsdb'], lcmaps_contents, owner='condor-ce')
+        core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
+        lcmaps_contents = """authorize_only:
+gridmapfile -> good | bad
+"""
+        files.append(core.config['condor-ce.lcmapsdb'], lcmaps_contents, owner='condor-ce')
 
     def test_05_start_condorce(self):
         core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
