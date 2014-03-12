@@ -14,5 +14,9 @@ class TestStopCondorCE(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['condor-ce.lockfile']),
                      'HTCondor CE run lock file exists')
 
-        files.restore(core.config['condor-ce.mapfile'], 'condor-ce')
+    def test_02_restore_config(self):
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')        
 
+        files.restore(core.config['condor-ce.condor-cfg'], 'condor-ce')
+        # files.restore(core.config['condor-ce.condor-ce-cfg'], 'condor-ce')
+        # files.restore(core.config['condor-ce.lcmapsdb'], 'condor-ce')

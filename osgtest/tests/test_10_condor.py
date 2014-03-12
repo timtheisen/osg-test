@@ -5,21 +5,8 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStartCondor(osgunittest.OSGTestCase):
 
-    def test_01_write_config(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
-
-        core.config['condor.condor-cfg'] = '/etc/condor/config.d/99-osgtest.conf'
-        contents = """QUEUE_SUPER_USER_MAY_IMPERSONATE = vdttest
-SCHEDD_INTERVAL=5
-"""
-        files.write(core.config['condor.condor-cfg'],
-                    contents,
-                    owner='condor',
-                    chmod=0644)
-
-    def test_02_start_condor(self):
+    def test_01_start_condor(self):
         core.config['condor.lockfile'] = ''
-        core.state['condor.started-service'] = False
         core.state['condor.running-service'] = False
 
         core.skip_ok_unless_installed('condor')
@@ -41,5 +28,4 @@ SCHEDD_INTERVAL=5
         self.assert_(stdout.find('error') == -1, fail)
         self.assert_(os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file missing')
-        core.state['condor.started-service'] = True
         core.state['condor.running-service'] = True
