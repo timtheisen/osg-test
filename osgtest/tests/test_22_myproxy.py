@@ -25,8 +25,8 @@ class TestStartmyproxy(osgunittest.OSGTestCase):
         self.skip_ok_if(core.check_file_and_perms(myproxycert, 'myproxy', 0644) and
                         core.check_file_and_perms(myproxykey, 'myproxy', 0400),
                         'myproxy cert exists and has proper permissions')
-        certs.install_cert('certs.myproxycert', 'certs.hostcert', 'voms', 0644)
-        certs.install_cert('certs.myproxykey', 'certs.hostkey', 'voms', 0400)
+        certs.install_cert('certs.myproxycert', 'certs.hostcert', 'myproxy', 0644)
+        certs.install_cert('certs.myproxykey', 'certs.hostkey', 'myproxy', 0400)
 
     def test_03_config_myproxy(self):
         core.skip_ok_unless_installed('myproxy-server')
@@ -38,13 +38,13 @@ class TestStartmyproxy(osgunittest.OSGTestCase):
         core.state['myproxy.started-server'] = False
 
         core.skip_ok_unless_installed('myproxy-server')
-        self.skip_ok_if(os.path.exists(core.config['myproxy-server.lock-file']), 'apparently running')
+        self.skip_ok_if(os.path.exists(core.config['myproxy.lock-file']), 'apparently running')
 
-        command = ('service', '', 'start')
-        stdout, _, fail = core.check_system(command, 'Start VOMS service')
+        command = ('service', 'myproxy-server', 'start')
+        stdout, _, fail = core.check_system(command, 'Start myproxy-server service')
         self.assertEqual(stdout.find('FAILED'), -1, fail)
-        self.assert_(os.path.exists(core.config['voms.lock-file']),
-                     'VOMS server PID file is missing')
+        self.assert_(os.path.exists(core.config['myproxy.lock-file']),
+                     'myproxy server PID file is missing')
         core.state['myproxy.started-server'] = True
 
     

@@ -1,5 +1,4 @@
 import os
-import pwd
 import socket
 import stat
 import unittest

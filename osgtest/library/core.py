@@ -3,6 +3,7 @@
 
 import os
 import os.path
+import pwd
 import re
 import shutil
 import subprocess
