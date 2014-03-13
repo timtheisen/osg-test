@@ -14,7 +14,6 @@ import osgtest.library.certificates as certs
 
 class TestStopMyProxy(osgunittest.OSGTestCase):
 
-    # ==========================================================================
 
     def test_01_stop_myproxy(self):
         core.skip_ok_unless_installed('myproxy-server')
