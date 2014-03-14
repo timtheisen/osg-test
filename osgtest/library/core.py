@@ -76,6 +76,7 @@ def start_log():
     _log.write('  - Backup MySQL: %s\n' % str(options.backupmysql))
     _log.flush()
 
+
 def log_message(message):
     """Writes the message to the detailed log file.
 
@@ -91,9 +92,11 @@ def log_message(message):
     _log.write(message + '\n')
     _last_log_had_output = False
 
+
 def end_log():
     """Closes the detailed log file; not for general use."""
     _log.close()
+
 
 def dump_log(outfile=None):
     if outfile is None:
@@ -105,9 +108,11 @@ def dump_log(outfile=None):
     else:
         shutil.copy(_log_filename, outfile)
 
+
 def remove_log():
     """Removes the detailed log file; not for general use."""
     os.remove(_log_filename)
+
 
 def monitor_file(filename, old_stat, sentinel, timeout):
     """Monitors a file for the sentinel regex
@@ -130,7 +135,7 @@ def monitor_file(filename, old_stat, sentinel, timeout):
     the copy and truncate method of logrotation (i.e. the file is copied to a
     different location and the original file is truncated to 0).
     """
-    read_delay = 0.5 # Time to wait after reaching EOF and not finding the sentinel before trying again
+    read_delay = 0.5  # Time to wait after reaching EOF and not finding the sentinel before trying again
     sentinel_regex = re.compile(sentinel)
     start_time = time.time()
     end_time = start_time + timeout
@@ -143,7 +148,7 @@ def monitor_file(filename, old_stat, sentinel, timeout):
             new_stat = os.stat(filename)
             if ((old_stat is None) or
                 (new_stat.st_ino != old_stat.st_ino) or
-                (new_stat.st_size < old_stat.st_size)):
+                    (new_stat.st_size < old_stat.st_size)):
                 initial_position = 0
             else:
                 initial_position = old_stat.st_size
@@ -170,6 +175,7 @@ def monitor_file(filename, old_stat, sentinel, timeout):
         monitored_file.close()
     return (None, None)
 
+
 def system(command, user=None, stdin=None, log_output=True, shell=False):
     """Runs a command and returns its exit status, stdout, and stderr.
 
@@ -193,6 +199,7 @@ def system(command, user=None, stdin=None, log_output=True, shell=False):
     return __run_command(command, user, stdin, subprocess.PIPE,
                          subprocess.PIPE, log_output, shell=shell)
 
+
 def check_system(command, message, exit=0, user=None, stdin=None, shell=False):
     """Runs the command and checks its exit status code.
 
@@ -209,11 +216,13 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False):
     assert status == exit, fail
     return stdout, stderr, fail
 
+
 def rpm_is_installed(a_package):
     """Returns whether the RPM package is installed."""
     status, stdout, stderr = system(('rpm', '--query', a_package),
                                     log_output=False)
     return (status == 0) and stdout.startswith(a_package)
+
 
 def dependency_is_installed(a_dependency):
     """Returns whether an RPM package providing a dependency is installed.
@@ -225,11 +234,13 @@ def dependency_is_installed(a_dependency):
                                     log_output=False)
     return (status == 0) and not stdout.startswith('no package provides')
 
+
 def installed_rpms():
     """Returns the list of all installed packages."""
     command = ('rpm', '--query', '--all', '--queryformat', r'%{NAME}\n')
     status, stdout, stderr = system(command, log_output=False)
     return set(re.split('\s+', stdout.strip()))
+
 
 def skip(message=None):
     """Prints a 'SKIPPED' message to standard out."""
@@ -240,6 +251,7 @@ def skip(message=None):
         sys.stdout.write('SKIPPED ... ')
     sys.stdout.flush()
 
+
 def missing_rpm(*packages):
     """Checks that all given RPM packages are installed.
 
@@ -248,7 +260,7 @@ def missing_rpm(*packages):
     if isinstance(packages[0], list) or isinstance(packages[0], tuple):
         packages = packages[0]
 
-    missing = []    
+    missing = []
     for package in packages:
         if not rpm_is_installed(package):
             missing.append(package)
@@ -318,14 +330,12 @@ def get_package_envra(package_name):
         envra[0] == envra[5] and
         envra[1] == envra[6] and
         envra[2] == envra[7] and
-        envra[3] == envra[8]):
+            envra[3] == envra[8]):
             envra = envra[0:5]
     elif len(envra) != 5:
         raise OSError(status, stdout)
     (epoch, name, version, release, arch) = envra
     return (epoch, name, version, release, arch)
-
-
 
 
 def diagnose(message, status, stdout, stderr):
@@ -344,6 +354,7 @@ def diagnose(message, status, stdout, stderr):
         result += '\n' + stderr.rstrip('\n') + '\n'
     return result
 
+
 def __format_command(command):
     if isinstance(command, str):
         return [command]
@@ -357,10 +368,12 @@ def __format_command(command):
             result.append(part)
     return result
 
+
 def __prepare_shell_argument(argument):
     if re.search(r'\W', argument):
         return "'" + re.sub(r"'", r"''\'", argument) + "'"
     return argument
+
 
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False):
     global _last_log_had_output
@@ -370,7 +383,10 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         if not isinstance(command, str):
             command = ' '.join(command)
     elif not (isinstance(command, list) or isinstance(command, tuple)):
-        raise TypeError, 'Need list or tuple, got %s' % (repr(command))
+        try:
+            repr(command)
+        except TypeError:
+            print 'Need list or tuple, got %s' % type(command)
     if use_test_user:
         command = ['runuser', options.username, '-c', ' '.join(map(__prepare_shell_argument, command))]
 
@@ -439,20 +455,22 @@ def el_release():
                 release_file.close()
             match = re.search(r"release (\d)", release_text)
             _el_release = int(match.group(1))
-        except Exception, e: 
+        except Exception, e:
             _log.write("Couldn't determine redhat release: " + str(e) + "\n")
             sys.exit(1)
     return _el_release
+
 
 def osg_release(test_module):
     """
     Return the version of osg-release. If the query fails, the test module fails.
     """
     try:
-        _, _, osg_release_ver, _, _  = get_package_envra('osg-release')
+        _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
     except OSError:
-        osgunittest.unittest.TestCase.fail(test_module, 'Could not query osg-release') # aka...how...why?
+        osgunittest.unittest.TestCase.fail(test_module, 'Could not query osg-release')  # aka...how...why?
     return osg_release_ver
+
 
 def get_hostname():
     """
@@ -465,20 +483,16 @@ def get_hostname():
         return None
     return None
 
+
 def check_file_and_perms(file_path, owner_name, permissions):
-        """Return True if the file at 'file_path' exists, is owned by                                                                                  \
-                                                                                                                                                        
-        'owner_name', is a file, and has the given permissions; False otherwise                                                                        \
-                                                                                                                                                        
-                                                                                                                                                       \
-                                                                                                                                                        
-        """
+        """Return True if the file at 'file_path' exists, is owned by
+        'owner_name', is a file, and has the given permissions; False otherwise
+         """
         owner_uid = pwd.getpwnam(owner_name)
         try:
             file_stat = os.stat(file_path)
             return (file_stat.st_uid == owner_uid and
                     file_stat.st_mode & 07777 == permissions and
                     stat.S_ISREG(file_stat.st_mode))
-        except OSError: # file does not exist                                                                                                          \
-                                                                                                                                                        
+        except OSError:  # file does not exist
             return False
