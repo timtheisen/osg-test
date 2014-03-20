@@ -330,7 +330,7 @@ def get_package_envra(package_name):
         envra[0] == envra[5] and
         envra[1] == envra[6] and
         envra[2] == envra[7] and
-            envra[3] == envra[8]):
+        envra[3] == envra[8]):
             envra = envra[0:5]
     elif len(envra) != 5:
         raise OSError(status, stdout)

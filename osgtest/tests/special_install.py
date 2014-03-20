@@ -57,7 +57,9 @@ class TestInstall(osgunittest.OSGTestCase):
     def yum_failure_can_be_retried(self, output):
         """Scan yum output to see if a retry might succeed."""
         whitelist = [r'No more mirrors to try',
-                     r'Timeout: <urlopen error timed out>']
+                     r'Timeout: <urlopen error timed out>',
+                     r'Error communicating with server. The message was:\nNo route to host',
+                     r'Timeout on.*Operation too slow. Less than 1 bytes/sec transfered the last 30 seconds']
         for regex in whitelist:
             if re.search(regex, output):
                 return True
