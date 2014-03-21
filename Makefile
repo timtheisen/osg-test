@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 
 PACKAGE := osg-test
-VERSION := 1.4.10
+VERSION := 1.4.11
 
 
 # ------------------------------------------------------------------------------
@@ -29,7 +29,6 @@ TARBALL_TEST_FILES := $(SHARE_DIR)/tarball/*
 INSTALL_SHARE_DIR := usr/share/osg-test
 GRATIA_FILES_DIR := $(INSTALL_SHARE_DIR)/gratia
 TARBALL_FILES_DIR := $(INSTALL_SHARE_DIR)/tarball
-MYPROXY_CONF_FILE :=  $(INSTALL_SHARE_DIR)/myproxy-server.config
 
 PYTHON_ROOT_DIR := osgtest
 PYTHON_ROOT_FILES := $(PYTHON_ROOT_DIR)/*.py

@@ -30,7 +30,7 @@ class TestStartmyproxy(osgunittest.OSGTestCase):
 
     def test_03_config_myproxy(self):
         core.skip_ok_unless_installed('myproxy-server')
-        conFileContents = files.read('/usr/share/osg-test/myproxy-server.config')
+        conFileContents = files.read('/usr/share/osg-test/test_myproxy_server.config')
         files.write('/etc/myproxy-server.config',conFileContents, owner='root', backup=True)  
         core.config['myproxy.lock-file']='/var/lock/subsys/myproxy-server'
         
