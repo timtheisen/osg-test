@@ -3,8 +3,10 @@ import os.path
 import pwd
 import re
 import shutil
+import time
 
 import osgtest.library.core as core
+import osgtest.library.yum as yum
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.certificates as certs
@@ -83,6 +85,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.log_message('No packages installed')
             return
 
+        deadline = time.time() + 3600
         el_version = core.el_release()
 
         if el_version == 6:
@@ -90,7 +93,9 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.state['install.transaction_ids'].reverse()
             for transaction in core.state['install.transaction_ids']:
                 command = ('yum', 'history', 'undo', '-y', transaction)
-                core.check_system(command, 'Undo yum transaction')
+                fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+                if fail_msg:
+                    self.fail(fail_msg)
         elif el_version == 5:
             # rpm -Uvh --rollback was very finicky so we had to
             # spin up our own method of rolling back installations
@@ -98,11 +103,16 @@ class TestCleanup(osgunittest.OSGTestCase):
                 rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
                 package_count = len(rpm_downgrade_list)
                 command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
-                stdout, _, _ = core.check_system(command, 'Remove %d packages' % (package_count))
+                fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+                if fail_msg:
+                    self.fail(fail_msg)
                 # Yum will happily remove dependencies of packages we want to downgrade
                 # so we need to remove these packages from the installed list
                 for package in re.finditer('Erasing\s*: ([-\.-w]*)', stdout):
-                    core.state['install.installed'].remove(package.group(1))
+                    try:
+                        core.state['install.installed'].remove(package.group(1))
+                    except ValueError:
+                        pass
 
             if len(core.state['install.installed']) != 0:
                 rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
