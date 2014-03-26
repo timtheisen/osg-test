@@ -69,8 +69,7 @@ class TestBestman(osgunittest.OSGTestCase):
         os.chmod(TestBestman.__temp_dir, 0777)
         command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', 'file:///' + TestBestman.__data_path, self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('lcg-util copy, local to URL',
-                             status, stdout, stderr)
+        fail = core.diagnose('lcg-util copy, local to URL', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__remote_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
@@ -79,8 +78,7 @@ class TestBestman(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('lcg-util')
         command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', self.get_srm_url(), 'file:///' + TestBestman.__local_path)
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('lcg-util copy, URL to local',
-                             status, stdout, stderr)
+        fail = core.diagnose('lcg-util copy, URL to local', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__local_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
@@ -90,8 +88,7 @@ class TestBestman(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('lcg-util')
         command = ('lcg-del', '-v', '-b', '-l', '-D', 'srmv2', self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('lcg-util remove, URL file',
-                             status, stdout, stderr)
+        fail = core.diagnose('lcg-util remove, URL file', status, stdout, stderr)
         file_removed = not os.path.exists(TestBestman.__remote_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_removed, 'Copied file still exists')
