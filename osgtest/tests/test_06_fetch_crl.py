@@ -57,7 +57,10 @@ class TestFetchCrl(osgunittest.OSGTestCase):
     def test_02_fetch_crl(self):
         self.skip_ok_if(core.config['fetch-crl.package'] is None, 'Fetch CRL is not installed')
         self.skip_ok_unless(core.dependency_is_installed('grid-certificates'), 'No certificates installed')
-        command = [core.config['fetch-crl.package']]
+        if core.options.manualrun:
+            command = (core.config['fetch-crl.package'], '-p', '20', '-T', '10')
+        else:
+            command = [core.config['fetch-crl.package']]
         status, stdout, stderr = core.system(command)
         fail = core.diagnose('Run %s in /etc' % core.config['fetch-crl.package'], status, stdout, stderr)
         if status == 1:
@@ -71,7 +74,10 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         self.skip_ok_if(core.config['fetch-crl.package'] is None, 'Fetch CRL is not installed')
         self.skip_ok_unless(core.dependency_is_installed('grid-certificates'), 'No certificates installed')
         temp_crl_dir = tempfile.mkdtemp()
-        command = (core.config['fetch-crl.package'], '-o', temp_crl_dir)
+        if core.options.manualrun:
+            command = (core.config['fetch-crl.package'], '-o', temp_crl_dir, '-p', '20', '-T', '10')
+        else:
+            command = (core.config['fetch-crl.package'], '-o', temp_crl_dir)
         status, stdout, stderr = core.system(command)
         fail = core.diagnose('Run %s in temp dir' % core.config['fetch-crl.package'], status, stdout, stderr)
         if status == 1:

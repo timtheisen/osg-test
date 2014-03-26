@@ -37,7 +37,8 @@ def parse_command_line():
                 "updaterelease": None,
                 "updaterepo": None,
                 "username": 'vdttest',
-                "verbose": False
+                "verbose": False,
+                "manualrun": False
                 }
 
     # First pass through args to get config file
@@ -107,6 +108,11 @@ def read_args():
                       help='REPO to use when updating packages '
                       'specified with the -i flag.')
 
+    p.add_option('-m', '--manual-run', action='store_true', dest='manualrun',
+                      help='Speeds up osg-test in the case where it is '
+                      'run by hand. May not be suitable when running '
+                      'multiple instances of osg-test at once.')
+    
     p.add_option('-n', '--no-cleanup', action='store_true', dest='skip_cleanup',
                        help='Skip clean-up steps after all tests are done')
 
@@ -145,7 +151,7 @@ def read_args():
 
     p.add_option('-v', '--verbose', action='store_true', dest='verbose',
                       help='Increase quantity of output')
-
+    
     return p
 
 def discover_tests():
