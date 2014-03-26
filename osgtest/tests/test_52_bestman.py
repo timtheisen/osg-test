@@ -11,10 +11,7 @@ class TestBestman(osgunittest.OSGTestCase):
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
     __port = '10443'
     __sfn = 'srm/v2/server'
-    __temp_dir = tempfile.mkdtemp()
     __hostname = socket.getfqdn()
-    __remote_path = __temp_dir + '/bestman_put_copied_file.txt'
-    __local_path = __temp_dir + '/bestman_get_copied_file.txt'
 
 
     def setUp(self):
@@ -27,6 +24,11 @@ class TestBestman(osgunittest.OSGTestCase):
     def get_srm_url(self):
         return self.get_srm_url_base() + TestBestman.__remote_path
 
+    def setup_temp_paths(self):
+        TestBestman.__temp_dir = tempfile.mkdtemp()
+        TestBestman.__remote_path = TestBestman.__temp_dir + '/bestman_put_copied_file.txt'
+        TestBestman.__local_path = TestBestman.__temp_dir + '/bestman_get_copied_file.txt'
+
     def test_01_ping(self):
         core.skip_ok_unless_installed('bestman2-client')
         command = ('srm-ping', self.get_srm_url_base(), '-debug')
@@ -36,6 +38,7 @@ class TestBestman(osgunittest.OSGTestCase):
  
     def test_02_copy_local_to_server(self):
         core.skip_ok_unless_installed('bestman2-client')
+        self.setup_temp_paths()
         os.chmod(TestBestman.__temp_dir, 0777)
         command = ('srm-copy', 'file://' + TestBestman.__data_path, self.get_srm_url(), '-debug')
         status, stdout, stderr = core.system(command, True)
@@ -66,6 +69,7 @@ class TestBestman(osgunittest.OSGTestCase):
 
     def test_05_copy_local_to_server_lcg_util(self):
         core.skip_ok_unless_installed('lcg-util')
+        self.setup_temp_paths()
         os.chmod(TestBestman.__temp_dir, 0777)
         command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', 'file://' + TestBestman.__data_path, self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
