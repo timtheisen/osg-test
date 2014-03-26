@@ -37,7 +37,7 @@ class TestBestman(osgunittest.OSGTestCase):
     def test_02_copy_local_to_server(self):
         core.skip_ok_unless_installed('bestman2-client')
         os.chmod(TestBestman.__temp_dir, 0777)
-        command = ('srm-copy', 'file:///' + TestBestman.__data_path, self.get_srm_url(), '-debug')
+        command = ('srm-copy', 'file://' + TestBestman.__data_path, self.get_srm_url(), '-debug')
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('Bestman copy, local to URL', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__remote_path)
@@ -46,7 +46,7 @@ class TestBestman(osgunittest.OSGTestCase):
 
     def test_03_copy_server_to_local(self):
         core.skip_ok_unless_installed('bestman2-client')
-        command = ('srm-copy', self.get_srm_url(), 'file:///' + TestBestman.__local_path, '-debug')
+        command = ('srm-copy', self.get_srm_url(), 'file://' + TestBestman.__local_path, '-debug')
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('Bestman copy, URL to local', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__local_path)
@@ -67,7 +67,7 @@ class TestBestman(osgunittest.OSGTestCase):
     def test_05_copy_local_to_server_lcg_util(self):
         core.skip_ok_unless_installed('lcg-util')
         os.chmod(TestBestman.__temp_dir, 0777)
-        command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', 'file:///' + TestBestman.__data_path, self.get_srm_url())
+        command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', 'file://' + TestBestman.__data_path, self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('lcg-util copy, local to URL', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__remote_path)
@@ -76,7 +76,7 @@ class TestBestman(osgunittest.OSGTestCase):
 
     def test_06_copy_server_to_local_lcg_util(self):
         core.skip_ok_unless_installed('lcg-util')
-        command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', self.get_srm_url(), 'file:///' + TestBestman.__local_path)
+        command = ('lcg-cp', '-v', '-b', '-D', 'srmv2', self.get_srm_url(), 'file://' + TestBestman.__local_path)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('lcg-util copy, URL to local', status, stdout, stderr)
         file_copied = os.path.exists(TestBestman.__local_path)
