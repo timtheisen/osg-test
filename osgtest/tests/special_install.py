@@ -7,17 +7,6 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestInstall(osgunittest.OSGTestCase):
 
-    def parse_output_for_packages(self, stdout):
-        install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
-        update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
-        for line in stdout:
-            install_matches = install_regexp.match(line)
-            update_matches = update_regexp.match(line)
-            if install_matches is not None:
-                core.state['install.installed'].append(install_matches.group(1))
-            if update_matches is not None:
-                core.state['install.updated'].append(update_matches.group(1))
-
     def test_01_yum_repositories(self):
         pre = ('rpm', '--verify', '--nomd5', '--nosize', '--nomtime')
         core.check_system(pre + ('epel-release',), 'Verify epel-release')
@@ -29,8 +18,8 @@ class TestInstall(osgunittest.OSGTestCase):
 
     def test_02_install_packages(self):
         core.state['install.success'] = False
-        core.state['install.installed'] = []
-        core.state['install.updated'] = []
+        core.state['install.installed'] = set([])
+        core.state['install.updated'] = set([])
 
         # Install packages
         core.state['install.transaction_ids'] = []
@@ -58,7 +47,7 @@ class TestInstall(osgunittest.OSGTestCase):
                     core.state['install.transaction_ids'].append(yum.get_transaction_id())
                 command = ('rpm', '--verify', package)
                 core.check_system(command, 'Verify %s' % (package))
-                self.parse_output_for_packages(stdout.strip().split('\n'))
+                yum.parse_output_for_packages(stdout)
 
             fail_msg += retry_fail
                 
@@ -105,7 +94,7 @@ class TestInstall(osgunittest.OSGTestCase):
             command += [package]
 
         fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
-        self.parse_output_for_packages(stdout.strip().split('\n'))
+        yum.parse_output_for_packages(stdout)
 
         if fail_msg:
             self.fail(fail_msg)

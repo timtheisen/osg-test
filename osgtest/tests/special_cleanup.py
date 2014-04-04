@@ -34,7 +34,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             status, stdout, _ = core.system(('rpm', '--query', package, '--queryformat', r'%{NAME}'))
             if status == 0 and stdout in rpm_list:
                 rpm_candidates.append(stdout)
-        remaining_rpms = set(rpm_list) - set(rpm_candidates)
+        remaining_rpms = rpm_list - set(rpm_candidates)
         count = len(remaining_rpms)
         if count > 0:
             core.log_message('%d RPMs installed but not in yum output' % count)
@@ -106,14 +106,8 @@ class TestCleanup(osgunittest.OSGTestCase):
                 fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
                 if fail_msg:
                     self.fail(fail_msg)
-                # Yum will happily remove dependencies of packages we want to downgrade
-                # so we need to remove these packages from the installed list
-                for package in re.finditer('Erasing\s*: ([-\.-w]*)', stdout):
-                    try:
-                        core.state['install.installed'].remove(package.group(1))
-                    except ValueError:
-                        pass
-
+                yum.parse_output_for_packages(stdout)
+                
             if len(core.state['install.installed']) != 0:
                 rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
                 package_count = len(rpm_erase_list)

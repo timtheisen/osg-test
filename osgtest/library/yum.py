@@ -57,3 +57,22 @@ def get_transaction_id():
     history_out = core.check_system(command, 'Get yum Transaction ID')[0]
     m = re.search('Transaction ID : (\d*)', history_out)
     return m.group(1)
+
+def parse_output_for_packages(yum_output):
+    clean_output = yum_output.strip().split('\n')
+    install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
+    update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
+    # When packages are removed for dependencies or due to replacement by obsoletion
+    erase_regexp = re.compile(r'\s+Erasing\s+:\s+\d*:?(\S+)\s+\d')
+    for line in clean_output:
+        install_matches = install_regexp.match(line)
+        if install_matches is not None:
+            core.state['install.installed'].add(install_matches.group(1))
+            continue
+        update_matches = update_regexp.match(line)
+        if update_matches is not None:
+            core.state['install.updated'].add(update_matches.group(1))
+            continue
+        erase_matches = erase_regexp.match(line)
+        if erase_matches is not None:
+            core.state['install.installed'].discard(erase_matches.group(1))
