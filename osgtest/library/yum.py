@@ -67,12 +67,12 @@ def parse_output_for_packages(yum_output):
     for line in clean_output:
         install_matches = install_regexp.match(line)
         if install_matches is not None:
-            core.state['install.installed'].add(install_matches.group(1))
+            core.state['install.installed'].append(install_matches.group(1))
             continue
         update_matches = update_regexp.match(line)
         if update_matches is not None:
-            core.state['install.updated'].add(update_matches.group(1))
+            core.state['install.updated'].append(update_matches.group(1))
             continue
         erase_matches = erase_regexp.match(line)
         if erase_matches is not None:
-            core.state['install.installed'].discard(erase_matches.group(1))
+            core.state['install.installed'].remove(erase_matches.group(1))

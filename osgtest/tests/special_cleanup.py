@@ -34,7 +34,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             status, stdout, _ = core.system(('rpm', '--query', package, '--queryformat', r'%{NAME}'))
             if status == 0 and stdout in rpm_list:
                 rpm_candidates.append(stdout)
-        remaining_rpms = rpm_list - set(rpm_candidates)
+        remaining_rpms = set(rpm_list) - set(rpm_candidates)
         count = len(remaining_rpms)
         if count > 0:
             core.log_message('%d RPMs installed but not in yum output' % count)

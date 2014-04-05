@@ -18,8 +18,8 @@ class TestInstall(osgunittest.OSGTestCase):
 
     def test_02_install_packages(self):
         core.state['install.success'] = False
-        core.state['install.installed'] = set([])
-        core.state['install.updated'] = set([])
+        core.state['install.installed'] = []
+        core.state['install.updated'] = []
 
         # Install packages
         core.state['install.transaction_ids'] = []
