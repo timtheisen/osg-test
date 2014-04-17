@@ -34,7 +34,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         cwd = os.getcwd()
         os.chdir('/tmp')
         
-        command = ('condor_ce_trace', core.get_hostname())
+        command = ('condor_ce_trace', '--debug', core.get_hostname())
         core.check_system(command, 'ce trace', user=True)
 
         os.chdir(cwd)
