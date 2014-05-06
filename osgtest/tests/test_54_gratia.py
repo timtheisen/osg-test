@@ -160,7 +160,7 @@ class TestGratia(osgunittest.OSGTestCase):
 
         SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
         core.log_message('SearchPattern is:' + str(SearchPattern))
-        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 60.0)
+        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 120.0)
         if(line is not None):
                 core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
                 core.log_message('Gratia processed probe data - Line is ' + str(line))
