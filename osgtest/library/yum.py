@@ -45,7 +45,10 @@ def yum_failure_can_be_retried(output):
     whitelist = [r'No more mirrors to try',
                  r'Timeout: <urlopen error timed out>',
                  r'Error communicating with server. The message was:\nNo route to host',
-                 r'Timeout on.*Operation too slow. Less than 1 bytes/sec transfered the last 30 seconds']
+                 r'Timeout on.*Operation too slow. Less than 1 bytes/sec transfered the last 30 seconds',
+                 r'Could not retrieve mirrorlist.*error was\n\[Errno 14\] HTTP Error 500: Internal Server Error',
+                 r'Error: Cannot retrieve repository metadata \(repomd\.xml\) for repository:.*Please verify its path and try again',
+                 r'Error: Temporary failure in name resolution']
     for regex in whitelist:
         if re.search(regex, output):
             return True
