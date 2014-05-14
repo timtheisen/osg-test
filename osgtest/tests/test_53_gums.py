@@ -19,7 +19,7 @@ class TestGUMS(osgunittest.OSGTestCase):
         return user_dn
 
     def test_01_set_x509_env(self):
-        core.skip_ok_unless_installed('gums-service', 'gums-client')
+        core.skip_ok_unless_installed(*self.required_rpms)
 
         try: 
             core.config['gums.old_x509_cert'] = os.environ['X509_USER_CERT']
