@@ -148,11 +148,13 @@ class TestCleanup(osgunittest.OSGTestCase):
         password_entry = pwd.getpwnam(username)
         globus_dir = os.path.join(password_entry.pw_dir, '.globus')
 
+        # Remove certs in case userdel fails
+        files.remove(os.path.join(globus_dir, 'usercert.pem'))
+        files.remove(os.path.join(globus_dir, 'userkey.pem'))
+
         command = ('userdel', username)
         core.check_system(command, "Remove user '%s'" % (username))
 
-        files.remove(os.path.join(globus_dir, 'usercert.pem'))
-        files.remove(os.path.join(globus_dir, 'userkey.pem'))
         files.remove(os.path.join('/var/spool/mail', username))
         shutil.rmtree(password_entry.pw_dir)
 
