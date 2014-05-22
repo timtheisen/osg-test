@@ -48,7 +48,8 @@ def yum_failure_can_be_retried(output):
                  r'Timeout on.*Operation too slow. Less than 1 bytes/sec transfered the last 30 seconds',
                  r'Could not retrieve mirrorlist',
                  r"curl: \(7\) couldn't connect to host\nerror: skipping.*?transfer failed",
-                 r'Error: Cannot retrieve repository metadata \(repomd\.xml\) for repository:.*Please verify its path and try again',
+                 r'Error: Cannot retrieve repository metadata',
+                 r'Error: Cannot retrieve metalink for repository',
                  r'Error: Temporary failure in name resolution']
     for regex in whitelist:
         if re.search(regex, output):
