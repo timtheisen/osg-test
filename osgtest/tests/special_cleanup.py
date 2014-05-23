@@ -1,3 +1,5 @@
+import subprocess
+import signal
 import os
 import os.path
 import pwd
@@ -151,6 +153,17 @@ class TestCleanup(osgunittest.OSGTestCase):
         # Remove certs in case userdel fails
         files.remove(os.path.join(globus_dir, 'usercert.pem'))
         files.remove(os.path.join(globus_dir, 'userkey.pem'))
+
+        # Get list of PIDs owned by the test user
+        command = ('ps', '-U', username, '-u', username, '-o', 'pid=')
+        _, output, _ = core.system(command)
+
+        # Take no prisoners 
+        for pid in output.splitlines():
+            try:
+                os.kill(int(pid), signal.SIGKILL)
+            except OSError:
+                continue
 
         command = ('userdel', username)
         core.check_system(command, "Remove user '%s'" % (username))
