@@ -67,7 +67,9 @@ def preserve(path, owner):
         if not os.path.isdir(_backup_directory):
             os.mkdir(_backup_directory)
         shutil.copy2(path, backup_path)
-        _backups[backup_id] = backup_path
+        _backups[backup_id] = {'path': backup_path,
+                               'uid': os.stat(path).st_uid,
+                               'gid': os.stat(path).st_gid}
         core.log_message("Backed up '%s' as '%s'" % (path, backup_path))
     else:
         _backups[backup_id] = None
@@ -179,9 +181,13 @@ def restore(path, owner):
     if os.path.exists(path):
         os.remove(path)
         core.log_message('Removed test %s' % (path))
-    backup_path = _backups[backup_id]
+    try:
+        backup_path = _backups[backup_id]['path']
+    except TypeError:
+        backup_path = None
     if (backup_path is not None) and os.path.exists(backup_path):
         shutil.move(backup_path, path)
+        os.chown(path, _backups[backup_id]['uid'], _backups[backup_id]['gid'])
         core.log_message('Restored original %s' % (path))
     del _backups[backup_id]
 
