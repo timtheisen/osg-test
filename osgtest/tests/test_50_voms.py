@@ -19,6 +19,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, msg)
 
     def test_01_add_user(self):
+        core.state['voms.added-user'] = False
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
 
         pwd_entry = pwd.getpwnam(core.options.username)
@@ -29,6 +30,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         command = ('voms-admin', '--vo', core.config['voms.vo'], '--host', hostname, '--nousercert', 'create-user',
                    user_cert_dn, user_cert_issuer, 'OSG Test User', 'root@localhost')
         core.check_system(command, 'Add VO user')
+        core.state['voms.added-user'] = True
 
     def test_02_good_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
@@ -66,7 +68,10 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.check_system(command, 'Run voms-proxy-init', user=True, stdin=password)
         core.state['voms.got-proxy'] = True
 
-    def test_07_voms_proxy_check(self):
+    def test_07_rfc_voms_proxy_info(self):
+        self.proxy_info('third voms-proxy-info output is ok')
+        
+    def test_08_voms_proxy_check(self):
     	"""
     	Check generated proxies to make sure that they use the same signing
     	algorithm as the certificate

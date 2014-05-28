@@ -41,7 +41,14 @@ class TestGUMS(osgunittest.OSGTestCase):
         core.state['gums.added_user'] = False
 
         user_dn = self.get_user_dn(core.options.username)
-        command = ('gums-service', 'manualGroupAdd', 'gums-test', user_dn)
+        # If we have a VO set up, use it
+        if core.state['voms.added-user']:
+            command = ('gums-service', 'manualGroupAdd',
+                       '--fqan', '/%s/Role=null/Capability=null' % core.config['voms.vo'],
+                       'gums-test', user_dn)
+        else:
+            command = ('gums-service', 'manualGroupAdd', 'gums-test', user_dn)
+
         stdout = core.check_system(command, 'Add VDT DN to manual group')[0]
         core.state['gums.added_user'] = True
 
@@ -50,16 +57,26 @@ class TestGUMS(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manual user group')
       
         user_dn = self.get_user_dn(core.options.username)
-        command = ('gums-host', 'mapUser', user_dn) # using gums-host since it defaults to the host cert
+        # Use gums-host since it defaults to the host cert
+        if core.state['voms.added-user']:
+            command = ('gums-host', 'mapUser',
+                       '--fqan', '/%s/Role=null/Capability=null' % core.config['voms.vo'],
+                       user_dn) 
+        else:
+            command = ('gums-host', 'mapUser', user_dn)
+            
         stdout = core.check_system(command, 'Map GUMS user')[0]
-        self.assert_('GumsTestUserMappingSuccessful' in stdout, 'expected string missing from mapUser output')
+        self.assert_('vdttest' in stdout, 'expected string missing from mapUser output')
 
     def test_04_generate_mapfile(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manual user group')
 
         user_dn = self.get_user_dn(core.options.username)
-        command = ('gums-service', 'generateGridMapfile')
+        if core.state['voms.added-user']:
+            command = ('gums-host', 'generateVoGridMapfile')
+        else:
+            command = ('gums-host', 'generateGridMapfile')
         stdout = core.check_system(command, 'generate grid mapfile')[0]
         self.assert_(user_dn in stdout, 'user DN missing from generated mapfile')
         

@@ -16,6 +16,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     # Should be refactored, but I am in a hurry!!!
     # ==========================================================================
 
+    core.config['gums.password'] = 'osgGUMS!'
     
     def test_01_config_certs(self):
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
@@ -37,10 +38,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     # END: (MOSTLY) COPIED FROM test_20_voms.py
     # ==========================================================================
 
-    def test_03_gums_configuration(self):
-        core.config['gums.password'] = 'osgGUMS!'
-
-    def test_04_setup_gums_database(self):
+    def test_03_setup_gums_database(self):
         core.skip_ok_unless_installed('gums-service')
         command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
                    '--password', core.config['gums.password'])
@@ -48,7 +46,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         self.assert_('ERROR' not in stdout,
                      'gums-setup-mysql-database failure message')
 
-    def test_05_add_mysql_admin(self):
+    def test_04_add_mysql_admin(self):
         core.skip_ok_unless_installed('gums-service')
         host_dn, host_issuer = certs.certificate_info(core.config['certs.hostcert'])
         mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
@@ -62,3 +60,12 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         command = ('mysql', '--user=gums', '-p' + core.config['gums.password'], '--execute=' + mysql_command)
         core.check_system(command, 'Could not add GUMS MySQL admin')
 
+    def test_05_gums_configuration(self):
+        core.skip_ok_unless_installed('gums-service')
+        core.config['gums.config-file'] = '/etc/gums/gums.config'
+
+        files.replace(core.config['gums.config-file'],
+                      '			accountName=\'GumsTestUserMappingSuccessful\'/>',
+                      '			accountName=\'vdttest\'/>',
+                      owner='gums')
+        
