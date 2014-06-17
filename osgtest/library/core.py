@@ -496,3 +496,29 @@ def check_file_and_perms(file_path, owner_name, permissions):
                     stat.S_ISREG(file_stat.st_mode))
         except OSError:  # file does not exist
             return False
+
+def skip_bad_if_more_than_one_installed(*packages):
+    """
+     Raise osgunittest.BadException if more than one of the packages
+     are installed which are mutually exclusive,                                                                   
+     otherwise return None.                                                                                                                    
+    """
+    installed = []
+    for package in packages:
+        if rpm_is_installed(package):
+            installed.append(package)
+    if len(installed) > 1:
+        raise osgunittest.BadSkipException('More than one installed of the ce: %s' % ' '.join(installed))
+
+
+def skip_ok_unless_one_installed(*packages):
+    """                                                                                                                                        
+     Raise osgunittest.SkipOkException if at least one of the packages are installed                                                           
+     otherwise return None.                                                                                                                    
+    """
+    installed = []
+    for package in packages:
+        if rpm_is_installed(package):
+            installed.append(package)
+    if len(installed)==0:
+        raise osgunittest.OkSkipException('None of these were intalled, skipping' % ' '.join(packages))

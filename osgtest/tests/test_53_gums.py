@@ -7,8 +7,6 @@ import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.certificates as certs
 
-# test jhover write access
-
 class TestGUMS(osgunittest.OSGTestCase):
 
     required_rpms = ['gums-service',

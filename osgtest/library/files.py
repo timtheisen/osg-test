@@ -143,6 +143,22 @@ def replace(path, old_line, new_line, owner=None, backup=True):
             lines_to_write.append(line.rstrip('\n') + '\n')
     write(path, lines_to_write, owner, backup)
 
+def replace_regexpr(path, regexp, new_line, owner=None, backup=True):
+    """Replace an old line that mateches regexpr with a new line in given path.                                                     
+    The 'owner' and 'backup' arguments are passed to write().                                                                                  
+    """
+    match = re.search(regexp, new_line)
+    if not match:
+       raise ValueError("The new_line '%s' does not match reg expr '%s'" % (new_line, regexp)) 
+    lines_to_write = []
+    lines = read(path)
+    for line in lines:
+        match = re.search(regexp, line.rstrip('\n'))
+        if match:
+            lines_to_write.append(new_line + '\n')
+        else:
+            lines_to_write.append(line.rstrip('\n') + '\n')
+    write(path, lines_to_write, owner, backup)
 
 def append(path, contents, force=False, owner=None, backup=True):
     """Append the contents to the given file.
@@ -217,3 +233,4 @@ def remove(path, force=False):
                 os.rmdir(path)
     elif os.path.isfile(path):
         os.unlink(path)
+
