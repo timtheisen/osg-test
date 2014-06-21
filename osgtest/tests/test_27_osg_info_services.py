@@ -17,9 +17,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
     #                 'osg-ce-lsf',]
     possible_rpms = ['osg-ce',
                      'htcondor-ce']
-
     def test_01_config_certs(self):
-        #core.skip_ok_unles_installed('osg-ce')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
@@ -168,8 +166,8 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                      
     def test_10_config_condor(self):
         # Configurations needed if bath system is condor.
-        core.skip_ok_unless_installed('osg-ce-condor')
         core.config['osg-info-services.condor-file'] = '/etc/osg/config.d/20-condor.ini'
+        core.skip_ok_unless_installed('osg-ce-condor')
         files.replace_regexpr(core.config['osg-info-services.condor-file'],
                       'enabled = *',
                       'enabled = True',
@@ -191,7 +189,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                       'batch = *',
                       'batch = pbs',
                       backup = False)
-
+       
     def test_12_config_lsf(self):
         # Configuration needed if batch system is lsf                                                                                          
         core.skip_ok_unless_installed('osg-ce-lsf')
@@ -228,8 +226,8 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                       backup = False)
 
     def test_14_config_gram_gateway(self):
-        core.skip_ok_unless_installed('osg-ce')
         core.config['osg-info-services.gateway-file'] = '/etc/osg/config.d/10-gateway.ini'
+        core.skip_ok_unless_installed('osg-ce')
         files.replace_regexpr(core.config['osg-info-services.gateway-file'],
                       'gram_gateway_enabled = *',
                       'gram_gateway_enabled = True',
@@ -237,8 +235,22 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
 
     def test_15_config_htcondor_gateway(self):
         core.skip_ok_unless_installed('htcondor-ce')
-        core.config['osg-info-services.gateway-file'] ='/etc/osg/config.d/10-gateway.ini'
-        files.replace_regexpr(core.config['osg-info-services.gateway-file'],
+        if 'osg-info-services.gateway-file' in core.config:
+            files.replace_regexpr(core.config['osg-info-services.gateway-file'],
                       'htcondor_gateway_enabled = *',
                       'htcondor_gateway_enabled = True',
+                      backup = False)
+        else:
+            core.config['osg-info-services.gateway-file'] = '/etc/osg/config.d/10-gateway.ini'
+            files.replace_regexpr(core.config['osg-info-services.gateway-file'],
+                      'htcondor_gateway_enabled = *',
+                      'htcondor_gateway_enabled = True',
+                      owner = 'root')
+
+    def test_16_config_gratia_file(self):
+        core.skip_ok_unless_one_installed(*self.possible_rpms)
+        core.config['osg-info-services.gratia-file'] = '/etc/osg/config.d/30-gratia.ini'
+        files.replace_regexpr(core.config['osg-info-services.gratia-file'],
+                      'enabled = *',
+                      'enabled = False',
                       owner = 'root')

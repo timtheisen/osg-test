@@ -516,9 +516,11 @@ def skip_ok_unless_one_installed(*packages):
      Raise osgunittest.SkipOkException if at least one of the packages are installed                                                           
      otherwise return None.                                                                                                                    
     """
+    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
+                packages = packages[0]
     installed = []
     for package in packages:
         if rpm_is_installed(package):
             installed.append(package)
     if len(installed)==0:
-        raise osgunittest.OkSkipException('None of these were intalled, skipping' % ' '.join(packages))
+        raise osgunittest.OkSkipException('None of these were intalled, skipping %s ' % ' '.join(packages))
