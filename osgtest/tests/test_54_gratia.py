@@ -66,8 +66,7 @@ class TestGratia(osgunittest.OSGTestCase):
     
     def copy_probe_logs(self, log='', logdirectory=''):
         """This helper method copies Probe Logs to the passed in directory"""
-
-        if (self.copy_user_vo_map_file() == False):
+        if not 'gratia.user-vo-map' in core.config:
             return False
         else:
             if ((log != '') and (logdirectory != '')):

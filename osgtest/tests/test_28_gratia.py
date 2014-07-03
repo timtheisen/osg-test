@@ -177,3 +177,17 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(tomcat.pkgname())
         service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
    
+    def test_12_config_user_vo_map(self):
+        core.skip_ok_unless_installed('gratia-service')
+        user_vo_map_file = '/var/lib/osg/user-vo-map'
+        core.config['gratia.user-vo-map'] = user_vo_map_file
+        conFileContents = files.read('/usr/share/osg-test/gratia/user-vo-map')
+        if (files.filesBackedup(user_vo_map_file, 'root')):
+            files.write(core.config['gratia.user-vo-map'],
+                         conFileContents,
+                         backup = False)
+        else:
+            files.write(core.config['gratia.user-vo-map'],
+                     conFileContents,
+                     owner = 'root')
+ 

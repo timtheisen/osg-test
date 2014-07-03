@@ -234,3 +234,15 @@ def remove(path, force=False):
     elif os.path.isfile(path):
         os.unlink(path)
 
+def filesBackedup(path, owner):
+    """ Returns true if there already exists a backup for a file otherwise
+    returns False
+    """
+    if owner is None:
+        raise ValueError('Must have owner string')
+
+    backup_id = (path, owner)
+    if backup_id in _backups:
+        return True
+    else:
+        return False

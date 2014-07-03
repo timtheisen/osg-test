@@ -18,6 +18,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
     possible_rpms = ['osg-ce',
                      'htcondor-ce']
     def test_01_config_certs(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
@@ -25,6 +26,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
         
     def test_02_install_http_certs(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
@@ -35,6 +37,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         certs.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
 
     def test_03_create_app_dir_structure(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         temp_dir = tempfile.mkdtemp(suffix = 'osg-info-services')
         core.config['osg-info-services.tmp-dir-suffix'] = temp_dir
@@ -44,6 +47,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         os.mkdir(temp_dir + '/osg/data_dir')
 
     def test_04_config_storage_file(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['osg-info-services.storage-file'] = '/etc/osg/config.d/10-storage.ini'
         temp_dir = core.config['osg-info-services.tmp-dir-suffix']
@@ -58,6 +62,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         
 
     def test_05_config_squid_file(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['osg-info-services.squid-file'] = '/etc/osg/config.d/01-squid.ini'
         files.replace_regexpr(core.config['osg-info-services.squid-file'],
@@ -66,6 +71,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                       owner = 'root')
 
     def test_06_config_misc_file(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['osg-info-services.misc-file'] = '/etc/osg/config.d/10-misc.ini'
         files.replace(core.config['osg-info-services.misc-file'],
@@ -74,6 +80,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                       owner = 'root')
         
     def test_07_config_gip_file(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['osg-info-services.gip-file'] = '/etc/osg/config.d/30-gip.ini'
         files.append(core.config['osg-info-services.gip-file'],
@@ -117,6 +124,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                      backup = False)
     
     def test_08_config_site_info_file(self):
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
         core.config['osg-info-services.siteinfo-file'] = '/etc/osg/config.d/40-siteinfo.ini'
         files.replace(core.config['osg-info-services.siteinfo-file'],
@@ -158,16 +166,23 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         
     def test_09_config_user_vo_map(self):
         # Configurations for the user_vo_map
+        core.skip_ok_unless_installed('osg-info-services')
         core.skip_ok_unless_one_installed(*self.possible_rpms)
-        core.config['osg-info-services.user-vo-map'] = '/var/lib/osg/user-vo-map'
-        files.append(core.config['osg-info-services.user-vo-map'],
+        user_vo_map_file = '/var/lib/osg/user-vo-map'
+        core.config['osg-info-services.user-vo-map'] = user_vo_map_file
+        if (files.filesBackedup(user_vo_map_file, 'root')):
+            files.append(core.config['osg-info-services.user-vo-map'],
+                     core.options.username + ' mis',
+                     backup = False)
+        else:
+            files.append(core.config['osg-info-services.user-vo-map'],
                      core.options.username + ' mis',
                      owner = 'root')
                      
     def test_10_config_condor(self):
         # Configurations needed if bath system is condor.
         core.config['osg-info-services.condor-file'] = '/etc/osg/config.d/20-condor.ini'
-        core.skip_ok_unless_installed('osg-ce-condor')
+        core.skip_ok_unless_installed(['osg-info-services', 'osg-ce-condor'])
         files.replace_regexpr(core.config['osg-info-services.condor-file'],
                       'enabled = *',
                       'enabled = True',
@@ -179,7 +194,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         
     def test_11_config_pbs(self):
         # Configuration needed if batch system is pbs
-        core.skip_ok_unless_installed('osg-ce-pbs')
+        core.skip_ok_unless_installed(['osg-info-services', 'osg-ce-pbs'])
         core.config['osg-info-services.pbs-file'] = '/etc/osg/config.d/20-pbs.ini'
         files.replace_regexpr(core.config['osg-info-services.pbs-file'],
                       'enabled = *',
@@ -191,8 +206,8 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                       backup = False)
        
     def test_12_config_lsf(self):
-        # Configuration needed if batch system is lsf                                                                                          
-        core.skip_ok_unless_installed('osg-ce-lsf')
+        # Configuration needed if batch system is lsf                                                                                       
+        core.skip_ok_unless_installed(['osg-info-services', 'osg-ce-lsf'])
         core.config['osg-info-services.lsf-file'] = '/etc/osg/config.d/20-lsf.ini'
         files.replace_regexpr(core.config['osg-info-services.lsf-file'],
                       'enabled = *',
@@ -204,8 +219,8 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
                       backup = False)
 
     def test_13_config_sge(self):
-        # Configuration needed if batch system is sge                                                                                          
-        core.skip_ok_unless_installed('osg-ce-sge')
+        # Configuration needed if batch system is sge                                                                                         
+        core.skip_ok_unless_installed(['osg-info-services', 'osg-ce-sge'])
         core.config['osg-info-services.sge-file'] = '/etc/osg/config.d/20-sge.ini'
         files.replace_regexpr(core.config['osg-info-services.sge-file'],
                       'enabled = *',
@@ -227,14 +242,14 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
 
     def test_14_config_gram_gateway(self):
         core.config['osg-info-services.gateway-file'] = '/etc/osg/config.d/10-gateway.ini'
-        core.skip_ok_unless_installed('osg-ce')
+        core.skip_ok_unless_installed(['osg-info-services', 'osg-ce'])
         files.replace_regexpr(core.config['osg-info-services.gateway-file'],
                       'gram_gateway_enabled = *',
                       'gram_gateway_enabled = True',
                       owner = 'root')
 
     def test_15_config_htcondor_gateway(self):
-        core.skip_ok_unless_installed('htcondor-ce')
+        core.skip_ok_unless_installed(['osg-info-services', 'htcondor-ce'])
         if 'osg-info-services.gateway-file' in core.config:
             files.replace_regexpr(core.config['osg-info-services.gateway-file'],
                       'htcondor_gateway_enabled = *',
@@ -249,6 +264,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
 
     def test_16_config_gratia_file(self):
         core.skip_ok_unless_one_installed(*self.possible_rpms)
+        core.skip_ok_unless_installed('osg-info-services')
         core.config['osg-info-services.gratia-file'] = '/etc/osg/config.d/30-gratia.ini'
         files.replace_regexpr(core.config['osg-info-services.gratia-file'],
                       'enabled = *',

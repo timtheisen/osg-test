@@ -6,7 +6,7 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
     def general_requirements(self):
-        self.skip_ok_unless(core.state['condor-ce.started'], 'ce not running')
+        self.skip_ok_unless('condor-ce.started', 'ce not running')
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor', 'lcmaps',
                                       'lcas-lcmaps-gt4-interface')  
 

@@ -45,7 +45,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             temp_dir="/tmp/vdttest"
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
-                user = pwd.getpwnam('vdttest')
+                user = pwd.getpwnam(core.options.username)
                 os.chown(temp_dir, user[2], user[3])
         else:
             temp_dir = tempfile.mkdtemp()

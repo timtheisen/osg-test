@@ -223,3 +223,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
             files.remove(gratia_directory_to_preserve, True)
             command = ("mv " + backup_path + " " + gratia_directory_to_preserve,)
             core.check_system(command, 'Could not restore ' + gratia_directory_to_preserve, shell=True)
+
+    def test_15_restore_user_vo_map_file(self):
+        core.skip_ok_unless_installed('gratia-service')
+        if files.filesBackedup(core.config['gratia.user-vo-map'], 'root'):
+            files.restore(core.config['gratia.user-vo-map'], 'root')
