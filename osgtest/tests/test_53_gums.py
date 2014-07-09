@@ -66,7 +66,7 @@ class TestGUMS(osgunittest.OSGTestCase):
             command = ('gums-host', 'mapUser', user_dn)
             
         stdout = core.check_system(command, 'Map GUMS user')[0]
-        self.assert_('vdttest' in stdout, 'expected string missing from mapUser output')
+        self.assert_(core.options.username in stdout, 'expected string missing from mapUser output')
 
     def test_04_generate_mapfile(self):
         core.skip_ok_unless_installed(*self.required_rpms)

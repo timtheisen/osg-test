@@ -76,7 +76,7 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
         core.config['osg-info-services.misc-file'] = '/etc/osg/config.d/10-misc.ini'
         files.replace(core.config['osg-info-services.misc-file'],
                       'gums_host = DEFAULT',
-                      'gums_host = itb-gums-rsv.chtc.wisc.edu',
+                      'gums_host = ' + core.get_hostname(),
                       owner = 'root')
         
     def test_07_config_gip_file(self):

@@ -66,6 +66,6 @@ class TestStartGUMS(osgunittest.OSGTestCase):
 
         files.replace(core.config['gums.config-file'],
                       '			accountName=\'GumsTestUserMappingSuccessful\'/>',
-                      '			accountName=\'vdttest\'/>',
+                      "			accountName=\'" + core.options.username + "\'/>",
                       owner='gums')
         
