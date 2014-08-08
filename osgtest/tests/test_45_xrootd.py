@@ -35,7 +35,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
 
     def test_01_xrdcp_local_to_server(self):
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client')
+        core.skip_ok_unless_one_installed('xrootd', 'xrootd-client', by_dependency=True)
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
         self.assert_server_started()
@@ -64,7 +64,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_xrdcp_server_to_local(self):
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client')
+        core.skip_ok_unless_one_installed('xrootd', 'xrootd-client', by_dependency=True)
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
         self.assert_server_started()
@@ -94,7 +94,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_03_xrootd_fuse(self):
         # This tests xrootd-fuse using a mount in /mnt 
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client')
+        core.skip_ok_unless_one_installed('xrootd', 'xrootd-client', by_dependency=True)
         self.skip_ok_unless(os.path.exists("/mnt"), "/mnt did not exist")
         self.skip_ok_if(core.config['xrootd.gsi'] == "ON",'fuse incompatible with GSI')
             

@@ -23,7 +23,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir,
                                                      '.globus',
                                                      'usercert.pem')
-        core.skip_ok_unless_installed('xrootd')
+        core.skip_ok_unless_one_installed('xrootd', by_dependency=True)
                   
         xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd', '--qf=%{VERSION}'), 'Getting xrootd version')
         
