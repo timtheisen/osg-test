@@ -24,7 +24,8 @@ class TestXrootd(osgunittest.OSGTestCase):
         OkSkip if the server is not running due to the expected failure
         BadSkip if the server is not running when it should be
         """
-        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd', '--qf=%{VERSION}'), 'Getting xrootd version')
+        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', core.config['xrootd.package'],
+                                                         '--qf=%{VERSION}'), 'Getting xrootd version')
         
         if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", xrootd_server_version):
             msg = 'Expected failure on el6 with this version of xrootd'

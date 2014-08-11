@@ -25,7 +25,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                                                      'usercert.pem')
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
                   
-        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', 'xrootd', '--qf=%{VERSION}'), 'Getting xrootd version')
+        # Determine xrootd package name
+        if core.rpm_is_installed('xrootd4'):
+            core.config['xrootd.package'] = 'xrootd4'
+        elif core.rpm_is_installed('xrootd'):
+            core.config['xrootd.package'] = 'xrootd'
         
         user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
