@@ -58,7 +58,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         command = ('service', 'xrootd', 'start')
         status, stdout, _ = core.system(command)
         
-        if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", xrootd_server_version):
+        if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", core.config['xrootd.package']):
             self.assertEqual(status, 1, 'Expected failure on el6 with this version of xrootd') 
         else:
             self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)
