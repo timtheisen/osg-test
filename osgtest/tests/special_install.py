@@ -3,6 +3,7 @@ import time
 
 import osgtest.library.core as core
 import osgtest.library.yum as yum
+import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
 class TestInstall(osgunittest.OSGTestCase):
@@ -16,7 +17,17 @@ class TestInstall(osgunittest.OSGTestCase):
         except AssertionError:
             core.check_system(pre + ('osg-release-itb',), 'Verify osg-release + osg-release-itb')
 
-    def test_02_install_packages(self):
+    def test_02_disable_osg_release(self):
+        # Disable osg-release on EL7 since we don't have any releases out yet
+        # This can be removed when we do release something
+        self.skip_ok_unless(core.el_release() == 7, 'Non-EL7 release')
+        core.config['install.osg-repo-path'] = '/etc/yum.repos.d/osg.repo'
+        files.replace(core.config['install.osg-repo-path'],
+                      'enabled=1',
+                      'enabled=0',
+                      owner='install')
+        
+    def test_03_install_packages(self):
         core.state['install.success'] = False
         core.state['install.installed'] = []
         core.state['install.updated'] = []
@@ -55,7 +66,7 @@ class TestInstall(osgunittest.OSGTestCase):
             self.fail(fail_msg)
         core.state['install.success'] = True
 
-    def test_03_update_osg_release(self):
+    def test_04_update_osg_release(self):
         if not (core.options.updaterelease):
             return
 
@@ -79,7 +90,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
         core.state['install.release-updated'] = True
         
-    def test_04_update_packages(self):
+    def test_05_update_packages(self):
         if not (core.options.updaterepo and core.state['install.installed']):
             return
         
@@ -99,7 +110,7 @@ class TestInstall(osgunittest.OSGTestCase):
         if fail_msg:
             self.fail(fail_msg)
 
-    def test_05_fix_java_symlinks(self):
+    def test_06_fix_java_symlinks(self):
         # This implements Section 5.1.2 of
         # https://twiki.opensciencegrid.org/bin/view/Documentation/Release3/InstallSoftwareWithOpenJDK7
         java7 = 'java-1.7.0-openjdk'
