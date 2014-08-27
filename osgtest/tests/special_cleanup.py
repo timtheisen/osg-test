@@ -76,8 +76,25 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.config['install.original-release-ver'] + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Downgrade osg-release')
-        
-    def test_02_remove_packages(self):
+
+    def test_02_downgrade_xrootd4(self):
+        # If we replaced xrootd-* with xrootd4* on EL5, we need to handle downgrades gracefully
+        # Otherwise, we can skip this and downgrade as we normally do
+        if core.el_release() > 5:
+            return
+        self.skip_ok_unless(core.state['install.xrootd-replaced'], 'xrootd-* was not replaced')
+
+        # This also removes any package that required xrootd4*! If we're not
+        # supposed to be removing these packages, they will be orphaned and
+        # and reinstalled in test_04_orphaned_packages
+        deadline = time.time() + 3600
+        command = ['yum', '-y', 'remove', 'xrootd4*']
+        fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+        if fail_msg:
+            self.fail(fail_msg)
+        yum.parse_output_for_packages(stdout)
+
+    def test_03_remove_packages(self):
         # We didn't ask to install anything
         if len(core.options.packages) == 0:
             return
@@ -119,12 +136,25 @@ class TestCleanup(osgunittest.OSGTestCase):
                 core.log_message('No new RPMs')
                 return
 
-    def test_03_restore_mapfile(self):
+    def test_04_restore_orphaned_packages(self):
+        if core.state['install.orphaned']:
+            self.skip_ok_unless(core.state['install.orphaned'], 'No orphaned packages')
+            # Reinstall packages that we removed but didn't install
+            # Technically, this doesn't bring the system back to its original
+            # state of packages: we don't track state of EPEL/OSG repos and we
+            # leave the ones we drop in
+            deadline = time.time() + 3600
+            command = ['yum', '-y', 'install'] + core.state['install.orphaned']
+            fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+            if fail_msg:
+                self.fail(fail_msg)
+
+    def test_05_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
             files.restore(core.config['system.mapfile'], 'user')
 
 
-    def test_04_cleanup_test_certs(self):
+    def test_06_cleanup_test_certs(self):
         if core.state['certs.dir_created']:
             files.remove('/etc/grid-security/certificates', force=True)
         else:
@@ -141,7 +171,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             
         certs.cleanup_files()
 
-    def test_05_remove_test_user(self):
+    def test_07_remove_test_user(self):
         if not core.state['general.user_added']:
             core.log_message('Did not add user')
             return
@@ -171,15 +201,15 @@ class TestCleanup(osgunittest.OSGTestCase):
         files.remove(os.path.join('/var/spool/mail', username))
         shutil.rmtree(password_entry.pw_dir)
 
-    def test_06_enable_osg_release(self):
-        # Re-enable osg-release on EL7 since we don't have any releases out yet
-        # This can be removed when we do release something
+    def test_08_enable_osg_release(self):
+        # Re-enable osg-release on EL7 (to mirror the disabling in special_cleanup) 
+        # This can be removed when we release something on EL7
         self.skip_ok_unless(core.el_release() == 7, 'Non-EL7 release')
         files.restore(core.config['install.osg-repo-path'], owner='install')
 
     # The backups test should always be last, in case any prior tests restore
     # files from backup.
-    def test_07_backups(self):
+    def test_09_backups(self):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''

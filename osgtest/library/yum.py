@@ -69,7 +69,11 @@ def parse_output_for_packages(yum_output):
     update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
     # When packages are removed for dependencies or due to replacement by obsoletion
     erase_regexp = re.compile(r'\s+Erasing\s+:\s+\d*:?(\S+)\s+\d')
+    # We need to track if xrootd was replaced with xrootd4 
+    xrootd_regexp = re.compile(r'\s+replacing\s+xrootd.*')
     for line in clean_output:
+        if xrootd_regexp.match(line):
+            core.state['install.xrootd-replaced'] = True
         install_matches = install_regexp.match(line)
         if install_matches is not None:
             core.state['install.installed'].append(install_matches.group(1))
@@ -80,4 +84,13 @@ def parse_output_for_packages(yum_output):
             continue
         erase_matches = erase_regexp.match(line)
         if erase_matches is not None:
-            core.state['install.installed'].remove(erase_matches.group(1))
+            try:
+                core.state['install.installed'].remove(erase_matches.group(1))
+            except ValueError:
+                # We just removed a package that we didn't install, uh-oh!
+                core.state['install.orphaned'].append(erase_matches.group(1))
+            try:
+                core.state['install.updated'].remove(erase_matches.group(1))
+            except ValueError:
+                # Package wasn't updated
+                continue
