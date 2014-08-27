@@ -38,10 +38,10 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         command = ('mkdir','-p', '/tmp/cvmfs')
         status, stdout, stderr = core.system(command, False)
         contents=[]
-        contents.append("CVMFS_REPOSITORIES=cms.cern.ch\n")
+        contents.append("CVMFS_REPOSITORIES=\"`echo $((echo oasis.opensciencegrid.org;echo cms.cern.ch;ls /cvmfs)|sort -u)|tr ' ' ,`\"\n")
         contents.append("CVMFS_CACHE_BASE=/tmp/cvmfs\n")
         contents.append("CVMFS_QUOTA_LIMIT=10000\n")
-        contents.append("CVMFS_HTTP_PROXY=\"http://cache01.hep.wisc.edu:8001;http://cache02.hep.wisc.edu:8001\"\n")
+        contents.append("CVMFS_HTTP_PROXY=\"http://squid1.fnal.gov:3128|http://squid2.fnal.gov:3128\"\n")
         files.write("/etc/cvmfs/default.local", contents, owner='cvmfs', chmod=0644)
         contents=[]
         contents.append("CVMFS_SERVER_URL=\"http://cvmfs.fnal.gov:8000/opt/@org@;http://cvmfs.racf.bnl.gov:8000/opt/@org@;http://cvmfs-stratum-one.cern.ch:8000/opt/@org@;http://cernvmfs.gridpp.rl.ac.uk:8000/opt/@org@\"\n")
