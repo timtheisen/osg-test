@@ -137,6 +137,10 @@ class TestCleanup(osgunittest.OSGTestCase):
                 return
 
     def test_04_restore_orphaned_packages(self):
+        # We didn't ask to install anything and thus didn't remove anything
+        if len(core.options.packages) == 0:
+            return
+
         if core.state['install.orphaned']:
             self.skip_ok_unless(core.state['install.orphaned'], 'No orphaned packages')
             # Reinstall packages that we removed but didn't install
