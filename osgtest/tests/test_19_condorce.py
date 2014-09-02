@@ -9,14 +9,13 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
 
         core.config['condor-ce.condor-cfg'] = '/etc/condor/config.d/99-osgtest.condor.conf'
-        contents = """QUEUE_SUPER_USER_MAY_IMPERSONATE = .*
-SCHEDD_INTERVAL=5
-"""
+        contents = """SCHEDD_INTERVAL=5"""
+        
         files.write(core.config['condor-ce.condor-cfg'],
                     contents,
                     owner='condor-ce',
                     chmod=0644)
-
+       
     def test_02_reconfigure_condor(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
         self.skip_bad_unless(core.state['condor.running-service'], 'Condor not running')
@@ -26,17 +25,37 @@ SCHEDD_INTERVAL=5
         self.assert_(os.path.exists(core.config['condor.lockfile']),
                      'Condor run lock file missing')
 
-    def test_03_configure_condorce(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+    def test_03_configure_authentication(self):
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
-        # Add hostname to the gridmap file and configure htcondor-ce to use it
+        # Configure condor-ce to use the gridmap file and set up PBS and Condor routes
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
-        condor_contents = "GRIDMAP = /etc/grid-security/grid-mapfile"
+        condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
+
+JOB_ROUTER_ENTRIES = \\
+   [ \\
+     GridResource = "batch pbs"; \\
+     TargetUniverse = 9; \\
+     name = "Local_PBS"; \\
+     Requirements = target.osgTestPBS =?= true; \\
+   ] \\
+   [ \\
+     GridResource = "condor localhost localhost"; \\
+     eval_set_GridResource = strcat("condor ", "$(FULL_HOSTNAME)", "$(FULL_HOSTNAME)"); \\
+     TargetUniverse = 5; \\
+     name = "Local_Condor"; \\
+   ]
+
+JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
+JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
+JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME)
+"""
         files.write(core.config['condor-ce.condor-ce-cfg'],
                     condor_contents,
                     owner='condor-ce',
                     chmod=0644)
 
+        # lcmaps needs to know to use the gridmap file instead of GUMS
         core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
         lcmaps_contents = """
 authorize_only:
@@ -53,7 +72,7 @@ gridmapfile -> good | bad
                         owner='condor-ce',
                         chmod=0644)
 
-    def test_04_start_condorce(self):
+    def test_05_start_condorce(self):
         core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
         core.state['condor-ce.started'] = False
         

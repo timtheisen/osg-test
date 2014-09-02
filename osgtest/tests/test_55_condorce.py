@@ -31,7 +31,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_04_trace(self):
         self.general_requirements()
-
+        
         cwd = os.getcwd()
         os.chdir('/tmp')
         
@@ -40,7 +40,20 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
         os.chdir(cwd)
 
-    def test_05_use_gums_auth(self):
+    def test_05_pbs_trace(self):
+        core.skip_ok_unless_installed('htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-pbs',
+                                      'torque-mom','torque-server', 'torque-scheduler', 'torque-client', 'munge')
+        self.skip_ok_unless(core.state['torque.pbs-server-running'])
+        
+        cwd = os.getcwd()
+        os.chdir('/tmp')
+        
+        command = ('condor_ce_trace', '-a osgTestPBS = True', '--debug', core.get_hostname())
+        core.check_system(command, 'ce trace against pbs', user=True)
+
+        os.chdir(cwd)
+
+    def test_06_use_gums_auth(self):
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
 
@@ -94,7 +107,7 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         core.check_system(command, 'restart condor-ce')
         
 
-    def test_06_ping_with_gums(self):
+    def test_07_ping_with_gums(self):
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
 
