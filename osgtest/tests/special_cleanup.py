@@ -80,7 +80,8 @@ class TestCleanup(osgunittest.OSGTestCase):
     def test_02_downgrade_xrootd4(self):
         # If we replaced xrootd-* with xrootd4* on EL5, we need to handle downgrades gracefully
         # Otherwise, we can skip this and downgrade as we normally do
-        if core.el_release() > 5:
+        # Also skip if we didn't install anything
+        if core.el_release() > 5 or len(core.options.packages) == 0:
             return
         self.skip_ok_unless(core.state['install.xrootd-replaced'], 'xrootd-* was not replaced')
 
