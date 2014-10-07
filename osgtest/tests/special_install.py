@@ -104,9 +104,6 @@ class TestInstall(osgunittest.OSGTestCase):
 
         command = ['yum', 'update', '-y']
         command.append('--enablerepo=%s' % core.options.updaterepo)
-        for package in core.state['install.installed']:
-            command += [package]
-
         fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
         yum.parse_output_for_packages(stdout)
 
