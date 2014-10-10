@@ -4,14 +4,18 @@ import osgtest.library.core as core
 
 def majorver():
     "Tomcat major version"
-    if core.el_release() > 5:
+    if core.el_release() == 7:
+        return 7
+    if core.el_release() == 6:
         return 6
     else:
         return 5
 
 def pkgname():
     "Name of the Tomcat package"
-    return "tomcat" + str(majorver())
+    if majorver() <= 6:
+        return "tomcat" + str(majorver())
+    return "tomcat"
 
 def datadir():
     "Path of data directory of Tomcat"
@@ -35,7 +39,7 @@ def pidfile():
 
 def serverlibdir():
     "Path of the server libraries dir of Tomcat"
-    if majorver() == 6:
+    if majorver() >= 6:
         return os.path.join(datadir(), "lib")
     else:
         return os.path.join(datadir(), "server/lib")
