@@ -151,7 +151,10 @@ def read_args():
 
     p.add_option('-v', '--verbose', action='store_true', dest='verbose',
                       help='Increase quantity of output')
-    
+
+    p.add_option('--hostcert', action='store_true', dest='hostcert',
+                      help='Create host cert')
+
     return p
 
 def discover_tests():
