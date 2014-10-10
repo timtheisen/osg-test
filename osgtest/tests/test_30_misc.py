@@ -40,9 +40,8 @@ class TestMisc(osgunittest.OSGTestCase):
         self.assert_(osg_version == osg_version_rpm_version)
 
     def test_03_lfc_multilib(self):
-        if core.el_release() == 7:
-            # We do not build 32-bit packages on EL7
-            return
+        # We do not build 32-bit packages on EL7
+        self.skip_ok_if(core.el_release() >= 7, message='running on EL7+')
 
         core.skip_ok_unless_installed('yum-utils')
 
