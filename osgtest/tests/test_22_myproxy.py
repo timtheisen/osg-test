@@ -32,8 +32,11 @@ class TestStartmyproxy(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('myproxy-server')
         conFileContents = files.read('/usr/share/osg-test/test_myproxy_server.config')
         files.write('/etc/myproxy-server.config',conFileContents, owner='root', backup=True)  
-        core.config['myproxy.lock-file']='/var/lock/subsys/myproxy-server'
-        
+        if core.el_release() <= 6:
+            core.config['myproxy.lock-file']='/var/lock/subsys/myproxy-server'
+        else:
+            core.config['myproxy.lock-file']='/var/run/myproxy-server/myproxy.pid'
+
     def test_04_start_myproxy(self):
         core.state['myproxy.started-server'] = False
 
