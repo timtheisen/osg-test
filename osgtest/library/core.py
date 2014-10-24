@@ -370,8 +370,8 @@ def __format_command(command):
 
 
 def __prepare_shell_argument(argument):
-    if re.search(r'\W', argument):
-        return "'" + re.sub(r"'", r"''\'", argument) + "'"
+    if re.search(r'\W', argument) or argument == '':
+        return "'" + re.sub(r"'", r"'\''", argument) + "'"
     return argument
 
 
