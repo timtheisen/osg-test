@@ -16,10 +16,6 @@ VERSION := 1.4.18
 SBIN_FILES := osg-test
 INSTALL_SBIN_DIR := usr/sbin
 
-CA_CERT_DIR := ca-certificate
-CA_CERT_FILES := $(CA_CERT_DIR)/4eca18ce.*
-INSTALL_CA_CERT_DIR := etc/grid-security/certificates
-
 SHARE_DIR := files
 OPENSSL_EXT_FILE := $(SHARE_DIR)/openssl-cert-extensions.conf
 OSG_CA_FILES := $(SHARE_DIR)/OSG-Test-CA.*
@@ -39,7 +35,7 @@ PYTHON_TEST_FILES := $(PYTHON_TEST_DIR)/*.py
 PYTHON_TARBALL_TEST_DIR := $(PYTHON_ROOT_DIR)/tarball_tests
 PYTHON_TARBALL_TEST_FILES := $(PYTHON_TARBALL_TEST_DIR)/*.py
 
-DIST_FILES := $(SBIN_FILES) $(CA_CERT_DIR) $(SHARE_DIR) $(PYTHON_ROOT_DIR) Makefile
+DIST_FILES := $(SBIN_FILES) $(SHARE_DIR) $(PYTHON_ROOT_DIR) Makefile
 
 
 # ------------------------------------------------------------------------------
@@ -84,9 +80,6 @@ endif
 install:
 	mkdir -p $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	install -p -m 0755 $(SBIN_FILES) $(DESTDIR)/$(INSTALL_SBIN_DIR)
-	mkdir -p $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
-	install -p -m 0644 $(CA_CERT_FILES) $(DESTDIR)/$(INSTALL_CA_CERT_DIR)
-	for f in $(CA_CERT_FILES); do b=`basename $$f`; n=`echo $$b | sed -e 's/4eca18ce/bffdd190/g'`; ln -sf $$b $(DESTDIR)/$(INSTALL_CA_CERT_DIR)/$$n; done
 	mkdir -p $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(OPENSSL_EXT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(OSG_CA_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
