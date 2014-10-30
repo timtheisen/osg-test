@@ -59,7 +59,7 @@ def parse_command_line():
             sys.exit(1)
             
         # Get union of config file values and defaults with the config values overriding any defaults
-        for x,value in config_file.items('Config'):
+        for key,value in config_file.items('Config'):
             if key in defaults: 
                 if key == 'packages':
                     defaults[key] = re.split(',\s*', value)
