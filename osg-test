@@ -35,7 +35,7 @@ def parse_command_line():
                 "tarballs": False,
                 "timeout": 5400,          # 1.5 hours
                 "updaterelease": None,
-                "updaterepo": None,
+                "updaterepos": [],
                 "username": 'vdttest',
                 "verbose": False,
                 "manualrun": False
@@ -58,12 +58,14 @@ def parse_command_line():
             sys.stderr.write("Lines with options should not start with a space\n")
             sys.exit(1)
             
-        # Get union of config file values and defaults
-        for key,value in config_file.items('Config'):
+        # Get union of config file values and defaults with the config values overriding any defaults
+        for x,value in config_file.items('Config'):
             if key in defaults: 
                 if key == 'packages':
                     defaults[key] = re.split(',\s*', value)
                 elif key == 'extrarepos':
+                    defaults[key] = re.split(',\s*', value)
+                elif key == 'updaterepos':
                     defaults[key] = re.split(',\s*', value)
                 elif key == 'timeout':
                     defaults[key] = config_file.getint('Config', key)
@@ -79,7 +81,7 @@ def parse_command_line():
     parser.set_defaults(**defaults)
     (core.options, args) = parser.parse_args()
     
-    if core.options.updaterepo and not core.options.packages:
+    if core.options.updaterepos and not core.options.packages:
         parser.error('The -g (--update-repo) option requires -i (--install).')
 
 def read_args():
@@ -104,7 +106,7 @@ def read_args():
                       metavar='PACKAGE',
                       help='Install PACKAGE with yum before running tests')
 
-    p.add_option('-g','--update-repo', action='store', type='string', dest='updaterepo', metavar='REPO',
+    p.add_option('-g','--update-repo', action='append', type='string', dest='updaterepos', metavar='REPO',
                       help='REPO to use when updating packages '
                       'specified with the -i flag.')
 

@@ -88,13 +88,13 @@ class TestInstall(osgunittest.OSGTestCase):
         core.check_system(command, 'Update osg-release')
         
         # If update repos weren't specified, just use osg-release
-        if not core.options.updaterepo:
-            core.options.updaterepo = 'osg'
+        if not core.options.updaterepos:
+            core.options.updaterepos = ['osg']
 
         core.state['install.release-updated'] = True
         
     def test_05_update_packages(self):
-        if not (core.options.updaterepo and core.state['install.installed']):
+        if not (core.options.updaterepos and core.state['install.installed']):
             return
         
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
@@ -103,7 +103,8 @@ class TestInstall(osgunittest.OSGTestCase):
         deadline = time.time() + 3600   # 1 hour from now
 
         command = ['yum', 'update', '-y']
-        command.append('--enablerepo=%s' % core.options.updaterepo)
+        for repo in core.options.updaterepos:
+            command.append('--enablerepo=%s' % repo)
         fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
         yum.parse_output_for_packages(stdout)
 
