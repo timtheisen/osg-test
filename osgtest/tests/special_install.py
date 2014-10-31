@@ -54,7 +54,7 @@ class TestInstall(osgunittest.OSGTestCase):
             retry_fail, status, stdout, stderr = yum.retry_command(command, deadline)
             if retry_fail == '':
             # This means retry the command succeeded
-                if core.el_release() == 6:
+                if core.el_release() >= 6:
                     # RHEL 6 does not have the rollback option, so store the
                     # transaction IDs so we can undo each transaction in the
                     # proper order

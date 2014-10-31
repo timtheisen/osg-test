@@ -108,7 +108,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         deadline = time.time() + 3600
         el_version = core.el_release()
 
-        if el_version == 6:
+        if el_version >= 6:
             # Rolling back is a lot more reliable in yum post EL5
             core.state['install.transaction_ids'].reverse()
             for transaction in core.state['install.transaction_ids']:
