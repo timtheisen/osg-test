@@ -110,6 +110,9 @@ class TestInstall(osgunittest.OSGTestCase):
 
         if fail_msg:
             self.fail(fail_msg)
+        else:
+            if core.el_release() >=6:
+                core.state['install.transaction_ids'].append(yum.get_transaction_id())
 
     def test_06_fix_java_symlinks(self):
         # This implements Section 5.1.2 of
