@@ -25,7 +25,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_03_ping(self):
         self.general_requirements()
 
-        command = ('env', '_condor_SEC_CLIENT_AUTHENTICATION_METHODS=GSI', 'condor_ce_ping', 'WRITE', '-verbose')
+        command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search('Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
 
@@ -120,7 +120,7 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                           'TransferQueueManager stats',
                           60.0)
 
-        command = ('env', '_condor_SEC_CLIENT_AUTHENTICATION_METHODS=GSI', 'condor_ce_ping', 'WRITE', '-verbose')
+        command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search('Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
         
