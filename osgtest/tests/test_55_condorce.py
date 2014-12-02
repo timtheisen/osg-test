@@ -99,12 +99,15 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                       'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       owner='condor-ce')
 
-        # Need to stat the Master logfile so we know when the schedd is back up
-        core.config['condor-ce.master-log'] = '/var/log/condor-ce/MasterLog'
-        core.config['condor-ce.master-log-stat'] = os.stat(core.config['condor-ce.master-log'])
+        command = ('service', 'condor-ce', 'stop')
+        core.check_system(command, 'stop condor-ce')
+
+        # Need to stat the Schedd logfile so we know when it's back up
+        core.config['condor-ce.schedlog'] = '/var/log/condor-ce/SchedLog'
+        core.config['condor-ce.schedlog-stat'] = os.stat(core.config['condor-ce.schedlog'])
         
-        command = ('service', 'condor-ce', 'restart')
-        core.check_system(command, 'restart condor-ce')
+        command = ('service', 'condor-ce', 'start')
+        core.check_system(command, 'start condor-ce')
         
 
     def test_07_ping_with_gums(self):
@@ -112,9 +115,9 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         core.skip_ok_unless_installed('gums-service')
 
         # Wait for the collector to come back up
-        core.monitor_file(core.config['condor-ce.master-log'],
-                          core.config['condor-ce.master-log-stat'],
-                          'Started DaemonCore process.*condor_schedd',
+        core.monitor_file(core.config['condor-ce.schedlog'],
+                          core.config['condor-ce.schedlog-stat'],
+                          'TransferQueueManager stats',
                           60.0)
 
         command = ('env', '_condor_SEC_CLIENT_AUTHENTICATION_METHODS=GSI', 'condor_ce_ping', 'WRITE', '-verbose')
