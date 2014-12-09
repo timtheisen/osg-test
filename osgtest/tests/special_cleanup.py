@@ -42,7 +42,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.log_message('%d RPMs installed but not in yum output' % count)
             rpm_candidates += remaining_rpms
 
-        # Creating the list of RPMs to erase/downgrade is more complicated than just using
+        # Creating the list of RPMs to erase is more complicated than just using
         # the list of new RPMs, because there may be RPMs with both 32- and
         # 64-bit versions installed.  In that case, rpm will fail if given just
         # the base package name; instead, the architecture must be specified,
@@ -86,8 +86,8 @@ class TestCleanup(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.state['install.xrootd-replaced'], 'xrootd-* was not replaced')
 
         # This also removes any package that required xrootd4*! If we're not
-        # supposed to be removing these packages, they will be orphaned and
-        # and reinstalled in test_04_orphaned_packages
+        # supposed to be removing these packages, they will be considered
+        # orphaned and reinstalled in test_04_orphaned_packages
         deadline = time.time() + 3600
         command = ['yum', '-y', 'remove', 'xrootd4*']
         fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
@@ -120,15 +120,16 @@ class TestCleanup(osgunittest.OSGTestCase):
             # rpm -Uvh --rollback was very finicky so we had to
             # spin up our own method of rolling back installations
             if len(core.state['install.updated']) != 0:
-                rpm_downgrade_list = self.list_special_install_rpms(core.state['install.updated'])
-                package_count = len(rpm_downgrade_list)
-                command = ['yum', '-y', 'downgrade'] + rpm_downgrade_list
+                command = ['yum', 'downgrade', '-y'] + core.state['install.updated']
                 fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
                 if fail_msg:
                     self.fail(fail_msg)
-                yum.parse_output_for_packages(stdout)
+                # Remove packages from install list that were brought in as deps for `yum update`
+                yum.parse_output_for_packages(stdout) 
                 
             if len(core.state['install.installed']) != 0:
+                for pkg in core.state['install.os_updates']:
+                    core.state['install.installed'].remove(pkg)
                 rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
                 package_count = len(rpm_erase_list)
                 command = ['rpm', '--quiet', '--erase'] + rpm_erase_list

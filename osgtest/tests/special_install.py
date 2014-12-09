@@ -32,6 +32,7 @@ class TestInstall(osgunittest.OSGTestCase):
         core.state['install.installed'] = []
         core.state['install.updated'] = []
         core.state['install.orphaned'] = []
+        core.state['install.os_updates'] = []
         # Setting this so we can gracefully downgrade xrootd4 in the cleanup phase
         core.state['install.xrootd-replaced'] = False
 

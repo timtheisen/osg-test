@@ -65,32 +65,35 @@ def get_transaction_id():
 
 def parse_output_for_packages(yum_output):
     clean_output = yum_output.strip().split('\n')
-    install_regexp = re.compile(r'\s+Installing\s+:\s+\d*:?(\S+)\s+\d')
-    update_regexp = re.compile(r'\s+Updating\s+:\s+\d*:?(\S+)\s+\d')
-    # When packages are removed for dependencies or due to replacement by obsoletion
-    erase_regexp = re.compile(r'\s+Erasing\s+:\s+\d*:?(\S+)\s+\d')
-    # We need to track if xrootd was replaced with xrootd4 
+
+    transaction_regexp = re.compile(r'\s+((?:Installing|Updating|Cleanup|Erasing))\s+:\s+\d*:?(\S+)\s+\d')
     xrootd_regexp = re.compile(r'\s+replacing\s+xrootd.*')
     for line in clean_output:
+        # We need to track if xrootd was replaced with xrootd4 
         if xrootd_regexp.match(line):
             core.state['install.xrootd-replaced'] = True
-        install_matches = install_regexp.match(line)
-        if install_matches is not None:
-            core.state['install.installed'].append(install_matches.group(1))
+        try:
+            operation, pkg = transaction_regexp.match(line).groups()
+        except AttributeError:
+            # Catch exception when the line doesn't match our regex
             continue
-        update_matches = update_regexp.match(line)
-        if update_matches is not None:
-            core.state['install.updated'].append(update_matches.group(1))
-            continue
-        erase_matches = erase_regexp.match(line)
-        if erase_matches is not None:
+
+        if operation == 'Installing' and pkg != 'kernel': # uninstalling kernel updates is a headache
+            core.state['install.installed'].append(pkg)
+        elif operation == 'Updating':
+            core.state['install.updated'].append(pkg)
+        elif operation == 'Cleanup' and pkg not in core.state['install.installed']:
+            # Cleanup only occurs on upgrades/downgrades and if we didn't
+            # install the package, it already existed on the machine
+            core.state['install.os_updates'].append(pkg)
+        elif operation == 'Erasing':
             try:
-                core.state['install.installed'].remove(erase_matches.group(1))
+                core.state['install.installed'].remove(pkg)
             except ValueError:
                 # We just removed a package that we didn't install, uh-oh!
-                core.state['install.orphaned'].append(erase_matches.group(1))
+                core.state['install.orphaned'].append(pkg)
             try:
-                core.state['install.updated'].remove(erase_matches.group(1))
+                core.state['install.updated'].remove(pkg)
             except ValueError:
                 # Package wasn't updated
                 continue
