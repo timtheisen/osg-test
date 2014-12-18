@@ -9,11 +9,20 @@ def clean_yum():
     core.system(pre + ('all',))
     core.system(pre + ('expire-cache',))
 
-def retry_command(command, deadline):
+def retry_command(command, timeout_seconds=3600):
+    """Run a Yum command repeatedly until success, hard failure, or timeout.
+
+    Run the given Yum command.  If it succeeds, return.  If it fails for a
+    whitelisted reason, keep trying, otherwise return a failure message.  But,
+    do not retry commands for longer than the timeout duration.
+    """
+
+    deadline = time.time() + timeout_seconds
     fail_msg, status, stdout, stderr = '', '', '', ''
+
     # Loop for retries
     while True:
-        
+
         # Stop (re)trying if the deadline has passed
         if time.time() > deadline:
             fail_msg += "Retries terminated after timeout period" 
@@ -32,12 +41,12 @@ def retry_command(command, deadline):
             core.log_message("Retrying command")
             continue
 
-        # Otherwise, we do not expect a retry to succeed, ever, so fail
-        # this package
+        # Otherwise, we do not expect a retry to succeed, ever, so fail this
+        # package
         else:
             fail_msg = core.diagnose("Command failed", status, stdout, stderr)
             break
-            
+
     return fail_msg, status, stdout, stderr
                 
 def yum_failure_can_be_retried(output):

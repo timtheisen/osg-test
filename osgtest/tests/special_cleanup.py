@@ -5,7 +5,6 @@ import os.path
 import pwd
 import re
 import shutil
-import time
 
 import osgtest.library.core as core
 import osgtest.library.yum as yum
@@ -88,9 +87,8 @@ class TestCleanup(osgunittest.OSGTestCase):
         # This also removes any package that required xrootd4*! If we're not
         # supposed to be removing these packages, they will be considered
         # orphaned and reinstalled in test_04_orphaned_packages
-        deadline = time.time() + 3600
         command = ['yum', '-y', 'remove', 'xrootd4*']
-        fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+        fail_msg, status, stdout, stderr = yum.retry_command(command)
         if fail_msg:
             self.fail(fail_msg)
         yum.parse_output_for_packages(stdout)
@@ -105,7 +103,6 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.log_message('No packages installed')
             return
 
-        deadline = time.time() + 3600
         el_version = core.el_release()
 
         if el_version >= 6:
@@ -113,7 +110,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.state['install.transaction_ids'].reverse()
             for transaction in core.state['install.transaction_ids']:
                 command = ('yum', 'history', 'undo', '-y', transaction)
-                fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+                fail_msg, status, stdout, stderr = yum.retry_command(command)
                 if fail_msg:
                     self.fail(fail_msg)
         elif el_version == 5:
@@ -121,7 +118,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             # spin up our own method of rolling back installations
             if len(core.state['install.updated']) != 0:
                 command = ['yum', 'downgrade', '-y'] + core.state['install.updated']
-                fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+                fail_msg, status, stdout, stderr = yum.retry_command(command)
                 if fail_msg:
                     self.fail(fail_msg)
                 # Remove packages from install list that were brought in as deps for `yum update`
@@ -149,9 +146,8 @@ class TestCleanup(osgunittest.OSGTestCase):
             # Technically, this doesn't bring the system back to its original
             # state of packages: we don't track state of EPEL/OSG repos and we
             # leave the ones we drop in
-            deadline = time.time() + 3600
             command = ['yum', '-y', 'install'] + core.state['install.orphaned']
-            fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+            fail_msg, status, stdout, stderr = yum.retry_command(command)
             if fail_msg:
                 self.fail(fail_msg)
 

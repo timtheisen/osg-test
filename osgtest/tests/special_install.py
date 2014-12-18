@@ -1,5 +1,4 @@
 import re
-import time
 
 import osgtest.library.core as core
 import osgtest.library.yum as yum
@@ -39,7 +38,6 @@ class TestInstall(osgunittest.OSGTestCase):
         # Install packages
         core.state['install.transaction_ids'] = []
         fail_msg = ''
-        deadline = time.time() + 3600   # 1 hour from now
         for package in core.options.packages:
 
             # Do not try to re-install packages
@@ -52,9 +50,8 @@ class TestInstall(osgunittest.OSGTestCase):
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
 
-            retry_fail, status, stdout, stderr = yum.retry_command(command, deadline)
-            if retry_fail == '':
-            # This means retry the command succeeded
+            retry_fail, status, stdout, stderr = yum.retry_command(command)
+            if retry_fail == '':   # the command succeeded
                 if core.el_release() >= 6:
                     # RHEL 6 does not have the rollback option, so store the
                     # transaction IDs so we can undo each transaction in the
@@ -65,7 +62,7 @@ class TestInstall(osgunittest.OSGTestCase):
                 yum.parse_output_for_packages(stdout)
 
             fail_msg += retry_fail
-                
+
         if fail_msg:
             self.fail(fail_msg)
         core.state['install.success'] = True
@@ -101,12 +98,10 @@ class TestInstall(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
         # Update packages
-        deadline = time.time() + 3600   # 1 hour from now
-
         command = ['yum', 'update', '-y']
         for repo in core.options.updaterepos:
             command.append('--enablerepo=%s' % repo)
-        fail_msg, status, stdout, stderr = yum.retry_command(command, deadline)
+        fail_msg, status, stdout, stderr = yum.retry_command(command)
         yum.parse_output_for_packages(stdout)
 
         if fail_msg:
