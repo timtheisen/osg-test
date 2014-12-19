@@ -141,3 +141,17 @@ set server acl_host_enable = True
                 break
         if not core.state['torque.nodes-up']:
             self.fail('PBS nodes not coming up')
+
+    def test_05_set_job_env(self):
+        core.skip_ok_unless_installed(*self.required_rpms)
+
+        core.config['osg.job-environment'] = '/var/lib/osg/osg-job-environment.conf'
+        core.config['osg.local-job-environment'] = '/var/lib/osg/osg-local-job-environment.conf'
+        
+        files.write(core.config['osg.job-environment'],
+                    "#!/bin/sh\nJOB_ENV='vdt' && export JOB_ENV",
+                    owner='pbs', chmod=0644)
+        files.write(core.config['osg.local-job-environment'],
+                    "#!/bin/sh\nLOCAL_JOB_ENV='osg' && export LOCAL_JOB_ENV",
+                    owner='pbs', chmod=0644)
+

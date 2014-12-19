@@ -1,6 +1,5 @@
 """Support and convenience functions for tests."""
 
-
 import os
 import os.path
 import pwd
@@ -524,3 +523,16 @@ def check_file_and_perms(file_path, owner_name, permissions):
         except OSError:  # file does not exist
             return False
 
+def parse_env_output(output):
+    """
+    Parse env output and store them in a dict
+    """
+    env = {}
+    for line in output.split('\n'):
+        env_match = re.match('(\S+)=(\S+)', line)
+        try:
+            env[env_match.group(1)] = env_match.group(2)
+        except AttributeError:
+            pass
+        
+    return env

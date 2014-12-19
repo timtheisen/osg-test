@@ -92,9 +92,16 @@ class OSGTestCase(unittest.TestCase):
         "Skip (bad) if the expression is false"
         if not expr:
             raise BadSkipException, message
-    
-    def defaultTestResult(self):
-        return OSGTestResult()
+
+    def assertSubsetOf(self, a, b, message=None):
+        "Ensure that a is a subset of b "
+        if not set(a).issubset(set(b)):
+            raise AssertionError, message
+
+    def failIfSubsetOf(self, a, b, message=None):
+        "Ensure that a is not a subset of b"
+        if set(a).issubset(set(b)):
+            raise AssertionError, message
 
     # This is mostly a copy of the method from unittest in python 2.4.
     # There is some code here to test if the 'result' object accepts 'skips',

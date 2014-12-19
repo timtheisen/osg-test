@@ -9,6 +9,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
     required_rpms = ['torque-mom',
                      'torque-server',
                      'torque-scheduler',
+                     'torque-client',
                      'munge']
 
     def test_01_stop_mom(self):
@@ -62,3 +63,9 @@ class TestStopPBS(osgunittest.OSGTestCase):
                      'munge lock file still present')
         core.state['munge.running'] = False
         files.restore(core.config['munge.keyfile'], 'pbs')
+
+    def test_05_restore_job_env(self):
+        core.skip_ok_unless_installed(*self.required_rpms)
+
+        files.restore(core.config['osg.job-environment'], owner='pbs')
+        files.restore(core.config['osg.local-job-environment'], owner='pbs')
