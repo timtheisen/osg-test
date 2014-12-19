@@ -2,7 +2,6 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import unittest
 
 class TestStopPBS(osgunittest.OSGTestCase):
 
@@ -64,8 +63,3 @@ class TestStopPBS(osgunittest.OSGTestCase):
         core.state['munge.running'] = False
         files.restore(core.config['munge.keyfile'], 'pbs')
 
-    def test_05_restore_job_env(self):
-        core.skip_ok_unless_installed(*self.required_rpms)
-
-        files.restore(core.config['osg.job-environment'], owner='pbs')
-        files.restore(core.config['osg.local-job-environment'], owner='pbs')
