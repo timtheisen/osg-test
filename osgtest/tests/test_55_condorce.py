@@ -1,3 +1,6 @@
+#pylint: disable=C0301
+#pylint: disable=R0904
+
 import os
 import re
 import osgtest.library.core as core
@@ -6,9 +9,8 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
     def general_requirements(self):
-        self.skip_ok_unless('condor-ce.started', 'ce not running')
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor', 'lcmaps',
-                                      'lcas-lcmaps-gt4-interface')  
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
+        self.skip_bad_unless('condor-ce.started', 'ce not running')
 
     def test_01_status(self):
         self.general_requirements()
@@ -18,36 +20,36 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_02_queue(self):
         self.general_requirements()
-        
+
         command = ('condor_ce_q', '-verbose')
         core.check_system(command, 'ce queue', user=True)
-        
+
     def test_03_ping(self):
         self.general_requirements()
 
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
-        self.assert_(re.search('Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+        self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
 
     def test_04_trace(self):
         self.general_requirements()
-        
+
         cwd = os.getcwd()
         os.chdir('/tmp')
-        
+
         command = ('condor_ce_trace', '--debug', core.get_hostname())
         core.check_system(command, 'ce trace', user=True)
 
         os.chdir(cwd)
 
     def test_05_pbs_trace(self):
-        core.skip_ok_unless_installed('htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-pbs',
-                                      'torque-mom','torque-server', 'torque-scheduler', 'torque-client', 'munge')
+        self.general_requirements()
+        core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge')
         self.skip_ok_unless(core.state['torque.pbs-server-running'])
-        
+
         cwd = os.getcwd()
         os.chdir('/tmp')
-        
+
         command = ('condor_ce_trace', '-a osgTestPBS = True', '--debug', core.get_hostname())
         core.check_system(command, 'ce trace against pbs', user=True)
 
@@ -60,7 +62,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         # Setting up GUMS auth using the instructions here:
         # twiki.grid.iu.edu/bin/view/Documentation/Release3/InstallComputeElement#8_1_Using_GUMS_for_Authorization
         hostname = core.get_hostname()
-        
+
         lcmaps_contents = '''gumsclient = "lcmaps_gums_client.mod"
              "-resourcetype ce"
              "-actiontype execute-now"
@@ -89,9 +91,9 @@ gumsclient -> good | bad
 gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
 ''' % (hostname, hostname)
 
-        core.config['condor-ce.gums-properties'] = '/etc/gums/gums-client.properties'        
+        core.config['condor-ce.gums-properties'] = '/etc/gums/gums-client.properties'
         core.config['condor-ce.gsi-authz'] = '/etc/grid-security/gsi-authz.conf'
-        
+
         files.write(core.config['condor-ce.lcmapsdb'], lcmaps_contents, owner='condor-ce.gums')
         files.write(core.config['condor-ce.gums-properties'], gums_properties_contents, owner='condor-ce')
         files.replace(core.config['condor-ce.gsi-authz'],
@@ -105,10 +107,9 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         # Need to stat the Schedd logfile so we know when it's back up
         core.config['condor-ce.schedlog'] = '/var/log/condor-ce/SchedLog'
         core.config['condor-ce.schedlog-stat'] = os.stat(core.config['condor-ce.schedlog'])
-        
+
         command = ('service', 'condor-ce', 'start')
         core.check_system(command, 'start condor-ce')
-        
 
     def test_07_ping_with_gums(self):
         self.general_requirements()
@@ -122,6 +123,5 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
 
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
-        self.assert_(re.search('Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
-        
+        self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
 
