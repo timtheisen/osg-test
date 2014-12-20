@@ -11,7 +11,6 @@ class TestConfigureJobs(osgunittest.OSGTestCase):
     """Configurations for running jobs"""
 
     def test_01_set_job_env(self):
-        """Configure job environment"""
         # Jobs get submitted with globus-job-run, condor_run, and condor_ce_run
         core.skip_ok_unless_one_installed(['htcondor-ce', 'globus-gatekeeper', 'condor'])
         core.state['jobs.env-set'] = False
