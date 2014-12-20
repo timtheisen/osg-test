@@ -19,10 +19,10 @@ class TestConfigureJobs(osgunittest.OSGTestCase):
         core.config['osg.local-job-environment'] = '/var/lib/osg/osg-local-job-environment.conf'
 
         files.write(core.config['osg.job-environment'],
-                    "#!/bin/sh\nJOB_ENV='vdt' && export JOB_ENV",
+                    "#!/bin/sh\nJOB_ENV='vdt'\nexport JOB_ENV",
                     owner='pbs', chmod=0644)
         files.write(core.config['osg.local-job-environment'],
-                    "#!/bin/sh\nLOCAL_JOB_ENV='osg' && export LOCAL_JOB_ENV",
+                    "#!/bin/sh\nLOCAL_JOB_ENV='osg'\nexport LOCAL_JOB_ENV",
                     owner='pbs', chmod=0644)
 
         core.state['jobs.env-set'] = True
