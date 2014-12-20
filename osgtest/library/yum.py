@@ -75,7 +75,7 @@ def get_transaction_id():
 def parse_output_for_packages(yum_output):
     clean_output = yum_output.strip().split('\n')
 
-    transaction_regexp = re.compile(r'\s+((?:Installing|Updating|Cleanup|Erasing))\s+:\s+\d*:?(\S+)\s+\d')
+    transaction_regexp = re.compile(r'\s+(Installing|Updating|Cleanup|Erasing)\s+:\s+\d*:?(\S+)\s+\d')
     xrootd_regexp = re.compile(r'\s+replacing\s+xrootd.*')
     for line in clean_output:
         # We need to track if xrootd was replaced with xrootd4 
