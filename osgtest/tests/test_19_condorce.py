@@ -41,15 +41,13 @@ JOB_ROUTER_ENTRIES = \\
      Requirements = target.osgTestPBS =?= true; \\
    ] \\
    [ \\
-     GridResource = "condor localhost localhost"; \\
-     eval_set_GridResource = strcat("condor ", "$(FULL_HOSTNAME)", "$(FULL_HOSTNAME)"); \\
      TargetUniverse = 5; \\
      name = "Local_Condor"; \\
    ]
 
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
 JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
-JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME)
+JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
 """
         files.write(core.config['condor-ce.condor-ce-cfg'],
                     condor_contents,
