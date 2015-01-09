@@ -383,7 +383,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service', 'globus-gram-job-manager-condor',
                                       'globus-gram-client-tools', 'globus-proxy-utils')  
         self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
-        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['globus-gatekeeper.running'], 'gatekeeper not running')
         self.skip_bad_unless(core.state['condor.running-service'], message='Condor service not running')
         if os.path.exists(core.config['gratia.log.file']):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])

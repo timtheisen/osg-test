@@ -1,5 +1,6 @@
 import os
 import osgtest.library.core as core
+import osgtest.library.service as service
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import unittest
@@ -8,15 +9,10 @@ class TestStopGatekeeper(osgunittest.OSGTestCase):
 
     def test_01_stop_gatekeeper(self):
         core.skip_ok_unless_installed('globus-gatekeeper')
-        self.skip_ok_if(core.state['globus.started-gk'] == False, 'did not start server')
+        self.skip_ok_unless(core.state['globus-gatekeeper.started-service'], 'did not start gatekeeper')
 
         files.restore(core.config['jobmanager-config'], 'globus')
-
-        command = ('service', 'globus-gatekeeper', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop Globus gatekeeper')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(not os.path.exists(core.config['globus.gk-lockfile']),
-                     'Globus gatekeeper run lock file still present')
+        service.stop('globus-gatekeeper')
 
     def test_02_stop_seg(self):
         core.skip_ok_unless_installed('globus-scheduler-event-generator-progs')

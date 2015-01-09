@@ -1,6 +1,7 @@
 import os
 import re
 import osgtest.library.core as core
+import osgtest.library.service as service
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import unittest
@@ -8,28 +9,22 @@ import unittest
 class TestStartGatekeeper(osgunittest.OSGTestCase):
 
     def test_01_start_gatekeeper(self):
-        core.config['globus.gk-lockfile'] = '/var/lock/subsys/globus-gatekeeper'
-        core.state['globus.started-gk'] = False
-
         core.skip_ok_unless_installed('globus-gatekeeper')
-        self.skip_ok_if(os.path.exists(core.config['globus.gk-lockfile']), 'already running')
+        core.config['globus-gatekeeper.started-service'] = False
 
-        # DEBUG: Set up gatekeeper debugging
-        core.config['jobmanager-config'] = '/etc/globus/globus-gram-job-manager.conf'
-        conf_path = core.config['jobmanager-config']
-        files.append(conf_path, '-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n', owner='globus')
-        files.append(conf_path, '-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n', backup=False)
+        if not service.is_running('globus-gatekeeper'):
+            # DEBUG: Set up gatekeeper debugging
+            core.config['jobmanager-config'] = '/etc/globus/globus-gram-job-manager.conf'
+            conf_path = core.config['jobmanager-config']
+            files.append(conf_path, '-log-levels TRACE|DEBUG|FATAL|ERROR|WARN|INFO\n', owner='globus')
+            files.append(conf_path, '-log-pattern /var/log/globus/gram_$(LOGNAME)_$(DATE).log\n', backup=False)
 
-        if not os.path.exists('/var/log/globus'):
-            os.mkdir('/var/log/globus')
-            os.chmod('/var/log/globus', 0777)
+            if not os.path.exists('/var/log/globus'):
+                os.mkdir('/var/log/globus')
+                os.chmod('/var/log/globus', 0777)
 
-        command = ('service', 'globus-gatekeeper', 'start')
-        stdout, _, fail = core.check_system(command, 'Start Globus gatekeeper')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(os.path.exists(core.config['globus.gk-lockfile']),
-                     'Globus gatekeeper run lock file missing')
-        core.state['globus.started-gk'] = True
+            service.start('globus-gatekeeper')
+            core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
 
     def test_02_start_seg(self):
         core.state['globus.started-seg'] = False

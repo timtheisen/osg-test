@@ -4,6 +4,18 @@ import re
 
 import osgtest.library.core as core
 
+def _init_script_name(service_name, init_script=None):
+    """Get the init script name, preferring the values in this order:
+    1. Predefined global
+    2. Explicity defined init script name
+    3. Service name
+    """
+    if init_script is None:
+        init_script = service_name
+    init_script = core.config.get(service_name + '.init-script', init_script)
+    core.config[service_name + '.init-script'] = init_script
+    return init_script
+
 def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=None):
     """Start a service via an init script.
 
@@ -30,9 +42,7 @@ def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=N
     if specified.
 
     """
-    if init_script is None:
-        init_script = service_name
-    core.config[service_name + '.init-script'] = init_script
+    init_script = _init_script_name(service_name, init_script)
 
     if sentinel_file and os.path.exists(sentinel_file):
         core.skip('service ' + service_name + ' already running (sentinel file found)')
@@ -40,7 +50,6 @@ def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=N
     if core.state.get(service_name + '.started-service'):
         core.skip('service ' + service_name + ' already running (flagged as started)')
         return
-    core.state[service_name + '.started-service'] = False
 
     command = ('service', init_script, 'start')
     stdout, _, fail = core.check_system(command, 'Start ' + service_name + ' service')
@@ -73,7 +82,7 @@ def stop(service_name, fail_pattern='FAILED'):
     the service. After shutdown, this is set to False.
 
     """
-    init_script = core.config.get(service_name + '.init-script', service_name)
+    init_script = _init_script_name(service_name)
 
     if not core.state.get(service_name + '.started-service'):
         core.skip('did not start service ' + service_name)
@@ -89,4 +98,19 @@ def stop(service_name, fail_pattern='FAILED'):
 
     core.state[service_name + '.started-service'] = False
 
+def is_running(service_name, init_script=None):
+    """Detect if a service is running via an init script
 
+    Globals used:
+    core.config[service_name.init-script] is used to get the name of the
+    init script. If not set, service_name is used.
+    """
+    init_script = _init_script_name(service_name, init_script)
+
+    command = ('service', init_script, 'status')
+    status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
+
+    if status == 0:
+        return True
+
+    return False

@@ -40,7 +40,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
             'globus-gatekeeper', 'globus-gram-client-tools',
             'globus-proxy-utils', 'globus-gram-job-manager',
             'globus-gram-job-manager-fork-setup-poll')
-        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['globus-gatekeeper.running'], 'gatekeeper not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
 
         command = ('globus-job-run', self.contact_string('fork'), '/bin/env')
@@ -49,7 +49,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
 
     def test_02_globus_run_condor(self):
         core.skip_ok_unless_installed('globus-gram-job-manager-condor', 'globus-gram-client-tools', 'globus-proxy-utils')
-        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['globus-gatekeeper.running'], 'gatekeeper not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
         self.skip_bad_unless(core.state['condor.running-service'], message='Condor service not running')
 
@@ -60,7 +60,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
     def test_03_globus_run_pbs(self):
         core.skip_ok_unless_installed('globus-gram-job-manager-pbs', 'globus-gram-client-tools', 'globus-proxy-utils',
                                       'torque-mom', 'torque-server', 'torque-scheduler')
-        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['globus-gatekeeper.running'], 'gatekeeper not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
         if (not core.state['torque.pbs-configured'] or
             not core.state['torque.pbs-mom-running'] or
@@ -76,7 +76,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
     def test_04_condor_run_pbs(self):
         core.skip_ok_unless_installed('condor', 'blahp', 'torque-mom', 'torque-server', 'torque-scheduler',
                                       'globus-gatekeeper')
-        self.skip_bad_unless(core.state['globus.started-gk'], 'gatekeeper not started')
+        self.skip_bad_unless(core.state['globus-gatekeeper.running'], 'gatekeeper not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
         self.skip_bad_unless(core.state['condor.running-service'], 'condor not running')
         self.skip_bad_unless(core.state['torque.pbs-mom-running'] and core.state['torque.pbs-server-running'],
@@ -99,7 +99,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
     def test_05_condor_ce_run_condor(self):
         core.skip_ok_unless_installed('htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor', 'condor')
 
-        self.skip_bad_unless('condor-ce.started', 'ce not running')
+        self.skip_bad_unless('condor-ce.started', 'ce not started')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
 
         command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')
