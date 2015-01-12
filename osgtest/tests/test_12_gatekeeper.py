@@ -11,6 +11,7 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
     def test_01_start_gatekeeper(self):
         core.skip_ok_unless_installed('globus-gatekeeper')
         core.config['globus-gatekeeper.started-service'] = False
+        core.state['globus-gatekeeper.running'] = False
 
         if not service.is_running('globus-gatekeeper'):
             # DEBUG: Set up gatekeeper debugging
