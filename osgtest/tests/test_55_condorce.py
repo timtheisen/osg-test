@@ -115,7 +115,7 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
 
-        # Wait for the collector to come back up
+        # Wait for the schedd to come back up
         core.monitor_file(core.config['condor-ce.schedlog'],
                           core.config['condor-ce.schedlog-stat'],
                           'TransferQueueManager stats',

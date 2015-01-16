@@ -110,23 +110,3 @@ class TestInstall(osgunittest.OSGTestCase):
             if core.el_release() >=6:
                 core.state['install.transaction_ids'].append(yum.get_transaction_id())
 
-    def test_06_fix_java_symlinks(self):
-        # This implements Section 5.1.2 of
-        # https://twiki.opensciencegrid.org/bin/view/Documentation/Release3/InstallSoftwareWithOpenJDK7
-        java7 = 'java-1.7.0-openjdk'
-        java7_devel = 'java-1.7.0-openjdk-devel'
-
-        # We don't use skip_ok_unless_installed because we want to limit the number of ok skips
-        jdk_installed = False
-        command = ('rpm', '--query', 'jdk')
-        _, stdout, _ = core.system(command)
-        if re.search("^jdk-1\.6\.\d+_\d+.*", stdout):
-            jdk_installed = True
-
-        if (jdk_installed and core.rpm_is_installed(java7) and core.rpm_is_installed(java7_devel)):
-            command = ('rm', '-f', '/usr/bin/java', '/usr/bin/javac', '/usr/bin/javadoc', '/usr/bin/jar')
-            core.check_system(command, 'Remove old symlinks')
-
-            command = ('yum', 'reinstall', '-y', java7, java7_devel)
-            core.check_system(command, 'Reinstall java7')
-        
