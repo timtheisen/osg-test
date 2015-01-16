@@ -79,7 +79,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
     def test_05_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
         core.state['bestman.started-server'] = False
-        core.state['bestman.running-server'] = True
+        core.state['bestman.server-running'] = False
 
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
         retcode, _, _ = core.system(('service', 'bestman2', 'status'))
