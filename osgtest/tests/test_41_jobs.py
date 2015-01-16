@@ -102,11 +102,5 @@ class TestRunJobs(osgunittest.OSGTestCase):
         self.skip_bad_unless('condor-ce.started', 'ce not started')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
 
-        # Wait for the collector to come back up
-        core.monitor_file(core.config['condor-ce.collectorlog'],
-                          core.config['condor-ce.collectorlog-stat'],
-                          "stats: Inserting new hashent for 'Schedd'",
-                          60.0)
-
         command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')
         self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')

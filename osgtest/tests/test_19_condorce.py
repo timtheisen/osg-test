@@ -78,13 +78,6 @@ gridmapfile -> good | bad
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
         self.skip_ok_if(os.path.exists(core.config['condor-ce.lockfile']), 'already running')
 
-        # Need to stat the Collector logfile so we know when it's back up
-        core.config['condor-ce.collectorlog'] = '/var/log/condor-ce/CollectorLog'
-        try:
-            core.config['condor-ce.collectorlog-stat'] = os.stat(core.config['condor-ce.collectorlog'])
-        except OSError:
-            core.config['condor-ce.collectorlog-stat'] = None
-
         command = ('service', 'condor-ce', 'start')
         stdout, _, fail = core.check_system(command, 'Start HTCondor CE')
         self.assert_(stdout.find('FAILED') == -1, fail)
