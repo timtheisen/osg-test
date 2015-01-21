@@ -31,6 +31,7 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         os.environ['UNDEFINED_ACCTS_FILE'] = '/usr/share/osg-test/undef-ids'
         core.check_system(command, 'Run edg-mkgridmap')
         core.system(('cat', os.environ['GRIDMAP']))
+        core.system(('cat', os.environ['EDG_MKGRIDMAP_LOG']))
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
