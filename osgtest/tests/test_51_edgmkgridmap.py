@@ -30,10 +30,11 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         os.environ['VO_LIST_FILE'] = '/usr/share/osg-test/vo-list-file'
         os.environ['UNDEFINED_ACCTS_FILE'] = '/usr/share/osg-test/undef-ids'
         core.check_system(command, 'Run edg-mkgridmap')
+        core.system(('cat', os.environ['GRIDMAP']))
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_cert_dn, user_cert_issuer = certs.certificate_info(cert_path)
+        user_cert_dn, _ = certs.certificate_info(cert_path)
         expected = '"%s" %s' % (user_cert_dn, core.options.username)
 
         contents = files.read(os.environ['GRIDMAP'], True)
