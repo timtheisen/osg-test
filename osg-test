@@ -9,6 +9,7 @@ import signal
 import sys
 import traceback
 import unittest
+from getpass import getpass
 
 from osgtest.library import core
 from osgtest.library import osgunittest
@@ -19,8 +20,7 @@ from osgtest.library import osgunittest
 # ------------------------------------------------------------------------------
 
 def parse_command_line():
-    defaults = {
-                "adduser": False,
+    defaults = {"adduser": False,
                 "backupmysql": False,
                 "config": None,
                 "dumpfile": None,
@@ -30,6 +30,7 @@ def parse_command_line():
                 "packages": [],
                 "password": 'vdttest',
                 "printtest": True,
+                "securepass": False,
                 "skip_cleanup": False,
                 "skiptests": False,
                 "tarballs": False,
@@ -123,6 +124,9 @@ def read_args():
                       help='Password for the grid certificate of the test user '
                       '(see -u below)')
 
+    p.add_option('-s', '--securepass', action='store_true', dest='securepass',
+                 help='Prompt for the password instead of specifying it in the command line.')
+
     p.add_option('--update-release', action='store', type='string', dest='updaterelease', metavar='RELEASE',
                       help='osg RELEASE version to use when updating packages '
                       'specified with the -i flag.')
@@ -158,6 +162,14 @@ def read_args():
                       help='Create host cert')
 
     return p
+
+def get_password():
+    if core.options.securepass:
+        # If the user also specifies password on the command line, we complain
+        if core.options.password != 'vdttest':
+            print 'Only specify one of --password and --securepass'
+            sys.exit(1)
+        core.options.password = getpass()
 
 def discover_tests():
     test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
@@ -226,6 +238,7 @@ if __name__ == '__main__':
     if os.getuid() != 0 and not core.options.tarballs:
         print 'Must be run as root'
         sys.exit(1)
+    get_password()
     core.start_log()
     tests = discover_tests()
     if len(tests) > 1:
