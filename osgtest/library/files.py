@@ -144,7 +144,7 @@ def replace(path, old_line, new_line, owner=None, backup=True):
     write(path, lines_to_write, owner, backup)
 
 def replace_regexpr(path, regexp, new_line, owner=None, backup=True):
-    """Replace an old line that mateches regexpr with a new line in given path.                                                     
+    """Replace an old line that matches regexpr with a new line in given path.                                                     
     The 'owner' and 'backup' arguments are passed to write().                                                                                  
     """
     match = re.search(regexp, new_line)

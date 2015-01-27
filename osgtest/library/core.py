@@ -240,6 +240,13 @@ def installed_rpms():
     status, stdout, stderr = system(command, log_output=False)
     return set(re.split('\s+', stdout.strip()))
 
+def rpm_regexp_is_installed(a_regexp):
+    """Returns whether any RPM matches the provided regexp."""
+    pkg_regexp = re.compile(a_regexp)
+    for pkg in installed_rpms():
+        if re.search(pkg_regexp, pkg):
+            return True
+    return False
 
 def skip(message=None):
     """Prints a 'SKIPPED' message to standard out."""

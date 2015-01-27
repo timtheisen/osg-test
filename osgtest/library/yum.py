@@ -1,3 +1,10 @@
+"""Functions for performing common yum tasks.
+
+The most important of these being the retry_command() function. This is 
+necessary to overcome transient network issues, especially when running
+the tests in VM universe at the CHTC.
+"""
+
 import re
 import time
 
