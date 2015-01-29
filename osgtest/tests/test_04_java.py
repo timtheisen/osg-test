@@ -40,18 +40,3 @@ class TestJava(osgunittest.OSGTestCase):
         if not java.is_openjdk_devel_installed():
             return
         self._select_alternatives('javac')
-
-    def test_04_fix_tomcat_env(self):
-        if core.rpm_is_installed(tomcat.pkgname()) and java.is_openjdk_installed():
-            files.replace_regexpr('/etc/sysconfig/' + tomcat.pkgname(),
-                                  r'^JAVA_HOME=',
-                                  'JAVA_HOME="/etc/alternatives/jre"',
-                                  owner='java')
-
-    def test_05_fix_bestman_env(self):
-        if core.rpm_regexp_is_installed(r'^bestman2') and java.is_openjdk_installed():
-            files.replace_regexpr('/etc/sysconfig/bestman2',
-                                  r'^JAVA_HOME=',
-                                  'JAVA_HOME=/etc/alternatives/java_sdk',
-                                  owner='java')
-
