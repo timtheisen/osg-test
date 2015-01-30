@@ -11,7 +11,7 @@ import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
 
 class TestGratia(osgunittest.OSGTestCase):
-    
+
     def patternreplace(self, infile_name, pattern, full_line, insert_after=False):
         """This method is taken from test_28 - we can consider moving it to core.py module
      This helper method loops through the passed in infile line by line. 
@@ -326,6 +326,11 @@ class TestGratia(osgunittest.OSGTestCase):
 
     #This test executes dCache-storage
     def test_14_execute_dcache_storage(self):
+        # Malformed XML errors due to network issues (SOFTWARE-1748)
+        core.state['gratia.dcache-whitelisted-error'] = False
+        whitelisted_errors = ['The element type "metric" must be terminated by the matching end-tag "</metric>".',
+                                  'XML document structures must start and end within the same entity.']
+    
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
         core.state['gratia.dcache-storage-running'] = False
         self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
@@ -334,7 +339,15 @@ class TestGratia(osgunittest.OSGTestCase):
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
-        core.check_system(command, 'Unable to execute dCache-storage.')
+        status, stdout, stderr = core.system(command)
+        if status != 0:
+            for error in whitelisted_errors:
+                if error in stdout:
+                    core.state['gratia.dcache-whitelisted-error'] = True
+                    break
+            if not core.state['gratia.dcache-whitelisted-error']:
+                self.fail(core.diagnose('Unable to execute dCache-storage.', status, stdout, stderr))
+
         core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):
             result = self.isProbeOutboxDirEmpty(core.config['gratia.dcache-temp-dir'])
@@ -345,7 +358,8 @@ class TestGratia(osgunittest.OSGTestCase):
     #This test checks the database after the successful execution of dCache-storage
     def test_15_checkdatabase_dcache_storage(self):
         core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        self.skip_bad_if(core.state['gratia.dcache-storage-running'] == False)   
+        self.skip_ok_if(core.state['gratia.dcache-whitelisted-error'], 'caught whitelisted error')
+        self.skip_bad_unless(core.state['gratia.dcache-storage-running'])
                
         self.assertEqual(True, self.isProbeInfoProcessed('dCache-storage'), 'Sentinel signifying that Probe Information was processed NOT found.')
         
