@@ -16,9 +16,13 @@ class TestJava(osgunittest.OSGTestCase):
     """
 
     def _select_alternatives(self, config_type):
-        core.config['java.old-%s-ver' % config_type] = java.get_ver(config_type)
+        core.config['java.old-ver'][config_type] = java.get_ver(config_type)
         java.select_ver(config_type, '%s-openjdk' % java.EXPECTED_VERSION)
         self.assert_(java.verify_ver(config_type, java.EXPECTED_VERSION), 'incorrect java version selected')
+
+    def test_01_setup(self):
+        if java.is_openjdk_installed() or java.is_openjdk_devel_installed():
+            core.config['java.old-ver'] = {}
 
     def test_01_fix_symlinks(self):
         if core.rpm_is_installed('jdk') and \
@@ -30,13 +34,11 @@ class TestJava(osgunittest.OSGTestCase):
             yum.retry_command(command)
 
     def test_02_select_java_ver(self):
-        if not java.is_openjdk_installed():
-            return
-        self._select_alternatives('java')
-        command = ('ls', '-l', '/etc/alternatives')
-        core.check_system(command, 'check alternatives')
+        if java.is_openjdk_installed():
+            self._select_alternatives('java')
+            command = ('ls', '-l', '/etc/alternatives')
+            core.check_system(command, 'check alternatives')
 
     def test_03_select_javac_ver(self):
-        if not java.is_openjdk_devel_installed():
-            return
-        self._select_alternatives('javac')
+        if java.is_openjdk_devel_installed():
+            self._select_alternatives('javac')
