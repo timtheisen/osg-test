@@ -109,7 +109,9 @@ class TestCleanup(osgunittest.OSGTestCase):
             # Rolling back is a lot more reliable in yum post EL5
             core.state['install.transaction_ids'].reverse()
             for transaction in core.state['install.transaction_ids']:
-                command = ('yum', 'history', 'undo', '-y', transaction)
+                command = ['yum', 'history', 'undo', '-y', transaction]
+                for repo in core.options.extrarepos:
+                    command.append('--enablerepo=%s' % repo)
                 fail_msg, status, stdout, stderr = yum.retry_command(command)
                 if fail_msg:
                     self.fail(fail_msg)
