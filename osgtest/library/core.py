@@ -494,14 +494,11 @@ def el_release():
     return _el_release
 
 
-def osg_release(test_module):
+def osg_release():
     """
     Return the version of osg-release. If the query fails, the test module fails.
     """
-    try:
-        _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
-    except OSError:
-        osgunittest.unittest.TestCase.fail(test_module, 'Could not query osg-release')  # aka...how...why?
+    _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
     return osg_release_ver
 
 

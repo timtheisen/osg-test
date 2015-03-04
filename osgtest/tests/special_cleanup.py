@@ -66,7 +66,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         if not (core.options.updaterelease):
             return
 
-        self.skip_ok_unless(core.state['install.release-updated'], 'release not updated')
+        self.skip_bad_unless(core.state['install.release-updated'], 'release not updated')
 
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')

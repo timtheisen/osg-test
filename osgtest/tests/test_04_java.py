@@ -30,14 +30,12 @@ class TestJava(osgunittest.OSGTestCase):
             # We regenerate these symlinks via alternatives so it's unnecessary to back them up
             command = ('rm', '-f', '/usr/bin/java', '/usr/bin/javac', '/usr/bin/javadoc', '/usr/bin/jar')
             core.check_system(command, 'Remove old symlinks')
-            command = ('yum', 'reinstall', '-y', java.JAVA_RPM, java.JAVAC_RPM)
+            command = ['yum', 'reinstall', '-y', java.JAVA_RPM, java.JAVAC_RPM]
             yum.retry_command(command)
 
     def test_02_select_java_ver(self):
         if java.is_openjdk_installed():
             self._select_alternatives('java')
-            command = ('ls', '-l', '/etc/alternatives')
-            core.check_system(command, 'check alternatives')
 
     def test_03_select_javac_ver(self):
         if java.is_openjdk_devel_installed():

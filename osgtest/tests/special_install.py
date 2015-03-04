@@ -15,6 +15,7 @@ class TestInstall(osgunittest.OSGTestCase):
             core.check_system(pre + ('osg-release',), 'Verify osg-release')
         except AssertionError:
             core.check_system(pre + ('osg-release-itb',), 'Verify osg-release + osg-release-itb')
+        core.config['install.original-release-ver'] = core.osg_release()
 
     def test_02_disable_osg_release(self):
         # Disable osg-release on EL7 since we don't have any releases out yet
@@ -68,13 +69,11 @@ class TestInstall(osgunittest.OSGTestCase):
         core.state['install.success'] = True
 
     def test_04_update_osg_release(self):
+        core.state['install.release-updated'] = False
         if not (core.options.updaterelease):
             return
 
-        core.state['install.release-updated'] = False
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
-
-        core.config['install.original-release-ver'] = core.osg_release(self)
 
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')
