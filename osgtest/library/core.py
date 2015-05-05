@@ -498,7 +498,10 @@ def osg_release():
     """
     Return the version of osg-release. If the query fails, the test module fails.
     """
-    _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
+    try:
+        _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
+    except OSError:
+        _, _, osg_release_ver, _, _ = get_package_envra('osg-release-itb')
     return osg_release_ver
 
 
