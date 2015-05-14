@@ -1,4 +1,8 @@
-import os, re, unittest, sys, cStringIO
+import os
+import re
+import unittest
+import sys
+import cStringIO
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -35,5 +39,10 @@ class TestOSGConfigure(osgunittest.OSGTestCase):
             command = ('/usr/share/osg-configure/tests/run-osg-configure-tests',)
         else:
             command = ('/usr/share/osg-configure/tests/run-osg-configure-tests', '--exclude-test', 'test_rsv')
-        core.check_system(command, 'run osg-configure unit tests')
+        
+        status, stdout, stderr = core.system(command, 'run osg-configure unit tests')
+        if status != 0:
+            clean_output = re.sub(r'Ran \d+.*', '', stdout) # scrub output for the sake of reporting (SOFTWARE-1818)
+            fail_msg = core.diagnose('osg-configure unit tests failed', status, clean_output, stderr)
+            self.fail(fail_msg)
 
