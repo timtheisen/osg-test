@@ -14,7 +14,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
     def test_01_stop_mom(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(core.state['torque.pbs-mom-running'] == False, 'did not start pbs mom server')
-            
+
         command = ('service', 'pbs_mom', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop pbs mom')
         self.assert_(stdout.find('error') == -1, fail)
@@ -26,7 +26,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
 
     def test_02_stop_server(self):
         core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(core.state['torque.pbs-server-running'] == False, 'did not start pbs server')
+        self.skip_ok_if(core.state['torque.pbs-server-started'] == False, 'did not start pbs server')
 
         command = ('service', 'pbs_server', 'stop')
         stdout, _, fail = core.check_system(command, 'Stop pbs server')
@@ -34,9 +34,13 @@ class TestStopPBS(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['torque.pbs-lockfile']),
                      'PBS server run lock file still present')
 
+        # Since there isn't a trqauthd service, we need to kill it manually
+        if core.state['torque.trqauthd-started']:
+            core.check_system(('pkill', '-SIGKILL', 'trqauthd'), 'killing trqauthd')
+
         files.restore(core.config['torque.pbs-servername-file'], 'pbs')
+        files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
         core.state['torque.pbs-server-running'] = False
-        core.state['torque.nodes-up'] = False
 
     def test_03_stop_scheduler(self):
         core.skip_ok_unless_installed(*self.required_rpms)
@@ -48,7 +52,6 @@ class TestStopPBS(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['torque.sched-lockfile']),
                      'PBS server run lock file still present')
 
-        files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
         core.state['torque.pbs-sched-running'] = False
 
     def test_04_stop_munge(self):
