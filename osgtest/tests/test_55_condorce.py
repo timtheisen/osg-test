@@ -10,7 +10,7 @@ import osgtest.library.osgunittest as osgunittest
 class TestCondorCE(osgunittest.OSGTestCase):
     def general_requirements(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
-        self.skip_bad_unless('condor-ce.started', 'ce not running')
+        self.skip_bad_unless(core.state['condor-ce.started'], 'ce not running')
 
     def test_01_status(self):
         self.general_requirements()
