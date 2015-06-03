@@ -24,9 +24,6 @@ def retry_command(command, timeout_seconds=3600):
     do not retry commands for longer than the timeout duration.
     """
 
-    if core.osg_release() == "3.3":
-        command.append('--nogpgcheck')
-
     deadline = time.time() + timeout_seconds
     fail_msg, status, stdout, stderr = '', '', '', ''
 
