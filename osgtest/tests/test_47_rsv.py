@@ -152,7 +152,7 @@ class TestRSV(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'rsv-control --version')[0]
 
         # The rsv-control --version just returns a string like '1.0.0'.
-        self.assert_(re.search('\d.\d.\d', stdout) is not None)
+        self.assert_(re.search('\d+.\d+.\d+', stdout) is not None)
         return
 
 
