@@ -32,7 +32,7 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         # Configure condor-ce to use the gridmap file and set up PBS and Condor routes
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
-
+ALL_DEBUG=D_FULLDEBUG
 JOB_ROUTER_ENTRIES = \\
    [ \\
      GridResource = "batch pbs"; \\
