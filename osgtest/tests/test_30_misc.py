@@ -40,6 +40,8 @@ class TestMisc(osgunittest.OSGTestCase):
         self.assert_(osg_version == osg_version_rpm_version)
 
     def test_03_lfc_multilib(self):
+        # We do not ship lfc-* in OSG 3.3
+        self.skip_ok_if(core.osg_release().split('.') >= ['3','3'], message='OSG 3.3+')
         # We do not build 32-bit packages on EL7
         self.skip_ok_if(core.el_release() >= 7, message='running on EL7+')
 
