@@ -54,6 +54,11 @@ case $release in
         rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
         osg_name="osg-$version-el6-release-latest.rpm"
         ;;
+    *7.* )
+        rpm_name='epel-release-7-5.noarch.rpm'
+        rpm_path='https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm'
+        osg_name="osg-$version-el7-release-latest.rpm"
+        ;;
     * )
         echo 'Could not determine OS release'
         exit 1
