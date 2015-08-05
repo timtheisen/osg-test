@@ -178,7 +178,9 @@ class TestStartOSGInfoServices(osgunittest.OSGTestCase):
             files.append(core.config['osg-info-services.user-vo-map'],
                      core.options.username + ' mis',
                      owner = 'root')
-                     
+        # append creates files with 0600 by default so fix that
+        os.chmod(user_vo_map_file, 0644)
+
     def test_10_config_condor(self):
         # Configurations needed if bath system is condor.
         core.config['osg-info-services.condor-file'] = '/etc/osg/config.d/20-condor.ini'
