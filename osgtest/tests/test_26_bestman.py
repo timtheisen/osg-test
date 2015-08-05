@@ -12,7 +12,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
-	core.config['certs.bestmancert'] = '/etc/grid-security/bestman/bestmancert.pem'
+        core.config['certs.bestmancert'] = '/etc/grid-security/bestman/bestmancert.pem'
         core.config['certs.bestmankey'] = '/etc/grid-security/bestman/bestmankey.pem'	
 
     def test_02_install_bestman_certs(self):
@@ -50,7 +50,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
            new_contents += srm_cmd+'\n'
            new_contents += srm_usr+'\n'
            new_contents += bestman_perm+'\n'
-	if not had_srm_cmd_line or not had_requiretty_commented:
+        if not had_srm_cmd_line or not had_requiretty_commented:
            files.write(sudoers_path, new_contents, owner='bestman')
 
     def test_04_modify_bestman_conf(self):
