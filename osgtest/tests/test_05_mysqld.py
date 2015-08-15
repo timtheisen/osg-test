@@ -15,7 +15,7 @@ class TestStartMySQL(osgunittest.OSGTestCase):
         if not core.options.backupmysql:
             return
 
-        core.skip_ok_unless_installed('mysql-server', 'mysql')
+        core.skip_ok_unless_installed('mysql-server', 'mysql', by_dependency=True)
         core.config['mysql.datadir'] = None
         core.config['mysql.backup'] = None
         
@@ -43,6 +43,6 @@ class TestStartMySQL(osgunittest.OSGTestCase):
             core.config['mysql.backup'] = backup
 
     def test_02_start_mysqld(self):
-        core.skip_ok_unless_installed('mysql-server')
+        core.skip_ok_unless_installed('mysql-server', by_dependency=True)
         service.start('mysqld', sentinel_file='/var/run/mysqld/mysqld.pid')
 
