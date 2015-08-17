@@ -17,17 +17,7 @@ class TestInstall(osgunittest.OSGTestCase):
             core.check_system(pre + ('osg-release-itb',), 'Verify osg-release + osg-release-itb')
         core.config['install.original-release-ver'] = core.osg_release()
 
-    def test_02_disable_osg_release(self):
-        # Disable osg-release on EL7 since we don't have any releases out yet
-        # This can be removed when we do release something
-        self.skip_ok_unless(core.el_release() == 7, 'Non-EL7 release')
-        core.config['install.osg-repo-path'] = '/etc/yum.repos.d/osg.repo'
-        files.replace(core.config['install.osg-repo-path'],
-                      'enabled=1',
-                      'enabled=0',
-                      owner='install')
-        
-    def test_03_install_packages(self):
+    def test_02_install_packages(self):
         core.state['install.success'] = False
         core.state['install.installed'] = []
         core.state['install.updated'] = []
@@ -68,7 +58,7 @@ class TestInstall(osgunittest.OSGTestCase):
             self.fail(fail_msg)
         core.state['install.success'] = True
 
-    def test_04_update_osg_release(self):
+    def test_03_update_osg_release(self):
         core.state['install.release-updated'] = False
         if not (core.options.updaterelease):
             return
@@ -90,7 +80,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
         core.state['install.release-updated'] = True
         
-    def test_05_update_packages(self):
+    def test_04_update_packages(self):
         if not (core.options.updaterepos and core.state['install.installed']):
             return
         

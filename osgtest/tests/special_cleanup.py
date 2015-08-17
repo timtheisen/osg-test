@@ -205,15 +205,9 @@ class TestCleanup(osgunittest.OSGTestCase):
         files.remove(os.path.join('/var/spool/mail', username))
         shutil.rmtree(password_entry.pw_dir)
 
-    def test_08_enable_osg_release(self):
-        # Re-enable osg-release on EL7 (to mirror the disabling in special_cleanup) 
-        # This can be removed when we release something on EL7
-        self.skip_ok_unless(core.el_release() == 7, 'Non-EL7 release')
-        files.restore(core.config['install.osg-repo-path'], owner='install')
-
     # The backups test should always be last, in case any prior tests restore
     # files from backup.
-    def test_09_backups(self):
+    def test_08_backups(self):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''
