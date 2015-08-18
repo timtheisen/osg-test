@@ -1,12 +1,8 @@
 import os
 import re
 import shutil
-import unittest
-
 import osgtest.library.core as core
-import osgtest.library.files as files
 import osgtest.library.mysql as mysql
-import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestStartMySQL(osgunittest.OSGTestCase):
