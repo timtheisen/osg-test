@@ -15,10 +15,13 @@ class TestStartMySQL(osgunittest.OSGTestCase):
         if not core.options.backupmysql:
             return
 
-        core.skip_ok_unless_installed('mysql-server', 'mysql', by_dependency=True)
+        core.skip_ok_unless_installed('mysql', by_dependency=True)
+        if not (core.dependency_is_installed('mysql-server')
+                or core.dependency_is_installed('mysql-compat-server')):
+            self.skip_ok("mysql-server not installed")
         core.config['mysql.datadir'] = None
         core.config['mysql.backup'] = None
-        
+
         # Find the folder where the mysql files are stored
         pidfile = '/var/run/mysqld/mysqld.pid'
         if not os.path.exists(pidfile):
@@ -43,6 +46,8 @@ class TestStartMySQL(osgunittest.OSGTestCase):
             core.config['mysql.backup'] = backup
 
     def test_02_start_mysqld(self):
-        core.skip_ok_unless_installed('mysql-server', by_dependency=True)
+        if not (core.dependency_is_installed('mysql-server')
+                or core.dependency_is_installed('mysql-compat-server')):
+            self.skip_ok("mysql-server not installed")
         service.start('mysqld', sentinel_file='/var/run/mysqld/mysqld.pid')
 
