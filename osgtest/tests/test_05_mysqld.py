@@ -5,27 +5,21 @@ import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.mysql as mysql
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestStartMySQL(osgunittest.OSGTestCase):
 
-
     def test_01_backup_mysql(self):
         if not core.options.backupmysql:
             return
 
-        core.skip_ok_unless_installed('mysql', by_dependency=True)
-        if not (core.dependency_is_installed('mysql-server')
-                or core.dependency_is_installed('mysql-compat-server')):
-            self.skip_ok("mysql-server not installed")
+        core.skip_ok_unless_installed(mysql.client_rpm(), mysql.server_rpm())
         core.config['mysql.datadir'] = None
         core.config['mysql.backup'] = None
 
-        # Find the folder where the mysql files are stored
-        pidfile = '/var/run/mysqld/mysqld.pid'
-        if not os.path.exists(pidfile):
-            service.start('mysqld', sentinel_file=pidfile) # Need mysql up to determine its datadir
+        mysql.start() # Need mysql up to determine its datadir
 
         command = ('mysql', '-sNe', "SHOW VARIABLES where Variable_name='datadir';")
         mysql_cfg = core.check_system(command, 'dump mysql config')[0]
@@ -33,7 +27,7 @@ class TestStartMySQL(osgunittest.OSGTestCase):
         self.assert_(core.config['mysql.datadir'] is not None, 'could not extract MySQL datadir')
 
         # Backup the old mysql folder
-        service.stop('mysqld') 
+        mysql.stop()
         backup = core.config['mysql.datadir'] + '-backup'
         self.assert_(not os.path.exists(backup), 'mysql-backup already exists')
         try:
@@ -46,8 +40,5 @@ class TestStartMySQL(osgunittest.OSGTestCase):
             core.config['mysql.backup'] = backup
 
     def test_02_start_mysqld(self):
-        if not (core.dependency_is_installed('mysql-server')
-                or core.dependency_is_installed('mysql-compat-server')):
-            self.skip_ok("mysql-server not installed")
-        service.start('mysqld', sentinel_file='/var/run/mysqld/mysqld.pid')
-
+        core.skip_ok_unless_installed(mysql.server_rpm())
+        mysql.start()
