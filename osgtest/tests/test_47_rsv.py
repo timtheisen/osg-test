@@ -270,7 +270,11 @@ class TestRSV(osgunittest.OSGTestCase):
         return
 
     def test_052_vo_supported_metric(self):
-        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
+        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper', 'gums-client')
+        # We ok skip if gums-client isn't installed since it's responsible
+        # for creating /var/lib/osg/supported-vo-list in the tests.
+        # edg-mkgridmap is also capable of creating the necessary file but
+        # it places it in a separate location for its tests
 
         self.run_metric('org.osg.general.vo-supported')
         return
