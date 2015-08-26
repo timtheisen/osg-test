@@ -59,7 +59,10 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                         chown=(user.pw_uid, user.pw_gid))
             core.state['xrootd.backups-exist'] = True
 
-        command = ('service', 'xrootd', 'start')
+        if core.el_release() < 7:
+            command = ('service', 'xrootd', 'start')
+        else:
+            command = ('systemctl', 'start', 'xrootd@clustered')
         status, stdout, _ = core.system(command)
         
         self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)

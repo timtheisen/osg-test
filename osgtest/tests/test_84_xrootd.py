@@ -14,7 +14,10 @@ class TestStopXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
         self.skip_ok_if(core.state['xrootd.started-server'] == False, 'did not start server')
 
-        command = ('service', 'xrootd', 'stop')
+        if core.el_release() < 7:
+            command = ('service', 'xrootd', 'stop')
+        else:
+            command = ('systemctl', 'stop', 'xrootd@clustered')
         stdout, _, fail = core.check_system(command, 'Stop Xrootd server')
         self.assert_(stdout.find('FAILED') == -1, fail)
         self.assert_(not os.path.exists(core.config['xrootd.pid-file']),
