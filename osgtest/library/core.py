@@ -481,14 +481,14 @@ def el_release():
     global _el_release
     if not _el_release:
         try:
+            release_file = open("/etc/redhat-release", 'r')
             try:
-                release_file = open("/etc/redhat-release", 'r')
                 release_text = release_file.read()
             finally:
                 release_file.close()
             match = re.search(r"release (\d)", release_text)
             _el_release = int(match.group(1))
-        except Exception, e:
+        except (EnvironmentError, TypeError, ValueError), e:
             _log.write("Couldn't determine redhat release: " + str(e) + "\n")
             sys.exit(1)
     return _el_release
