@@ -16,9 +16,11 @@ class TestStopXrootd(osgunittest.OSGTestCase):
 
         if core.el_release() < 7:
             command = ('service', 'xrootd', 'stop')
+            stdout, _, fail = core.check_system(command, 'Stop Xrootd server')
+            self.assert_(stdout.find('FAILED') == -1, fail)
+            self.assert_(not os.path.exists(core.config['xrootd.pid-file']),
+                         'Xrootd server PID file still present')
         else:
-            command = ('systemctl', 'stop', 'xrootd@clustered')
-        stdout, _, fail = core.check_system(command, 'Stop Xrootd server')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(not os.path.exists(core.config['xrootd.pid-file']),
-                     'Xrootd server PID file still present')
+            core.check_system(('systemctl', 'stop', 'xrootd@clustered'), 'Stop Xrootd server')
+
+            core.check_system(('systemctl', 'status', 'xrootd@clustered'), 'Verify Xrootd server stopped', exit=3)

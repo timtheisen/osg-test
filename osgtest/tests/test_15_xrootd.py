@@ -61,13 +61,18 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         if core.el_release() < 7:
             command = ('service', 'xrootd', 'start')
-        else:
-            command = ('systemctl', 'start', 'xrootd@clustered')
-        status, stdout, _ = core.system(command)
-        
-        self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)
+            status, stdout, _ = core.system(command)
 
-        self.assert_(stdout.find('FAILED') == -1, 'Start Xrootd server failed')
-        self.assert_(os.path.exists(core.config['xrootd.pid-file']), 'xrootd server PID file missing')
+            self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)
+
+            self.assert_(stdout.find('FAILED') == -1, 'Start Xrootd server failed')
+            self.assert_(os.path.exists(core.config['xrootd.pid-file']), 'xrootd server PID file missing')
+        else:
+            status, _, _ = core.system(('systemctl', 'start', 'xrootd@clustered'))
+            self.assertEqual(status, 0, 'Start Xrootd server exited %d' % status)
+
+            status, _, _ = core.system(('systemctl', 'status', 'xrootd@clustered'))
+            self.assertEqual(status, 0, 'Status of Xrootd server exited %d' % status)
+
         core.state['xrootd.started-server'] = True
 
