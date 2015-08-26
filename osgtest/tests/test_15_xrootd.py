@@ -25,8 +25,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_01_start_xrootd(self):
         core.config['xrootd.pid-file']='/var/run/xrootd/xrootd-default.pid'
-        core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
-        core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.gsi'] = "ON"

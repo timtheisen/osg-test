@@ -63,6 +63,8 @@ class TestCert(osgunittest.OSGTestCase):
         host_cert_dir = '/etc/grid-security'
         host_cert = host_cert_dir + "/hostcert.pem"
         host_key = host_cert_dir + "/hostkey.pem"
+        core.config['certs.hostcert'] = host_cert
+        core.config['certs.hostkey'] = host_key
         core.state['certs.hostcert_created'] = False
         
         if core.options.hostcert:
