@@ -27,12 +27,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         xrootd_server_version, _, _ = core.check_system(('rpm', '-q', core.config['xrootd.package'],
                                                          '--qf=%{VERSION}'), 'Getting xrootd version')
         
-        if core.el_release() == 6 and re.match(r"3\.2\.[0-5]", xrootd_server_version):
-            msg = 'Expected failure on el6 with this version of xrootd'
-            self.assertEqual(core.state['xrootd.started-server'], False, msg)
-            self.skip_ok(msg)
-        else:
-            self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
+        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
 
 
     def test_01_xrdcp_local_to_server(self):
