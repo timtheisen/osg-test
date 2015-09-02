@@ -12,8 +12,9 @@ class TestConfigureJobs(osgunittest.OSGTestCase):
 
     def test_01_set_job_env(self):
         # Jobs get submitted with globus-job-run, condor_run, and condor_ce_run
-        core.skip_ok_unless_one_installed(['htcondor-ce', 'globus-gatekeeper', 'condor'])
         core.state['jobs.env-set'] = False
+        core.skip_ok_unless_installed('osg-configure')
+        core.skip_ok_unless_one_installed(['htcondor-ce', 'globus-gatekeeper', 'condor'])
 
         core.config['osg.job-environment'] = '/var/lib/osg/osg-job-environment.conf'
         core.config['osg.local-job-environment'] = '/var/lib/osg/osg-local-job-environment.conf'
