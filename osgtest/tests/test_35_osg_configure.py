@@ -18,7 +18,6 @@ class TestOSGConfigure(osgunittest.OSGTestCase):
     sys_path_saved = None
 
     def test_00_setup(self):
-        "setup system library path"
         cls = self.__class__
         if cls.pathname not in sys.path:
             cls.sys_path_saved = list(sys.path)
