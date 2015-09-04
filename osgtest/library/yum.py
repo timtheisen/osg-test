@@ -70,7 +70,7 @@ def yum_failure_can_be_retried(output):
                  r'Could not retrieve mirrorlist',
                  r"curl: \(7\) couldn't connect to host\nerror: skipping.*?transfer failed",
                  r'Error: Cannot retrieve repository metadata',
-                 r'Error: Cannot retrieve metalink for repository',
+                 r'Cannot retrieve metalink for repository',
                  r'Error: Temporary failure in name resolution']
     for regex in whitelist:
         if re.search(regex, output):
