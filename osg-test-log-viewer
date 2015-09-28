@@ -1,0 +1,167 @@
+#!/usr/bin/python
+"""View the output from osg-test in a structured way"""
+
+from Tkinter import *
+import ScrolledText
+import os
+import re
+import subprocess
+import sys
+
+
+
+
+class Section(object):
+    "A section from the osg-test output"
+    def __init__(self, label, text="", color="black"):
+        self.label = label
+        self.text = text
+        self.color = color
+
+
+def is_empty(text):
+    "True if a block of text is empty except for whitespace"
+    return not re.search('\S', text)
+
+def load_logdata_from_file(filename):
+    "Load profiler data from filename and return as a list of Section objects"
+    datetime_re = r"\d+-\d+-\d+[ ]\d+:\d+:\d+"
+    logdata = []
+    try:
+        fh = open(filename, 'r')
+        try:
+            section = Section("TOP")
+            in_output = False
+            current_test = ""
+            for line in fh:
+                command_match = re.match(r'(?x)osgtest: \s* ' + datetime_re + r''': \s*
+                                           (?P<test>[^:]+:[^:]+):
+                                           (?P<lineno>\d+): \s*
+                                           (?P<command>.+?) \s* >>> \s*
+                                           (?P<result>.+?) \s* $''',
+                                           line)
+                match = (re.match(r'message:\s*%s:\s*(.+?)\s*$' % datetime_re, line) or
+                         command_match or
+                         re.match(r'((?:FAIL|ERROR|BAD SKIPS|OK SKIPS).+?)\s*$', line) or
+                         re.match(r'(OSG-TEST LOG)', line))
+                output_delimiter = re.match(r'(?:STDOUT|STDERR):[{}]', line)
+
+                if match and not in_output:
+                    if is_empty(section.text):
+                        section.label += ' (no text)'
+                    logdata.append(section)
+
+                    if command_match:
+                        if current_test != match.group('test'):
+                            logdata.append(Section(match.group('test')))
+                            current_test = match.group('test')
+
+                        retcode, _, _ = match.group('result').split()
+                        if int(retcode) != 0 and 'rpm --query' not in match.group('command'):
+                            color = "red"
+                        else:
+                            color = "black"
+                        section = Section('    ' + match.group('lineno') + ':' + match.group('command'), color=color)
+                    else:
+                        section = Section(match.group(1))
+                if output_delimiter:
+                    in_output = not in_output
+                section.text += line
+
+            logdata.append(section)
+            return logdata
+        finally:
+            fh.close()
+    except IOError, e:
+        print >> sys.stderr, "Error reading file %s: %s" % (filename, e.strerror)
+        sys.exit(1)
+
+
+class Application(Frame):
+    "The GUI"
+
+    def __init__(self, master, logdata):
+        self.master = master
+        Frame.__init__(self, master)
+        self.pack(fill=BOTH, expand=True)
+
+        self.top = Frame(self)
+        self.top.pack(side=TOP, fill=X)
+
+        self.quit_btn = Button(self.top, text="QUIT", fg="red", command=self.quit)
+        self.quit_btn.pack(side=LEFT)
+
+        self.copy_section_btn = Button(self.top, text="Copy Section to X Clipboard", command=self.copy_section)
+        self.copy_section_btn.pack(side=LEFT)
+
+        self.bot = Frame(self)
+        self.bot.pack(side=BOTTOM, fill=BOTH, expand=True)
+
+        self.section_scrollbar = Scrollbar(self.bot)
+        self.section_scrollbar.pack(side=LEFT, fill=Y)
+
+        self.section_lbx = Listbox(self.bot, selectmode=BROWSE)
+        self.section_lbx.pack(side=LEFT, fill=BOTH, expand=True)
+        self.current = None
+
+        self.section_lbx.config(yscrollcommand=self.section_scrollbar.set)
+        self.section_scrollbar.config(command=self.section_lbx.yview)
+
+        self.label = Label(self.top, text="")
+        self.label.pack(side=LEFT, fill=X)
+
+        self.text = ScrolledText.ScrolledText(self.bot)
+        self.text.pack(side=RIGHT, fill=BOTH, expand=True)
+
+        self.logdata = logdata
+        self.populate()
+
+        self.poll()
+
+    def populate(self):
+        "Fill the section list box with the labels"
+        self.section_lbx.delete(0, END)
+        for index, section in enumerate(self.logdata):
+            self.section_lbx.insert(END, section.label)
+            self.section_lbx.itemconfig(index, foreground=section.color)
+
+    def poll(self):
+        "Check if selection has changed"
+        now = self.section_lbx.curselection()
+        if now != self.current:
+            self.list_has_changed(now)
+            self.current = now
+        self.after(250, self.poll)
+
+    def list_has_changed(self, now):
+        "Update the label and the text box"
+        if now:
+            idx = int(now[0])
+            self.label.configure(text=self.logdata[idx].label)
+            self.text.config(state=NORMAL)
+            self.text.delete(1.0, END)
+            self.text.insert(END, self.logdata[idx].text)
+            self.text.config(state=DISABLED)
+
+    def copy_section(self):
+        "Copy all text in section to the X clipboard"
+        self.master.clipboard_clear()
+        self.master.clipboard_append(self.text.get(1.0, END))
+
+
+
+def main():
+    if len(sys.argv) < 2:
+        print "Usage: %s <LOG FILENAME>" % sys.argv[0]
+        print "View the output of osg-test"
+        sys.exit(2)
+    logfile = sys.argv[1]
+    logdata = load_logdata_from_file(logfile)
+    root = Tk()
+    root.wm_title("osg-test log viewer")
+    app = Application(root, logdata)
+    root.mainloop()
+
+if __name__ == '__main__':
+    main()
+
