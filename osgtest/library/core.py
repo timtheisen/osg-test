@@ -513,9 +513,8 @@ def get_hostname():
     """
     try:
         return socket.gethostbyaddr(socket.gethostname())[0]
-    except Exception:
+    except socket.error:
         return None
-    return None
 
 
 def check_file_and_perms(file_path, owner_name, permissions):
