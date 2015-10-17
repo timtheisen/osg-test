@@ -134,7 +134,13 @@ set server acl_host_enable = True
             core.state['torque.trqauthd-started'] = True
 
         if not os.path.exists('/var/lib/torque/server_priv/serverdb'):
-                command = ('service', 'pbs_server', 'create') # this creates the default config and starts the service
+                if core.el_release() <= 6:
+                    command = ('service', 'pbs_server', 'create') # this creates the default config and starts the service
+                else:
+                    # XXX: "service pbs_server create" doesn't work for systemd, and I haven't found a
+                    #      systemd equivalent to do the "create" step in el7 ... The following was
+                    #      distilled from the el6 init.d script:  (but please correct as necessary)
+                    command = ('/usr/sbin/pbs_server', '-d', '/var/lib/torque', '-t', 'create', '-f')
                 stdout, _, fail = core.check_system(command, 'create initial pbs serverdb config')
                 self.assert_(stdout.find('error') == -1, fail)
 
