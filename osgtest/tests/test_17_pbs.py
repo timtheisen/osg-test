@@ -63,7 +63,10 @@ set server acl_host_enable = True
         core.state['munge.running'] = True
 
     def test_03_start_mom(self):
-        core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
+        if core.el_release() <= 6:
+            core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
+        else:
+            core.config['torque.mom-lockfile'] = '/var/lib/torque/mom_priv/mom.lock'
         core.state['torque.pbs-mom-running'] = False
 
         core.skip_ok_unless_installed(*self.required_rpms)
