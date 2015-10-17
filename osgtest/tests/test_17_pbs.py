@@ -43,6 +43,8 @@ set server acl_host_enable = True
             core.config['munge.lockfile'] = '/var/lock/subsys/munge'
         elif core.el_release() == 6:
             core.config['munge.lockfile'] = '/var/lock/subsys/munged'
+        elif core.el_release() == 7:
+            core.config['munge.lockfile'] = '/var/run/munge/munged.pid'
         core.config['munge.keyfile'] = '/etc/munge/munge.key'
         core.state['munge.running'] = False
 
