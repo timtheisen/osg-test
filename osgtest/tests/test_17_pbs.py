@@ -87,7 +87,10 @@ set server acl_host_enable = True
 
 
     def test_04_start_pbs_sched(self):
-        core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
+        if core.el_release() <= 6:
+            core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
+        else:
+            core.config['torque.sched-lockfile'] = '/var/lib/torque/sched_priv/sched.lock'
         core.state['torque.pbs-sched-running'] = False
 
         core.skip_ok_unless_installed(*self.required_rpms)
