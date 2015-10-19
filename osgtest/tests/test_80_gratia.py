@@ -133,7 +133,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
     #This test stops psacct service
     def test_07_stop_psacct_service(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
-        command = ('/etc/init.d/psacct', 'stop')
+        command = ('/sbin/service', 'psacct', 'stop')
         core.check_system(command, 'Unable to stop psacct.')
 
     #This test cleans up psacct related files

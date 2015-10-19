@@ -434,7 +434,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #This test starts the psacct service
     def test_21_start_psacct_service(self):
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
-        command = ('/etc/init.d/psacct', 'start')
+        command = ('/sbin/service', 'psacct', 'start')
         core.check_system(command, 'Unable to start psacct.')
         
     #This test executes psacct
