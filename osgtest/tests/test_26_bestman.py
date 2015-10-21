@@ -16,7 +16,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.config['certs.bestmankey'] = '/etc/grid-security/bestman/bestmankey.pem'	
 
     def test_02_install_bestman_certs(self):
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         if (os.path.exists(core.config['certs.bestmancert']) and
             os.path.exists(core.config['certs.bestmankey'])):
             return
@@ -24,7 +24,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         certs.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
 
     def test_03_modify_sudoers(self):
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         sudoers_path = '/etc/sudoers'
         contents = files.read(sudoers_path)
         srm_cmd = 'Cmnd_Alias SRM_CMD = /bin/rm, /bin/mkdir, /bin/rmdir, /bin/mv, /bin/cp, /bin/ls'
@@ -54,7 +54,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
            files.write(sudoers_path, new_contents, owner='bestman')
 
     def test_04_modify_bestman_conf(self):
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
 
         bestman_rc_path = '/etc/bestman2/conf/bestman2.rc'
         old_port = 'securePort=8443'
@@ -81,7 +81,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.state['bestman.started-server'] = False
         core.state['bestman.server-running'] = False
 
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'voms-clients')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         retcode, _, _ = core.system(('service', 'bestman2', 'status'))
         # bestman2 init script follows LSB standards for return codes:
         # 0 = running, 1 = not running, 3 = stale pidfile (i.e. it crashed)
