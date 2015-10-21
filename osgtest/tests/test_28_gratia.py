@@ -175,7 +175,11 @@ class TestStartGratia(osgunittest.OSGTestCase):
     def test_11_start_tomcat(self):
         core.skip_ok_unless_installed('gratia-service')
         core.skip_ok_unless_installed(tomcat.pkgname())
-        service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
+        if core.el_release() == 7:
+            # tomcat on el7 doesn't seem to actually use its always-present pidfile...
+            service.start('tomcat', init_script=tomcat.pkgname())
+        else:
+            service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
    
     def test_12_config_user_vo_map(self):
         core.skip_ok_unless_installed('gratia-service')
