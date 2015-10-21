@@ -46,5 +46,9 @@ class TestStartTomcat(osgunittest.OSGTestCase):
     def test_05_start_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         
-        service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
+        if core.el_release() == 7:
+            # tomcat on el7 doesn't seem to actually use its always-present pidfile...
+            service.start('tomcat', init_script=tomcat.pkgname())
+        else:
+            service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
 
