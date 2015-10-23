@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib2
 
 
 
@@ -23,64 +24,83 @@ def is_empty(text):
     "True if a block of text is empty except for whitespace"
     return not re.search('\S', text)
 
-def load_logdata_from_file(filename):
-    "Load profiler data from filename and return as a list of Section objects"
+
+def load_logdata_from_handle(handle):
+    "Load profiler data from handle and return as a list of Section objects"
     datetime_re = r"\d+-\d+-\d+[ ]\d+:\d+:\d+"
     logdata = []
-    try:
-        fh = open(filename, 'r')
-        try:
-            section = Section("TOP")
-            in_output = False
-            current_test = ""
-            for line in fh:
-                command_match = re.match(r'(?x)osgtest: \s* ' + datetime_re + r''': \s*
-                                           (?P<test>[^:]+:[^:]+):
-                                           (?P<lineno>\d+): \s*
-                                           (?P<command>.+?) \s* >>> \s*
-                                           (?P<result>.+?) \s* $''',
-                                           line)
-                match = (re.match(r'message:\s*%s:\s*(.+?)\s*$' % datetime_re, line) or
-                         command_match or
-                         re.match(r'((?:FAIL|ERROR|BAD SKIPS|OK SKIPS).+?)\s*$', line) or
-                         re.match(r'(OSG-TEST LOG)', line))
-                output_delimiter = re.match(r'(?:STDOUT|STDERR):[{}]', line)
+    section = Section("TOP")
+    in_output = False
+    current_test = ""
 
-                if match and not in_output:
-                    if is_empty(section.text):
-                        section.label += ' (no text)'
-                    logdata.append(section)
+    for line in handle:
+        line = line.rstrip()
+        command_match = re.match(r'(?x)osgtest: \s* ' + datetime_re + r''': \s*
+                                    (?P<test>[^:]+:[^:]+):
+                                    (?P<lineno>\d+): \s*
+                                    (?P<command>.+?) \s* >>> \s*
+                                    (?P<result>.+?) \s* $''',
+                                    line)
+        match = (re.match(r'message:\s*%s:\s*(.+?)\s*$' % datetime_re, line) or
+                 command_match or
+                 re.match(r'((?:FAIL|ERROR|BAD SKIPS|OK SKIPS).+?)\s*$', line) or
+                 re.match(r'(OSG-TEST LOG)', line))
+        output_delimiter = re.match(r'(?:STDOUT|STDERR):[{}]', line)
 
-                    if command_match:
-                        if current_test != match.group('test'):
-                            logdata.append(Section(match.group('test')))
-                            current_test = match.group('test')
-
-                        retcode, _, _ = match.group('result').split()
-                        if int(retcode) != 0 and 'rpm --query' not in match.group('command'):
-                            color = "red"
-                        else:
-                            color = "black"
-                        section = Section('    ' + match.group('lineno') + ':' + match.group('command'), color=color)
-                    else:
-                        section = Section(match.group(1))
-                if output_delimiter:
-                    in_output = not in_output
-                section.text += line
-
+        if match and not in_output:
+            if is_empty(section.text):
+                section.label += ' (no text)'
             logdata.append(section)
-            return logdata
+
+            if command_match:
+                if current_test != match.group('test'):
+                    logdata.append(Section(match.group('test')))
+                    current_test = match.group('test')
+
+                retcode, _, _ = match.group('result').split()
+                if int(retcode) != 0 and 'rpm --query' not in match.group('command'):
+                    color = "red"
+                else:
+                    color = "black"
+                section = Section('    ' + match.group('lineno') + ':' + match.group('command'), color=color)
+            else:
+                section = Section(match.group(1))
+        if output_delimiter:
+            in_output = not in_output
+        section.text += line + "\n"
+
+    logdata.append(section)
+    return logdata
+
+
+def load_logdata_from_file(filename):
+    try:
+        filehandle = open(filename, 'r')
+        try:
+            return load_logdata_from_handle(filehandle)
         finally:
-            fh.close()
+            filehandle.close()
     except IOError, e:
         print >> sys.stderr, "Error reading file %s: %s" % (filename, e.strerror)
+        sys.exit(1)
+
+
+def load_logdata_from_url(url):
+    try:
+        urlhandle = urllib2.urlopen(url)
+        try:
+            return load_logdata_from_handle(urlhandle)
+        finally:
+            urlhandle.close()
+    except urllib2.URLError, e:
+        print >> sys.stderr, "Error reading URL %s: %s" % (url, e.strerror)
         sys.exit(1)
 
 
 class Application(Frame):
     "The GUI"
 
-    def __init__(self, master, logdata):
+    def __init__(self, master, logfile, logdata):
         self.master = master
         Frame.__init__(self, master)
         self.pack(fill=BOTH, expand=True)
@@ -107,8 +127,12 @@ class Application(Frame):
         self.section_lbx.config(yscrollcommand=self.section_scrollbar.set)
         self.section_scrollbar.config(command=self.section_lbx.yview)
 
+        self.filelabel = Label(self.top, text=logfile)
+        self.filelabel.pack(side=RIGHT)
+
         self.label = Label(self.top, text="")
         self.label.pack(side=LEFT, fill=X)
+
 
         self.text = ScrolledText.ScrolledText(self.bot)
         self.text.pack(side=RIGHT, fill=BOTH, expand=True)
@@ -149,19 +173,20 @@ class Application(Frame):
         self.master.clipboard_append(self.text.get(1.0, END))
 
 
-
 def main():
-    if len(sys.argv) < 2:
-        print "Usage: %s <LOG FILENAME>" % sys.argv[0]
+    if len(sys.argv) != 2:
+        print "Usage: %s <LOG FILENAME OR URL>" % sys.argv[0]
         print "View the output of osg-test"
         sys.exit(2)
-    logfile = sys.argv[1]
-    logdata = load_logdata_from_file(logfile)
+    logpath = sys.argv[1]
+    if '://' not in logpath:
+        logdata = load_logdata_from_file(logpath)
+    else:
+        logdata = load_logdata_from_url(logpath)
     root = Tk()
-    root.wm_title("osg-test log viewer")
-    app = Application(root, logdata)
+    root.wm_title("osg-test log viewer: " + logpath)
+    app = Application(root, logpath, logdata)
     root.mainloop()
 
 if __name__ == '__main__':
     main()
-
