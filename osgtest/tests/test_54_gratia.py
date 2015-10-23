@@ -157,7 +157,7 @@ class TestGratia(osgunittest.OSGTestCase):
 
 
 
-        SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + ProbePattern + '.*' + 'saved'
+        SearchPattern = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
         core.log_message('SearchPattern is:' + str(SearchPattern))
         line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], SearchPattern, 120.0)
         if(line is not None):
