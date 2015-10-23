@@ -12,26 +12,32 @@ class TestCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_bad_unless(core.state['condor-ce.started'], 'ce not running')
 
-    def test_01_status(self):
+    def test_01_config_dump(self):
+        self.general_requirements()
+
+        command = ('condor_ce_config_val', '-dump', '|', 'sort')
+        core.check_system(command, 'condor_ce_config_val failed', user=True)
+        
+    def test_02_status(self):
         self.general_requirements()
 
         command = ('condor_ce_status', '-verbose')
         core.check_system(command, 'ce status', user=True)
 
-    def test_02_queue(self):
+    def test_03_queue(self):
         self.general_requirements()
 
         command = ('condor_ce_q', '-verbose')
         core.check_system(command, 'ce queue', user=True)
 
-    def test_03_ping(self):
+    def test_04_ping(self):
         self.general_requirements()
 
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
 
-    def test_04_trace(self):
+    def test_05_trace(self):
         self.general_requirements()
 
         cwd = os.getcwd()
@@ -42,7 +48,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
         os.chdir(cwd)
 
-    def test_05_pbs_trace(self):
+    def test_06_pbs_trace(self):
         self.general_requirements()
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge')
         self.skip_ok_unless(core.state['torque.pbs-server-running'])
@@ -55,7 +61,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
         os.chdir(cwd)
 
-    def test_06_use_gums_auth(self):
+    def test_07_use_gums_auth(self):
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
 
@@ -111,7 +117,7 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         command = ('service', 'condor-ce', 'start')
         core.check_system(command, 'start condor-ce')
 
-    def test_07_ping_with_gums(self):
+    def test_08_ping_with_gums(self):
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
 

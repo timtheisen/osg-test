@@ -11,7 +11,7 @@ import osgtest.library.osgunittest as osgunittest
 class TestVOMS(osgunittest.OSGTestCase):
 
     def proxy_info(self,msg):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
         self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         command = ('voms-proxy-info', '-all')
@@ -36,7 +36,7 @@ class TestVOMS(osgunittest.OSGTestCase):
     def test_02_good_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
 
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
         self.skip_bad_unless(core.state['voms.started-webapp'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'])
@@ -48,7 +48,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         self.proxy_info('voms-proxy-info output has sentinel')
 
     def test_04_bad_voms_proxy_init(self):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
         self.skip_bad_unless(core.state['voms.started-webapp'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
@@ -64,7 +64,7 @@ class TestVOMS(osgunittest.OSGTestCase):
     def test_06_rfc_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
 
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
         self.skip_bad_unless(core.state['voms.started-webapp'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'], '-rfc')
@@ -80,7 +80,7 @@ class TestVOMS(osgunittest.OSGTestCase):
     	Check generated proxies to make sure that they use the same signing
     	algorithm as the certificate
     	"""
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients')
+        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
         self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         pwd_entry = pwd.getpwnam(core.options.username)
