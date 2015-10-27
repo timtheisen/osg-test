@@ -15,7 +15,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
 
 
     def setUp(self):
-        core.skip_ok_unless_installed('bestman2-server', 'gfal2-util', 'gfal2-plugin-srm', 'gfal2-plugin-file', 'voms-clients')
+        self.skip_ok_unless(core.state['proxy.created'] or core.state['voms.got-proxy'])
+        core.skip_ok_unless_installed('bestman2-server', 'gfal2-util', 'gfal2-plugin-srm', 'gfal2-plugin-file')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
 
     def get_srm_url_base(self):
