@@ -27,7 +27,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
         shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
@@ -46,7 +46,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, URL to local',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, local_path))
         shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
@@ -71,7 +71,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
         command = ('uberftp', '-parallel', '10', hostname, ftp_cmd)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
         shutil.rmtree(temp_dir_source)
         shutil.rmtree(temp_dir_dest)
@@ -97,7 +97,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
         command = ('uberftp', '-parallel','10', hostname, ftp_cmd)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('UberFTP copy, local to URL',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir_dest, filename))
         shutil.rmtree(temp_dir_source)
         shutil.rmtree(temp_dir_dest)

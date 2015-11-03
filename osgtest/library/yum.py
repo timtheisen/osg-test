@@ -56,7 +56,7 @@ def retry_command(command, timeout_seconds=3600):
         # Otherwise, we do not expect a retry to succeed, ever, so fail this
         # package
         else:
-            fail_msg = core.diagnose("Command failed", status, stdout, stderr)
+            fail_msg = core.diagnose("Command failed", command, status, stdout, stderr)
             break
 
     return fail_msg, status, stdout, stderr

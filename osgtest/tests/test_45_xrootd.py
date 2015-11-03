@@ -52,7 +52,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, True)
 
         fail = core.diagnose('xrdcp copy, local to URL',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
         shutil.rmtree(temp_dir)
         
@@ -80,7 +80,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, True)
         
         fail = core.diagnose('Xrootd xrdcp copy, URL to local',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(local_path)
         shutil.rmtree(temp_source_dir)
         shutil.rmtree(temp_target_dir)

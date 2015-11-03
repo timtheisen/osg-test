@@ -212,7 +212,7 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False):
     about the command-line options.
     """
     status, stdout, stderr = system(command, user, stdin, shell=shell)
-    fail = diagnose(message, status, stdout, stderr)
+    fail = diagnose(message, command, status, stdout, stderr)
     assert status == exit, fail
     return stdout, stderr, fail
 
@@ -372,9 +372,10 @@ def get_package_envra(package_name):
     return (epoch, name, version, release, arch)
 
 
-def diagnose(message, status, stdout, stderr):
+def diagnose(message, command, status, stdout, stderr):
     """Constructs a detailed failure message based on arguments."""
     result = message + '\n'
+    result += 'COMMAND: %s\n' % ' '.join(command)
     result += 'EXIT STATUS: %d\n' % (status)
     result += 'STANDARD OUTPUT:'
     if (stdout is None) or (len(stdout.rstrip('\n')) == 0):

@@ -35,7 +35,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         os.chmod(TestGFAL2Util.__temp_dir, 0777)
         command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('gfal2-util copy, local to URL', status, stdout, stderr)
+        fail = core.diagnose('gfal2-util copy, local to URL', command, status, stdout, stderr)
         file_copied = os.path.exists(TestGFAL2Util.__remote_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
@@ -43,7 +43,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
     def test_02_copy_server_to_local_gfal2_util(self):
         command = ('gfal-copy', '-v', self.get_srm_url(), 'file://' + TestGFAL2Util.__local_path)
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('gfal2-util copy, URL to local', status, stdout, stderr)
+        fail = core.diagnose('gfal2-util copy, URL to local', command, status, stdout, stderr)
         file_copied = os.path.exists(TestGFAL2Util.__local_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
@@ -52,7 +52,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
     def test_03_remove_server_file_gfal2_util(self):
         command = ('gfal-rm', '-v', self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('gfal2-util remove, URL file', status, stdout, stderr)
+        fail = core.diagnose('gfal2-util remove, URL file', command, status, stdout, stderr)
         file_removed = not os.path.exists(TestGFAL2Util.__remote_path)
         self.assertEqual(status, 0, fail)
         self.assert_(file_removed, 'Copied file still exists')

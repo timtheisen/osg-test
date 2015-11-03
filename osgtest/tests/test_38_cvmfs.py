@@ -54,7 +54,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
             try:
                 command = ('cvmfs_config', 'probe')
                 status, stdout, stderr = core.system(command, False)
-                self.assertEqual(status, 0, core.diagnose('cvmfs probe', status, stdout, stderr))
+                self.assertEqual(status, 0, core.diagnose('cvmfs probe', command, status, stdout, stderr))
             finally:
                 files.restore(default_local, 'cvmfsprobe')
 
@@ -83,7 +83,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         command = ('bash', '-c', 'source ' + self.__check_path)
         status, stdout, stderr = core.system(command, False)
         fail = core.diagnose('cvmfs example source a file on fs',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         self.assertEqual(status, 0, fail)
 
     def test_03_oasis_config(self):

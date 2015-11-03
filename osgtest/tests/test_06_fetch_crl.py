@@ -63,7 +63,7 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         else:
             command = [core.config['fetch-crl.package']]
         status, stdout, stderr = core.system(command)
-        fail = core.diagnose('Run %s in /etc' % core.config['fetch-crl.package'], status, stdout, stderr)
+        fail = core.diagnose('Run %s in /etc' % core.config['fetch-crl.package'], command, status, stdout, stderr)
         if status == 1:
             self.assert_(self.output_is_acceptable(stdout), fail)
         else:
@@ -80,7 +80,7 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         else:
             command = (core.config['fetch-crl.package'], '-o', temp_crl_dir)
         status, stdout, stderr = core.system(command)
-        fail = core.diagnose('Run %s in temp dir' % core.config['fetch-crl.package'], status, stdout, stderr)
+        fail = core.diagnose('Run %s in temp dir' % core.config['fetch-crl.package'], command, status, stdout, stderr)
         if status == 1:
             self.assert_(self.output_is_acceptable(stdout), fail)
         else:

@@ -346,7 +346,7 @@ class TestGratia(osgunittest.OSGTestCase):
                     core.state['gratia.dcache-whitelisted-error'] = True
                     break
             if not core.state['gratia.dcache-whitelisted-error']:
-                self.fail(core.diagnose('Unable to execute dCache-storage.', status, stdout, stderr))
+                self.fail(core.diagnose('Unable to execute dCache-storage.', command, status, stdout, stderr))
 
         core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + core.config['gratia.tmpdir.postfix']
         if(core.state['gratia.database-installed'] == True):

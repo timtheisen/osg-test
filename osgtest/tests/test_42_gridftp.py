@@ -24,7 +24,7 @@ class TestGridFTP(osgunittest.OSGTestCase):
 
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('GridFTP copy, local to URL',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
         shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
@@ -43,7 +43,7 @@ class TestGridFTP(osgunittest.OSGTestCase):
 
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('GridFTP copy, URL to local',
-                             status, stdout, stderr)
+                             command, status, stdout, stderr)
         file_copied = os.path.exists(local_path)
         shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)

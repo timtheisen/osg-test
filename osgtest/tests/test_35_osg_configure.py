@@ -42,6 +42,6 @@ class TestOSGConfigure(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, 'run osg-configure unit tests')
         if status != 0:
             clean_output = re.sub(r'Ran \d+.*', '', stdout) # scrub output for the sake of reporting (SOFTWARE-1818)
-            fail_msg = core.diagnose('osg-configure unit tests failed', status, clean_output, stderr)
+            fail_msg = core.diagnose('osg-configure unit tests failed', command, status, clean_output, stderr)
             self.fail(fail_msg)
 
