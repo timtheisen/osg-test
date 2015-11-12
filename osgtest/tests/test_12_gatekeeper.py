@@ -25,6 +25,7 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
 
             service.start('globus-gatekeeper')
             core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
+            assert(core.state['globus-gatekeeper.running'], 'globus-gatekeeper failed to start')
 
     def test_02_start_seg(self):
         core.state['globus.started-seg'] = False
