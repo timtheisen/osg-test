@@ -18,7 +18,8 @@ class TestFetchCrl(osgunittest.OSGTestCase):
             'CRL has nextUpdate time in the past',
             'CRL verification failed for',
             'Download error',
-            'verify called on empty data blob'
+            'verify called on empty data blob',
+            'CRL signature failed'
         )
     }
 
