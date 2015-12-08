@@ -104,7 +104,10 @@ set server acl_host_enable = True
         core.state['torque.pbs-sched-running'] = True
 
     def test_05_start_pbs(self):
-        core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
+        if core.el_release() <= 6:
+            core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
+        else:
+            core.config['torque.pbs-lockfile'] = '/var/lib/torque/server_priv/server.lock'
         core.state['torque.trqauthd-started'] = False
         core.state['torque.pbs-server-running'] = False
         core.state['torque.pbs-server-started'] = False
