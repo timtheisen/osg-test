@@ -43,14 +43,13 @@ class TestUser(unittest.TestCase):
             os.chmod(globus_dir, 0755)
 
         # Set up certificate
-        certs.create_user_cert(globus_dir, core.options.username)
         user_cert = os.path.join(globus_dir, 'usercert.pem')
+        certs.create_user_cert(user_cert, core.options.username, core.config['certs.test-ca'])
         user_key = os.path.join(globus_dir, 'userkey.pem')
         os.chmod(user_cert, 0644)
         os.chmod(user_key, 0400)
         os.chown(user_cert, user.pw_uid, user.pw_gid)
         os.chown(user_key, user.pw_uid, user.pw_gid)
-
         core.config['user.cert_subject'], _ = certs.certificate_info(user_cert)
         
     def test_02_user(self):

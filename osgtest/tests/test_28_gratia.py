@@ -93,8 +93,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
         else:
             core.config['gratia.directory'] = "services"
             
-        core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
-        core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
         

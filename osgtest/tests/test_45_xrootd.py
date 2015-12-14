@@ -15,26 +15,11 @@ class TestXrootd(osgunittest.OSGTestCase):
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
     __fuse_path = '/mnt/xrootd_fuse_test'
 
-    def assert_server_started(self):
-        """Checks that the xrootd server is started if it is supposed to be,
-        and not started if it isn't supposed to be due to an expected failure
-        on el6.
-        Raises:
-        AssertionError if the server is running despite the expected failure
-        OkSkip if the server is not running due to the expected failure
-        BadSkip if the server is not running when it should be
-        """
-        xrootd_server_version, _, _ = core.check_system(('rpm', '-q', core.config['xrootd.package'],
-                                                         '--qf=%{VERSION}'), 'Getting xrootd version')
-        
-        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
-
-
     def test_01_xrdcp_local_to_server(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
-        self.assert_server_started()
+        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
 
         hostname = socket.getfqdn()
         if core.config['xrootd.gsi'] == "ON":
@@ -63,7 +48,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
-        self.assert_server_started()
+        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
 
         hostname = socket.getfqdn()
         temp_source_dir = tempfile.mkdtemp()

@@ -13,8 +13,6 @@ import osgtest.library.certificates as certs
 class TestStartMyProxy(osgunittest.OSGTestCase):
 
     def test_01_config_certs(self):
-        core.config['certs.hostcert'] = '/etc/grid-security/hostcert.pem'
-        core.config['certs.hostkey'] = '/etc/grid-security/hostkey.pem'
         core.config['certs.myproxycert'] = '/etc/grid-security/myproxy/hostcert.pem'
         core.config['certs.myproxykey'] = '/etc/grid-security/myproxy/hostkey.pem'
 

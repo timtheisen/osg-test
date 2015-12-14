@@ -30,7 +30,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.gsi'] = "ON"
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
-        
+
+        self.skip_ok_unless(core.options.adduser, 'user not created')
         vdt_pw = pwd.getpwnam(core.options.username)
         core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir, '.globus', 'usercert.pem')
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
@@ -52,8 +53,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             authfile = '/etc/xrootd/auth_file'
             files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
             
-            user_dn = certs.certificate_info(core.config['certs.usercert'])[1]
-            files.write("/etc/grid-security/xrd/xrdmapfile","\"%s\" vdttest" % user_dn, owner="xrootd",
+            files.write("/etc/grid-security/xrd/xrdmapfile","\"%s\" vdttest" % core.config['user.cert_subject'],
+                        owner="xrootd",
                         chown=(user.pw_uid, user.pw_gid))
             core.state['xrootd.backups-exist'] = True
 

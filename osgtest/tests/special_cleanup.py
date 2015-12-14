@@ -161,19 +161,25 @@ class TestCleanup(osgunittest.OSGTestCase):
     def test_06_cleanup_test_certs(self):
         if core.state['certs.dir_created']:
             files.remove('/etc/grid-security/certificates', force=True)
-        else:
+        elif core.state['certs.ca_created']:
             files.remove('/etc/grid-security/certificates/' + core.config['certs.test-ca-hash'] + '*')
-            try:
-                files.remove('/etc/grid-security/certificates/' + core.config['certs.test-ca-hash-old'] + '.*')
-            except KeyError:
-                pass
             files.remove('/etc/grid-security/certificates/OSG-Test-CA.*')
+            if core.config.has_key('certs.test-ca-hash-old'):
+                files.remove('/etc/grid-security/certificates/' + core.config['certs.test-ca-hash-old'] + '.*')
 
         if core.state['certs.hostcert_created']:
             files.remove(core.config['certs.hostcert'])
             files.remove(core.config['certs.hostkey'])
             
-        certs.cleanup_files()
+        # Cleanup config
+        files.remove(certs.OPENSSL_DIR + "index.txt*")
+        files.remove(certs.OPENSSL_DIR + "crlnumber*")
+        files.remove(certs.OPENSSL_DIR + "serial*")
+        files.remove(certs.OPENSSL_DIR + "%s.pem" % certs.SN)
+        files.remove(certs.HOST_REQUEST)
+
+        files.restore(certs.OPENSSL_CONFIG, "CA")
+        files.restore(certs.CERT_EXT_CONFIG, "CA")        
 
     def test_07_remove_test_user(self):
         if not core.state['general.user_added']:
