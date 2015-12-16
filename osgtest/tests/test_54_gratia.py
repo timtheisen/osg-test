@@ -215,7 +215,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')
         command = "echo \"use gratia_osgtest;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
-        gratia_version = tuple(core.get_package_envra('gratia-service')[2].split('.'))
+        gratia_version = tuple(map(int,core.get_package_envra('gratia-service')[2].split('.')))
         if gratia_version >= (1,16,3):
             expected_table_count = '82'
         else:
