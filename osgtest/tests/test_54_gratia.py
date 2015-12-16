@@ -213,10 +213,15 @@ class TestGratia(osgunittest.OSGTestCase):
 
     #This test counts the number of lines in the gratia database tables output
     def test_03_show_gratia_database_tables(self):
-        core.skip_ok_unless_installed('gratia-service')     
+        core.skip_ok_unless_installed('gratia-service')
         command = "echo \"use gratia_osgtest;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database.', '81'), 'Unable to install Gratia Database.')       
-        
+        gratia_version = tuple(core.get_package_envra('gratia-service')[2].split('.'))
+        if gratia_version >= (1,16,3):
+            expected_table_count = '82'
+        else:
+            expected_table_count = '81'
+        self.assertEqual(True, self.isProbeDataValidInDatabase(command, 'Unable to install Gratia Database.', expected_table_count), 'Unable to install Gratia Database.')
+
     #This test customizes /etc/gratia/gridftp-transfer/ProbeConfig file
     def test_04_modify_gridftptransfer_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
