@@ -542,5 +542,51 @@ def parse_env_output(output):
             env[env_match.group(1)] = env_match.group(2)
         except AttributeError:
             pass
-        
+
     return env
+
+def install_cert(target_key, source_key, owner_name, permissions):
+    """
+    Carefully install a certificate with the given key from the given
+    source path, then set ownership and permissions as given.  Record
+    each directory and file created by this process into the config
+    dictionary; do so immediately after creation, so that the
+    remove_cert() function knows exactly what to remove/restore.
+    """
+    target_path = config[target_key]
+    target_dir = os.path.dirname(target_path)
+    source_path = config[source_key]
+    user = pwd.getpwnam(owner_name)
+
+    # Using os.path.lexists because os.path.exists return False for broken symlinks
+    if os.path.lexists(target_path):
+        backup_path = target_path + '.osgtest.backup'
+        shutil.move(target_path, backup_path)
+        state[target_key + '-backup'] = backup_path
+
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+        state[target_key + '-dir'] = target_dir
+        os.chown(target_dir, user.pw_uid, user.pw_gid)
+        os.chmod(target_dir, 0755)
+
+    shutil.copy(source_path, target_path)
+    state[target_key] = target_path
+    os.chown(target_path, user.pw_uid, user.pw_gid)
+    os.chmod(target_path, permissions)
+
+def remove_cert(target_key):
+    """
+    Carefully removes a certificate with the given key.  Removes all
+    paths associated with the key, as created by the install_cert()
+    function.
+    """
+    if state.has_key(target_key):
+        os.remove(state[target_key])
+    if state.has_key(target_key + '-backup'):
+        shutil.move(state[target_key + '-backup'],
+                    state[target_key])
+    if state.has_key(target_key + '-dir'):
+        target_dir = state[target_key + '-dir']
+        if len(os.listdir(target_dir)) == 0:
+            os.rmdir(target_dir)
