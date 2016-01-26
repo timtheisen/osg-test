@@ -209,7 +209,7 @@ def restore(path, owner):
 
 
 def remove(path, force=False):
-    """Remove the path, which could be a file, empty directory, or file glob.
+    """Remove the path, which could be a file, symlink, empty directory, or file glob.
 
     If the force argument is True, then this function will remove non-empty directories.
     """
@@ -231,7 +231,7 @@ def remove(path, force=False):
             else:
                 # Go ahead and try the rmdir to raise an exception
                 os.rmdir(path)
-    elif os.path.isfile(path):
+    elif os.path.isfile(path) or os.path.islink(path):
         os.unlink(path)
 
 def filesBackedup(path, owner):
