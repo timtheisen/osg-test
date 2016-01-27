@@ -10,7 +10,6 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestStopMyProxy(osgunittest.OSGTestCase):
 
@@ -35,6 +34,6 @@ class TestStopMyProxy(osgunittest.OSGTestCase):
     def test_03_remove_certs(self):
         core.state['myproxy.removed-certs'] = False
         # Do the keys first, so that the directories will be empty for the certs.
-        certs.remove_cert('certs.myproxykey')
-        certs.remove_cert('certs.myproxycert')
+        core.remove_cert('certs.myproxykey')
+        core.remove_cert('certs.myproxycert')
         core.state['myproxy.removed-certs'] = True

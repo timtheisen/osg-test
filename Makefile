@@ -17,8 +17,6 @@ SBIN_FILES := osg-test
 INSTALL_SBIN_DIR := usr/sbin
 
 SHARE_DIR := files
-OPENSSL_EXT_FILE := $(SHARE_DIR)/openssl-cert-extensions.conf
-OSG_CA_FILES := $(SHARE_DIR)/OSG-Test-CA.*
 TEST_FILES := $(SHARE_DIR)/test_*
 GRATIA_TEST_FILES := $(SHARE_DIR)/gratia/*
 TARBALL_TEST_FILES := $(SHARE_DIR)/tarball/*
@@ -81,8 +79,6 @@ install:
 	mkdir -p $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	install -p -m 0755 $(SBIN_FILES) $(DESTDIR)/$(INSTALL_SBIN_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_SHARE_DIR)
-	install -p -m 0644 $(OPENSSL_EXT_FILE) $(DESTDIR)/$(INSTALL_SHARE_DIR)
-	install -p -m 0644 $(OSG_CA_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	install -p -m 0644 $(TEST_FILES) $(DESTDIR)/$(INSTALL_SHARE_DIR)
 	mkdir -p $(DESTDIR)/$(GRATIA_FILES_DIR)
 	install -p -m 0644 $(GRATIA_TEST_FILES) $(DESTDIR)/$(GRATIA_FILES_DIR)

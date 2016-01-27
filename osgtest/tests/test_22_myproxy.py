@@ -1,14 +1,8 @@
 import os
-import pwd
-import socket
-import stat
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
-import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestStartMyProxy(osgunittest.OSGTestCase):
 
@@ -23,8 +17,8 @@ class TestStartMyProxy(osgunittest.OSGTestCase):
         self.skip_ok_if(core.check_file_and_perms(myproxycert, 'myproxy', 0644) and
                         core.check_file_and_perms(myproxykey, 'myproxy', 0400),
                         'myproxy cert exists and has proper permissions')
-        certs.install_cert('certs.myproxycert', 'certs.hostcert', 'myproxy', 0644)
-        certs.install_cert('certs.myproxykey', 'certs.hostkey', 'myproxy', 0400)
+        core.install_cert('certs.myproxycert', 'certs.hostcert', 'myproxy', 0644)
+        core.install_cert('certs.myproxykey', 'certs.hostkey', 'myproxy', 0400)
 
     def test_03_config_myproxy(self):
         core.skip_ok_unless_installed('myproxy-server')

@@ -1,6 +1,3 @@
-import os
-import unittest
-
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 

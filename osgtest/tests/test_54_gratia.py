@@ -444,7 +444,6 @@ class TestGratia(osgunittest.OSGTestCase):
         
     #This test executes psacct
     def test_22_execute_psacct(self):
-        self.skip_ok("skip until psacct fix from SOFTWARE-1150 is in production")
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         core.state['gratia.psacct-running'] = False
         if os.path.exists(core.config['gratia.log.file']):
@@ -461,7 +460,6 @@ class TestGratia(osgunittest.OSGTestCase):
 
     #This test checks database after psacct is run
     def test_23_checkdatabase_psacct(self):
-        self.skip_ok("skip until psacct fix from SOFTWARE-1150 is in production")
         core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')  
         self.skip_bad_if(core.state['gratia.psacct-running'] == False, 'Psacct service is not running.')           
         

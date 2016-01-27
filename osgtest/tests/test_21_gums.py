@@ -1,3 +1,4 @@
+import cagen
 import os
 import re
 import socket
@@ -7,7 +8,6 @@ import unittest
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestStartGUMS(osgunittest.OSGTestCase):
 
@@ -29,8 +29,8 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0644) and
                         core.check_file_and_perms(httpkey, 'tomcat', 0400),
                         'HTTP cert exists and has proper permissions')
-        certs.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
-        certs.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
+        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
 
     # ==========================================================================
     # END: (MOSTLY) COPIED FROM test_20_voms.py
@@ -46,7 +46,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
 
     def test_04_add_mysql_admin(self):
         core.skip_ok_unless_installed('gums-service')
-        host_dn, host_issuer = certs.certificate_info(core.config['certs.hostcert'])
+        host_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
         mysql_template_path = '/usr/lib/gums/sql/addAdmin.mysql'
         self.assert_(os.path.exists(mysql_template_path), 'GUMS MySQL template exists')
         mysql_template = files.read(mysql_template_path, as_single_string=True).strip()

@@ -1,13 +1,11 @@
+import cagen
 import os
 import socket
-import stat
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestStartVOMS(osgunittest.OSGTestCase):
 
@@ -24,8 +22,8 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         self.skip_ok_if(core.check_file_and_perms(vomscert, 'voms', 0644) and
                         core.check_file_and_perms(vomskey, 'voms', 0400),
                         'VOMS cert exists and has proper permissions')
-        certs.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0644)
-        certs.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0400)
+        core.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0644)
+        core.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0400)
 
     def test_03_install_http_certs(self):
         core.skip_ok_unless_installed('voms-admin-server')
@@ -34,8 +32,8 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0644) and
                         core.check_file_and_perms(httpkey, 'tomcat', 0400),
                         'HTTP cert exists and has proper permissions')
-        certs.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
-        certs.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
+        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
 
     def test_04_config_voms(self):
         core.config['voms.vo'] = 'osgtestvo'
@@ -81,7 +79,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
     def test_06_add_local_admin(self):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
         host_dn, host_issuer = \
-            certs.certificate_info(core.config['certs.hostcert'])
+            cagen.certificate_info(core.config['certs.hostcert'])
         command = ('voms-db-deploy.py', 'add-admin',
                    '--vo', core.config['voms.vo'],
                    '--dn', host_dn, '--ca', host_issuer)
@@ -111,11 +109,11 @@ class TestStartVOMS(osgunittest.OSGTestCase):
 
         hostname = socket.getfqdn()
         vomses_path = '/etc/vomses'
-        host_dn, host_issuer = certs.certificate_info(core.config['certs.hostcert'])
+        host_dn, host_issuer = cagen.certificate_info(core.config['certs.hostcert'])
         contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
                     (core.config['voms.vo'], hostname, 15151, host_dn, core.config['voms.vo']))
         files.write(vomses_path, contents, owner='voms', chmod=0644)
-        
+
         if not os.path.isdir(core.config['voms.lsc-dir']):
             os.makedirs(core.config['voms.lsc-dir'])
         vo_lsc_path = os.path.join(core.config['voms.lsc-dir'], hostname + '.lsc')

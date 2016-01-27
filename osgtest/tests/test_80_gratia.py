@@ -6,7 +6,6 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
-import osgtest.library.certificates as certs
 
 
 class TestStopGratia(osgunittest.OSGTestCase):
@@ -43,8 +42,8 @@ class TestStopGratia(osgunittest.OSGTestCase):
         if core.state['voms.removed-certs']:
             return
         # Do the keys first, so that the directories will be empty for the certs.
-        certs.remove_cert('certs.httpkey')
-        certs.remove_cert('certs.httpcert')
+        core.remove_cert('certs.httpkey')
+        core.remove_cert('certs.httpcert')
 
     #This test drops the gratia database
     def test_02_uninstall_gratia_database(self):

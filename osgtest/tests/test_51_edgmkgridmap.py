@@ -1,11 +1,10 @@
+import cagen
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 import pwd
 import socket
-import unittest
 
 class TestEdgMkGridmap(osgunittest.OSGTestCase):
 
@@ -35,7 +34,7 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_cert_dn, _ = certs.certificate_info(cert_path)
+        user_cert_dn, _ = cagen.certificate_info(cert_path)
         expected = '"%s" %s' % (user_cert_dn, core.options.username)
 
         contents = files.read(os.environ['GRIDMAP'], True)

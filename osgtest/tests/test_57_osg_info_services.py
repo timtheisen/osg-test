@@ -1,14 +1,8 @@
-import os
-import pwd
-import unittest
-
 import osgtest.library.core as core
-import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestOSGInfoServices(osgunittest.OSGTestCase):
-    
+
     possible_rpms = ['osg-ce',
                      'htcondor-ce']
     def test_01_osg_configure_v(self):

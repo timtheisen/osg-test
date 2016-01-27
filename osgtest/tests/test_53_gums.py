@@ -1,27 +1,18 @@
+import cagen
 import os
-import pwd
-import unittest
 
 import osgtest.library.core as core
-import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestGUMS(osgunittest.OSGTestCase):
 
     required_rpms = ['gums-service',
                      'gums-client']
 
-    def get_user_dn(self, username):
-        pwd_entry = pwd.getpwnam(username)
-        cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_dn, _ = certs.certificate_info(cert_path)
-        return user_dn
-
     def test_01_set_x509_env(self):
         core.skip_ok_unless_installed(*self.required_rpms)
 
-        try: 
+        try:
             core.config['gums.old_x509_cert'] = os.environ['X509_USER_CERT']
         except KeyError:
             # X509_USER_CERT isn't defined
@@ -40,31 +31,29 @@ class TestGUMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms)
         core.state['gums.added_user'] = False
 
-        user_dn = self.get_user_dn(core.options.username)
         # If we have a VO set up, use it
         if core.state['voms.added-user']:
             command = ('gums-service', 'manualGroupAdd',
                        '--fqan', '/%s/Role=null/Capability=null' % core.config['voms.vo'],
-                       'gums-test', user_dn)
+                       'gums-test', core.config['user.cert_subject'])
         else:
-            command = ('gums-service', 'manualGroupAdd', 'gums-test', user_dn)
+            command = ('gums-service', 'manualGroupAdd', 'gums-test', core.config['user.cert_subject'])
 
-        stdout = core.check_system(command, 'Add VDT DN to manual group')[0]
+        core.check_system(command, 'Add VDT DN to manual group')
         core.state['gums.added_user'] = True
 
     def test_03_map_user(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manual user group')
-      
-        user_dn = self.get_user_dn(core.options.username)
+
         # Use gums-host since it defaults to the host cert
         if core.state['voms.added-user']:
             command = ('gums-host', 'mapUser',
                        '--fqan', '/%s/Role=null/Capability=null' % core.config['voms.vo'],
-                       user_dn) 
+                       core.config['user.cert_subject'])
         else:
-            command = ('gums-host', 'mapUser', user_dn)
-            
+            command = ('gums-host', 'mapUser', core.config['user.cert_subject'])
+
         stdout = core.check_system(command, 'Map GUMS user')[0]
         self.assert_(core.options.username in stdout, 'expected string missing from mapUser output')
 
@@ -72,14 +61,13 @@ class TestGUMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manual user group')
 
-        user_dn = self.get_user_dn(core.options.username)
         if core.state['voms.added-user']:
             command = ('gums-host', 'generateVoGridMapfile')
         else:
             command = ('gums-host', 'generateGridMapfile')
         stdout = core.check_system(command, 'generate grid mapfile')[0]
-        self.assert_(user_dn in stdout, 'user DN missing from generated mapfile')
-        
+        self.assert_(core.config['user.cert_subject'] in stdout, 'user DN missing from generated mapfile')
+
     def test_05_unset_x509_env(self):
         core.skip_ok_unless_installed(*self.required_rpms)
 

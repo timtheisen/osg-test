@@ -1,7 +1,7 @@
-import subprocess
+import cagen
+import errno
 import signal
 import os
-import os.path
 import pwd
 import re
 import shutil
@@ -10,7 +10,6 @@ import osgtest.library.core as core
 import osgtest.library.yum as yum
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
 class TestCleanup(osgunittest.OSGTestCase):
 
@@ -29,7 +28,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         # of a package that will be erased later in sequence.  By listing them
         # in yum install order, we presumably get a valid ordering and increase
         # the chances of a clean erase.
-        
+
         rpm_candidates = []
         for package in rpm_list:
             status, stdout, _ = core.system(('rpm', '--query', package, '--queryformat', r'%{NAME}'))
@@ -48,12 +47,12 @@ class TestCleanup(osgunittest.OSGTestCase):
         # and an easy way to get that information is from 'rpm -q'.  So we use
         # the bare name when possible, and the fully versioned one when
         # necessary.
-            
+
         final_rpm_list = []
         for package in rpm_candidates:
             command = ('rpm', '--query', package, '--queryformat',
                        r'%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n')
-            status, stdout, _  = core.system(command, log_output=False)
+            status, stdout, _ = core.system(command, log_output=False)
             versioned_rpms = re.split('\n', stdout.strip())
             if len(versioned_rpms) > 1:
                 final_rpm_list += versioned_rpms
@@ -63,14 +62,14 @@ class TestCleanup(osgunittest.OSGTestCase):
         return final_rpm_list
 
     def test_01_downgrade_osg_release(self):
-        if not (core.options.updaterelease):
+        if not core.options.updaterelease:
             return
 
         self.skip_bad_unless(core.state['install.release-updated'], 'release not updated')
 
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')
-        
+
         rpm_url = 'http://repo.grid.iu.edu/osg/' + core.config['install.original-release-ver']+ '/osg-' + \
             core.config['install.original-release-ver'] + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
@@ -88,7 +87,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         # supposed to be removing these packages, they will be considered
         # orphaned and reinstalled in test_04_orphaned_packages
         command = ['yum', '-y', 'remove', 'xrootd4*']
-        fail_msg, status, stdout, stderr = yum.retry_command(command)
+        fail_msg, _, stdout, _ = yum.retry_command(command)
         if fail_msg:
             self.fail(fail_msg)
         yum.parse_output_for_packages(stdout)
@@ -112,7 +111,7 @@ class TestCleanup(osgunittest.OSGTestCase):
                 command = ['yum', 'history', 'undo', '-y', transaction]
                 for repo in core.options.extrarepos:
                     command.append('--enablerepo=%s' % repo)
-                fail_msg, status, stdout, stderr = yum.retry_command(command)
+                fail_msg, _, stdout, _ = yum.retry_command(command)
                 if fail_msg:
                     self.fail(fail_msg)
         elif el_version == 5:
@@ -120,12 +119,12 @@ class TestCleanup(osgunittest.OSGTestCase):
             # spin up our own method of rolling back installations
             if len(core.state['install.updated']) != 0:
                 command = ['yum', 'downgrade', '-y'] + core.state['install.updated']
-                fail_msg, status, stdout, stderr = yum.retry_command(command)
+                fail_msg, _, stdout, _ = yum.retry_command(command)
                 if fail_msg:
                     self.fail(fail_msg)
                 # Remove packages from install list that were brought in as deps for `yum update`
-                yum.parse_output_for_packages(stdout) 
-                
+                yum.parse_output_for_packages(stdout)
+
             if len(core.state['install.installed']) != 0:
                 for pkg in core.state['install.os_updates']:
                     core.state['install.installed'].remove(pkg)
@@ -149,7 +148,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             # state of packages: we don't track state of EPEL/OSG repos and we
             # leave the ones we drop in
             command = ['yum', '-y', 'install'] + core.state['install.orphaned']
-            fail_msg, status, stdout, stderr = yum.retry_command(command)
+            fail_msg, _, _, _ = yum.retry_command(command)
             if fail_msg:
                 self.fail(fail_msg)
 
@@ -159,27 +158,33 @@ class TestCleanup(osgunittest.OSGTestCase):
 
 
     def test_06_cleanup_test_certs(self):
-        if core.state['certs.dir_created']:
-            files.remove('/etc/grid-security/certificates', force=True)
-        elif core.state['certs.ca_created']:
-            files.remove('/etc/grid-security/certificates/' + core.config['certs.test-ca-hash'] + '*')
-            files.remove('/etc/grid-security/certificates/OSG-Test-CA.*')
-            if core.config.has_key('certs.test-ca-hash-old'):
-                files.remove('/etc/grid-security/certificates/' + core.config['certs.test-ca-hash-old'] + '.*')
+        certs_dir = '/etc/grid-security/certificates'
+        if core.state['certs.ca_created']:
+            files.remove(os.path.join(certs_dir, 'OSG-Test-CA.*'))
+            for link in os.listdir(certs_dir):
+                abs_link_path = os.path.join(certs_dir, link)
+                try:
+                    dest = os.readlink(abs_link_path)
+                    if re.match(r'OSG-Test-CA\.', dest):
+                        files.remove(abs_link_path)
+                except OSError, e:
+                    if e.errno == errno.EINVAL:
+                        continue
+
+            # Remove config files
+            openssl_dir = '/etc/pki/'
+            for ca_file in ['index.txt*', 'crlnumber*', 'serial*']:
+                files.remove(os.path.join(openssl_dir, 'CA', ca_file))
+            for tls_file in ['osg-test-ca.conf', 'osg-test-extensions.conf']:
+                files.remove(os.path.join(openssl_dir, 'tls', tls_file))
+
+        # Remove the entire certs dir if our test CA was the only resident
+        if len(os.listdir(certs_dir)) == 0:
+            files.remove(certs_dir, force=True)
 
         if core.state['certs.hostcert_created']:
             files.remove(core.config['certs.hostcert'])
             files.remove(core.config['certs.hostkey'])
-            
-        # Cleanup config
-        files.remove(certs.OPENSSL_DIR + "index.txt*")
-        files.remove(certs.OPENSSL_DIR + "crlnumber*")
-        files.remove(certs.OPENSSL_DIR + "serial*")
-        files.remove(certs.OPENSSL_DIR + "%s.pem" % certs.SN)
-        files.remove(certs.HOST_REQUEST)
-
-        files.restore(certs.OPENSSL_CONFIG, "CA")
-        files.restore(certs.CERT_EXT_CONFIG, "CA")        
 
     def test_07_remove_test_user(self):
         if not core.state['general.user_added']:
@@ -191,14 +196,15 @@ class TestCleanup(osgunittest.OSGTestCase):
         globus_dir = os.path.join(password_entry.pw_dir, '.globus')
 
         # Remove certs in case userdel fails
-        files.remove(os.path.join(globus_dir, 'usercert.pem'))
-        files.remove(os.path.join(globus_dir, 'userkey.pem'))
+        if core.state['general.user_cert_created']:
+            files.remove(os.path.join(globus_dir, 'usercert.pem'))
+            files.remove(os.path.join(globus_dir, 'userkey.pem'))
 
         # Get list of PIDs owned by the test user
         command = ('ps', '-U', username, '-u', username, '-o', 'pid=')
         _, output, _ = core.system(command)
 
-        # Take no prisoners 
+        # Take no prisoners
         for pid in output.splitlines():
             try:
                 os.kill(int(pid), signal.SIGKILL)
@@ -217,8 +223,8 @@ class TestCleanup(osgunittest.OSGTestCase):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''
-            for id, backup_path in files._backups.items():
-                details += "-- Backup of '%s' for '%s' in '%s'\n" % (id[0], id[1], backup_path)
+            for backup_id, backup_path in files._backups.items():
+                details += "-- Backup of '%s' for '%s' in '%s'\n" % (backup_id[0], backup_id[1], backup_path)
             core.log_message('Backups remain in backup dictionary:\n' + details)
             record_is_clear = False
 

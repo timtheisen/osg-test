@@ -1,9 +1,8 @@
+import cagen
 import os
-import osgtest.library.certificates as certs
 import pwd
 import re
 import socket
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
@@ -25,7 +24,7 @@ class TestVOMS(osgunittest.OSGTestCase):
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_cert_dn, user_cert_issuer = certs.certificate_info(cert_path)
+        user_cert_dn, user_cert_issuer = cagen.certificate_info(cert_path)
         hostname = socket.getfqdn()
 
         command = ('voms-admin', '--vo', core.config['voms.vo'], '--host', hostname, '--nousercert', 'create-user',
@@ -53,7 +52,7 @@ class TestVOMS(osgunittest.OSGTestCase):
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
         password = core.options.password + '\n'
-        status, stdout, stderr = core.system(command, True, password)
+        status, stdout, _ = core.system(command, True, password)
         self.assertNotEqual(status, 0, 'voms-proxy-init fails on bad group')
         self.assert_('Unable to satisfy' in stdout, 'voms-proxy-init failure message')
 
@@ -74,9 +73,9 @@ class TestVOMS(osgunittest.OSGTestCase):
 
     def test_07_rfc_voms_proxy_info(self):
         self.proxy_info('third voms-proxy-info output is ok')
-        
+
     def test_08_voms_proxy_check(self):
-    	"""
+        """
     	Check generated proxies to make sure that they use the same signing
     	algorithm as the certificate
     	"""
@@ -86,7 +85,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
         command = ['openssl', 'x509', '-in', cert_path, '-text']
-        signature_re = re.compile('Signature Algorithm:\s+(\w+)\s')
+        signature_re = re.compile(r'Signature Algorithm:\s+(\w+)\s')
         stdout = core.check_system(command, 'Check X.509 certificate algorithm', user=True)[0]
         match = signature_re.search(stdout)
         if match is None:

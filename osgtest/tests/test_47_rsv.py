@@ -1,14 +1,13 @@
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.certificates as certs
 
+import cagen
 import re
 import os
 import pwd
 import shutil
 import socket
-import unittest
 import ConfigParser
 
 """
@@ -30,11 +29,11 @@ class TestRSV(osgunittest.OSGTestCase):
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')
         return
-    
+
     def stop_rsv(self):
         core.check_system(('rsv-control', '--off'), 'rsv-control --off')
         return
-    
+
     def config_and_restart(self):
         self.stop_rsv()
         core.check_system(('osg-configure', '-c', '-m', 'rsv'), 'osg-configure -c -m rsv')
@@ -99,13 +98,12 @@ class TestRSV(osgunittest.OSGTestCase):
         self.write_config_file(config)
         return
 
-    
     def test_001_set_config_vals(self):
         core.config['rsv.certfile'] = "/etc/grid-security/rsv/rsvcert.pem"
         core.config['rsv.keyfile'] = "/etc/grid-security/rsv/rsvkey.pem"
         core.config['rsv.osg-configure-config-file'] = '/etc/osg/config.d/30-rsv.ini'
         core.config['rsv.config-file'] = '/etc/rsv/rsv.conf'
-        
+
     def test_002_setup_certificate(self):
         core.skip_ok_unless_installed('rsv')
 
@@ -129,7 +127,7 @@ class TestRSV(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('rsv')
 
         # Register the cert in the gridmap file
-        cert_subject = certs.certificate_info(core.config['rsv.certfile'])[0]
+        cert_subject = cagen.certificate_info(core.config['rsv.certfile'])[0]
         files.append(core.config['system.mapfile'], '"%s" rsv\n' % (cert_subject), owner='rsv')
 
 
@@ -152,7 +150,7 @@ class TestRSV(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'rsv-control --version')[0]
 
         # The rsv-control --version just returns a string like '1.0.0'.
-        self.assert_(re.search('\d+.\d+.\d+', stdout) is not None)
+        self.assert_(re.search(r'\d+.\d+.\d+', stdout) is not None)
         return
 
 
@@ -171,7 +169,7 @@ class TestRSV(osgunittest.OSGTestCase):
 
     def test_012_list_with_cron(self):
         core.skip_ok_unless_installed('rsv')
-        
+
         command = ('rsv-control', '--list', '--all', '--cron')
         stdout = core.check_system(command, 'rsv-control --list --all')[0]
 
@@ -184,7 +182,7 @@ class TestRSV(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('rsv')
 
         profiler_tarball = 'rsv-profiler.tar.gz'
-        
+
         command = ('rsv-control', '--profile')
         stdout = core.check_system(command, 'rsv-control --profile')[0]
         self.assert_(re.search('Running the rsv-profiler', stdout) is not None)
@@ -195,9 +193,9 @@ class TestRSV(osgunittest.OSGTestCase):
 
     def test_024_rsv_control_bad_arg(self):
         core.skip_ok_unless_installed('rsv')
-        
+
         command = ('rsv-control', '--kablooey')
-        (ret, out, err) = core.system(command, 'rsv-control --kablooey')
+        ret, _, _ = core.system(command, 'rsv-control --kablooey')
         self.assert_(ret != 0)
         return
 
@@ -211,7 +209,7 @@ class TestRSV(osgunittest.OSGTestCase):
 
     def test_021_start_rsv(self):
         core.skip_ok_unless_installed('rsv')
-        
+
         self.start_rsv()
         return
 
@@ -233,7 +231,7 @@ class TestRSV(osgunittest.OSGTestCase):
 
         # This test is currently failing because there are no enabled metrics.  Until
         # we add some RSV configuration to enable metrics.
-        
+
         # Check the parsable job-list output
         #command = ('rsv-control', '--job-list', '--parsable')
         #stdout = core.check_system(command, 'rsv-control --job-list --parsable')[0]
