@@ -2,10 +2,7 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import socket
-import shutil
 import tempfile
-import unittest
 
 class TestCvmfs(osgunittest.OSGTestCase):
 
@@ -18,7 +15,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         command = ('mount', '-t', 'cvmfs', repo, temp_dir)
         core.check_system(command, 'Manual cvmfs mount failed')
         # If manual mount works, autofs is broken
-        self.assert_(False, "Autofs failed to mount /cvmfs/%s" % repo)
+        self.fail("Autofs failed to mount /cvmfs/%s" % repo)
 
     def test_01_cvmfs_probe(self):
         default_local = '/etc/cvmfs/default.local'
@@ -29,7 +26,8 @@ class TestCvmfs(osgunittest.OSGTestCase):
         # Test depends on oasis-config to access the oasis.opensciencegrid.org
         # repo. This is an external service, so the requirement should be
         # removed as part of SOFTWARE-1108.
-        core.skip_ok_unless_installed('cvmfs', 'cvmfs-keys', 'oasis-config')
+        core.skip_ok_unless_installed('cvmfs')
+        core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)
 
 
         command = ('cat', default_local)
@@ -59,12 +57,13 @@ class TestCvmfs(osgunittest.OSGTestCase):
                 files.restore(default_local, 'cvmfsprobe')
 
     def test_02_cvmfs(self):
-        core.skip_ok_unless_installed('cvmfs', 'cvmfs-keys')
+        core.skip_ok_unless_installed('cvmfs')
+        core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)        
         core.state['cvmfs.mounted'] = False
 
         command = ('ls', '/cvmfs')
         status, stdout, stderr = core.system(command, False)
-	file_exists = os.path.exists('/cvmfs')
+        file_exists = os.path.exists('/cvmfs')
         self.assert_(file_exists, 'Cvmfs mount point missing')
         core.state['cvmfs.mounted'] = True
 
@@ -92,7 +91,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
         oasis_repo = 'oasis.opensciencegrid.org'
         command = ('ls', '/cvmfs/' + oasis_repo)
-        status, stdout, stderr = core.system(command, False)
+        status, _, _ = core.system(command, False)
 
         # If the previous command failed, output better debug info
         if status != 0:
