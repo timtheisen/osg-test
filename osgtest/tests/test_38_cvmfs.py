@@ -34,7 +34,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, False)
 
         if core.state['cvmfs.version'] < ('2', '1'):
-            command = ('service','cvmfs', 'probe')
+            command = ('service', 'cvmfs', 'probe')
             status, stdout, stderr = core.system(command, False)
         else:
             # Dave Dykstra suggested running cvmfs probe against a different
@@ -58,7 +58,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
     def test_02_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')
-        core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)        
+        core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)
         core.state['cvmfs.mounted'] = False
 
         command = ('ls', '/cvmfs')
@@ -86,7 +86,8 @@ class TestCvmfs(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
 
     def test_03_oasis_config(self):
-        core.skip_ok_unless_installed('cvmfs', 'cvmfs-keys', 'oasis-config')
+        core.skip_ok_unless_installed('cvmfs')
+        core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)        
         self.skip_bad_unless(core.state['cvmfs.mounted'], 'Cvmfs mount point missing')
 
         oasis_repo = 'oasis.opensciencegrid.org'
