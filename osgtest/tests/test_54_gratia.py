@@ -104,19 +104,16 @@ class TestGratia(osgunittest.OSGTestCase):
             self.patternreplace(probeconfig, "QuarantineSize=", "QuarantineUnknownVORecords=\"0\"", insert_after=True)
         
     def isProbeOutboxDirEmpty(self, gratiaProbeTempDir):
-            """This helper method returns True if the outbox directory for the probe, is empty; False otherwise"""
-
-            outboxdir = gratiaProbeTempDir + "/outbox/"
-            #Need to check if the above outboxdir is empty
-            try:
-                core.log_message('isProbeOutboxDirEmpty method - outboxdir is: ' + str(outboxdir))
-                if(not os.listdir(outboxdir)):
-                    return True
-                else:
-                    return False
-            except:
-                raise
-                return False            
+        """This helper method returns True if the outbox directory for the probe, is empty; False otherwise"""
+        outboxdir = gratiaProbeTempDir + "/outbox/"
+        try:
+            core.log_message('isProbeOutboxDirEmpty method - outboxdir is: ' + str(outboxdir))
+            if not os.listdir(outboxdir):
+                return True
+            else:
+                return False
+        except OSError:
+            return False
 
     def isProbeInfoProcessed(self, ProbePattern):
         """This helper method parses gratia log for patterns signifying that Gratia has processed the probe information
