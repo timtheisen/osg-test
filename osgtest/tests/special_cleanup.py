@@ -75,18 +75,17 @@ class TestCleanup(osgunittest.OSGTestCase):
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Downgrade osg-release')
 
-    def test_02_downgrade_xrootd4(self):
-        # If we replaced xrootd-* with xrootd4* on EL5, we need to handle downgrades gracefully
-        # Otherwise, we can skip this and downgrade as we normally do
+    def test_02_obsoleting_packages(self):
+        # If packages were obsoleted in upgrade, remove the packages that obsoleted them
         # Also skip if we didn't install anything
         if core.el_release() > 5 or len(core.options.packages) == 0:
             return
-        self.skip_ok_unless(core.state['install.xrootd-replaced'], 'xrootd-* was not replaced')
+        self.skip_ok_unless(core.state['install.replace'], 'no packages were replaced')
 
-        # This also removes any package that required xrootd4*! If we're not
+        # This also removes any package that required the obsoleted packages! If we're not
         # supposed to be removing these packages, they will be considered
         # orphaned and reinstalled in test_04_orphaned_packages
-        command = ['yum', '-y', 'remove', 'xrootd4*']
+        command = ['yum', '-y', 'remove'] + core.state['install.replace']
         fail_msg, _, stdout, _ = yum.retry_command(command)
         if fail_msg:
             self.fail(fail_msg)
@@ -127,7 +126,10 @@ class TestCleanup(osgunittest.OSGTestCase):
 
             if len(core.state['install.installed']) != 0:
                 for pkg in core.state['install.os_updates']:
-                    core.state['install.installed'].remove(pkg)
+                    try:
+                        core.state['install.installed'].remove(pkg)
+                    except ValueError:
+                        pass # it was already removed from under us
                 rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
                 package_count = len(rpm_erase_list)
                 command = ['rpm', '--quiet', '--erase'] + rpm_erase_list

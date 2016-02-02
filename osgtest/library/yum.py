@@ -11,7 +11,6 @@ import time
 import osgtest.library.core as core
 
 def clean_yum():
-    deadline = time.time() + 3600
     pre = ('yum', '--enablerepo=*', 'clean')
     core.system(pre + ('all',))
     core.system(pre + ('expire-cache',))
@@ -37,7 +36,7 @@ def retry_command(command, timeout_seconds=3600):
 
         # Stop (re)trying if the deadline has passed
         if time.time() > deadline:
-            fail_msg += "Retries terminated after timeout period" 
+            fail_msg += "Retries terminated after timeout period"
             break
 
         clean_yum()
@@ -60,7 +59,7 @@ def retry_command(command, timeout_seconds=3600):
             break
 
     return fail_msg, status, stdout, stderr
-                
+
 def yum_failure_can_be_retried(output):
     """Scan yum output to see if a retry might succeed."""
     whitelist = [r'No more mirrors to try',
@@ -85,19 +84,45 @@ def get_transaction_id():
     return m.group(1)
 
 def parse_output_for_packages(yum_output):
+    core.log_message('install.installed:' + ', '.join(core.state['install.installed']))
     clean_output = yum_output.strip().split('\n')
 
     transaction_regexp = re.compile(r'\s+(Installing|Updating|Cleanup|Erasing)\s+:\s+\d*:?(\S+)\s+\d')
-    xrootd_regexp = re.compile(r'\s+replacing\s+xrootd.*')
+    # Try not to match any packages named 'replacing.*'
+    obsolete_regexp = re.compile(r'\s+replacing\s+([^\.]+).*\.osg\S+$')
+    replacement_regexp = r'\s+(\S+)\s+(?:\S+\s+){2}osg' # Only remove obsoleting packages from the OSG
+    previous_line = ''
+
     for line in clean_output:
-        # We need to track if xrootd was replaced with xrootd4 
-        if xrootd_regexp.match(line):
-            core.state['install.xrootd-replaced'] = True
+        obsoleted = obsolete_regexp.match(line)
+        if obsoleted:
+            replaced_pkg = obsoleted.group(1)
+            try:
+                pkg = re.match(replacement_regexp, previous_line).group(1)
+                if pkg == replaced_pkg:
+                    # xrootd obsoletes older versions of itself so we end up with duplicates in install.installed.
+                    # This isn't caught in the transaction logic below since the replaced package is 'cleaned up'
+                    # instead of being 'erased'
+                    try:
+                        core.state['install.installed'].remove(pkg)
+                    except ValueError:
+                        # EL6 stores packages full NVR while EL5 only stores the name. This causes problems because we
+                        # only capture obsoleting/replaced packages by name and try to remove by name. This means that
+                        # 'install.installed' gets 'polluted' in EL6 but it doesn't really matter since we use 'yum
+                        # undo' in EL6 for yum operations. We don't get rid of 'install.installed' because it currently
+                        # (2/1/16) determines whether some tests get run or not
+                        continue
+                core.state['install.replace'].append(pkg)
+            except AttributeError:
+                continue # no match and not a transaction line
+        else:
+            pass # no match
+
+        previous_line = line
         try:
             operation, pkg = transaction_regexp.match(line).groups()
         except AttributeError:
-            # Catch exception when the line doesn't match our regex
-            continue
+            continue # Not a transaction
 
         if operation == 'Installing' and pkg != 'kernel': # uninstalling kernel updates is a headache
             core.state['install.installed'].append(pkg)
