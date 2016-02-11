@@ -7,18 +7,18 @@ import osgtest.library.condor as condor
 class TestStartCondorCE(osgunittest.OSGTestCase):
     # Tests 01-02 are needed to reconfigure condor to work with HTCondor-CE
     def test_01_write_condor_config(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         core.config['condor-ce.condor-cfg'] = '/etc/condor/config.d/99-osgtest.condor.conf'
         contents = """SCHEDD_INTERVAL=5"""
-        
+
         files.write(core.config['condor-ce.condor-cfg'],
                     contents,
                     owner='condor-ce',
                     chmod=0644)
-       
+
     def test_02_reconfigure_condor(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_bad_unless(core.state['condor.running-service'], 'Condor not running')
 
         command = ('condor_reconfig', '-debug')
@@ -74,8 +74,8 @@ gridmapfile -> good | bad
     def test_05_start_condorce(self):
         core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
         core.state['condor-ce.started'] = False
-        
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_ok_if(os.path.exists(core.config['condor-ce.lockfile']), 'already running')
 
         command = ('service', 'condor-ce', 'start')
