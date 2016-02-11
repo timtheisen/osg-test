@@ -16,6 +16,7 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         '3': (
             'CRL has lastUpdate time in the future',
             'CRL has nextUpdate time in the past',
+            'CRL lastUpdate could not be derived',
             'CRL verification failed for',
             'Download error',
             'verify called on empty data blob',
