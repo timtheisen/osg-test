@@ -15,7 +15,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_01_status(self):
         self.general_requirements()
 
-        command = ('condor_ce_status', '-verbose')
+        command = ('condor_ce_status', '-long')
         core.check_system(command, 'ce status', user=True)
 
     def test_02_queue(self):
