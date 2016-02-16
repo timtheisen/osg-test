@@ -14,31 +14,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
     def test_01_remove_certs(self):
 
         core.skip_ok_unless_installed('gratia-service')
-        #The following code can be uncommented for troubleshooting purposes
-        #utc_datetime = datetime.datetime.utcnow()
-        #formated_string = utc_datetime.strftime("%Y-%m-%d-%H%MZ") #Result: '2011-12-12-0939Z'
-        #gratia_log_current = '/var/log/gratia-service/gratia.log'
-        #gratia_log_archive = '/root/gratia_logs' +'/gratia_log_%s.txt'% formated_string
-        #shutil.copy2(gratia_log_current, gratia_log_archive)
-        if(core.state.has_key('gratia.save-logs') == True):
-            try:
-                gratia_service_log_string = files.read('/var/log/gratia-service/gratia.log', as_single_string=True)
-                core.log_message("\n%%%%%START_GRATIA_SERVICE_LOG%%%%%\n" + str(gratia_service_log_string))
-                core.log_message("\n%%%%%END_GRATIA_SERVICE_LOG%%%%%\n")
-
-                bdii_status_log_string = files.read('/var/log/gratia/bdii-status.log', as_single_string=True)
-                core.log_message("\n%%%%%START_BDII_STATUS_LOG%%%%%\n" + str(bdii_status_log_string))
-                core.log_message("\n%%%%%END_BDII_STATUS_LOG%%%%%\n")
-
-                local_datetime = datetime.datetime.now()
-                date_string = local_datetime.strftime("%Y-%m-%d") #Sample Result: '2013-08-21'
-                gratia_dated_log = '/var/log/gratia/' + date_string + '.log'
-                gratia_dated_log_string = files.read(gratia_dated_log, as_single_string=True)
-                core.log_message("\n%%%%%START_GRATIA_DATED_LOG%%%%%\n" + str(gratia_dated_log_string))
-                core.log_message("\n%%%%%END_GRATIA_DATED_LOG%%%%%\n")
-            except Exception, e:
-                core.log_message("Unable to save gratia logs. Ignoring this error, beyond logging this message..." + str(e))
-
         if core.state['voms.removed-certs']:
             return
         # Do the keys first, so that the directories will be empty for the certs.
