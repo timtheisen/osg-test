@@ -103,27 +103,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
             else:
                 # reraise the exception, as it's an unexpected error
                 raise
-        
-    #This test stops psacct service
-    def test_07_stop_psacct_service(self):
-        core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
-        command = ('/sbin/service', 'psacct', 'stop')
-        core.check_system(command, 'Unable to stop psacct.')
-
-    #This test cleans up psacct related files
-    def test_08_cleanup_psacct(self):
-        core.skip_ok_unless_installed('psacct', 'gratia-probe-psacct', 'gratia-service')
-        try:
-            probeconfig = core.config['gratia.config.dir'] + "/psacct/ProbeConfig"
-            owner = os.path.basename(os.path.dirname(probeconfig))
-            files.restore(probeconfig, owner)
-        except OSError, e:
-            if e.errno == 2:
-                # suppress "No such file or directory" error
-                pass
-            else:
-                # reraise the exception, as it's an unexpected error
-                raise
 
     #This test cleans up bdii related files
     def test_09_cleanup_bdii(self):
