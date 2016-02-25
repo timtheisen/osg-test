@@ -73,9 +73,12 @@ set server acl_host_enable = True
         self.skip_ok_if(os.path.exists(core.config['torque.mom-lockfile']), 'pbs mom apparently running')
 
         core.config['torque.mom-config'] = '/var/lib/torque/mom_priv/config'
-
         files.write(core.config['torque.mom-config'],
                     "$pbsserver %s\n" % core.get_hostname(),
+                    owner='pbs')
+        core.config['torque.mom-layout'] = '/var/lib/torque/mom_priv/mom.layout'
+        files.write(core.config['torque.mom-layout'],
+                    "nodes=0",
                     owner='pbs')
 
         command = ('service', 'pbs_mom', 'start')

@@ -21,7 +21,8 @@ class TestStopPBS(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['torque.mom-lockfile']),
                      'PBS mom run lock file still present')
 
-        files.restore(core.config['torque.mom-config'], 'pbs')
+        for mom_file in ['config', 'layout']:
+            files.restore(core.config['torque.mom-%s' % mom_file], 'pbs')
         core.state['torque.pbs-mom-running'] = False
 
     def test_02_stop_server(self):
