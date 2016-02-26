@@ -2,6 +2,7 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
 
 class TestStopPBS(osgunittest.OSGTestCase):
 
@@ -35,9 +36,8 @@ class TestStopPBS(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(core.config['torque.pbs-lockfile']),
                      'PBS server run lock file still present')
 
-        # Since there isn't a trqauthd service, we need to kill it manually
-        if core.state['torque.trqauthd-started']:
-            core.check_system(('pkill', '-SIGKILL', 'trqauthd'), 'killing trqauthd')
+        if core.state['trqauthd.started-service']:
+            service.stop('trqauthd')
 
         files.restore(core.config['torque.pbs-servername-file'], 'pbs')
         files.restore(core.config['torque.pbs-nodes-file'], 'pbs')

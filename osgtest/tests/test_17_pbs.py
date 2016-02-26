@@ -1,11 +1,11 @@
 import os
-import re
 import time
 from datetime import date
 
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
 
 class TestStartPBS(osgunittest.OSGTestCase):
 
@@ -29,16 +29,7 @@ set server acl_host_enable = True
                      'munge']
 
 
-    def test_01_fix_spool_permissions(self):
-        # EPEL's torque-mom-4.2.10-1 has broken permissions on a few directories:
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1216037
-        core.skip_ok_unless_installed(*self.required_rpms)
-        for bad_dir in ['checkpoint', 'spool', 'undelivered']:
-            # Make the dirs owner/group/world writeable/readable/executable
-            # and flip the sticky bit
-            os.chmod('/var/lib/torque/' + bad_dir, 01777)
-
-    def test_02_start_munge(self):
+    def test_01_start_munge(self):
         if core.el_release() == 5:
             core.config['munge.lockfile'] = '/var/lock/subsys/munge'
         elif core.el_release() == 6:
@@ -62,7 +53,7 @@ set server acl_host_enable = True
                      'munge lock file missing')
         core.state['munge.running'] = True
 
-    def test_03_start_mom(self):
+    def test_02_start_mom(self):
         if core.el_release() <= 6:
             core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
         else:
@@ -89,7 +80,7 @@ set server acl_host_enable = True
         core.state['torque.pbs-mom-running'] = True
 
 
-    def test_04_start_pbs_sched(self):
+    def test_03_start_pbs_sched(self):
         if core.el_release() <= 6:
             core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
         else:
@@ -106,12 +97,12 @@ set server acl_host_enable = True
                      'pbs sched run lock file missing')
         core.state['torque.pbs-sched-running'] = True
 
-    def test_05_start_pbs(self):
+    def test_04_start_pbs(self):
         if core.el_release() <= 6:
             core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
         else:
             core.config['torque.pbs-lockfile'] = '/var/lib/torque/server_priv/server.lock'
-        core.state['torque.trqauthd-started'] = False
+        core.state['trqauthd.started-service'] = False
         core.state['torque.pbs-server-running'] = False
         core.state['torque.pbs-server-started'] = False
         core.state['torque.pbs-configured'] = False
@@ -132,7 +123,6 @@ set server acl_host_enable = True
 
         # trqauthd is required for the pbs_server
         service.start('trqauthd')
-        core.state['torque.trqauthd-started'] = True
 
         if not os.path.exists('/var/lib/torque/server_priv/serverdb'):
             if core.el_release() <= 6:
@@ -164,7 +154,7 @@ set server acl_host_enable = True
             server_log_stat = os.stat(server_log)
         except OSError:
             server_log_stat = None
-            
+
         command = ('service', 'pbs_server', 'start')
         stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
         self.assert_(stdout.find('error') == -1, fail)
@@ -181,7 +171,7 @@ set server acl_host_enable = True
 
         # wait up to 5 minutes for the server to recognize the node
         start_time = time.time()
-        while ((time.time() - start_time) < 600):
+        while (time.time() - start_time) < 600:
             command = ('/usr/bin/qnodes', '-s', core.get_hostname())
             stdout, _, fail = core.check_system(command, 'Get pbs node info')
             self.assert_(stdout.find('error') == -1, fail)
