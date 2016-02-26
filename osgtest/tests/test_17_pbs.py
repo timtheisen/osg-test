@@ -130,35 +130,31 @@ set server acl_host_enable = True
                     owner='pbs')
         core.state['torque.pbs-configured'] = True
 
-        # PBS uses trqauthd for auth between clients and the server
-        # In 4.2.10 the server doesn't start it or have a service for it
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1215207
-        processes, _, _ = core.check_system(('ps', '-e'), 'checking if trqauthd already running')
-        if not re.search(r'trqauthd', processes):
-            command = ('/usr/sbin/trqauthd')
-            core.check_system(command, 'Start trqauthd for pbs_server')
-            core.state['torque.trqauthd-started'] = True
+        # trqauthd is required for the pbs_server
+        service.start('trqauthd')
+        core.state['torque.trqauthd-started'] = True
 
         if not os.path.exists('/var/lib/torque/server_priv/serverdb'):
-                if core.el_release() <= 6:
-                    command = 'service pbs_server create' # this creates the default config and starts the service
-                else:
-                    # XXX: "service pbs_server create" doesn't work for systemd, and I haven't found a
-                    #      systemd equivalent to do the "create" step in el7 ... The following was
-                    #      distilled from the el6 init.d script:  (but please correct as necessary)
-                    command = ('/usr/sbin/pbs_server -d /var/lib/torque -t create -f && '
-                               'sleep 10 && /usr/bin/qterm')
-                stdout, _, fail = core.check_system(command, 'create initial pbs serverdb config', shell=True)
-                self.assert_(stdout.find('error') == -1, fail)
+            if core.el_release() <= 6:
+                command = 'service pbs_server create' # this creates the default config and starts the service
+            else:
+                # XXX: "service pbs_server create" doesn't work for systemd, and I haven't found a
+                #      systemd equivalent to do the "create" step in el7 ... The following was
+                #      distilled from the el6 init.d script:  (but please correct as necessary)
+                command = ('/usr/sbin/pbs_server -d /var/lib/torque -t create -f && '
+                           'sleep 10 && /usr/bin/qterm')
+
+            stdout, _, fail = core.check_system(command, 'create initial pbs serverdb config', shell=True)
+            self.assert_(stdout.find('error') == -1, fail)
 
         # This gets wiped if we write it before the initial 'service pbs_server create'
-        # However, this file needs to be in place before the service is started so we 
+        # However, this file needs to be in place before the service is started so we
         # restart the service after 'initial configuration'
         files.write(core.config['torque.pbs-nodes-file'], # add the local node as a compute node
-                    "%s np=1\n" % core.get_hostname(),
+                    "%s np=1 num_node_boards=1\n" % core.get_hostname(),
                     owner='pbs')
 
-        # Sometimes the restart command throws an error on stop but still manages 
+        # Sometimes the restart command throws an error on stop but still manages
         # to kill the service, meaning that the service doesn't get brought back up
         command = ('service', 'pbs_server', 'stop')
         core.system(command, 'stop pbs server daemon')
