@@ -33,7 +33,6 @@ def parse_command_line():
                 "securepass": False,
                 "skip_cleanup": False,
                 "skiptests": False,
-                "tarballs": False,
                 "timeout": 5400,          # 1.5 hours
                 "updaterelease": None,
                 "updaterepos": [],
@@ -139,12 +138,6 @@ def read_args():
     p.add_option('--no-print-test-name', action='store_false', dest='printtest',
                        help='Do not print test name before command output')
 
-    p.add_option('--tarballs', action='store_true', dest='tarballs',
-                       help='Test client tarballs instead of RPM-based installation')
-
-    p.add_option('--tarball-test-dir', default=None,
-                       help='The location of the tarball test files (if non-standard)')
-
     p.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
                       action='store_true', dest='skiptests',
                       help='Do not run the functional tests; ' +
@@ -173,28 +166,18 @@ def get_password():
 
 def discover_tests():
     test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
-    if core.options.tarball_test_dir:
-        tarball_test_dir = core.options.tarball_test_dir
-    else:
-        tarball_test_dir = os.path.join(get_python_lib(), 'osgtest', 'tarball_tests')
-    if not core.options.tarballs:
-        test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
-                      if d.startswith('test_') and d.endswith('.py')]
-    else:
-        test_files = ['osgtest.tarball_tests.' + d[:-3] for d in os.listdir(tarball_test_dir)
-                      if d.startswith('test_') and d.endswith('.py')]
+    test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
+                  if d.startswith('test_') and d.endswith('.py')]
     test_files.sort()
     args = []
     args.append('osgtest.tests.special_certs')
     args.append('osgtest.tests.special_user') # always safe
-    if not core.options.tarballs:
-        if len(core.options.packages) > 0:
-            args.append('osgtest.tests.special_install')
-    else:
-        args.append('osgtest.tarball_tests.special_install')
+    if len(core.options.packages) > 0:
+        args.append('osgtest.tests.special_install')
     if not core.options.skiptests:
         args += test_files
-    add_cleanup(args)
+    if not core.options.skip_cleanup:
+        args.append('osgtest.tests.special_cleanup') # always safe
     return args
 
 def run_tests(a_argv):
@@ -235,7 +218,7 @@ def add_cleanup(tests):
 
 if __name__ == '__main__':
     parse_command_line()
-    if os.getuid() != 0 and not core.options.tarballs:
+    if os.getuid() != 0:
         print 'Must be run as root'
         sys.exit(1)
     get_password()
