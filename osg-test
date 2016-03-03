@@ -165,10 +165,9 @@ def get_password():
         core.options.password = getpass()
 
 def discover_tests():
-    test_dir = os.path.join(get_python_lib(), 'osgtest', 'tests')
-    test_files = ['osgtest.tests.' + d[:-3] for d in os.listdir(test_dir)
-                  if d.startswith('test_') and d.endswith('.py')]
-    test_files.sort()
+    test_sequence = open('/usr/share/osg-test/test_sequence')
+    test_files = ['osgtest.tests.' + test.strip() for test in test_sequence.readlines()]
+    test_sequence.close()
     args = []
     args.append('osgtest.tests.special_certs')
     args.append('osgtest.tests.special_user') # always safe
