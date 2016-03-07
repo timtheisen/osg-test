@@ -207,8 +207,6 @@ def signal_alarm_handler(signal_number, stack_frame):
 
 def add_cleanup(tests):
     if not core.options.skip_cleanup:
-        if core.options.tarballs:
-            tests.append('osgtest.tarball_tests.special_cleanup')
         tests.append('osgtest.tests.special_cleanup') # always safe
     
 # ------------------------------------------------------------------------------
