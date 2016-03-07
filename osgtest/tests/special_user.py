@@ -1,11 +1,12 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
 from cagen import CA, certificate_info
 import pwd
-import unittest
 
-class TestUser(unittest.TestCase):
+
+class TestUser(osgunittest.OSGTestCase):
 
     def test_01_add_user(self):
         core.state['general.user_added'] = False

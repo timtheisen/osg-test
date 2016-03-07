@@ -8,7 +8,6 @@ import re
 import signal
 import sys
 import traceback
-import unittest
 from getpass import getpass
 
 from osgtest.library import core
@@ -26,6 +25,7 @@ def parse_command_line():
                 "dumpfile": None,
                 "dumpout": False,
                 "extrarepos": [],
+                "exitonfail": False,
                 "hostcert": False,
                 "packages": [],
                 "password": 'vdttest',
@@ -101,6 +101,9 @@ def read_args():
     
     p.add_option('--dump-file', '--df', action='store', type='string', dest='dumpfile', metavar='DUMPFILE',
                       help='Store all command output into DUMPFILE')
+
+    p.add_option('--exit-on-fail', '-e', action='store_true', dest='exitonfail',
+                 help='Stop tests on first failure and output the results')
 
     p.add_option('-i', '--install', action='append', dest='packages',
                       metavar='PACKAGE',
@@ -184,9 +187,9 @@ def run_tests(a_argv):
         verb = 2
     else:
         verb = 1
-    test_suite = unittest.defaultTestLoader.loadTestsFromNames(a_argv)
+    test_suite = osgunittest.OSGTestLoader().loadTestsFromNames(a_argv)
     runner = osgunittest.OSGTextTestRunner(verbosity=verb)
-    runner.run(test_suite)
+    runner.run(test_suite, exit_on_fail=core.options.exitonfail)
 
 def wrap_up():
     core.end_log()
@@ -201,14 +204,10 @@ def signal_alarm_handler(signal_number, stack_frame):
         core.log_message('\nCaught alarm:\n' + ''.join(traceback.format_stack(None)))
     wrap_up()
 
-    # Use a hard abort here, because sys.exit() just raises an exception, which
-    # is caught by the runner, which then cheerfully continues running all tests
+    # Use a hard abort here, because sys.exit() just raises an exception that's
+    # caught by the runner, which cheerfully continues running all tests
     os.abort()
 
-def add_cleanup(tests):
-    if not core.options.skip_cleanup:
-        tests.append('osgtest.tests.special_cleanup') # always safe
-    
 # ------------------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------------------
@@ -228,7 +227,8 @@ if __name__ == '__main__':
             run_tests(tests)
         except KeyboardInterrupt:
             tests = []
-            add_cleanup(tests)
+            if not core.options.skip_cleanup:
+                tests.append('osgtest.tests.special_cleanup') # always safe
             run_tests(tests)
         signal.alarm(0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)

@@ -12,12 +12,9 @@ standard Python unittest library have been made:
 # pylint: disable=R0201,C0103
 import sys
 import unittest
-import traceback
 import time
 
-
-
-# Define the classes we need to handle the two new types of test results: ok 
+# Define the classes we need to handle the two new types of test results: ok
 # skip, and bad skip.
 
 class OkSkipException(AssertionError):
@@ -45,21 +42,21 @@ class OSGTestCase(unittest.TestCase):
 
     See documentation for unittest.TestCase for usage.
     """
-    
+
     # Needed to copy this from unittest so the private variable would work.
     def __init__(self, methodName='runTest'):
         """
         Create an instance of the class that will use the named test
         method when executed. Raises a ValueError if the instance does
         not have a method with the specified name.
-        
+
         Usually, the user does not have to call this directly, but it will
         be called by unittest's test discovery functions instead.
         """
         unittest.TestCase.__init__(self, methodName)
         # in py2.4, testMethodName is a private variable, which means it has
         # a mangled version. Make a copy so methods we override can use it.
-        
+
         # pylint:disable=E1101
         # Quiet error about missing member--I'm checking explicitly.
         if hasattr(self, '_TestCase__testMethodName'):
@@ -68,26 +65,26 @@ class OSGTestCase(unittest.TestCase):
     def skip_ok(self, message=None):
         "Skip (ok) unconditionally"
         raise OkSkipException, message
-    
+
     def skip_ok_if(self, expr, message=None):
         "Skip (ok) if the expression is true"
         if expr:
             raise OkSkipException, message
-    
+
     def skip_ok_unless(self, expr, message=None):
         "Skip (ok) if the expression is false"
         if not expr:
             raise OkSkipException, message
-    
+
     def skip_bad(self, message=None):
         "Skip (bad) unconditionally"
         raise BadSkipException, message
-    
+
     def skip_bad_if(self, expr, message=None):
         "Skip (bad) if the expression is true"
         if expr:
             raise BadSkipException, message
-    
+
     def skip_bad_unless(self, expr, message=None):
         "Skip (bad) if the expression is false"
         if not expr:
@@ -108,12 +105,12 @@ class OSGTestCase(unittest.TestCase):
     # since the original TestResult object does not. If it does not, an
     # okSkip is considered a success, and a badSkip is considered a failure
     # (or an error if it happens in setUp).
-    def run(self, result=None):
+    def run(self, result=None, **kwargs):
         """
         Run a single test method. Catch any Exceptions the method raises
         and count them as Errors, Failures, OkSkips, or BadSkips depending
         on the exception class.
-        
+
         Results are counted in a TestResult instance, 'result'. If result
         contains support for skips (which an OSGTestResult instance does),
         then OkSkipExceptions and BadSkipExceptions are counted appropriately.
@@ -121,7 +118,10 @@ class OSGTestCase(unittest.TestCase):
         BadSkipException is counted as an Error or a Failure depending on when
         it occurs.
         """
-        
+        exit_on_fail = False
+        if 'exit_on_fail' in kwargs:
+            exit_on_fail = kwargs['exit_on_fail']
+
         if result is None:
             result = self.defaultTestResult()
         result.startTest(self)
@@ -142,11 +142,15 @@ class OSGTestCase(unittest.TestCase):
                     result.addBadSkip(self, sys.exc_info())
                 else:
                     result.addError(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
                 return
             except KeyboardInterrupt:
                 raise
             except:
                 result.addError(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
                 return
 
             ok = False
@@ -167,12 +171,18 @@ class OSGTestCase(unittest.TestCase):
                     result.addBadSkip(self, sys.exc_info())
                 else:
                     result.addFailure(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
             except self.failureException:
                 result.addFailure(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
             except KeyboardInterrupt:
                 raise
             except:
                 result.addError(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
 
             try:
                 self.tearDown()
@@ -180,6 +190,8 @@ class OSGTestCase(unittest.TestCase):
                 raise
             except:
                 result.addError(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
                 ok = False
             if ok:
                 result.addSuccess(self)
@@ -190,7 +202,7 @@ class OSGTestCase(unittest.TestCase):
 class OSGTestResult(unittest.TestResult):
     """
     Extended holder of test result information.
-    
+
     Like unittest.TestResult, it does not need to be manipulated by test
     writers. In addition to what's in TestResult, each instance also holds
     collections of skipped tests, separated according to whether or not the
@@ -198,26 +210,26 @@ class OSGTestResult(unittest.TestResult):
     where exceptioninfo is a formatted traceback, and testcase is the actual
     OSGTestCase object.
     """
-    
+
     def __init__(self):
         unittest.TestResult.__init__(self)
         self.okSkips = []
         self.badSkips = []
-    
+
     def addOkSkip(self, test, err):
         """Called when an ok skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
         self.okSkips.append((test, self.skip_info_to_string(err, test)))
-    
+
     def addBadSkip(self, test, err):
         """Called when a bad skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
         self.badSkips.append((test, self.skip_info_to_string(err, test)))
-    
+
     def skip_info_to_string(self, err, test):
         """Get the string description out of an Ok/BadSkipException.
         Pass it up to the parent if the exception is not one of those.
         """
-        exctype, value, tb = err
-        
+        exctype, value, _ = err
+
         if exctype is OkSkipException or exctype is BadSkipException:
             return str(value)
             # TODO Need some way to print out the line that caused the skip
@@ -227,11 +239,11 @@ class OSGTestResult(unittest.TestResult):
             #return traceback.format_tb(tb)[-1] + ' ' + ''.join(traceback.format_exception_only(exctype, value))
         else:
             return self._exc_info_to_string(err, test)
-    
+
     def wasSuccessful(self):
         """Tells whether or not this result was a success, considering bad skips as well."""
         return len(self.failures) == len(self.errors) == len(self.badSkips) == 0
-    
+
     def wasPerfect(self):
         """Tells whether or not this result was perfect, i.e. successful and without any skips."""
         return self.wasSuccessful() and len(self.okSkips) == 0
@@ -251,15 +263,15 @@ class OSGTestResult(unittest.TestResult):
 class OSGTextTestResult(OSGTestResult):
     """
     A test result that formats results and prints them to a stream.
-    
+
     Used by OSGTextTestRunner.
     This is copied from unittest._TextTestResult instead of subclassing it
     since that's a private interface (and is not called the same thing in py2.6).
-    
+
     The user should not have to instantiate this directly; an instance will be
     created by OSGTextTestRunner.
     """
-    
+
     separator1 = '=' * 70
     separator2 = '-' * 70
 
@@ -319,7 +331,7 @@ class OSGTextTestResult(OSGTestResult):
             self.stream.writeln("%s: %s" % (flavour, self.getDescription(test)))
             self.stream.writeln(self.separator2)
             self.stream.writeln(str(err))
-    
+
     def printSkipList(self, flavour, skips):
         """Print all of one flavor of skip to the stream."""
         if not skips:
@@ -331,14 +343,14 @@ class OSGTextTestResult(OSGTestResult):
         for test, skip in skips:
             self.stream.writeln("%s %s" % (self.getDescription(test), str(skip)))
         self.stream.writeln("")
-         
+
     def addOkSkip(self, test, reason):
         OSGTestResult.addOkSkip(self, test, reason)
         if self.showAll:
             self.stream.writeln("okskip")
         elif self.dots:
             self.stream.write("s")
-    
+
     def addBadSkip(self, test, reason):
         OSGTestResult.addBadSkip(self, test, reason)
         if self.showAll:
@@ -349,15 +361,15 @@ class OSGTextTestResult(OSGTestResult):
 
 class OSGTextTestRunner(unittest.TextTestRunner):
     """Extended unittest.TextTestRunner with support for okSkips / badSkips."""
-    
+
     def _makeResult(self):
         return OSGTextTestResult(self.stream, self.descriptions, self.verbosity)
-    
-    def run(self, test):
+
+    def run(self, test, **kwargs):
         """
         Run an actual set of tests, time the run, collect and
         summarize the results.
-        
+
         This is an extended version of unittest.TextTestRunner.run() which
         displays okSkips and badSkips as well.
         """
@@ -365,7 +377,7 @@ class OSGTextTestRunner(unittest.TextTestRunner):
         # ^ make 'result' here so we know its an OSGTextTestResult and not a
         #   regular TextTestResult.
         startTime = time.time()
-        test(result)
+        test(result, **kwargs)
         stopTime = time.time()
         timeTaken = stopTime - startTime
         result.printErrors()
@@ -394,9 +406,21 @@ class OSGTextTestRunner(unittest.TextTestRunner):
             self.stream.write("\n")
         return result
 
-
-# For consistency & future expansion.
 class OSGTestSuite(unittest.TestSuite):
-    pass
-    
+    """
+    An extended version of unittest.TestSuite that passes arbitrary keyword args
+    onto the test cases
+    """
+    def run(self, result, **kwargs):
+        for test in self._tests:
+            if result.shouldStop:
+                break
+            test(result, **kwargs)
+        return result
 
+class OSGTestLoader(unittest.TestLoader):
+    """
+    An extended version of unittest.TestSuite that creates OSG Test Suites
+    when loading tests
+    """
+    suiteClass = OSGTestSuite
