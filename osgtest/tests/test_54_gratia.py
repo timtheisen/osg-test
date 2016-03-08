@@ -146,7 +146,7 @@ class TestGratia(osgunittest.OSGTestCase):
 
 
         record_re = '.*' + 'RecordProcessor: 0: ProbeDetails' + '.*' + '/' + '.*' + ProbePattern + '.*' + 'saved'
-        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], record_re, 120.0)
+        line, gap = core.monitor_file(core.config['gratia.log.file'], core.state['gratia.log.stat'], record_re, 600.0)
         if line is not None:
             core.log_message('Gratia processed probe data - Time taken is %.1f seconds' % gap)
             core.log_message('Gratia processed probe data - Line is ' + str(line))
