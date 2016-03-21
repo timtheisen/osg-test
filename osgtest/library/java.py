@@ -34,14 +34,14 @@ def select_ver(java_type, version):
 def get_ver(java_type):
     """Find version of java that is currently selected in the alternatives"""
     current_java = _run_alternatives(java_type, '\n', 'find java version for selection')
-    return re.search(r'\+.*\/(.*-\d\.\d\.\d[^\/]*)\/', current_java, re.MULTILINE).group(1)
+    return re.search(r'\+.*\/(.*-\d+\.\d+\.\d+[^\/]*)\/', current_java, re.MULTILINE).group(1)
 
-def verify_ver(java_type, input_version):
+def verify_ver(java_type, expected_version):
     """Verify that the selected version of java is as expected."""
     command = (java_type, '-version')
     stdout, _, _ = core.check_system(command, 'verify %s version' % java_type)
     try:
-        runtime_version = re.match('java.*(\d\.\d\.\d)', stdout).group(1)
+        runtime_version = re.search('(\d+\.\d+\.\d+)', stdout.split('\n')[0]).group(1)
     except AttributeError:
         return False
-    return runtime_version in input_version
+    return runtime_version in expected_version
