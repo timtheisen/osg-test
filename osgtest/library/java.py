@@ -41,7 +41,7 @@ def verify_ver(java_type, expected_version):
     command = (java_type, '-version')
     stdout, _, _ = core.check_system(command, 'verify %s version' % java_type)
     try:
-        runtime_version = re.search('(\d+\.\d+\.\d+)', stdout.split('\n')[0]).group(1)
+        runtime_version = re.search('version.*(\d+\.\d+\.\d+)', stdout.split('\n')[0]).group(1)
     except AttributeError:
         return False
     return runtime_version in expected_version
