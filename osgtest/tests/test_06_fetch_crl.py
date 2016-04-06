@@ -16,10 +16,17 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         '3': (
             'CRL has lastUpdate time in the future',
             'CRL has nextUpdate time in the past',
+            # VERBOSE(0) BrGrid/0: downloaded CRL lastUpdate could not be derived
             'CRL lastUpdate could not be derived',
+            # ERROR CRL verification failed for BrGrid/0 (BrGrid)
             'CRL verification failed for',
+            # VERBOSE(0) BrGrid/0: 0
+            r': \d+$',
+            # VERBOSE(0) Download error http://lacgridca.ic.uff.br/crl/cacrl.crl: timed out after 120s
             'Download error',
+            # ERROR verify called on empty data blob
             'verify called on empty data blob',
+            # VERBOSE(0) SDG-G2/0: CRL signature failed
             'CRL signature failed'
         )
     }
@@ -30,7 +37,7 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         for line in fetch_crl_output.rstrip('\n').split('\n'):
             line_ok = False
             for error_string in whitelist:
-                if error_string in line:
+                if re.search(error_string, line):
                     line_ok = True
                     break
             if not line_ok:
