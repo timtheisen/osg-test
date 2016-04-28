@@ -138,6 +138,14 @@ class TestCleanup(osgunittest.OSGTestCase):
                 core.log_message('No new RPMs')
                 return
 
+    def test_04_selinux(self):
+        if not core.options.selinux:
+            return
+
+        self.skip_bad_unless(core.rpm_is_installed('libselinux-utils'), 'missing SELinux utils')
+        if core.state['selinux.mode'] == 'permissive':
+            core.check_system(('setenforce', '0'), 'set selinux mode to enforcing')
+
     def test_04_restore_orphaned_packages(self):
         # We didn't ask to install anything and thus didn't remove anything
         if len(core.options.packages) == 0:

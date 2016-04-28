@@ -30,6 +30,7 @@ def parse_command_line():
                 "packages": [],
                 "password": 'vdttest',
                 "printtest": True,
+                "selinux": False,
                 "securepass": False,
                 "skip_cleanup": False,
                 "skiptests": False,
@@ -129,6 +130,9 @@ def read_args():
     p.add_option('-s', '--securepass', action='store_true', dest='securepass',
                  help='Prompt for the password instead of specifying it in the command line.')
 
+    p.add_option('--selinux', action='store_true', dest='selinux',
+                 help='Set SELinux to \'enforcing\' mode')
+
     p.add_option('--update-release', action='store', type='string', dest='updaterelease', metavar='RELEASE',
                       help='osg RELEASE version to use when updating packages '
                       'specified with the -i flag.')
@@ -172,8 +176,11 @@ def discover_tests():
     test_files = ['osgtest.tests.' + test.strip() for test in test_sequence.readlines()]
     test_sequence.close()
     args = []
-    args.append('osgtest.tests.special_certs')
-    args.append('osgtest.tests.special_user') # always safe
+    # always safe
+    for test in ('osgtest.tests.special_certs',
+                 'osgtest.tests.special_user',
+                 'osgtest.tests.special_selinux'):
+        args.append(test)
     if len(core.options.packages) > 0:
         args.append('osgtest.tests.special_install')
     if not core.options.skiptests:
