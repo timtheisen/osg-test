@@ -69,6 +69,7 @@ def start_log():
     _log.write('  - No cleanup: %s\n' % str(options.skip_cleanup))
     _log.write('  - Extra repos: %s\n' % ', '.join(options.extrarepos))
     _log.write('  - Print test names: %s\n' % str(options.printtest))
+    _log.write('  - Enable SELinux: %s\n' % str(options.selinux))
     _log.write('  - Skip tests: %s\n' % str(options.skiptests))
     _log.write('  - Test user: %s\n' % options.username)
     _log.write('  - Timeout: %s\n' % str(options.timeout))
