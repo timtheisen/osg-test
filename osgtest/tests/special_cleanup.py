@@ -138,7 +138,15 @@ class TestCleanup(osgunittest.OSGTestCase):
                 core.log_message('No new RPMs')
                 return
 
-    def test_04_restore_orphaned_packages(self):
+    def test_04_selinux(self):
+        if not core.options.selinux:
+            return
+
+        self.skip_bad_unless(core.rpm_is_installed('libselinux-utils'), 'missing SELinux utils')
+        if core.state['selinux.mode'] == 'permissive':
+            core.check_system(('setenforce', '0'), 'set selinux mode to enforcing')
+
+    def test_05_restore_orphaned_packages(self):
         # We didn't ask to install anything and thus didn't remove anything
         if len(core.options.packages) == 0:
             return
@@ -154,12 +162,12 @@ class TestCleanup(osgunittest.OSGTestCase):
             if fail_msg:
                 self.fail(fail_msg)
 
-    def test_05_restore_mapfile(self):
+    def test_06_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
             files.restore(core.config['system.mapfile'], 'user')
 
 
-    def test_06_cleanup_test_certs(self):
+    def test_07_cleanup_test_certs(self):
         certs_dir = '/etc/grid-security/certificates'
         if core.state['certs.ca_created']:
             files.remove(os.path.join(certs_dir, 'OSG-Test-CA.*'))
@@ -188,7 +196,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             files.remove(core.config['certs.hostcert'])
             files.remove(core.config['certs.hostkey'])
 
-    def test_07_remove_test_user(self):
+    def test_08_remove_test_user(self):
         if not core.state['general.user_added']:
             core.log_message('Did not add user')
             return
@@ -221,7 +229,7 @@ class TestCleanup(osgunittest.OSGTestCase):
 
     # The backups test should always be last, in case any prior tests restore
     # files from backup.
-    def test_08_backups(self):
+    def test_09_backups(self):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''

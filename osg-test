@@ -30,6 +30,7 @@ def parse_command_line():
                 "packages": [],
                 "password": 'vdttest',
                 "printtest": True,
+                "selinux": False,
                 "securepass": False,
                 "skip_cleanup": False,
                 "skiptests": False,
@@ -38,35 +39,34 @@ def parse_command_line():
                 "updaterepos": [],
                 "username": 'vdttest',
                 "verbose": False,
-                "manualrun": False
-                }
+                "manualrun": False}
 
     # First pass through args to get config file
     config_option = read_args()
     (opts, args) = config_option.parse_args()
-        
+
     if len(args) != 0:
         config_option.error('unknown argument(s): %s' % ' '.join(args))
-    
+
     # Read the config file
     if opts.config:
         config_file = ConfigParser.RawConfigParser()
         try:
             config_file.read(opts.config)
-        except ConfigParser.ParsingError, e:
-            sys.stderr.write("Error while parsing: %s\n%s\n" % (opts.config, e))
+        except ConfigParser.ParsingError, exc:
+            sys.stderr.write("Error while parsing: %s\n%s\n" % (opts.config, exc))
             sys.stderr.write("Lines with options should not start with a space\n")
             sys.exit(1)
-            
+
         # Get union of config file values and defaults with the config values overriding any defaults
-        for key,value in config_file.items('Config'):
-            if key in defaults: 
+        for key, value in config_file.items('Config'):
+            if key in defaults:
                 if key == 'packages':
-                    defaults[key] = re.split(',\s*', value)
+                    defaults[key] = re.split(r',\s*', value)
                 elif key == 'extrarepos':
-                    defaults[key] = re.split(',\s*', value)
+                    defaults[key] = re.split(r',\s*', value)
                 elif key == 'updaterepos':
-                    defaults[key] = re.split(',\s*', value)
+                    defaults[key] = re.split(r',\s*', value)
                 elif key == 'timeout':
                     defaults[key] = config_file.getint('Config', key)
                 elif defaults[key] is False: # Grab values as booleans if we expect them to be
@@ -75,87 +75,90 @@ def parse_command_line():
                     defaults[key] = value
             else:
                 defaults[key] = value
-        
+
     # Read the rest of the command line options
     parser = read_args()
     parser.set_defaults(**defaults)
     (core.options, args) = parser.parse_args()
-    
+
     if core.options.updaterepos and not core.options.packages:
         parser.error('The -g (--update-repo) option requires -i (--install).')
 
 def read_args():
-    script_description='''Tests an OSG Software RPM installation.'''
+    script_description = '''Tests an OSG Software RPM installation.'''
     p = OptionParser(usage='usage: %prog [options]',
-                          version='%prog ##VERSION##',
-                          description=script_description)
+                     version='%prog ##VERSION##',
+                     description=script_description)
 
     p.add_option('-a', '--add-user', action='store_true', dest='adduser',
-                      help='Add and configure the test user account (see -u below)')
+                 help='Add and configure the test user account (see -u below)')
 
     p.add_option('-c', '--config', action='store', type='string', dest='config',
-                       help='Configuration file to use that specifies command-line options')
+                 help='Configuration file to use that specifies command-line options')
 
     p.add_option('-d', '--dump-output', action='store_true',
-                      dest='dumpout', help='After test output, print all command output')
-    
+                 dest='dumpout', help='After test output, print all command output')
+
     p.add_option('--dump-file', '--df', action='store', type='string', dest='dumpfile', metavar='DUMPFILE',
-                      help='Store all command output into DUMPFILE')
+                 help='Store all command output into DUMPFILE')
 
     p.add_option('--exit-on-fail', '-e', action='store_true', dest='exitonfail',
                  help='Stop tests on first failure and output the results')
 
     p.add_option('-i', '--install', action='append', dest='packages',
-                      metavar='PACKAGE',
-                      help='Install PACKAGE with yum before running tests')
+                 metavar='PACKAGE',
+                 help='Install PACKAGE with yum before running tests')
 
-    p.add_option('-g','--update-repo', action='append', type='string', dest='updaterepos', metavar='REPO',
-                      help='REPO to use when updating packages '
-                      'specified with the -i flag.')
+    p.add_option('-g', '--update-repo', action='append', type='string', dest='updaterepos', metavar='REPO',
+                 help='REPO to use when updating packages '
+                 'specified with the -i flag.')
 
     p.add_option('-m', '--manual-run', action='store_true', dest='manualrun',
-                      help='Speeds up osg-test in the case where it is '
-                      'run by hand. May not be suitable when running '
-                      'multiple instances of osg-test at once.')
-    
+                 help='Speeds up osg-test in the case where it is '
+                 'run by hand. May not be suitable when running '
+                 'multiple instances of osg-test at once.')
+
     p.add_option('-n', '--no-cleanup', action='store_true', dest='skip_cleanup',
-                       help='Skip clean-up steps after all tests are done')
+                 help='Skip clean-up steps after all tests are done')
 
     p.add_option('-p', '--password', action='store', type='string',
-                      dest='password',
-                      help='Password for the grid certificate of the test user '
-                      '(see -u below)')
+                 dest='password',
+                 help='Password for the grid certificate of the test user '
+                 '(see -u below)')
 
     p.add_option('-s', '--securepass', action='store_true', dest='securepass',
                  help='Prompt for the password instead of specifying it in the command line.')
 
+    p.add_option('--selinux', action='store_true', dest='selinux',
+                 help='Set SELinux to \'enforcing\' mode')
+
     p.add_option('--update-release', action='store', type='string', dest='updaterelease', metavar='RELEASE',
-                      help='osg RELEASE version to use when updating packages '
-                      'specified with the -i flag.')
+                 help='osg RELEASE version to use when updating packages '
+                 'specified with the -i flag.')
 
     p.add_option('-r', '--extra-repo', action='append', type='string',
-                      dest='extrarepos', metavar='REPO',
-                      help='Extra REPO (in addition to production) to use'
-                      ' when installing packages')
+                 dest='extrarepos', metavar='REPO',
+                 help='Extra REPO (in addition to production) to use'
+                 ' when installing packages')
 
     p.add_option('--no-print-test-name', action='store_false', dest='printtest',
-                       help='Do not print test name before command output')
+                 help='Do not print test name before command output')
 
     p.add_option('-T', '--skip', '--skip-tests', '--no-tests', '--notests',
-                      action='store_true', dest='skiptests',
-                      help='Do not run the functional tests; ' +
-                      'can enable install and cleanup separately')
+                 action='store_true', dest='skiptests',
+                 help='Do not run the functional tests; ' +
+                 'can enable install and cleanup separately')
 
     p.add_option('-u', '--test-user', action='store', type='string',
-                      dest='username', metavar='NAME',
-                      help='The NAME of an unprivileged user account that can '
-                      'be used to run (some) test commands (default: vdttest)')
+                 dest='username', metavar='NAME',
+                 help='The NAME of an unprivileged user account that can '
+                 'be used to run (some) test commands (default: vdttest)')
 
     p.add_option('-v', '--verbose', action='store_true', dest='verbose',
-                      help='Increase quantity of output')
+                 help='Increase quantity of output')
 
     p.add_option('--hostcert', action='store_true', dest='hostcert',
-                      help='Create host cert')
+                 help='Create host cert')
 
     return p
 
@@ -172,8 +175,11 @@ def discover_tests():
     test_files = ['osgtest.tests.' + test.strip() for test in test_sequence.readlines()]
     test_sequence.close()
     args = []
-    args.append('osgtest.tests.special_certs')
-    args.append('osgtest.tests.special_user') # always safe
+    # always safe
+    for test in ('osgtest.tests.special_certs',
+                 'osgtest.tests.special_user',
+                 'osgtest.tests.special_selinux'):
+        args.append(test)
     if len(core.options.packages) > 0:
         args.append('osgtest.tests.special_install')
     if not core.options.skiptests:
@@ -222,18 +228,18 @@ if __name__ == '__main__':
         sys.exit(1)
     get_password()
     core.start_log()
-    tests = discover_tests()
+    TESTS = discover_tests()
     try:
-        if len(tests) > 1:
+        if len(TESTS) > 1:
             signal.signal(signal.SIGALRM, signal_alarm_handler)
             signal.alarm(core.options.timeout)
             try:
-                run_tests(tests)
+                run_tests(TESTS)
             except KeyboardInterrupt:
-                tests = []
+                TESTS = []
                 if not core.options.skip_cleanup:
-                    tests.append('osgtest.tests.special_cleanup') # always safe
-                run_tests(tests)
+                    TESTS.append('osgtest.tests.special_cleanup') # always safe
+                run_tests(TESTS)
             signal.alarm(0)
             signal.signal(signal.SIGALRM, signal.SIG_DFL)
         else:
