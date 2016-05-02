@@ -35,12 +35,12 @@ test_49_jobs
 test_50_voms
 test_51_edgmkgridmap
 test_52_bestman
+test_58_gfal2util
 test_53_gums
 test_54_gratia
 test_55_condorce
 test_56_lcgutil
 test_57_osg_info_services
-test_58_gfal2util
 test_75_gums
 test_76_tomcat
 test_77_myproxy
