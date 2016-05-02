@@ -197,8 +197,10 @@ def run_tests(a_argv):
     runner = osgunittest.OSGTextTestRunner(verbosity=verb)
     results = runner.run(test_suite, exit_on_fail=core.options.exitonfail)
 
-    if not results.wasSuccessful():
-        sys.exit(1)
+    if results.wasSuccessful():
+        return 0
+    else:
+        return 1
 
 def wrap_up():
     core.end_log()
@@ -229,21 +231,20 @@ if __name__ == '__main__':
     get_password()
     core.start_log()
     TESTS = discover_tests()
-    try:
-        if len(TESTS) > 1:
-            signal.signal(signal.SIGALRM, signal_alarm_handler)
-            signal.alarm(core.options.timeout)
-            try:
-                run_tests(TESTS)
-            except KeyboardInterrupt:
-                TESTS = []
-                if not core.options.skip_cleanup:
-                    TESTS.append('osgtest.tests.special_cleanup') # always safe
-                run_tests(TESTS)
-            signal.alarm(0)
-            signal.signal(signal.SIGALRM, signal.SIG_DFL)
-        else:
-            print 'No tests to run.'
-    except SystemExit:
-        wrap_up()
-        raise
+    if len(TESTS) > 1:
+        signal.signal(signal.SIGALRM, signal_alarm_handler)
+        signal.alarm(core.options.timeout)
+        try:
+            EXIT_CODE = run_tests(TESTS)
+        except KeyboardInterrupt:
+            TESTS = []
+            EXIT_CODE = 130
+            if not core.options.skip_cleanup:
+                TESTS.append('osgtest.tests.special_cleanup') # always safe
+            run_tests(TESTS)
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)
+    else:
+        print 'No tests to run.'
+    wrap_up()
+    sys.exit(EXIT_CODE)
