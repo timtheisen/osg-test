@@ -196,11 +196,7 @@ def run_tests(a_argv):
     test_suite = osgunittest.OSGTestLoader().loadTestsFromNames(a_argv)
     runner = osgunittest.OSGTextTestRunner(verbosity=verb)
     results = runner.run(test_suite, exit_on_fail=core.options.exitonfail)
-
-    if results.wasSuccessful():
-        return 0
-    else:
-        return 1
+    return results
 
 def wrap_up():
     core.end_log()
@@ -235,7 +231,10 @@ if __name__ == '__main__':
         signal.signal(signal.SIGALRM, signal_alarm_handler)
         signal.alarm(core.options.timeout)
         try:
-            EXIT_CODE = run_tests(TESTS)
+            if run_tests(TESTS).wasSuccessful():
+                EXIT_CODE = 0
+            else:
+                EXIT_CODE = 1
         except KeyboardInterrupt:
             TESTS = []
             EXIT_CODE = 130
