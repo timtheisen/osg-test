@@ -144,7 +144,7 @@ class TestCleanup(osgunittest.OSGTestCase):
 
         self.skip_bad_unless(core.rpm_is_installed('libselinux-utils'), 'missing SELinux utils')
         if core.state['selinux.mode'] == 'permissive':
-            core.check_system(('setenforce', '0'), 'set selinux mode to enforcing')
+            core.check_system(('setenforce', '0'), 'set selinux mode to permissive')
 
     def test_05_restore_orphaned_packages(self):
         # We didn't ask to install anything and thus didn't remove anything
