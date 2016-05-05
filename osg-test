@@ -174,12 +174,10 @@ def discover_tests():
     test_sequence = open('/usr/share/osg-test/test_sequence')
     test_files = ['osgtest.tests.' + test.strip() for test in test_sequence.readlines()]
     test_sequence.close()
-    args = []
-    # always safe
-    for test in ('osgtest.tests.special_certs',
-                 'osgtest.tests.special_user',
-                 'osgtest.tests.special_selinux'):
-        args.append(test)
+    # prepend tests that are always safe
+    args = ['osgtest.tests.special_certs',
+            'osgtest.tests.special_user',
+            'osgtest.tests.special_selinux']
     if len(core.options.packages) > 0:
         args.append('osgtest.tests.special_install')
     if not core.options.skiptests:
