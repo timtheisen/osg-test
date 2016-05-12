@@ -219,9 +219,16 @@ def signal_alarm_handler(signal_number, stack_frame):
 
 if __name__ == '__main__':
     parse_command_line()
+
     if os.getuid() != 0:
-        print 'Must be run as root'
-        sys.exit(1)
+        sys.exit('Must be run as root')
+
+    # Check for osg-ca-generator, which may have been forgotten in a source install
+    try:
+        __import__('cagen')
+    except ImportError:
+        sys.exit("Cannot find 'cagen' library. Please install osg-ca-generator")
+
     get_password()
     core.start_log()
     TESTS = discover_tests()
