@@ -224,7 +224,10 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False, t
     status, stdout, stderr = system(command, user, stdin, shell=shell,
                                     timeout=timeout, timeout_signal=timeout_signal)
     fail = diagnose(message, command, status, stdout, stderr)
-    assert status == exit, fail
+    if timeout and status == -1:
+        raise osgunittest.TimeoutException(fail)
+    else:
+        assert status == exit, fail
     return stdout, stderr, fail
 
 
