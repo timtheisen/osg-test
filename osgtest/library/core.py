@@ -12,6 +12,7 @@ import tempfile
 import time
 import traceback
 import socket
+import signal
 
 from osgtest.library import osgunittest
 
@@ -471,14 +472,14 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         if watcher_pid == 0:
             time.sleep(timeout)
             os.killpg(p.pid, timeout_signal)
-            sys.exit()
+            os._exit(0)
 
     (stdout, stderr) = p.communicate(a_input)
 
     if timeout is not None:
         if p.returncode >= 0:
             # kill watcher if child exited normally before timeout
-            os.kill(watcher_pid)
+            os.kill(watcher_pid, signal.SIGKILL)
         else:
             # return -1 for timeout
             p.returncode = -1
