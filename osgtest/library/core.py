@@ -390,7 +390,10 @@ def diagnose(message, command, status, stdout, stderr):
     """Constructs a detailed failure message based on arguments."""
     result = message + '\n'
     result += 'COMMAND: %s\n' % ' '.join(command)
-    result += 'EXIT STATUS: %d\n' % (status)
+    if status == -1:
+        result += 'EXIT STATUS: %d (command timed out)\n' % status
+    else:
+        result += 'EXIT STATUS: %d\n' % status
     result += 'STANDARD OUTPUT:'
     if (stdout is None) or (len(stdout.rstrip('\n')) == 0):
         result += ' [none]\n'
