@@ -262,13 +262,15 @@ class TestRSV(osgunittest.OSGTestCase):
         return
 
     def test_051_osg_version_metric(self):
-        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
+        core.skip_ok_unless_installed('rsv')
+        core.skip_ok_unless_one_installed('htcondor-ce', 'globus-gatekeeper')
 
         self.run_metric('org.osg.general.osg-version')
         return
 
     def test_052_vo_supported_metric(self):
-        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper', 'gums-client')
+        core.skip_ok_unless_installed('rsv', 'gums-client')
+        core.skip_ok_unless_one_installed('htcondor-ce', 'globus-gatekeeper')
         # We ok skip if gums-client isn't installed since it's responsible
         # for creating /var/lib/osg/supported-vo-list in the tests.
         # edg-mkgridmap is also capable of creating the necessary file but
@@ -279,7 +281,8 @@ class TestRSV(osgunittest.OSGTestCase):
 
     # Print Java version info, mostly useful for debugging test runs.
     def test_053_java_version_metric(self):
-        core.skip_ok_unless_installed('rsv', 'globus-gatekeeper')
+        core.skip_ok_unless_installed('rsv')
+        core.skip_ok_unless_one_installed('htcondor-ce', 'globus-gatekeeper')
         self.run_metric('org.osg.general.java-version')
         return
 
