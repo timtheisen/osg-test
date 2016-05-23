@@ -10,11 +10,6 @@ import time
 
 import osgtest.library.core as core
 
-def clean_yum():
-    pre = ('yum', '--enablerepo=*', 'clean')
-    core.system(pre + ('all',))
-    core.system(pre + ('expire-cache',))
-
 def retry_command(command, timeout_seconds=3600):
     """Run a Yum command repeatedly until success, hard failure, or timeout.
 
@@ -39,7 +34,6 @@ def retry_command(command, timeout_seconds=3600):
             fail_msg += "Retries terminated after timeout period"
             break
 
-        clean_yum()
         status, stdout, stderr = core.system(command)
 
         # Deal with success
@@ -49,6 +43,10 @@ def retry_command(command, timeout_seconds=3600):
         # Deal with failures that can be retried
         elif yum_failure_can_be_retried(stdout):
             time.sleep(30)
+            # Perform 'yum clean' commands that we recommend to our users
+            for subcmd in ('all', 'expire-cache'):
+                cmd = ('yum', '--enablerepo=*', 'clean', subcmd)
+                core.system(cmd)
             core.log_message("Retrying command")
             continue
 
