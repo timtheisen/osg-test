@@ -27,7 +27,13 @@ class TestGUMS(osgunittest.OSGTestCase):
         os.putenv('X509_USER_CERT', '/etc/grid-security/hostcert.pem')
         os.putenv('X509_USER_KEY', '/etc/grid-security/hostkey.pem')
 
-    def test_02_manual_group_add(self):
+    def test_02_server_version(self):
+        core.skip_ok_unless_installed(*self.required_rpms)
+
+        stdout = core.check_system(('gums-host', 'serverVersion'), 'Query GUMS server version')[0]
+        self.assert_("GUMS server version" in stdout, "expected string missing from serverVersion output")
+
+    def test_03_manual_group_add(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         core.state['gums.added_user'] = False
 
@@ -42,7 +48,7 @@ class TestGUMS(osgunittest.OSGTestCase):
         core.check_system(command, 'Add VDT DN to manual group')
         core.state['gums.added_user'] = True
 
-    def test_03_map_user(self):
+    def test_04_map_user(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manual user group')
 
@@ -57,7 +63,7 @@ class TestGUMS(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'Map GUMS user')[0]
         self.assert_(core.options.username in stdout, 'expected string missing from mapUser output')
 
-    def test_04_generate_mapfile(self):
+    def test_05_generate_mapfile(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_bad_unless(core.state['gums.added_user'] == True, 'User not added to manual user group')
 
@@ -68,7 +74,7 @@ class TestGUMS(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'generate grid mapfile')[0]
         self.assert_(core.config['user.cert_subject'] in stdout, 'user DN missing from generated mapfile')
 
-    def test_05_unset_x509_env(self):
+    def test_06_unset_x509_env(self):
         core.skip_ok_unless_installed(*self.required_rpms)
 
         try:
