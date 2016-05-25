@@ -17,7 +17,7 @@ class TestSelinux(osgunittest.OSGTestCase):
         try:
             core.state['selinux.mode'] = re.search(r'Current mode:\s*(\w*)', stdout, re.MULTILINE).group(1)
             if core.state['selinux.mode'] == 'permissive':
-                core.check_system(('setenforce', '1'), 'set selinux mode to enforcing')
+                core.check_system(('setenforce', 'Enforcing'), 'set selinux mode to enforcing')
         except AttributeError:
             # If 'Current mode' doesn't appear, SELinux is probably in disabled mode
             # and we cannot enable it via command-line utilities
