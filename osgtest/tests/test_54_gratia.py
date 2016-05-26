@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import fnmatch
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
@@ -185,6 +184,7 @@ class TestGratia(osgunittest.OSGTestCase):
     #This test tries to launch a gratia admin webpage
     def test_01_gratia_admin_webpage (self):
         core.skip_ok_unless_installed('gratia-service')
+        self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
         host = core.get_hostname()
         admin_webpage = 'http://' + host + ':8880/gratia-administration/status.html?wantDetails=0'
         command = ('curl', admin_webpage)
