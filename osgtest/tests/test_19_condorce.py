@@ -1,4 +1,7 @@
+import cagen
+import re
 import os
+
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
@@ -65,9 +68,12 @@ gridmapfile -> good | bad
         # Add host DN to condor_mapfile
         if core.options.hostcert:
             core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
-            condor_mapfile_contents = files.read('/usr/share/osg-test/test_condorce_mapfile')
+            hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
+            mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
+            mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
+                                              "%s@daemon.opensciencegrid.org\n" % core.get_hostname())
             files.write(core.config['condor-ce.condorce_mapfile'],
-                        condor_mapfile_contents,
+                        mapfile_contents,
                         owner='condor-ce',
                         chmod=0644)
 
@@ -84,4 +90,3 @@ gridmapfile -> good | bad
         self.assert_(os.path.exists(core.config['condor-ce.lockfile']),
                      'HTCondor CE run lock file missing')
         core.state['condor-ce.started'] = True
-
