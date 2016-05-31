@@ -40,7 +40,7 @@ class TestInstall(osgunittest.OSGTestCase):
                 command.append('--enablerepo=%s' % repo)
             command += ['install', package]
 
-            retry_fail, status, stdout, stderr = yum.retry_command(command)
+            retry_fail, _, stdout, _ = yum.retry_command(command)
             if retry_fail == '':   # the command succeeded
                 if core.el_release() >= 6:
                     # RHEL 6 does not have the rollback option, so store the
