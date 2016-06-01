@@ -33,6 +33,13 @@ class BadSkipException(AssertionError):
     """
     pass
 
+class TimeoutException(AssertionError):
+    """
+    This exceptions represents a test reaching a timeout described by
+    the 'timeout' parameter of core._run_command()
+    """
+    pass
+
 
 class OSGTestCase(unittest.TestCase):
     """
@@ -173,6 +180,10 @@ class OSGTestCase(unittest.TestCase):
                     result.addFailure(self, sys.exc_info())
                 if exit_on_fail:
                     result.stop()
+            except TimeoutException:
+                result.addTimeout(self, sys.exc_info())
+                if exit_on_fail:
+                    result.stop()
             except self.failureException:
                 result.addFailure(self, sys.exc_info())
                 if exit_on_fail:
@@ -215,22 +226,27 @@ class OSGTestResult(unittest.TestResult):
         unittest.TestResult.__init__(self)
         self.okSkips = []
         self.badSkips = []
+        self.timeouts = []
 
     def addOkSkip(self, test, err):
         """Called when an ok skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
-        self.okSkips.append((test, self.skip_info_to_string(err, test)))
+        self.okSkips.append((test, self.osg_exc_info_to_string(err, test)))
 
     def addBadSkip(self, test, err):
         """Called when a bad skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
-        self.badSkips.append((test, self.skip_info_to_string(err, test)))
+        self.badSkips.append((test, self.osg_exc_info_to_string(err, test)))
 
-    def skip_info_to_string(self, err, test):
+    def addTimeout(self, test, err):
+        """Called when a timeout has occurred. 'err' is a tuple as returned by sys.exc_info()"""
+        self.timeouts.append((test, self.osg_exc_info_to_string(err, test)))
+
+    def osg_exc_info_to_string(self, err, test):
         """Get the string description out of an Ok/BadSkipException.
         Pass it up to the parent if the exception is not one of those.
         """
         exctype, value, _ = err
 
-        if exctype is OkSkipException or exctype is BadSkipException:
+        if exctype in (OkSkipException, BadSkipException, TimeoutException):
             return str(value)
             # TODO Need some way to print out the line that caused the skip
             # if there is no message.
@@ -242,7 +258,7 @@ class OSGTestResult(unittest.TestResult):
 
     def wasSuccessful(self):
         """Tells whether or not this result was a success, considering bad skips as well."""
-        return len(self.failures) == len(self.errors) == len(self.badSkips) == 0
+        return len(self.failures) == len(self.errors) == len(self.badSkips) == len(self.timeouts) == 0
 
     def wasPerfect(self):
         """Tells whether or not this result was perfect, i.e. successful and without any skips."""
@@ -250,14 +266,15 @@ class OSGTestResult(unittest.TestResult):
 
     def __repr__(self):
         cls = self.__class__
-        return "<%s.%s run=%d errors=%d failures=%d okSkips=%d badSkips=%d>" % (
+        return "<%s.%s run=%d errors=%d failures=%d okSkips=%d badSkips=%d timeouts=%d>" % (
             cls.__module__,
             cls.__name__,
             self.testsRun,
             len(self.errors),
             len(self.failures),
             len(self.okSkips),
-            len(self.badSkips))
+            len(self.badSkips),
+            len(self.timeouts))
 
 
 class OSGTextTestResult(OSGTestResult):
@@ -321,6 +338,7 @@ class OSGTextTestResult(OSGTestResult):
             self.stream.writeln()
         self.printErrorList('ERROR', self.errors)
         self.printErrorList('FAIL', self.failures)
+        self.printErrorList('TIMEOUT', self.timeouts)
         self.printSkipList('BAD SKIPS', self.badSkips)
         self.printSkipList('OK SKIPS', self.okSkips)
 
@@ -358,9 +376,15 @@ class OSGTextTestResult(OSGTestResult):
         elif self.dots:
             self.stream.write("S")
 
+    def addTimeout(self, test, reason):
+        OSGTestResult.addTimeout(self, test, reason)
+        if self.showAll:
+            self.stream.writeln("TIMEOUT")
+        elif self.dots:
+            self.stream.write("F")
 
 class OSGTextTestRunner(unittest.TextTestRunner):
-    """Extended unittest.TextTestRunner with support for okSkips / badSkips."""
+    """Extended unittest.TextTestRunner with support for okSkips / badSkips / timeouts."""
 
     def _makeResult(self):
         return OSGTextTestResult(self.stream, self.descriptions, self.verbosity)
@@ -371,7 +395,7 @@ class OSGTextTestRunner(unittest.TextTestRunner):
         summarize the results.
 
         This is an extended version of unittest.TextTestRunner.run() which
-        displays okSkips and badSkips as well.
+        displays okSkips, badSkips, and timeouts.
         """
         result = self._makeResult()
         # ^ make 'result' here so we know its an OSGTextTestResult and not a
@@ -387,8 +411,8 @@ class OSGTextTestRunner(unittest.TextTestRunner):
                             (run, run != 1 and "s" or "", timeTaken))
         self.stream.writeln()
         if not result.wasSuccessful():
-            failed, errored, badSkipped, okSkipped = map(len,
-                (result.failures, result.errors, result.badSkips, result.okSkips))
+            failed, errored, badSkipped, timeouts, okSkipped = map(len,
+                (result.failures, result.errors, result.badSkips, result.timeouts, result.okSkips))
             counts = []
             if failed:
                 counts.append("failures=%d" % failed)
@@ -396,6 +420,8 @@ class OSGTextTestRunner(unittest.TextTestRunner):
                 counts.append("errors=%d" % errored)
             if badSkipped:
                 counts.append("badSkips=%d" % badSkipped)
+            if timeouts:
+                counts.append("timeouts=%d" % timeouts)
             if okSkipped:
                 counts.append("okSkips=%d" % okSkipped)
             self.stream.writeln("FAILED (" + ", ".join(counts) + ")")
