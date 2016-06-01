@@ -42,10 +42,9 @@ class TestStartTomcat(osgunittest.OSGTestCase):
     def test_05_start_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         core.state['tomcat.started'] = False
-        core.config['tomcat.catalina-out'] = '/var/log/%s/catalina.out' % tomcat.pkgname()
 
         try:
-            initial_stat = os.stat(core.config['tomcat.catalina-out'])
+            initial_stat = os.stat(tomcat.catalinafile())
         except OSError:
             initial_stat = None
 
@@ -55,8 +54,8 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         else:
             service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
 
-        line, gap = core.monitor_file(core.config['tomcat.catalina-out'], initial_stat,
+        line, gap = core.monitor_file(tomcat.catalinafile(), initial_stat,
                                       r'Server startup in \d+ ms', 600.0)
-        self.assert_(line is not None, 'Tomcat did not start within the 5 min window')
+        self.assert_(line is not None, 'Tomcat did not start within the 10 min window')
         core.state['tomcat.started'] = True
         core.log_message('Tomcat started after %.1f seconds' % gap)
