@@ -35,8 +35,8 @@ def conffile():
     return os.path.join(sysconfdir(), pkgname() + ".conf")
 
 def catalinafile():
-    "Path of Catalina log file that tracks regular updates"
-    if majorver() == 6:
+    "Path of Catalina log file that contains the startup sentinel"
+    if majorver() <= 6:
         return os.path.join(logdir(), 'catalina.out')
     else:
         return os.path.join(logdir(), 'catalina.%s.log' % date.strftime(date.today(), '%F'))
