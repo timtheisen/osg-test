@@ -21,6 +21,7 @@ from osgtest.library import osgunittest
 def parse_command_line():
     defaults = {"adduser": False,
                 "backupmysql": False,
+                "cilogon": False,
                 "config": None,
                 "dumpfile": None,
                 "dumpout": False,
@@ -92,6 +93,9 @@ def read_args():
 
     p.add_option('-a', '--add-user', action='store_true', dest='adduser',
                  help='Add and configure the test user account (see -u below)')
+
+    p.add_option('--cilogon', action='store_true', dest='cilogon',
+                 help='Generate CILogon-like certificates')
 
     p.add_option('-c', '--config', action='store', type='string', dest='config',
                  help='Configuration file to use that specifies command-line options')
