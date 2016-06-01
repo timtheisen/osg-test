@@ -1,16 +1,16 @@
-import cagen
 import os
 import pwd
 import re
-import socket
 
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.voms as voms
+
 
 class TestVOMS(osgunittest.OSGTestCase):
 
     def proxy_info(self, msg):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
+        voms.skip_ok_unless_installed()
         self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         command = ('voms-proxy-info', '-all')
@@ -19,24 +19,25 @@ class TestVOMS(osgunittest.OSGTestCase):
 
     def test_01_add_user(self):
         core.state['voms.added-user'] = False
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
-        self.skip_bad_unless(core.state['tomcat.started'])
+        voms.skip_ok_unless_installed()
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
-        user_cert_dn, user_cert_issuer = cagen.certificate_info(cert_path)
-        hostname = socket.getfqdn()
 
-        command = ('voms-admin', '--vo', core.config['voms.vo'], '--host', hostname, '--nousercert', 'create-user',
-                   user_cert_dn, user_cert_issuer, 'OSG Test User', 'root@localhost')
-        core.check_system(command, 'Add VO user')
+        use_voms_admin = False
+        if core.rpm_is_installed('voms-admin-server') and core.rpm_is_installed('voms-admin-client'):
+            self.skip_bad_unless(core.state['tomcat.started'])
+            use_voms_admin = True
+
+        voms.add_user(core.config['voms.vo'], cert_path, use_voms_admin)
+
         core.state['voms.added-user'] = True
 
     def test_02_good_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
 
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
-        self.skip_bad_unless(core.state['tomcat.started'])
+        voms.skip_ok_unless_installed()
+        self.skip_bad_unless(core.state['voms.added-user'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'])
         password = core.options.password + '\n'
@@ -47,8 +48,8 @@ class TestVOMS(osgunittest.OSGTestCase):
         self.proxy_info('voms-proxy-info output has sentinel')
 
     def test_04_bad_voms_proxy_init(self):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
-        self.skip_bad_unless(core.state['tomcat.started'])
+        voms.skip_ok_unless_installed()
+        self.skip_bad_unless(core.state['voms.added-user'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
         password = core.options.password + '\n'
@@ -63,8 +64,8 @@ class TestVOMS(osgunittest.OSGTestCase):
     def test_06_rfc_voms_proxy_init(self):
         core.state['voms.got-proxy'] = False
 
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
-        self.skip_bad_unless(core.state['tomcat.started'])
+        voms.skip_ok_unless_installed()
+        self.skip_bad_unless(core.state['voms.added-user'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'], '-rfc')
         password = core.options.password + '\n'
@@ -76,10 +77,10 @@ class TestVOMS(osgunittest.OSGTestCase):
 
     def test_08_voms_proxy_check(self):
         """
-    	Check generated proxies to make sure that they use the same signing
-    	algorithm as the certificate
-    	"""
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
+        Check generated proxies to make sure that they use the same signing
+        algorithm as the certificate
+        """
+        voms.skip_ok_unless_installed()
         self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         pwd_entry = pwd.getpwnam(core.options.username)
