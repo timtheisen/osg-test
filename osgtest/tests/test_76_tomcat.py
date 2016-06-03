@@ -29,7 +29,10 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
     def test_04_deconfig_catalina_logging(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
-        if core.el_release() == 5: # limit okskip list
+
+        # We don't use self.skip_ok_unless() here to avoid
+        # filling the okskip list with uninteresting results
+        if core.el_release() == 5:
             files.restore(core.config['tomcat.logging-conf'], 'tomcat')
 
     def test_04_remove_trustmanager(self):
