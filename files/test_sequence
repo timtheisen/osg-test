@@ -15,11 +15,11 @@ test_19_condorce
 test_20_voms
 test_21_gums
 test_22_myproxy
+test_23_gratia
 test_24_tomcat
 test_25_voms_admin
 test_26_bestman
 test_27_osg_info_services
-test_28_gratia
 test_30_misc
 test_35_osg_configure
 test_38_cvmfs

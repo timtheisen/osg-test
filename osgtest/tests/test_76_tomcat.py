@@ -1,7 +1,5 @@
-import glob
 import os
 import shutil
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -13,6 +11,7 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
     def test_01_stop_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
+        self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
         service.stop('tomcat')
 
     def test_02_remove_vo_webapp(self):
@@ -27,6 +26,14 @@ class TestStopTomcat(osgunittest.OSGTestCase):
     def test_03_deconfig_tomcat_properties(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
         files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'tomcat')
+
+    def test_04_deconfig_catalina_logging(self):
+        core.skip_ok_unless_installed(tomcat.pkgname())
+
+        # We don't use self.skip_ok_unless() here to avoid
+        # filling the okskip list with uninteresting results
+        if core.el_release() == 5:
+            files.restore(core.config['tomcat.logging-conf'], 'tomcat')
 
     def test_04_remove_trustmanager(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')

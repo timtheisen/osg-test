@@ -2,9 +2,7 @@ import os
 import shutil
 import osgtest.library.core as core
 import osgtest.library.files as files
-import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.service as service
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
@@ -152,29 +150,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
         core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
 
-    #This test stops the Tomcat service
-    def test_09_stop_tomcat(self):
-        core.skip_ok_unless_installed('gratia-service')
-        core.skip_ok_unless_installed(tomcat.pkgname())
-        service.stop('tomcat')
-
-    #This test configures Tomcat
-    def test_10_configure_tomcat(self):
-        core.skip_ok_unless_installed('gratia-service')
-        command = ('/usr/share/gratia/configure_tomcat',)
-        core.check_system(command, 'Unable to configure Tomcat.')
-
-    #This test starts the Tomcat service
-    def test_11_start_tomcat(self):
-        core.skip_ok_unless_installed('gratia-service')
-        core.skip_ok_unless_installed(tomcat.pkgname())
-        if core.el_release() == 7:
-            # tomcat on el7 doesn't seem to actually use its always-present pidfile...
-            service.start('tomcat', init_script=tomcat.pkgname())
-        else:
-            service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
-
-    def test_12_config_user_vo_map(self):
+    def test_09_config_user_vo_map(self):
         core.skip_ok_unless_installed('gratia-service')
         user_vo_map_file = '/var/lib/osg/user-vo-map'
         core.config['gratia.user-vo-map'] = user_vo_map_file

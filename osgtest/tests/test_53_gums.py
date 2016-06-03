@@ -29,6 +29,7 @@ class TestGUMS(osgunittest.OSGTestCase):
 
     def test_02_server_version(self):
         core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
 
         stdout = core.check_system(('gums-host', 'serverVersion'), 'Query GUMS server version')[0]
         self.assert_("GUMS server version" in stdout, "expected string missing from serverVersion output")

@@ -9,7 +9,7 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestVOMS(osgunittest.OSGTestCase):
 
-    def proxy_info(self,msg):
+    def proxy_info(self, msg):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
         self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
@@ -20,7 +20,7 @@ class TestVOMS(osgunittest.OSGTestCase):
     def test_01_add_user(self):
         core.state['voms.added-user'] = False
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client')
-        self.skip_bad_unless(core.state['voms.started-webapp'])
+        self.skip_bad_unless(core.state['tomcat.started'])
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
@@ -36,7 +36,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.state['voms.got-proxy'] = False
 
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
-        self.skip_bad_unless(core.state['voms.started-webapp'])
+        self.skip_bad_unless(core.state['tomcat.started'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'])
         password = core.options.password + '\n'
@@ -48,7 +48,7 @@ class TestVOMS(osgunittest.OSGTestCase):
 
     def test_04_bad_voms_proxy_init(self):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
-        self.skip_bad_unless(core.state['voms.started-webapp'])
+        self.skip_bad_unless(core.state['tomcat.started'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'] + ':/Bogus')
         password = core.options.password + '\n'
@@ -64,7 +64,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.state['voms.got-proxy'] = False
 
         core.skip_ok_unless_installed('voms-admin-server', 'voms-admin-client', 'voms-clients', by_dependency=True)
-        self.skip_bad_unless(core.state['voms.started-webapp'])
+        self.skip_bad_unless(core.state['tomcat.started'])
 
         command = ('voms-proxy-init', '-voms', core.config['voms.vo'], '-rfc')
         password = core.options.password + '\n'
