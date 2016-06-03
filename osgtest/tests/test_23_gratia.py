@@ -1,8 +1,10 @@
 import os
 import shutil
+
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.tomcat as tomcat
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
@@ -163,4 +165,13 @@ class TestStartGratia(osgunittest.OSGTestCase):
             files.write(core.config['gratia.user-vo-map'],
                         conFileContents,
                         owner='root')
+
+    def test_10_fix_tomcat_template(self):
+        # Fix EL7 bug in Gratia template
+        if core.el_release() == 7:
+            core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
+            core.config['gratia.broken_template'] = '/usr/share/gratia/server.xml.template'
+            bad_line = r'\s+sSLImplementation=.*'
+            fixed_line = ' '*15 + 'sslImplementationName="org.glite.security.trustmanager.tomcat.TMSSLImplementation"'
+            files.replace_regexpr(core.config['gratia.broken_template'], bad_line, fixed_line, owner='gratia')
 
