@@ -75,6 +75,8 @@ class TestCleanup(osgunittest.OSGTestCase):
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Downgrade osg-release')
 
+        yum.clean(*core.config['yum.clean_repos'])
+
     def test_02_obsoleting_packages(self):
         # If packages were obsoleted in upgrade, remove the packages that obsoleted them
         # Also skip if we didn't install anything

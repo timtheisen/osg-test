@@ -59,30 +59,33 @@ class TestInstall(osgunittest.OSGTestCase):
 
     def test_03_update_osg_release(self):
         core.state['install.release-updated'] = False
-        if not (core.options.updaterelease):
+        if not core.options.updaterelease:
             return
 
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')
-        
+
         self.assert_(re.match('\d+\.\d+', core.options.updaterelease), "Unrecognized updaterelease format")
         rpm_url = 'http://repo.grid.iu.edu/osg/' + core.options.updaterelease + '/osg-' + core.options.updaterelease \
             + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Update osg-release')
-        
+
+        core.config['yum.clean_repos'] = ['osg'] + core.options.updaterepos
+        yum.clean(*core.config['yum.clean_repos'])
+
         # If update repos weren't specified, just use osg-release
         if not core.options.updaterepos:
             core.options.updaterepos = ['osg']
 
         core.state['install.release-updated'] = True
-        
+
     def test_04_update_packages(self):
         if not (core.options.updaterepos and core.state['install.installed']):
             return
-        
+
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
         # Update packages
@@ -95,6 +98,6 @@ class TestInstall(osgunittest.OSGTestCase):
         if fail_msg:
             self.fail(fail_msg)
         else:
-            if core.el_release() >=6:
+            if core.el_release() >= 6:
                 core.state['install.transaction_ids'].append(yum.get_transaction_id())
 
