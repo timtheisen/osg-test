@@ -176,7 +176,8 @@ def get_password():
 
 def discover_tests():
     test_sequence = open('/usr/share/osg-test/test_sequence')
-    test_files = ['osgtest.tests.' + test.strip() for test in test_sequence.readlines()]
+    test_sequence_lines = [test.strip() for test in test_sequence.readlines()]
+    test_files = ['osgtest.tests.' + test for test in test_sequence_lines if test and not test.startswith('#')]
     test_sequence.close()
     # prepend tests that are always safe
     args = ['osgtest.tests.special_certs',
