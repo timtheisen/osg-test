@@ -4,6 +4,8 @@ import os
 import os.path
 import pwd
 import re
+import rpm
+from rpmUtils.miscutils import stringToVersion
 import shutil
 import stat
 import subprocess
@@ -400,6 +402,29 @@ def get_package_envra(package_name):
         raise OSError(status, stdout)
     (epoch, name, version, release, arch) = envra
     return (epoch, name, version, release, arch)
+
+
+def version_compare(evr1, evr2):
+    """Compare the EVRs (epoch, version, release) of two RPMs and return
+    - -1 if the first EVR is older than the second,
+    -  0 if the two arguments are equal,
+    -  1 if the first EVR is newer than the second.
+
+    Each EVR may be specified as a string (of the form "V-R" or "E:V-R"), or
+    as a 3-element tuple or list.
+
+    """
+    if isinstance(evr1, basestring):
+        epoch1, version1, release1 = stringToVersion(evr1)
+    else:
+        epoch1, version1, release1 = evr1
+
+    if isinstance(evr2, basestring):
+        epoch2, version2, release2 = stringToVersion(evr2)
+    else:
+        epoch2, version2, release2 = evr2
+
+    return rpm.labelCompare((epoch1, version1, release1), (epoch2, version2, release2))
 
 
 def diagnose(message, command, status, stdout, stderr):
