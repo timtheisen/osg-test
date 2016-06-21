@@ -36,6 +36,13 @@ config['system.mapfile'] = '/etc/grid-security/grid-mapfile'
 # cutting objects.
 state = {}
 
+class DummyClass(object):
+    """A class that ignores all function calls; useful for testing"""
+    def __getattr__(self, item):
+        def handler(*args, **kwargs):
+            pass
+        return handler
+
 # Global command-line options.  This should be merged into the config object,
 # eventually.
 options = None
@@ -50,6 +57,14 @@ _el_release = None
 # ------------------------------------------------------------------------------
 # Global Functions
 # ------------------------------------------------------------------------------
+
+def init_dummy():
+    """Initialize 'options' and '_log' with dummy instances"""
+    global options, _log
+
+    options = DummyClass()
+    _log = DummyClass()
+
 
 def start_log():
     """Creates the detailed log file; not for general use."""
