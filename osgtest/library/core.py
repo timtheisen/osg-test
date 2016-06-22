@@ -401,6 +401,9 @@ def get_package_envra(package_name):
     elif len(envra) != 5:
         raise OSError(status, stdout)
     (epoch, name, version, release, arch) = envra
+    # Missing epoch is displayed as '(none)' but treated by rpm as '0'
+    if epoch == '(none)':
+        epoch = '0'
     return (epoch, name, version, release, arch)
 
 
