@@ -11,7 +11,8 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
     def test_01_config_mkgridmap(self):
         core.config['edg.conf'] = '/usr/share/osg-test/edg-mkgridmap.conf'
 
-        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-server')
+        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-admin-server')
+        self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
 
         contents = ('group vomss://%s:8443/voms/%s %s\n' %
                     (socket.getfqdn(), core.config['voms.vo'], core.options.username))
@@ -19,7 +20,8 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         core.system(('cat', core.config['edg.conf']))
 
     def test_02_edg_mkgridmap(self):
-        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-server')
+        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-admin-server')
+        self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
 
         command = ('edg-mkgridmap', '--conf', core.config['edg.conf'])
         os.environ['GRIDMAP'] = '/usr/share/osg-test/grid-mapfile'
@@ -41,7 +43,8 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         self.assert_(expected in contents, 'Expected grid-mapfile contents')
 
     def test_03_clean_edg_mkgridmap(self):
-        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-server')
+        core.skip_ok_unless_installed('edg-mkgridmap', 'voms-admin-server')
+        self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
 
         for envvar in ('VO_LIST_FILE', 'UNDEFINED_ACCTS_FILE',
                        'EDG_MKGRIDMAP_LOG', 'USER_VO_MAP', 'GRIDMAP'):
