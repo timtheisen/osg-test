@@ -1,9 +1,32 @@
+import crypt
 import os
+import random
+
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 from cagen import CA, certificate_info
 import pwd
+
+
+def random_string(length):
+    """Return a random string of the given length with each character
+    from the printable ASCII range.
+    """
+    result = ""
+    for _ in range(length):
+        result += chr(random.randint(33, 126))
+    return result
+
+
+def encrypted_password(plaintext, salt="osgtest"):
+    """Return the encrypted version of the password from the plaintext,
+    suitable for directly putting into /etc/shadow or feeding it to
+    useradd/usermod.
+    """
+    # The default salt is kinda weak, but the account should not be
+    # long-lived anyway.
+    return crypt.crypt(plaintext, "$6$" + salt)
 
 
 class TestUser(osgunittest.OSGTestCase):
@@ -28,8 +51,13 @@ class TestUser(osgunittest.OSGTestCase):
         home_dir = core.config['user.home']
         if not os.path.isdir(home_dir):
             os.mkdir(home_dir)
-        command = ('useradd', '--base-dir', home_dir, '-n', '--shell', '/bin/sh', core.options.username)
-        core.check_system(command, 'Add user %s' % (core.options.username))
+        # SSH requires that the user have a password - even if password
+        # auth is disabled. Set a random password for the vdttest user
+        password = encrypted_password(random_string(16))
+
+        command = ('useradd', '--base-dir', home_dir, '--password', password, '--shell', '/bin/sh',
+                   core.options.username)
+        core.check_system(command, 'Add user %s' % core.options.username)
         core.state['general.user_added'] = True
 
         # Set up directories
