@@ -27,7 +27,7 @@ def _get_sqlloc():
     return voms_mysql_so_path
 
 
-def create_vo(vo, dbusername, dbpassword, vomscert, vomskey, use_voms_admin=False):
+def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc/grid-security/voms/vomscert.pem', vomskey='/etc/grid-security/voms/vomskey.pem', use_voms_admin=False):
     """Create the given VO using either voms-admin or the voms_install_db script that comes with voms-server. A new
     database user with the given username/password is created with access to the VO database.
     """
@@ -66,7 +66,7 @@ def create_vo(vo, dbusername, dbpassword, vomscert, vomskey, use_voms_admin=Fals
         core.check_system(command, 'Create VO')
 
 
-def advertise_lsc(vo, hostcert):
+def advertise_lsc(vo, hostcert='/etc/grid-security/hostcert.pem'):
     """Create the VO directory and .lsc file under /etc/grid-security/vomsdir for the given VO"""
     host_dn, host_issuer = cagen.certificate_info(hostcert)
     hostname = socket.getfqdn()
@@ -77,7 +77,7 @@ def advertise_lsc(vo, hostcert):
     files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False, chmod=0644)
 
 
-def advertise_vomses(vo, hostcert):
+def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
     """Edit /etc/vomses to advertise the current host as the VOMS server for the given VO.
     Caller is responsible for preserving and restoring /etc/vomses.
     """
