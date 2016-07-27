@@ -45,7 +45,8 @@ class TestStopVOMS(osgunittest.OSGTestCase):
             self.assert_('Database undeployed correctly!' in stdout, fail)
             self.assert_(' succesfully removed.' in stdout, fail)
 
-        # Really remove database
+        # Really remove database -- the voms-admin-configure command above does
+        # not actually destroy the mysql database.
         voms.destroy_db(core.config['voms.vo'], core.config['voms.dbusername'])
         voms.destroy_voms_conf(core.config['voms.vo'])
 
