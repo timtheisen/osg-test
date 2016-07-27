@@ -1,54 +1,54 @@
-import glob
 import os
-import pwd
-import re
 import shutil
-import socket
-import time
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.voms as voms
+
 
 class TestStopVOMS(osgunittest.OSGTestCase):
 
     # ==========================================================================
 
     def test_01_stop_voms(self):
-        core.skip_ok_unless_installed('voms-server')
+        voms.skip_ok_unless_installed()
         self.skip_ok_unless(core.state['voms.started-server'], 'did not start server')
 
-        command = ('service', 'voms', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop VOMS server')
-        self.assertEqual(stdout.find('FAILED'), -1, fail)
-        self.assert_(not os.path.exists(core.config['voms.lock-file']),
-                     'VOMS server lock file still exists')
-
+        if core.el_release() < 7:
+            command = ('service', 'voms', 'stop')
+            stdout, _, fail = core.check_system(command, 'Stop VOMS server')
+            self.assertEqual(stdout.find('FAILED'), -1, fail)
+            self.assert_(not os.path.exists(core.config['voms.lock-file']),
+                         'VOMS server lock file still exists')
+        else:
+            core.check_system(('systemctl', 'stop', 'voms@' + core.config['voms.vo']), 'Stop VOMS server')
+            status, _, _ = core.system(('systemctl', 'is-active', 'voms@' + core.config['voms.vo']))
+            self.assertNotEqual(status, 0, 'VOMS server still active')
 
     def test_02_restore_vomses(self):
-        core.skip_ok_unless_installed('voms-admin-server')
+        voms.skip_ok_unless_installed()
 
-        if os.path.exists(core.config['voms.lsc-dir']):
-            shutil.rmtree(core.config['voms.lsc-dir'])
+        voms.destroy_lsc(core.config['voms.vo'])
         files.restore('/etc/vomses', 'voms')
 
 
     def test_03_remove_vo(self):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
+        voms.skip_ok_unless_installed()
 
-        # Ask VOMS Admin to remove VO
-        command = ('voms-admin-configure', 'remove',
-                   '--vo', core.config['voms.vo'],
-                   '--undeploy-database')
-        stdout, _, fail = core.check_system(command, 'Remove VO')
-        self.assert_('Database undeployed correctly!' in stdout, fail)
-        self.assert_(' succesfully removed.' in stdout, fail)
+        if core.rpm_is_installed('voms-admin-server'):
+            # Ask VOMS Admin to remove VO
+            command = ('voms-admin-configure', 'remove',
+                       '--vo', core.config['voms.vo'],
+                       '--undeploy-database')
+            stdout, _, fail = core.check_system(command, 'Remove VO')
+            self.assert_('Database undeployed correctly!' in stdout, fail)
+            self.assert_(' succesfully removed.' in stdout, fail)
 
-        # Really remove database
-        mysql_statement = "DROP DATABASE `voms_%s`" % (core.config['voms.vo'])
-        command = ('mysql', '-u', 'root', '-e', mysql_statement)
-        core.check_system(command, 'Drop MYSQL VOMS database')
+        # Really remove database -- the voms-admin-configure command above does
+        # not actually destroy the mysql database.
+        voms.destroy_db(core.config['voms.vo'], core.config['voms.dbusername'])
+        voms.destroy_voms_conf(core.config['voms.vo'])
 
 
     def test_04_remove_certs(self):
