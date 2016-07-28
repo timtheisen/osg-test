@@ -20,7 +20,7 @@ class TestJava(osgunittest.OSGTestCase):
         java.select_ver(config_type, '%s-openjdk' % java.EXPECTED_VERSION)
         self.assert_(java.verify_ver(config_type, java.EXPECTED_VERSION), 'incorrect java version selected')
 
-    def test_01_setup(self):
+    def test_00_setup(self):
         if java.is_openjdk_installed() or java.is_openjdk_devel_installed():
             core.config['java.old-ver'] = {}
 
