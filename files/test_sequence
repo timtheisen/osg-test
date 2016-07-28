@@ -20,6 +20,7 @@ test_24_tomcat
 test_25_voms_admin
 test_26_bestman
 test_27_osg_info_services
+test_28_gsiopenssh
 test_30_misc
 test_35_osg_configure
 test_38_cvmfs
@@ -41,6 +42,7 @@ test_54_gratia
 test_55_condorce
 test_56_lcgutil
 test_57_osg_info_services
+test_59_gsiopenssh
 test_75_gums
 test_76_tomcat
 test_77_myproxy
@@ -58,6 +60,7 @@ test_88_condor_cron
 test_89_condor
 test_90_bestman
 test_91_pbs
+test_92_gsiopenssh
 test_95_mysqld
 test_96_proxy
 test_97_java
