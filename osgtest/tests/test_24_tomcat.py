@@ -25,14 +25,21 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         new_contents = pattern.sub('crlRequired="false"', old_contents)
         files.write(server_xml_path, new_contents, owner='tomcat')
 
-    def test_03_config_tomcat_endorsed_jars(self):
+    def test_03_config_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
         old_contents = files.read(tomcat.conffile(), True)
-        line = 'JAVA_ENDORSED_DIRS="${JAVA_ENDORSED_DIRS+$JAVA_ENDORSED_DIRS:}/usr/share/voms-admin/endorsed"\n'
-        if old_contents.find(line) == -1:
-            new_contents = old_contents + "\n" + line
-            files.write(tomcat.conffile(), new_contents, owner='tomcat')
+        # Endorse JARs
+        lines = ['JAVA_ENDORSED_DIRS="${JAVA_ENDORSED_DIRS+$JAVA_ENDORSED_DIRS:}/usr/share/voms-admin/endorsed"']
+        # Improve Tomcat 7 startup times (SOFTWARE-2383)
+        lines.append('JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom"')
+
+        for line in lines:
+            if old_contents.find(line) != -1:
+                lines.remove(line)
+
+        new_contents = '\n'.join([old_contents] + lines)
+        files.write(tomcat.conffile(), new_contents, owner='tomcat')
 
     def test_04_configure_gratia(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
