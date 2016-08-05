@@ -74,6 +74,6 @@ class TestStartTomcat(osgunittest.OSGTestCase):
             service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
 
         line, gap = core.monitor_file(catalina_log, initial_stat, tomcat_sentinel, 1200.0)
-        self.assert_(line is not None, 'Tomcat did not start within the 10 min window')
+        self.assert_(line is not None, 'Tomcat did not start within the 20 min window')
         core.state['tomcat.started'] = True
         core.log_message('Tomcat started after %.1f seconds' % gap)
