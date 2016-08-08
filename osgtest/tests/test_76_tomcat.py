@@ -29,13 +29,14 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
     def test_04_deconfig_catalina_logging(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
+        files.restore(core.config['tomcat.logging-conf'], 'tomcat')
 
-        # We don't use self.skip_ok_unless() here to avoid
-        # filling the okskip list with uninteresting results
-        if core.el_release() == 5:
-            files.restore(core.config['tomcat.logging-conf'], 'tomcat')
+    def test_05_deconfig_context(self):
+        core.skip_ok_unless_installed(tomcat.pkgname())
+        if core.el_release() > 5:
+            files.restore(tomcat.contextfile(), 'tomcat')
 
-    def test_04_remove_trustmanager(self):
+    def test_06_remove_trustmanager(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
 
         # mv -f /etc/tomcat5/server.xml.old-trustmanager /etc/tomcat5/server.xml
@@ -61,7 +62,7 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
         core.log_message('EMI trustmanager removed')
     
-    def test_05_deconfig_tomcat(self):
+    def test_07_deconfig_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
         files.restore(tomcat.conffile(), 'tomcat')
