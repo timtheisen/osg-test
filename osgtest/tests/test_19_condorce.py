@@ -100,6 +100,7 @@ gridmapfile -> good | bad
         command = ('service', 'condor-ce', 'start')
         stdout, _, fail = core.check_system(command, 'Start HTCondor CE')
         self.assert_(stdout.find('FAILED') == -1, fail)
+        core.wait_for_file(core.config['condor-ce.lockfile'], 60.0)
         self.assert_(os.path.exists(core.config['condor-ce.lockfile']),
                      'HTCondor CE run lock file missing')
         core.state['condor-ce.started'] = True
