@@ -84,7 +84,10 @@ gridmapfile -> good | bad
                         chmod=0644)
 
     def test_05_start_condorce(self):
-        core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
+        if core.el_release() >= 7:
+            core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
+        else:
+            core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
         core.state['condor-ce.started'] = False
         core.state['condor-ce.schedd-ready'] = False
 
