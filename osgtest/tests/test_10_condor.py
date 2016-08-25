@@ -11,6 +11,9 @@ class TestStartCondor(osgunittest.OSGTestCase):
         core.state['condor.running-service'] = False
 
         core.skip_ok_unless_installed('condor')
+        core.config['condor.collectorlog'] = core.check_system(('condor_config_val', 'COLLECTOR_LOG'),
+                                                               'Failed to query for Condor CollectorLog path')[0]\
+                                                 .strip()
 
         if condor.is_running():
             core.state['condor.running-service'] = True
@@ -22,3 +25,7 @@ class TestStartCondor(osgunittest.OSGTestCase):
         self.assert_(condor.is_running(), 'Condor not running after we started it')
         core.state['condor.running-service'] = True
 
+        try:
+            core.config['condor.collectorlog_stat'] = os.stat(core.config['condor.collectorlog'])
+        except OSError:
+            core.config['condor.collectorlog_stat'] = None
