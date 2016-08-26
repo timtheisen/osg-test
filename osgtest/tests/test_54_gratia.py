@@ -224,7 +224,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.gridftp-logs-copied'] = True
 
 
-    #This test executes the gridftp-transfer_meter
+    #This test executes the gridftp-transfer probe
     def test_06_execute_gridftptransfer_probedriver(self):
         core.state['gratia.gridftp-transfer-running'] = False
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service', 'globus-gridftp-server-progs',
@@ -235,8 +235,12 @@ class TestGratia(osgunittest.OSGTestCase):
             core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
-        command = ('/usr/share/gratia/gridftp-transfer/gridftp-transfer_meter',)
-        core.check_system(command, 'Unable to execute gridftp-transfer_meter.')
+        if core.package_version_compare('gratia-probe-gridftp-transfer', '1.17.0-1') >= 0:
+            probe_script = 'gridftp-transfer_meter'
+        else:
+            probe_script = 'GridftpTransferProbeDriver'
+        command = ('/usr/share/gratia/gridftp-transfer/%s' % probe_script,)
+        core.check_system(command, 'Unable to execute %s.' % probe_script)
         core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + \
                                                  core.config['gratia.tmpdir.postfix']
         if core.state['gratia.database-installed'] == True:
@@ -244,7 +248,7 @@ class TestGratia(osgunittest.OSGTestCase):
             self.assert_(result, 'gridftp-transfer outbox check failed.')
         core.state['gratia.gridftp-transfer-running'] = True
 
-    #This test checks the database after the successful execution of gridftp-transfer_meter
+    #This test checks the database after the successful execution of the gridftp-transfer probe
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False, 'gridftp transfer probe not running')
