@@ -37,8 +37,8 @@ def is_running():
 def wait_for_daemon(collector_log_path, stat, daemon, timeout):
     """Wait until the requested 'daemon' is available and accepting commands by
     monitoring the specified CollectorLog from the position specified by 'stat'
-    for a maximum of 'timeout' seconds (default: 60). Returns True if the daemon
-    becomes available within the timeout period and False, otherwise.
+    for a maximum of 'timeout' seconds. Returns True if the daemon becomes 
+    available within the timeout period and False, otherwise.
 
     """
     sentinel = r'%sAd\s+:\s+Inserting' % daemon.capitalize()
