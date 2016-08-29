@@ -3,6 +3,8 @@
 
 import os
 import re
+
+import osgtest.library.condor as condor
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
@@ -15,7 +17,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_01_status(self):
         self.general_requirements()
 
-        command = ('condor_ce_status', '-long')
+        command = ('condor_ce_status', '-any')
         core.check_system(command, 'ce status', user=True)
 
     def test_02_queue(self):
@@ -33,6 +35,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_04_trace(self):
         self.general_requirements()
+        self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
 
         cwd = os.getcwd()
         os.chdir('/tmp')
@@ -44,6 +47,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_05_pbs_trace(self):
         self.general_requirements()
+        self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge')
         self.skip_ok_unless(core.state['torque.pbs-server-running'])
 
@@ -58,6 +62,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_06_use_gums_auth(self):
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
+        core.state['condor-ce.gums-auth'] = False
 
         # Setting up GUMS auth using the instructions here:
         # twiki.grid.iu.edu/bin/view/Documentation/Release3/InstallComputeElement#8_1_Using_GUMS_for_Authorization
@@ -104,24 +109,22 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         command = ('service', 'condor-ce', 'stop')
         core.check_system(command, 'stop condor-ce')
 
-        # Need to stat the Schedd logfile so we know when it's back up
-        core.config['condor-ce.schedlog'] = '/var/log/condor-ce/SchedLog'
-        core.config['condor-ce.schedlog-stat'] = os.stat(core.config['condor-ce.schedlog'])
-
         command = ('service', 'condor-ce', 'start')
         core.check_system(command, 'start condor-ce')
+        core.state['condor-ce.gums-auth'] = True
 
     def test_07_ping_with_gums(self):
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
+        self.skip_bad_unless(core.state['condor-ce.gums-auth'], 'CE not using GUMS auth')
 
-        # Wait for the collector to come back up
-        core.monitor_file(core.config['condor-ce.schedlog'],
-                          core.config['condor-ce.schedlog-stat'],
-                          'TransferQueueManager stats',
-                          60.0)
-
+        # Wait for the schedd to come back up
+        try:
+            stat = os.stat(core.config['condor-ce.collectorlog'])
+        except OSError:
+            stat = None
+        self.failUnless(condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0),
+                        'Schedd failed to restart within the 1 min window')
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
-

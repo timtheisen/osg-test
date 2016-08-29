@@ -13,7 +13,7 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         core.config['condor-ce.condor-cfg'] = '/etc/condor/config.d/99-osgtest.condor.conf'
-        contents = """SCHEDD_INTERVAL=5"""
+        contents = """SCHEDD_INTERVAL=1"""
 
         files.write(core.config['condor-ce.condor-cfg'],
                     contents,
@@ -24,10 +24,16 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_bad_unless(core.state['condor.running-service'], 'Condor not running')
 
+        # Ensure that the Condor master is available for reconfig
+        self.failUnless(condor.wait_for_daemon(core.config['condor.collectorlog'],
+                                               core.config['condor.collectorlog_stat'],
+                                               'Master',
+                                               300.0),
+                        'Condor Master not available for reconfig')
+
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(condor.is_running(),
-                     'Condor not running after reconfig')
+        self.assert_(condor.is_running(), 'Condor not running after reconfig')
 
     def test_03_configure_authentication(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
@@ -78,15 +84,30 @@ gridmapfile -> good | bad
                         chmod=0644)
 
     def test_05_start_condorce(self):
-        core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
+        if core.el_release() >= 7:
+            core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
+        else:
+            core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
         core.state['condor-ce.started'] = False
+        core.state['condor-ce.schedd-ready'] = False
 
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_ok_if(os.path.exists(core.config['condor-ce.lockfile']), 'already running')
+        core.config['condor-ce.collectorlog'] = core.check_system(('condor_ce_config_val', 'COLLECTOR_LOG'),
+                                                                  'Failed to query for Condor CE CollectorLog path')[0]\
+                                                    .strip()
 
         command = ('service', 'condor-ce', 'start')
         stdout, _, fail = core.check_system(command, 'Start HTCondor CE')
         self.assert_(stdout.find('FAILED') == -1, fail)
+        core.wait_for_file(core.config['condor-ce.lockfile'], 60.0)
         self.assert_(os.path.exists(core.config['condor-ce.lockfile']),
                      'HTCondor CE run lock file missing')
         core.state['condor-ce.started'] = True
+
+        try:
+            stat = os.stat(core.config['condor-ce.collectorlog'])
+        except OSError:
+            stat = None
+        if condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0):
+            core.state['condor-ce.schedd-ready'] = True

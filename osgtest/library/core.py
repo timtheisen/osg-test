@@ -574,6 +574,20 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
 
     return (p.returncode, stdout, stderr)
 
+def wait_for_file(filename, timeout):
+    """Wait maximum 'timeout' seconds for filename to be created. Returns True
+    if created within the timeout, False otherwise.
+
+    """
+    elapsed_time = 0
+    while elapsed_time <= timeout:
+        if os.path.exists(filename):
+            return True
+        else:
+            time.sleep(1)
+            elapsed_time += 1
+
+    return False
 
 def el_release():
     """Return the major version of the Enterprise Linux release the system is
