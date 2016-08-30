@@ -33,6 +33,7 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
     def test_05_deconfig_context(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
+        self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
         if core.el_release() > 5:
             files.restore(tomcat.contextfile(), 'tomcat')
 

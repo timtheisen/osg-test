@@ -43,7 +43,9 @@ class TestStartTomcat(osgunittest.OSGTestCase):
 
     def test_04_disable_persistence(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
-        if core.el_release() > 5: # Disabling persistence doesn't appear to work on EL5
+        self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
+        if core.el_release() > 5:
+            # Disabling persistence doesn't appear to work on EL5
             # https://tomcat.apache.org/tomcat-5.5-doc/config/manager.html#Disable_Session_Persistence
             contents='''
 <Context>
@@ -89,7 +91,11 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         else:
             service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
 
-        line, gap = core.monitor_file(catalina_log, initial_stat, tomcat_sentinel, 1200.0)
-        self.assert_(line is not None, 'Tomcat did not start within the 20 min window')
+        if core.options.nightly:
+            timeout = 3600.0
+        else:
+            timeout = 1200.0
+        line, gap = core.monitor_file(catalina_log, initial_stat, tomcat_sentinel, timeout)
+        self.assert_(line is not None, 'Tomcat did not start within the %d min window' % int(timeout/60))
         core.state['tomcat.started'] = True
         core.log_message('Tomcat started after %.1f seconds' % gap)
