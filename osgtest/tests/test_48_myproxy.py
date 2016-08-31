@@ -11,7 +11,7 @@ class TestMyProxy(osgunittest.OSGTestCase):
         # If there is no pre-existing proxy file, the following command will                                                                                                # produce error output and have exit status 1; because this is the
         # expected (but not the only valid) case, do not check the output or
         # exit status.  This test exists only to clear out a pre-existing proxy.
-        command = ('myproxy-destroy', '--verbose', '-s', 'localhost', '-l', core.options.username)
+        command = ('myproxy-destroy', '--verbose', '-s', core.get_hostname(), '-l', core.options.username)
         core.system(command, user=True)
 
     def test_02_check_usercert_pass(self):
@@ -44,7 +44,7 @@ class TestMyProxy(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('myproxy', 'myproxy-server')
         # The -S option is given in the command so it accepts the stdin input for the passowrds
         command = ('myproxy-init', '--verbose', '-C', core.state['proxy.path'], '-y', core.state['proxy.path'],
-                   '-s', 'localhost', '-S', '-l', core.options.username)
+                   '-s', core.get_hostname(), '-S', '-l', core.options.username)
         # We give an already created proxy to my proxy and password to store it
         password = core.config['myproxy.password']
         core.check_system(command, 'Normal myproxy-init', user=True, stdin=password)
@@ -55,6 +55,6 @@ class TestMyProxy(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['myproxy.started-server'], 'MyProxy server failed to start')
         self.skip_bad_unless(core.state['myproxy.created'], 'MyProxy creation failed')
 
-        command = ('myproxy-logon', '--verbose', '-s', 'localhost', '-l', core.options.username)
+        command = ('myproxy-logon', '--verbose', '-s', core.get_hostname(), '-l', core.options.username)
         password = core.config['myproxy.password'] + '\n'
         core.check_system(command, 'myproxy-logon retrieval', user=True, stdin=password)
