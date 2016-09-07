@@ -41,6 +41,20 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         new_contents = '\n'.join([old_contents] + lines)
         files.write(tomcat.conffile(), new_contents, owner='tomcat')
 
+    def test_04_disable_persistence(self):
+        core.skip_ok_unless_installed(tomcat.pkgname())
+        self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
+        if core.el_release() > 5:
+            # Disabling persistence doesn't appear to work on EL5
+            # https://tomcat.apache.org/tomcat-5.5-doc/config/manager.html#Disable_Session_Persistence
+            contents='''
+<Context>
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <Manager pathname="" />
+</Context>
+'''
+            files.write(tomcat.contextfile(), contents, owner='tomcat')
+
     def test_04_configure_gratia(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
         command = ('/usr/share/gratia/configure_tomcat',)
@@ -58,14 +72,18 @@ class TestStartTomcat(osgunittest.OSGTestCase):
 
         if tomcat.majorver() > 5:
             tomcat_sentinel = r'Server startup in \d+ ms'
-        else:
             # tomcat5 doesn't have an explicit sentinel for server startup
             # so we use a heartbeat-like message that shows up in catalin.out
             # with an increased log level
-            core.config['tomcat.logging-conf'] = os.path.join(tomcat.sysconfdir(), 'logging.properties')
-            files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = FINEST\n',
-                         owner='tomcat', backup=True)
+            log_level = 'FINER'
+        else:
             tomcat_sentinel = r'Start expire sessions'
+            log_level = 'FINEST'
+
+        # Bump log level
+        core.config['tomcat.logging-conf'] = os.path.join(tomcat.sysconfdir(), 'logging.properties')
+        files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = %s\n' % log_level,
+                     owner='tomcat', backup=True)
 
         if core.el_release() == 7:
             # tomcat on el7 doesn't seem to actually use its always-present pidfile...
@@ -73,7 +91,11 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         else:
             service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
 
-        line, gap = core.monitor_file(catalina_log, initial_stat, tomcat_sentinel, 1200.0)
-        self.assert_(line is not None, 'Tomcat did not start within the 20 min window')
+        if core.options.nightly:
+            timeout = 3600.0
+        else:
+            timeout = 1200.0
+        line, gap = core.monitor_file(catalina_log, initial_stat, tomcat_sentinel, timeout)
+        self.assert_(line is not None, 'Tomcat did not start within the %d min window' % int(timeout/60))
         core.state['tomcat.started'] = True
         core.log_message('Tomcat started after %.1f seconds' % gap)

@@ -34,6 +34,10 @@ def conffile():
     "Path of main config file of Tomcat"
     return os.path.join(sysconfdir(), pkgname() + ".conf")
 
+def contextfile():
+    "Path of main context.xml file of Tomcat"
+    return os.path.join(sysconfdir(), 'context.xml')
+
 def catalinafile():
     "Path of Catalina log file that contains the startup sentinel"
     if majorver() <= 6:
