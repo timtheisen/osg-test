@@ -52,6 +52,7 @@ JOB_ROUTER_ENTRIES = \\
    [ \\
      TargetUniverse = 5; \\
      name = "Local_Condor"; \\
+     Requirements = target.osgTestPBS =!= true; \\
    ]
 
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
