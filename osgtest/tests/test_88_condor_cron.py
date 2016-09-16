@@ -10,11 +10,15 @@ class TestStopCondorCron(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['condor-cron.started-service'] == False, 'did not start server')
 
 
+        if core.el_release() < 7:
+            command = ('service', 'condor-cron', 'stop')
+            stdout, _, fail = core.check_system(command, 'Stop Condor-Cron')
+            self.assert_(stdout.find('error') == -1, fail)
+            self.assert_(not os.path.exists(core.config['condor-cron.lockfile']),
+                         'Condor-Cron run lock file still present')
+        else:
+            core.check_system(('systemctl', 'stop', 'condor-cron'), 'Stop Condor-Cron')
+            status, _, _ = core.system(('systemctl', 'is-active', 'condor-cron'))
+            self.assertNotEqual(status, 0, 'Condor-Cron still active')
 
-        command = ('service', 'condor-cron', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop Condor-Cron')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(not os.path.exists(core.config['condor-cron.lockfile']),
-                     'Condor-Cron run lock file still present')
-
-        core.state['condor-cron.running-service'] = False
+    core.state['condor-cron.running-service'] = False
