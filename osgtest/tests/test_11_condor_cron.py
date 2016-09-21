@@ -2,6 +2,7 @@ import os
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
+import time
 import unittest
 
 class TestStartCondorCron(osgunittest.OSGTestCase):
@@ -20,6 +21,9 @@ class TestStartCondorCron(osgunittest.OSGTestCase):
             self.assert_(stdout.find('error') == -1, fail)
         else:
             core.check_system(('systemctl', 'start', 'condor-cron'), 'Start Condor-Cron')
+
+        # Give condor-cron time to start up
+        time.sleep(5)
 
         self.assert_(service.is_running('condor-cron'), "Condor-Cron is not running")
 
