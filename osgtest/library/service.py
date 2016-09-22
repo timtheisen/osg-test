@@ -115,3 +115,4 @@ def is_running(service_name, init_script=None):
     status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
 
     return status == 0
+
