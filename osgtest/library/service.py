@@ -107,10 +107,12 @@ def is_running(service_name, init_script=None):
     """
     init_script = _init_script_name(service_name, init_script)
 
-    command = ('service', init_script, 'status')
+    if core.el_release() >= 7:
+        command = ('systemctl', 'is-active', init_script)
+    else:
+        command = ('service', init_script, 'status')
+
     status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
 
-    if status == 0:
-        return True
+    return status == 0
 
-    return False
