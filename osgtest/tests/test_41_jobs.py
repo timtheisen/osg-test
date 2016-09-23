@@ -99,7 +99,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
     def test_05_condor_ce_run_condor(self):
         core.skip_ok_unless_installed('htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor', 'condor')
 
-        self.skip_bad_unless(core.state['condor-ce.started'], 'ce not started')
+        self.skip_bad_unless(core.state['condor-ce.started-service'], 'ce not started')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
 
         command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')
