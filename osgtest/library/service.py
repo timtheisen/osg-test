@@ -1,5 +1,6 @@
 """Utilities for starting and stopping init-based services."""
 import os
+import time
 
 import osgtest.library.core as core
 
@@ -99,7 +100,7 @@ def stop(service_name):
 
     core.state[service_name + '.started-service'] = False
 
-def is_running(service_name, init_script=None):
+def is_running(service_name, init_script=None, timeout=5):
     """Detect if a service is running via an init script
 
     Globals used:
@@ -113,7 +114,14 @@ def is_running(service_name, init_script=None):
     else:
         command = ('service', init_script, 'status')
 
-    status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
+    timer = 0
+    status = None
+    while timer < timeout:
+        # Don't exit loop based on status since we use this function
+        # to also check to ensure that the service gets stopped properly
+        status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
+        time.sleep(1)
+        timer += 1
 
     return status == 0
 
