@@ -16,7 +16,7 @@ def _init_script_name(service_name, init_script=None):
     core.config[service_name + '.init-script'] = init_script
     return init_script
 
-def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=None):
+def start(service_name, fail_pattern=None, init_script=None, sentinel_file=None):
     """Start a service via an init script.
 
     'service_name' is used as the base of the keys in the core.config and
@@ -51,7 +51,12 @@ def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=N
         core.skip('service ' + service_name + ' already running (flagged as started)')
         return
 
-    command = ('service', init_script, 'start')
+    if core.el_release() >= 7:
+        command = ('systemctl', 'start', init_script)
+        fail_pattern = 'failed' if not fail_pattern else fail_pattern
+    else:
+        command = ('service', init_script, 'start')
+        fail_pattern = 'FAILED' if not fail_pattern else fail_pattern
     stdout, _, fail = core.check_system(command, 'Start ' + service_name + ' service')
     assert re.search(fail_pattern, stdout) is None, fail
 
@@ -62,9 +67,9 @@ def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=N
     core.state[service_name + '.started-service'] = True
 
 
-def stop(service_name, fail_pattern='FAILED'):
+def stop(service_name, fail_pattern=None):
     """Stop a service via an init script.
-    
+
     'service_name' is used as the base of the keys in the core.config and
     core.state dictionaries.
 
@@ -88,7 +93,12 @@ def stop(service_name, fail_pattern='FAILED'):
         core.skip('did not start service ' + service_name)
         return
 
-    command = ('service', init_script, 'stop')
+    if core.el_release() >= 7:
+        command = ('systemctl', 'stop', init_script)
+        fail_pattern = 'failed' if not fail_pattern else fail_pattern
+    else:
+        command = ('service', init_script, 'stop')
+        fail_pattern = 'FAILED' if not fail_pattern else fail_pattern
     stdout, _, fail = core.check_system(command, 'Stop ' + service_name + ' service')
     assert re.search(fail_pattern, stdout) is None, fail
 
