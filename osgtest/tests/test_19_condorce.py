@@ -6,6 +6,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.condor as condor
+import osgtest.library.service as service
 
 class TestStartCondorCE(osgunittest.OSGTestCase):
     # Tests 01-02 are needed to reconfigure condor to work with HTCondor-CE
@@ -33,7 +34,7 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
 
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(condor.is_running(), 'Condor not running after reconfig')
+        self.assert_(service.is_running('condor'), 'Condor not running after reconfig')
 
     def test_03_configure_authentication(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
