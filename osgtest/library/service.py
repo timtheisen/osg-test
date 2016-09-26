@@ -116,10 +116,11 @@ def is_running(service_name, init_script=None, timeout=5):
 
     timer = 0
     status = None
+
     while timer < timeout:
         # Don't exit loop based on status since we use this function
         # to also check to ensure that the service gets stopped properly
-        status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
+        status, _, _ = core.system(command)
         time.sleep(1)
         timer += 1
 
