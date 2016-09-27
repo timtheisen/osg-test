@@ -18,10 +18,8 @@ class TestStopTomcat(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server')
         self.skip_ok_unless(core.state['voms.installed-vo-webapp'], 'did not start webapp')
 
-        command = ('service', 'voms-admin', 'stop')
-        core.check_system(command, 'Uninstall VOMS Admin webapp(s)')
-        self.assert_(not os.path.exists(core.config['voms.vo-webapp']),
-                     'VOMS Admin VO context file still exists')
+        service.stop('voms-admin')
+        self.assert_(not service.is_running('voms-admin'), 'VOMS admin failed to stop')
 
     def test_03_deconfig_tomcat_properties(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')

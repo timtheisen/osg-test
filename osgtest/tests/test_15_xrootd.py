@@ -2,6 +2,7 @@ import os
 import pwd
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 XROOTD_CFG_TEXT = """\
@@ -56,12 +57,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             core.state['xrootd.backups-exist'] = True
 
         if core.el_release() < 7:
-            stdout, _, fail = core.check_system(('service', 'xrootd', 'start'), 'Start Xrootd server')
-            self.assert_('FAILED' not in stdout, fail)
-            self.assert_(os.path.exists(core.config['xrootd.pid-file']), 'Xrootd server PID file missing')
+            core.config['xrootd_service'] = "xrootd"
         else:
-            core.check_system(('systemctl', 'start', 'xrootd@clustered'), 'Start Xrootd server')
-            core.check_system(('systemctl', 'status', 'xrootd@clustered'), 'Verify status of Xrootd server')
+            core.config['xrootd_service'] = "xrootd@clustered"
 
+        service.start(core.config['xrootd_service'])
+        self.assert_(service.is_running(core.config['xrootd_service']), 'XRootD failed to start')
         core.state['xrootd.started-server'] = True
 

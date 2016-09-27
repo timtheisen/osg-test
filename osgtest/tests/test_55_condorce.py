@@ -7,6 +7,7 @@ import re
 import osgtest.library.condor as condor
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
@@ -106,11 +107,8 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                       'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       owner='condor-ce')
 
-        command = ('service', 'condor-ce', 'stop')
-        core.check_system(command, 'stop condor-ce')
-
-        command = ('service', 'condor-ce', 'start')
-        core.check_system(command, 'start condor-ce')
+        service.stop('condor-ce')
+        service.start('condor-ce')
         core.state['condor-ce.gums-auth'] = True
 
     def test_07_ping_with_gums(self):

@@ -1,9 +1,8 @@
-import os
 import osgtest.library.core as core
 import osgtest.library.service as service
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import unittest
+
 
 class TestStopGatekeeper(osgunittest.OSGTestCase):
 
@@ -18,12 +17,8 @@ class TestStopGatekeeper(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('globus-scheduler-event-generator-progs')
         self.skip_ok_if(core.state['globus.started-seg'] == False, 'SEG apparently running')
 
-        command = ('service', 'globus-scheduler-event-generator', 'stop')
-        stdout, _, fail = core.check_system(command, 'Start Globus SEG')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(not os.path.exists(core.config['globus.seg-lockfile']),
-                     'Globus SEG run lock file still present')
-        core.state['globus.started-seg'] = False
+        service.stop('globus-scheduler-event-generator')
+        self.assert_(not service.is_running('globus-scheduler-event-generator'), 'Globus SEG failed to stop')
 
     def test_03_configure_globus_pbs(self):
         self.skip_ok_unless(core.state['globus.pbs_configured'], 'Globus pbs configuration not altered')

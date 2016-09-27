@@ -3,6 +3,7 @@ import os
 
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.tomcat as tomcat
 import osgtest.library.voms as voms
 import osgtest.library.osgunittest as osgunittest
@@ -103,14 +104,12 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         self.skip_ok_if(os.path.exists(core.config['voms.lock-file']), 'apparently running')
 
         if core.el_release() < 7:
-            command = ('service', 'voms', 'start')
-            stdout, _, fail = core.check_system(command, 'Start VOMS service')
-            self.assertEqual(stdout.find('FAILED'), -1, fail)
-            self.assert_(os.path.exists(core.config['voms.lock-file']),
-                         'VOMS server PID file is missing')
+            core.config['voms_service'] = 'voms'
         else:
-            core.check_system(('systemctl', 'start', 'voms@' + core.config['voms.vo']), 'Start VOMS server')
-            core.check_system(('systemctl', 'is-active', 'voms@' + core.config['voms.vo']), 'Verify status of VOMS server')
+            core.config['voms_service'] = 'voms@' + core.config['voms.vo']
+
+        service.start(core.config['voms_service'])
+        self.assert_(service.is_running(core.config['voms_service']), 'VOMS failed to start')
 
         core.state['voms.started-server'] = True
 
@@ -119,8 +118,6 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server')
         self.skip_ok_if(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
 
-        command = ('service', 'voms-admin', 'start')
-        core.check_system(command, 'Install VOMS Admin webapp(s)')
-        self.assert_(os.path.exists(core.config['voms.vo-webapp']),
-                     'VOMS Admin VO context file is missing')
+        service.start('voms-admin')
+        self.assert_(service.is_running('voms-admin'), 'VOMS admin failed to start')
         core.state['voms.installed-vo-webapp'] = True

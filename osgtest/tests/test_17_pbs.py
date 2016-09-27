@@ -40,17 +40,15 @@ set server acl_host_enable = True
         core.state['munge.running'] = False
 
         core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(os.path.exists(core.config['munge.lockfile']), 'already running')
+        self.skip_ok_if(service.is_running('munge'), 'already running')
 
         files.preserve(core.config['munge.keyfile'], 'pbs')
         command = ('/usr/sbin/create-munge-key', '-f',)
         stdout, _, fail = core.check_system(command, 'Create munge key')
         self.assert_(stdout.find('error') == -1, fail)
-        command = ('service', 'munge', 'start')
-        stdout, _, fail = core.check_system(command, 'Start munge daemon')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(os.path.exists(core.config['munge.lockfile']),
-                     'munge lock file missing')
+
+        service.start('munge')
+        self.assert_(service.is_running('munge'), 'munge failed to start')
         core.state['munge.running'] = True
 
     def test_02_start_mom(self):
@@ -61,7 +59,7 @@ set server acl_host_enable = True
         core.state['torque.pbs-mom-running'] = False
 
         core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(os.path.exists(core.config['torque.mom-lockfile']), 'pbs mom apparently running')
+        self.skip_ok_if(service.is_running('pbs_mom'), 'PBS mom already running')
 
         core.config['torque.mom-config'] = '/var/lib/torque/mom_priv/config'
         files.write(core.config['torque.mom-config'],
@@ -72,11 +70,8 @@ set server acl_host_enable = True
                     "nodes=0",
                     owner='pbs')
 
-        command = ('service', 'pbs_mom', 'start')
-        stdout, _, fail = core.check_system(command, 'Start pbs mom daemon')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(os.path.exists(core.config['torque.mom-lockfile']),
-                     'PBS mom run lock file missing')
+        service.start('pbs_mom')
+        self.assert_(service.is_running('pbs_mom'), 'PBS mom failed to start')
         core.state['torque.pbs-mom-running'] = True
 
 
@@ -88,13 +83,10 @@ set server acl_host_enable = True
         core.state['torque.pbs-sched-running'] = False
 
         core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(os.path.exists(core.config['torque.sched-lockfile']), 'pbs scheduler apparently running')
+        self.skip_ok_if(service.is_running('pbs_sched'), 'PBS sched already running')
 
-        command = ('service', 'pbs_sched', 'start')
-        stdout, _, fail = core.check_system(command, 'Start pbs scheduler daemon')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(os.path.exists(core.config['torque.sched-lockfile']),
-                     'pbs sched run lock file missing')
+        service.start('pbs_sched')
+        self.assert_(service.is_running('pbs_sched'), 'PBS sched failed to start')
         core.state['torque.pbs-sched-running'] = True
 
     def test_04_start_pbs(self):
@@ -146,8 +138,7 @@ set server acl_host_enable = True
 
         # Sometimes the restart command throws an error on stop but still manages
         # to kill the service, meaning that the service doesn't get brought back up
-        command = ('service', 'pbs_server', 'stop')
-        core.system(command, 'stop pbs server daemon')
+        service.stop('pbs_server')
 
         server_log = '/var/log/torque/server_logs/' + date.today().strftime('%Y%m%d')
         try:
@@ -155,11 +146,9 @@ set server acl_host_enable = True
         except OSError:
             server_log_stat = None
 
-        command = ('service', 'pbs_server', 'start')
-        stdout, _, fail = core.check_system(command, 'Start pbs server daemon')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(os.path.exists(core.config['torque.pbs-lockfile']),
-                     'pbs server run lock file missing')
+
+        service.start('pbs_server')
+        self.assert_(service.is_running('pbs_server'), 'PBS server failed to start')
         core.state['torque.pbs-server-started'] = True
         core.state['torque.pbs-server-running'] = True
 
