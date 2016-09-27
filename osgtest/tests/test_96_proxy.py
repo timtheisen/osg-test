@@ -5,6 +5,6 @@ class TestGridProxyDestroy(osgunittest.OSGTestCase):
 
     def test_01_check_proxy(self):
         core.skip_ok_unless_installed('globus-proxy-utils')
-        self.skip_ok_if(core.state['proxy.created'], 'missing proxy')
+        self.skip_ok_unless(core.state['proxy.created'], 'missing proxy')
         command = ('grid-proxy-destroy', '-debug')
         core.check_system(command, 'Run grid-proxy-destroy', user=True)
