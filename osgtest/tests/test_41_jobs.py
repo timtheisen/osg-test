@@ -8,6 +8,7 @@ import shutil
 import tempfile
 
 import osgtest.library.core as core
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestRunJobs(osgunittest.OSGTestCase):
@@ -99,7 +100,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
     def test_05_condor_ce_run_condor(self):
         core.skip_ok_unless_installed('htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor', 'condor')
 
-        self.skip_bad_unless(core.state['condor-ce.started-service'], 'ce not started')
+        self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
 
         command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')

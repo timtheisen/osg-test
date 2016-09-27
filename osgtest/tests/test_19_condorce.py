@@ -94,12 +94,15 @@ gridmapfile -> good | bad
         core.state['condor-ce.schedd-ready'] = False
 
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
-        self.skip_ok_if(service.is_running('condor-ce'), 'already running')
-        service.start('condor-ce')
-
         collector_log, _, _ = core.check_system(('condor_ce_config_val', 'COLLECTOR_LOG'),
                                                 'Failed to query for Condor CE CollectorLog path')
         core.config['condor-ce.collectorlog'] = collector_log.strip().strip()
+
+        if service.is_running('condor-ce'):
+            core.state['condor-ce.schedd-ready'] = True
+            self.skip_ok('already running')
+        service.start('condor-ce')
+
         try:
             stat = os.stat(core.config['condor-ce.collectorlog'])
         except OSError:
