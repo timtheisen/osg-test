@@ -1,7 +1,6 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.condor as condor
 import osgtest.library.service as service
 
 class TestStartCondor(osgunittest.OSGTestCase):
@@ -18,12 +17,12 @@ class TestStartCondor(osgunittest.OSGTestCase):
             core.state['condor.running-service'] = True
             return
 
-        service.start('condor')
-        self.assert_(service.is_running('condor'), 'Condor not running after we started it')
-        core.state['condor.started-service'] = True
-        core.state['condor.running-service'] = True
-
         try:
             core.config['condor.collectorlog_stat'] = os.stat(core.config['condor.collectorlog'])
         except OSError:
             core.config['condor.collectorlog_stat'] = None
+
+        service.start('condor')
+        self.assert_(service.is_running('condor'), 'Condor not running after we started it')
+        core.state['condor.started-service'] = True
+        core.state['condor.running-service'] = True
