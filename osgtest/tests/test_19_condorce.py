@@ -6,6 +6,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.condor as condor
+import osgtest.library.service as service
 
 class TestStartCondorCE(osgunittest.OSGTestCase):
     # Tests 01-02 are needed to reconfigure condor to work with HTCondor-CE
@@ -33,7 +34,7 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
 
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(condor.is_running(), 'Condor not running after reconfig')
+        self.assert_(service.is_running('condor'), 'Condor not running after reconfig')
 
     def test_03_configure_authentication(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
@@ -89,23 +90,16 @@ gridmapfile -> good | bad
             core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
         else:
             core.config['condor-ce.lockfile'] = '/var/lock/subsys/condor-ce'
-        core.state['condor-ce.started'] = False
+        core.state['condor-ce.started-service'] = False
         core.state['condor-ce.schedd-ready'] = False
 
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
-        self.skip_ok_if(os.path.exists(core.config['condor-ce.lockfile']), 'already running')
-        core.config['condor-ce.collectorlog'] = core.check_system(('condor_ce_config_val', 'COLLECTOR_LOG'),
-                                                                  'Failed to query for Condor CE CollectorLog path')[0]\
-                                                    .strip()
+        self.skip_ok_if(service.is_running('condor-ce'), 'already running')
+        service.start('condor-ce')
 
-        command = ('service', 'condor-ce', 'start')
-        stdout, _, fail = core.check_system(command, 'Start HTCondor CE')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        core.wait_for_file(core.config['condor-ce.lockfile'], 60.0)
-        self.assert_(os.path.exists(core.config['condor-ce.lockfile']),
-                     'HTCondor CE run lock file missing')
-        core.state['condor-ce.started'] = True
-
+        collector_log, _, _ = core.check_system(('condor_ce_config_val', 'COLLECTOR_LOG'),
+                                                'Failed to query for Condor CE CollectorLog path')
+        core.config['condor-ce.collectorlog'] = collector_log.strip().strip()
         try:
             stat = os.stat(core.config['condor-ce.collectorlog'])
         except OSError:

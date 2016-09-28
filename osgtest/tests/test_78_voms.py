@@ -1,8 +1,6 @@
-import os
-import shutil
-
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.voms as voms
 
@@ -15,16 +13,8 @@ class TestStopVOMS(osgunittest.OSGTestCase):
         voms.skip_ok_unless_installed()
         self.skip_ok_unless(core.state['voms.started-server'], 'did not start server')
 
-        if core.el_release() < 7:
-            command = ('service', 'voms', 'stop')
-            stdout, _, fail = core.check_system(command, 'Stop VOMS server')
-            self.assertEqual(stdout.find('FAILED'), -1, fail)
-            self.assert_(not os.path.exists(core.config['voms.lock-file']),
-                         'VOMS server lock file still exists')
-        else:
-            core.check_system(('systemctl', 'stop', 'voms@' + core.config['voms.vo']), 'Stop VOMS server')
-            status, _, _ = core.system(('systemctl', 'is-active', 'voms@' + core.config['voms.vo']))
-            self.assertNotEqual(status, 0, 'VOMS server still active')
+        service.stop(core.config['voms_service'])
+        self.assert_(not service.is_running(core.config['voms_service']), 'VOMS failed to stop')
 
     def test_02_restore_vomses(self):
         voms.skip_ok_unless_installed()

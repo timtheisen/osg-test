@@ -1,6 +1,6 @@
 """Utilities for starting and stopping init-based services."""
 import os
-import re
+import time
 
 import osgtest.library.core as core
 
@@ -16,16 +16,15 @@ def _init_script_name(service_name, init_script=None):
     core.config[service_name + '.init-script'] = init_script
     return init_script
 
-def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=None):
-    """Start a service via an init script.
+def start(service_name, init_script=None, sentinel_file=None):
+    """Start a service via init script or systemd.
 
     'service_name' is used as the base of the keys in the core.config and
     core.state dictionaries. It is also used as the value of 'init_script',
     if it is not specified.
 
-    The init script is run by doing "service init_script start". The regex
-    'fail_pattern' is matched against stdout. If there is a match, startup is
-    considered to have failed.
+    The service is started by doing "service init_script start" or "systemctl
+    start service_name".
 
     'sentinel_file' is the path to a pid file or lock file, or some other file
     that is expected to exist iff the service is running.
@@ -51,9 +50,11 @@ def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=N
         core.skip('service ' + service_name + ' already running (flagged as started)')
         return
 
-    command = ('service', init_script, 'start')
-    stdout, _, fail = core.check_system(command, 'Start ' + service_name + ' service')
-    assert re.search(fail_pattern, stdout) is None, fail
+    if core.el_release() >= 7:
+        command = ('systemctl', 'start', init_script)
+    else:
+        command = ('service', init_script, 'start')
+    core.check_system(command, 'Start ' + service_name + ' service')
 
     if sentinel_file:
         assert os.path.exists(sentinel_file), "%(service_name)s sentinel file not found at %(sentinel_file)s" % locals()
@@ -62,15 +63,14 @@ def start(service_name, fail_pattern='FAILED', init_script=None, sentinel_file=N
     core.state[service_name + '.started-service'] = True
 
 
-def stop(service_name, fail_pattern='FAILED'):
-    """Stop a service via an init script.
-    
+def stop(service_name):
+    """Stop a service via init script or systemd.
+
     'service_name' is used as the base of the keys in the core.config and
     core.state dictionaries.
 
-    If we started the service, the init script is run by doing "service
-    init_script stop". The regex 'fail_pattern' is matched against stdout. If
-    there is a match, shutdown is considered to have failed.  We also check
+    If we started the service, the service is stopped by doing "service
+    init_script stop" or "systemctl stop service_name". We also check
     that the sentinel file, if there was one, no longer exists.
 
     Globals used:
@@ -88,9 +88,11 @@ def stop(service_name, fail_pattern='FAILED'):
         core.skip('did not start service ' + service_name)
         return
 
-    command = ('service', init_script, 'stop')
-    stdout, _, fail = core.check_system(command, 'Stop ' + service_name + ' service')
-    assert re.search(fail_pattern, stdout) is None, fail
+    if core.el_release() >= 7:
+        command = ('systemctl', 'stop', init_script)
+    else:
+        command = ('service', init_script, 'stop')
+    core.check_system(command, 'Stop ' + service_name + ' service')
 
     sentinel_file = core.config.get(service_name + '.sentinel-file')
     if sentinel_file:
@@ -98,7 +100,7 @@ def stop(service_name, fail_pattern='FAILED'):
 
     core.state[service_name + '.started-service'] = False
 
-def is_running(service_name, init_script=None):
+def is_running(service_name, init_script=None, timeout=5):
     """Detect if a service is running via an init script
 
     Globals used:
@@ -112,7 +114,15 @@ def is_running(service_name, init_script=None):
     else:
         command = ('service', init_script, 'status')
 
-    status, _, _ = core.system(command, 'Checking status of ' + service_name + ' service')
+    timer = 0
+    status = None
+
+    while timer < timeout:
+        # Don't exit loop based on status since we use this function
+        # to also check to ensure that the service gets stopped properly
+        status, _, _ = core.system(command)
+        time.sleep(1)
+        timer += 1
 
     return status == 0
 

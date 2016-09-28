@@ -20,24 +20,10 @@ def lockfile_path():
     return condor_lockfile
 
 
-def is_running():
-    """True if condor is running, False otherwise
-    On EL5 and EL6, tests the existence of a lockfile. On EL7, runs
-    'service condor status'
-
-    """
-    condor_lockfile = lockfile_path()
-    if condor_lockfile is not None:
-        return os.path.exists(condor_lockfile)
-    else:
-        # In EL7 we no longer have a lockfile
-        returncode, _, _ = core.system(['service', 'condor', 'status'])
-        return returncode == 0
-
 def wait_for_daemon(collector_log_path, stat, daemon, timeout):
     """Wait until the requested 'daemon' is available and accepting commands by
     monitoring the specified CollectorLog from the position specified by 'stat'
-    for a maximum of 'timeout' seconds. Returns True if the daemon becomes 
+    for a maximum of 'timeout' seconds. Returns True if the daemon becomes
     available within the timeout period and False, otherwise.
 
     """

@@ -37,11 +37,9 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
         # https://jira.opensciencegrid.org/browse/SOFTWARE-1929
         self.skip_ok_if(core.el_release() == 5, 'Disable the SEG for EL5')
         self.skip_ok_if(os.path.exists(core.config['globus.seg-lockfile']), 'SEG already running')
-        command = ('service', 'globus-scheduler-event-generator', 'start')
-        stdout, _, fail = core.check_system(command, 'Start Globus SEG')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(os.path.exists(core.config['globus.seg-lockfile']),
-                     'Globus SEG run lock file missing')
+
+        service.start('globus-scheduler-event-generator')
+        self.assert_(service.is_running('globus-scheduler-event-generator'), 'Globus SEG failed to start')
         core.state['globus.started-seg'] = True
 
     def test_03_configure_globus_pbs(self):

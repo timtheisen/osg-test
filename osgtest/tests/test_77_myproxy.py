@@ -1,14 +1,6 @@
-import glob
-import os
-import pwd
-import re
-import shutil
-import socket
-import time
-import unittest
-
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestStopMyProxy(osgunittest.OSGTestCase):
@@ -18,11 +10,8 @@ class TestStopMyProxy(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('myproxy-server')
         self.skip_ok_unless(core.state['myproxy.started-server'], 'did not start server')
 
-        command = ('service', 'myproxy-server', 'stop')
-        stdout, stderr, fail = core.check_system(command, 'Stop myproxy server')
-        self.assertEqual(stdout.find('FAILED'), -1, fail)
-        self.assert_(not os.path.exists(core.config['myproxy.lock-file']),
-                     'myproxy server lock file still exists')
+        service.stop('myproxy-server')
+        self.assert_(not service.is_running('myproxy-server'), 'MyProxy failed to stop')
 
 
     def test_02_restore_configFile(self):

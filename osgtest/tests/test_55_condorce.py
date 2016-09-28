@@ -7,12 +7,13 @@ import re
 import osgtest.library.condor as condor
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
     def general_requirements(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
-        self.skip_bad_unless(core.state['condor-ce.started'], 'ce not running')
+        self.skip_bad_unless(core.state['condor-ce.started-service'], 'ce not running')
 
     def test_01_status(self):
         self.general_requirements()
@@ -60,9 +61,9 @@ class TestCondorCE(osgunittest.OSGTestCase):
         os.chdir(cwd)
 
     def test_06_use_gums_auth(self):
+        core.state['condor-ce.gums-auth'] = False
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
-        core.state['condor-ce.gums-auth'] = False
 
         # Setting up GUMS auth using the instructions here:
         # twiki.grid.iu.edu/bin/view/Documentation/Release3/InstallComputeElement#8_1_Using_GUMS_for_Authorization
@@ -106,11 +107,8 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                       'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       owner='condor-ce')
 
-        command = ('service', 'condor-ce', 'stop')
-        core.check_system(command, 'stop condor-ce')
-
-        command = ('service', 'condor-ce', 'start')
-        core.check_system(command, 'start condor-ce')
+        service.stop('condor-ce')
+        service.start('condor-ce')
         core.state['condor-ce.gums-auth'] = True
 
     def test_07_ping_with_gums(self):
