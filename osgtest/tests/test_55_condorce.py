@@ -56,7 +56,38 @@ class TestCondorCE(osgunittest.OSGTestCase):
         os.chdir('/tmp')
 
         command = ('condor_ce_trace', '-a osgTestPBS = True', '--debug', core.get_hostname())
-        core.check_system(command, 'ce trace against pbs', user=True)
+        trace_out, _, _ = core.check_system(command, 'ce trace against pbs', user=True)
+
+        pbs_jobid = re.search(r'PBS_JOBID=(\d+)', trace_out).group(1)
+        pbs_cache_file = '/var/tmp/qstat_cache_%s/blahp_results_cache' % core.options.username
+
+        f = open(pbs_cache_file, 'r')
+        pbs_cache = f.read()
+        f.close()
+
+        # Verify PBS job ID in cache for multiple formats between the different
+        # versions of the blahp. For blahp-1.18.16.bosco-1.osg32:
+        #
+        # 2: [BatchJobId="2"; WorkerNode="fermicloud171.fnal.gov-0"; JobStatus=4; ExitCode= 0; ]\n
+        #
+        # For blahp-1.18.25.bosco-1.osg33:
+        #
+        # 5347907	"(dp0
+        # S'BatchJobId'
+        # p1
+        # S'""5347907""'
+        # p2
+        # sS'WorkerNode'
+        # p3
+        # S'""node1358""'
+        # p4
+        # sS'JobStatus'
+        # p5
+        # S'2'
+        # p6
+        # s."
+        self.assert_(re.search(r'BatchJobId[=\s"\'p1S]+%s' % pbs_jobid, pbs_cache),
+                     'Job %s not found in PBS blahp cache:\n%s' % (pbs_jobid, pbs_cache))
 
         os.chdir(cwd)
 
