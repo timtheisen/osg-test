@@ -94,12 +94,26 @@ gridmapfile -> good | bad
         core.state['condor-ce.schedd-ready'] = False
 
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
-        self.skip_ok_if(service.is_running('condor-ce'), 'already running')
-        service.start('condor-ce')
-
         collector_log, _, _ = core.check_system(('condor_ce_config_val', 'COLLECTOR_LOG'),
                                                 'Failed to query for Condor CE CollectorLog path')
         core.config['condor-ce.collectorlog'] = collector_log.strip().strip()
+
+        if service.is_running('condor-ce'):
+            # Required to accept changes to the mapfile, which caused
+            # issues in the nightly due to bad htcondor-ce-2.0.8-2
+            # packaging remove after OSG 3.3.17. We don't use service.stop()
+            # because it only stops services that we've started
+            if core.el_release() < 7:
+                command = ('service', 'condor-ce', 'stop')
+            else:
+                command = ('systemctl', 'stop', 'condor-ce')
+            core.check_system(command, 'Stop condor-ce service')
+            service.start('condor-ce')
+
+            core.state['condor-ce.schedd-ready'] = True
+            self.skip_ok('already running')
+        service.start('condor-ce')
+
         try:
             stat = os.stat(core.config['condor-ce.collectorlog'])
         except OSError:
