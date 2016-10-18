@@ -29,13 +29,13 @@ def client_rpm():
     return name()
 
 def start():
-    service.start('mysql', init_script=init_script(), sentinel_file=pidfile())
+    service.start('mysql')
 
 def stop():
     service.stop('mysql')
 
 def is_running():
-    service.is_running('mysql', init_script=init_script())
+    service.is_running('mysql')
 
 def _get_command(user='root', database=None):
     command = ['mysql', '-N', '-B', '--user=' + str(user)]
