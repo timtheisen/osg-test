@@ -108,8 +108,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         else:
             core.config['voms_service'] = 'voms@' + core.config['voms.vo']
 
-        service.start(core.config['voms_service'])
-        self.assert_(service.is_running(core.config['voms_service']), 'VOMS failed to start')
+        service.check_start(core.config['voms_service'])
 
         core.state['voms.started-server'] = True
 
@@ -118,6 +117,5 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server')
         self.skip_ok_if(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
 
-        service.start('voms-admin')
-        self.assert_(service.is_running('voms-admin'), 'VOMS admin failed to start')
+        service.check_start('voms-admin')
         core.state['voms.installed-vo-webapp'] = True

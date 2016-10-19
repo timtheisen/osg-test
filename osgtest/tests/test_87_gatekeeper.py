@@ -11,14 +11,12 @@ class TestStopGatekeeper(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.state['globus-gatekeeper.started-service'], 'did not start gatekeeper')
 
         files.restore(core.config['jobmanager-config'], 'globus')
-        service.stop('globus-gatekeeper')
+        service.check_stop('globus-gatekeeper')
 
     def test_02_stop_seg(self):
         core.skip_ok_unless_installed('globus-scheduler-event-generator-progs')
         self.skip_ok_if(core.state['globus.started-seg'] == False, 'SEG apparently running')
-
-        service.stop('globus-scheduler-event-generator')
-        self.assert_(not service.is_running('globus-scheduler-event-generator'), 'Globus SEG failed to stop')
+        service.check_stop('globus-scheduler-event-generator')
 
     def test_03_configure_globus_pbs(self):
         self.skip_ok_unless(core.state['globus.pbs_configured'], 'Globus pbs configuration not altered')

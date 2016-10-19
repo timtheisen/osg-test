@@ -138,8 +138,8 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                       'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       owner='condor-ce')
 
-        service.stop('condor-ce')
-        service.start('condor-ce')
+        service.check_stop('condor-ce')
+        service.check_start('condor-ce')
         core.state['condor-ce.gums-auth'] = True
 
     def test_07_ping_with_gums(self):

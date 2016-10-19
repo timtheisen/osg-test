@@ -12,7 +12,7 @@ class TestStopGSIOpenSSH(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gsi-openssh-server', 'gsi-openssh-clients')
 
     def test_01_stop(self):
-        service.stop('gsisshd')
+        service.check_stop('gsisshd')
 
     def test_02_restore_config(self):
         files.restore(SSHD_CONFIG, owner='gsissh')

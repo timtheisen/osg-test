@@ -11,8 +11,9 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
         core.config['globus-gatekeeper.started-service'] = False
         core.state['globus-gatekeeper.running'] = False
         core.skip_ok_unless_installed('globus-gatekeeper')
+        core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
 
-        if not service.is_running('globus-gatekeeper'):
+        if service.is_stopped('globus-gatekeeper'):
             # DEBUG: Set up gatekeeper debugging
             core.config['jobmanager-config'] = '/etc/globus/globus-gram-job-manager.conf'
             conf_path = core.config['jobmanager-config']
@@ -23,9 +24,8 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
                 os.mkdir('/var/log/globus')
                 os.chmod('/var/log/globus', 0777)
 
-            service.start('globus-gatekeeper')
+            service.check_start('globus-gatekeeper')
             core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
-            self.assert_(core.state['globus-gatekeeper.running'], 'globus-gatekeeper failed to start')
 
     def test_02_start_seg(self):
         core.state['globus.started-seg'] = False
@@ -38,8 +38,7 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
         self.skip_ok_if(core.el_release() == 5, 'Disable the SEG for EL5')
         self.skip_ok_if(os.path.exists(core.config['globus.seg-lockfile']), 'SEG already running')
 
-        service.start('globus-scheduler-event-generator')
-        self.assert_(service.is_running('globus-scheduler-event-generator'), 'Globus SEG failed to start')
+        service.check_start('globus-scheduler-event-generator')
         core.state['globus.started-seg'] = True
 
     def test_03_configure_globus_pbs(self):

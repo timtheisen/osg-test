@@ -8,10 +8,7 @@ class TestStopRSV(osgunittest.OSGTestCase):
     def test_01_stop_rsv(self):
         core.skip_ok_unless_installed('rsv')
         self.skip_ok_if(core.state['rsv.started-service'] == False, 'did not start service')
-
-        service.stop('rsv')
-        self.assert_(not service.is_running('rsv'), 'RSV failed to stop')
-
+        service.check_stop('rsv')
         core.state['rsv.running-service'] = False
 
     def test_02_restore_config(self):

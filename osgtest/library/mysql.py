@@ -16,9 +16,6 @@ def daemon_name():
     else:
         return 'mariadb'
 
-def init_script():
-    return daemon_name()
-
 def pidfile():
     return os.path.join('/var/run', daemon_name(), daemon_name() + '.pid')
 
@@ -29,13 +26,13 @@ def client_rpm():
     return name()
 
 def start():
-    service.start('mysql')
+    service.check_start(daemon_name())
 
 def stop():
-    service.stop('mysql')
+    service.check_stop(daemon_name())
 
 def is_running():
-    service.is_running('mysql')
+    service.is_running(daemon_name())
 
 def _get_command(user='root', database=None):
     command = ['mysql', '-N', '-B', '--user=' + str(user)]

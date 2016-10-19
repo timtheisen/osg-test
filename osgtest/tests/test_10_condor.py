@@ -22,7 +22,6 @@ class TestStartCondor(osgunittest.OSGTestCase):
         except OSError:
             core.config['condor.collectorlog_stat'] = None
 
-        service.start('condor')
-        self.assert_(service.is_running('condor'), 'Condor not running after we started it')
+        service.check_start('condor')
         core.state['condor.started-service'] = True
         core.state['condor.running-service'] = True

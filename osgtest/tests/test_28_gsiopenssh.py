@@ -38,4 +38,4 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
 
     def test_02_start(self):
         core.state['gsisshd.started-service'] = False
-        service.start('gsisshd')
+        service.check_start('gsisshd')

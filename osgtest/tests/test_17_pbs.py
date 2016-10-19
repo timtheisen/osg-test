@@ -47,8 +47,7 @@ set server acl_host_enable = True
         stdout, _, fail = core.check_system(command, 'Create munge key')
         self.assert_(stdout.find('error') == -1, fail)
 
-        service.start('munge')
-        self.assert_(service.is_running('munge'), 'munge failed to start')
+        service.check_start('munge')
         core.state['munge.running'] = True
 
     def test_02_start_mom(self):
@@ -70,8 +69,7 @@ set server acl_host_enable = True
                     "nodes=0",
                     owner='pbs')
 
-        service.start('pbs_mom')
-        self.assert_(service.is_running('pbs_mom'), 'PBS mom failed to start')
+        service.check_start('pbs_mom')
         core.state['torque.pbs-mom-running'] = True
 
 
@@ -85,8 +83,7 @@ set server acl_host_enable = True
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(service.is_running('pbs_sched'), 'PBS sched already running')
 
-        service.start('pbs_sched')
-        self.assert_(service.is_running('pbs_sched'), 'PBS sched failed to start')
+        service.check_start('pbs_sched')
         core.state['torque.pbs-sched-running'] = True
 
     def test_04_start_pbs(self):
@@ -114,7 +111,7 @@ set server acl_host_enable = True
         core.state['torque.pbs-configured'] = True
 
         # trqauthd is required for the pbs_server
-        service.start('trqauthd')
+        service.check_start('trqauthd')
 
         if not os.path.exists('/var/lib/torque/server_priv/serverdb'):
             if core.el_release() <= 6:
@@ -138,7 +135,7 @@ set server acl_host_enable = True
 
         # Sometimes the restart command throws an error on stop but still manages
         # to kill the service, meaning that the service doesn't get brought back up
-        service.stop('pbs_server')
+        service.check_stop('pbs_server')
 
         server_log = '/var/log/torque/server_logs/' + date.today().strftime('%Y%m%d')
         try:
@@ -147,8 +144,7 @@ set server acl_host_enable = True
             server_log_stat = None
 
 
-        service.start('pbs_server')
-        self.assert_(service.is_running('pbs_server'), 'PBS server failed to start')
+        service.check_start('pbs_server')
         core.state['torque.pbs-server-started'] = True
         core.state['torque.pbs-server-running'] = True
 

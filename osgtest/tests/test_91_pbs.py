@@ -15,8 +15,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(core.state['torque.pbs-mom-running'] == False, 'did not start pbs mom server')
 
-        service.stop('pbs_mom')
-        self.assert_(not service.is_running('pbs_mom'), 'PBS mom failed to stop')
+        service.check_stop('pbs_mom')
 
         for mom_file in ['config', 'layout']:
             files.restore(core.config['torque.mom-%s' % mom_file], 'pbs')
@@ -26,11 +25,10 @@ class TestStopPBS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(core.state['torque.pbs-server-started'] == False, 'did not start pbs server')
 
-        service.stop('pbs_server')
-        self.assert_(not service.is_running('pbs_server'), 'PBS server failed to stop')
+        service.check_stop('pbs_server')
 
         if core.state['trqauthd.started-service']:
-            service.stop('trqauthd')
+            service.check_stop('trqauthd')
 
         files.restore(core.config['torque.pbs-servername-file'], 'pbs')
         files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
@@ -40,8 +38,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(core.state['torque.pbs-sched-running'] == False, 'did not start pbs scheduler')
 
-        service.stop('pbs_sched')
-        self.assert_(not service.is_running('pbs_sched'), 'PBS sched failed to stop')
+        service.check_stop('pbs_sched')
 
         core.state['torque.pbs-sched-running'] = False
 
@@ -49,8 +46,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(core.state['munge.running'] == False, 'munge not running')
 
-        service.stop('munge')
-        self.assert_(not service.is_running('munge'), 'munge failed to stop')
+        service.check_stop('munge')
 
         core.state['munge.running'] = False
         files.restore(core.config['munge.keyfile'], 'pbs')

@@ -85,7 +85,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = %s\n' % log_level,
                      owner='tomcat', backup=True)
 
-        service.start(tomcat.pkgname())
+        service.check_start(tomcat.pkgname())
         if core.options.nightly:
             timeout = 3600.0
         else:

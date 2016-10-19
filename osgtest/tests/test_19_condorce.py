@@ -108,12 +108,11 @@ gridmapfile -> good | bad
             else:
                 command = ('systemctl', 'stop', 'condor-ce')
             core.check_system(command, 'Stop condor-ce service')
-            service.start('condor-ce')
-
+            service.check_start('condor-ce')
             core.state['condor-ce.schedd-ready'] = True
             self.skip_ok('already running')
-        service.start('condor-ce')
 
+        service.check_start('condor-ce')
         try:
             stat = os.stat(core.config['condor-ce.collectorlog'])
         except OSError:

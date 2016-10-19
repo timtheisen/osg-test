@@ -7,9 +7,7 @@ class TestStopCondorCE(osgunittest.OSGTestCase):
     def test_01_stop_condorce(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
         self.skip_ok_unless(core.state['condor-ce.started-service'], 'did not start server')
-
-        service.stop('condor-ce')
-        self.assert_(not service.is_running('condor-ce'), 'HTCondor-CE still running')
+        service.check_stop('condor-ce')
 
     def test_02_restore_config(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
