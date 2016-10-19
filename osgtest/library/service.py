@@ -3,6 +3,9 @@ import time
 
 import osgtest.library.core as core
 
+STATUS_RUNNING = 0 # LSB: program is running or service is OK
+STATUS_STOPPED = 3 # LSB: program is not running according to LSB init standards
+
 def start(service_name):
     """
     Start a service via init script or systemd.
@@ -72,22 +75,46 @@ def check_stop(service_name, timeout=5):
     stops running within a 'timeout' second window (default=5s)
     """
     stop(service_name)
-    assert not is_running(service_name, timeout), "%s is still running" % service_name
+    assert is_stopped(service_name, timeout), "%s is still running" % service_name
 
-def is_running(service_name, timeout=5):
+def status(service_name):
     """
-    Detect if a service, service_name, is running via init script or systemd
+    Return exit code of the 'service_name' init script or systemd status check
     """
     if core.el_release() >= 7:
         command = ('systemctl', 'is-active', service_name)
     else:
         command = ('service', service_name, 'status')
 
-    status_rc = None
-    for _ in range(0, timeout):
-        # Don't exit loop based on status since we use this function to also
-        # check to ensure that the service gets stopped properly
-        status_rc, _, _ = core.system(command)
-        time.sleep(1)
+    status_rc, _, _ = core.system(command)
+    return status_rc
 
-    return status_rc == 0
+def check_status(service_name, expected_status, timeout=5):
+    """
+    Return True if the exit code of the 'service_name' status check is
+    expected_status before 'timeout' seconds. Otherwise, False.
+    """
+    timer = 0
+    status_rc = None
+    while timer < timeout and status_rc != expected_status:
+        status_rc = status(service_name)
+        time.sleep(1)
+        timer += 1
+
+    return status_rc == expected_status
+
+def is_running(service_name, timeout=5):
+    """
+    Return True if 'service_name' is determined to be running via init script or
+    systemd, according to LSB init standards, before 'timeout'
+    seconds. Otherwise, False.
+    """
+    return check_status(service_name, STATUS_RUNNING, timeout)
+
+def is_stopped(service_name, timeout=5):
+    """
+    Return True if service_name is properly stopped (exit code = 3) via init
+    script or systemd, according to LSB, init standards, before 'timeout'
+    seconds. Otherwise, False.
+    """
+    return check_status(service_name, STATUS_STOPPED, timeout)
