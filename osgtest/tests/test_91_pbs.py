@@ -14,8 +14,7 @@ class TestStopPBS(osgunittest.OSGTestCase):
     def test_01_stop_mom(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(core.state['torque.pbs-mom-running'] == False, 'did not start pbs mom server')
-
-        service.check_stop('pbs_mom')
+        service.stop('pbs_mom')
 
         for mom_file in ['config', 'layout']:
             files.restore(core.config['torque.mom-%s' % mom_file], 'pbs')

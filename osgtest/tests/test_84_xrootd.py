@@ -12,6 +12,5 @@ class TestStopXrootd(osgunittest.OSGTestCase):
             files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
         self.skip_ok_if(core.state['xrootd.started-server'] == False, 'did not start server')
-
-        service.check_stop(core.config['xrootd_service'])
+        service.stop(core.config['xrootd_service'])
 
