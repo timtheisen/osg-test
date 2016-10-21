@@ -10,7 +10,7 @@ import osgtest.library.service as service
 
 class TestStartCondorCE(osgunittest.OSGTestCase):
     # Tests 01-02 are needed to reconfigure condor to work with HTCondor-CE
-    def test_01_write_condor_config(self):
+    def test_01_configure_condor(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         core.config['condor-ce.condor-cfg'] = '/etc/condor/config.d/99-osgtest.condor.conf'
@@ -36,7 +36,7 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         core.check_system(command, 'Reconfigure Condor')
         self.assert_(service.is_running('condor'), 'Condor not running after reconfig')
 
-    def test_03_configure_authentication(self):
+    def test_03_configure_ce(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         # Configure condor-ce to use the gridmap file and set up PBS and Condor routes
@@ -60,6 +60,11 @@ JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
 JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
 JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
 """
+
+        if core.rpm_is_installed('htcondor-ce-view'):
+            condor_contents += "\nDAEMON_LIST = $(DAEMON_LIST), CEVIEW, GANGLIAD, SCHEDD"
+            core.config['condor-ce.view-port'] = condor.ce_config_val('HTCONDORCE_VIEW_PORT')
+
         files.write(core.config['condor-ce.condor-ce-cfg'],
                     condor_contents,
                     owner='condor-ce',
@@ -67,8 +72,7 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
 
         # lcmaps needs to know to use the gridmap file instead of GUMS
         core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
-        lcmaps_contents = """
-authorize_only:
+        lcmaps_contents = """authorize_only:
 gridmapfile -> good | bad
 """
         files.append(core.config['condor-ce.lcmapsdb'], lcmaps_contents, owner='condor-ce')
@@ -85,7 +89,7 @@ gridmapfile -> good | bad
                         owner='condor-ce',
                         chmod=0644)
 
-    def test_05_start_condorce(self):
+    def test_04_start_condorce(self):
         if core.el_release() >= 7:
             core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
         else:

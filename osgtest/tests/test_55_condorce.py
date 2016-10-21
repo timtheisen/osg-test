@@ -3,6 +3,7 @@
 
 import os
 import re
+import socket
 
 import osgtest.library.condor as condor
 import osgtest.library.core as core
@@ -152,3 +153,18 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+
+    def test_07_ceview(self):
+        core.config['condor-ce.view-listening'] = False
+        self.general_requirements()
+        core.skip_ok_unless_installed('htcondor-ce-view')
+        view_sock = socket.socket()
+        try:
+            try:
+                view_sock.connect((core.get_hostname(), int(core.config['condor-ce.view-port'])))
+            except socket.error:
+                self.fail('CE View not listening on %s' % core.config['condor-ce.view-port'])
+        finally:
+            view_sock.close()
+        core.config['condor-ce.view-listening'] = True
+
