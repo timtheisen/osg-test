@@ -12,7 +12,7 @@ class TestStopTomcat(osgunittest.OSGTestCase):
     def test_01_stop_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
-        service.stop('tomcat')
+        service.stop(tomcat.pkgname())
 
     def test_02_remove_vo_webapp(self):
         core.skip_ok_unless_installed('voms-admin-server')
