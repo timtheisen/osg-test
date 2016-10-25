@@ -85,12 +85,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = %s\n' % log_level,
                      owner='tomcat', backup=True)
 
-        if core.el_release() == 7:
-            # tomcat on el7 doesn't seem to actually use its always-present pidfile...
-            service.start('tomcat', init_script=tomcat.pkgname())
-        else:
-            service.start('tomcat', init_script=tomcat.pkgname(), sentinel_file=tomcat.pidfile())
-
+        service.check_start(tomcat.pkgname())
         if core.options.nightly:
             timeout = 3600.0
         else:

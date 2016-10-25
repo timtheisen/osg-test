@@ -88,9 +88,8 @@ class TestStartBestman(osgunittest.OSGTestCase):
             for logfile in ('bestman2.log', 'event.srm.log'):
                 core.system(('cat', os.path.join(logdir, logfile)))
 
-        service.start('bestman2')
         try:
-            self.assert_(service.is_running('bestman2'), 'Bestman failed to start')
+            service.check_start('bestman2')
         except AssertionError:
             _dump_logfiles()
             raise

@@ -61,7 +61,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         else:
             core.config['xrootd_service'] = "xrootd@clustered"
 
-        service.start(core.config['xrootd_service'])
-        self.assert_(service.is_running(core.config['xrootd_service']), 'XRootD failed to start')
+        service.check_start(core.config['xrootd_service'])
         core.state['xrootd.started-server'] = True
 

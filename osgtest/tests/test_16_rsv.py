@@ -22,8 +22,6 @@ class TestStartRSV(osgunittest.OSGTestCase):
         # Before we start RSV, make sure Condor-Cron is up
         self.skip_bad_unless(core.state['condor-cron.running-service'], 'Condor-Cron not running')
 
-        service.start('rsv')
-        self.assert_(service.is_running('rsv'), 'RSV failed to start')
-
+        service.check_start('rsv')
         core.state['rsv.started-service'] = True
         core.state['rsv.running-service'] = True

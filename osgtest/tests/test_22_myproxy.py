@@ -36,7 +36,6 @@ class TestStartMyProxy(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('myproxy-server')
         self.skip_ok_if(os.path.exists(core.config['myproxy.lock-file']), 'apparently running')
 
-        service.start('myproxy-server')
-        self.assert_(service.is_running('myproxy-server'), 'MyProxy failed to start')
+        service.check_start('myproxy-server')
         core.state['myproxy.started-server'] = True
 

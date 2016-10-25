@@ -8,9 +8,7 @@ class TestStopBestman(osgunittest.OSGTestCase):
     def test_01_stop_bestman(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         self.skip_ok_unless(core.state['bestman.started-server'], 'bestman server not started')
-
-        service.stop('bestman2')
-        self.assert_(not service.is_running('bestman2'), 'Bestman failed to stop')
+        service.check_stop('bestman2')
 
     def test_02_deconfig_sudoers(self):
         if core.missing_rpm('bestman2-server', 'bestman2-client'):

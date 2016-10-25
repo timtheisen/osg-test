@@ -13,8 +13,7 @@ class TestStopVOMS(osgunittest.OSGTestCase):
         voms.skip_ok_unless_installed()
         self.skip_ok_unless(core.state['voms.started-server'], 'did not start server')
 
-        service.stop(core.config['voms_service'])
-        self.assert_(not service.is_running(core.config['voms_service']), 'VOMS failed to stop')
+        service.check_stop(core.config['voms_service'])
 
     def test_02_restore_vomses(self):
         voms.skip_ok_unless_installed()

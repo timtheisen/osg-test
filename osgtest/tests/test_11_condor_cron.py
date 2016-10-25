@@ -13,8 +13,7 @@ class TestStartCondorCron(osgunittest.OSGTestCase):
             core.state['condor-cron.running-service'] = True
             self.skip_ok('already running')
 
-        service.start('condor-cron')
-        self.assert_(service.is_running('condor-cron', timeout=5), "Condor-Cron is not running")
+        service.check_start('condor-cron')
 
         core.state['condor-cron.started-service'] = True
         core.state['condor-cron.running-service'] = True
