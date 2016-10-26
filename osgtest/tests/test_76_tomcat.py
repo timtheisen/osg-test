@@ -17,6 +17,7 @@ class TestStopTomcat(osgunittest.OSGTestCase):
     def test_02_remove_vo_webapp(self):
         core.skip_ok_unless_installed('voms-admin-server')
         self.skip_ok_unless(core.state['voms.installed-vo-webapp'], 'did not start webapp')
+        # TODO: use check_stop after SOFTWARE-2514 is released
         service.stop('voms-admin')
 
     def test_03_deconfig_tomcat_properties(self):
