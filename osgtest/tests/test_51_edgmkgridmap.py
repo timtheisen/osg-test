@@ -33,6 +33,7 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         os.environ['VO_LIST_FILE'] = '/usr/share/osg-test/vo-list-file'
         os.environ['UNDEFINED_ACCTS_FILE'] = '/usr/share/osg-test/undef-ids'
         core.check_system(command, 'Run edg-mkgridmap')
+        self.assert_(os.path.exists(os.environ['GRIDMAP']), 'failed to generate grid-mapfile')
         core.system(('cat', os.environ['GRIDMAP']))
         core.system(('cat', os.environ['EDG_MKGRIDMAP_LOG']))
 
