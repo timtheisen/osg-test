@@ -3,7 +3,7 @@
 
 import os
 import re
-import socket
+import urllib2
 
 import osgtest.library.condor as condor
 import osgtest.library.core as core
@@ -158,13 +158,11 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         core.config['condor-ce.view-listening'] = False
         self.general_requirements()
         core.skip_ok_unless_installed('htcondor-ce-view')
-        view_sock = socket.socket()
+        view_url = 'http://%s:%s' % (core.get_hostname(), int(core.config['condor-ce.view-port']))
         try:
-            try:
-                view_sock.connect((core.get_hostname(), int(core.config['condor-ce.view-port'])))
-            except socket.error:
-                self.fail('CE View not listening on %s' % core.config['condor-ce.view-port'])
-        finally:
-            view_sock.close()
+            src = urllib2.urlopen(view_url).read()
+        except urllib2.URLError:
+            self.fail('Could not reach HTCondor-CE View at %s' % view_url)
+        self.assert_(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
         core.config['condor-ce.view-listening'] = True
 
