@@ -3,6 +3,7 @@
 
 import os
 import re
+import urllib2
 
 import osgtest.library.condor as condor
 import osgtest.library.core as core
@@ -91,7 +92,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
         os.chdir(cwd)
 
-    def test_06_use_gums_auth(self):
+    def test_06_ping_with_gums(self):
         core.state['condor-ce.gums-auth'] = False
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
@@ -137,23 +138,31 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                       '# globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       owner='condor-ce')
-
-        service.check_stop('condor-ce')
-        service.check_start('condor-ce')
         core.state['condor-ce.gums-auth'] = True
 
-    def test_07_ping_with_gums(self):
-        self.general_requirements()
-        core.skip_ok_unless_installed('gums-service')
-        self.skip_bad_unless(core.state['condor-ce.gums-auth'], 'CE not using GUMS auth')
-
-        # Wait for the schedd to come back up
+        service.check_stop('condor-ce')
         try:
             stat = os.stat(core.config['condor-ce.collectorlog'])
         except OSError:
             stat = None
+
+        service.check_start('condor-ce')
+        # Wait for the schedd to come back up
         self.failUnless(condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0),
                         'Schedd failed to restart within the 1 min window')
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+
+    def test_07_ceview(self):
+        core.config['condor-ce.view-listening'] = False
+        self.general_requirements()
+        core.skip_ok_unless_installed('htcondor-ce-view')
+        view_url = 'http://%s:%s' % (core.get_hostname(), int(core.config['condor-ce.view-port']))
+        try:
+            src = urllib2.urlopen(view_url).read()
+        except urllib2.URLError:
+            self.fail('Could not reach HTCondor-CE View at %s' % view_url)
+        self.assert_(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
+        core.config['condor-ce.view-listening'] = True
+

@@ -1,5 +1,7 @@
 import os
+
 import osgtest.library.core as core
+import osgtest.library.condor as condor
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
 
@@ -9,9 +11,7 @@ class TestStartCondor(osgunittest.OSGTestCase):
         core.state['condor.running-service'] = False
 
         core.skip_ok_unless_installed('condor')
-        core.config['condor.collectorlog'] = core.check_system(('condor_config_val', 'COLLECTOR_LOG'),
-                                                               'Failed to query for Condor CollectorLog path')[0]\
-                                                 .strip()
+        core.config['condor.collectorlog'] = condor.config_val('COLLECTOR_LOG')
 
         if service.is_running('condor'):
             core.state['condor.running-service'] = True
