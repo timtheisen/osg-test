@@ -8,7 +8,8 @@ class TestMyProxy(osgunittest.OSGTestCase):
     def test_01_remove_proxy(self):
         core.skip_ok_unless_installed('myproxy', 'myproxy-server')
         self.skip_ok_unless(core.state['myproxy.started-server'], 'MyProxy server failed to start')
-        # If there is no pre-existing proxy file, the following command will                                                                                                # produce error output and have exit status 1; because this is the
+        # If there is no pre-existing proxy file, the following command will
+        # produce error output and have exit status 1; because this is the
         # expected (but not the only valid) case, do not check the output or
         # exit status.  This test exists only to clear out a pre-existing proxy.
         command = ('myproxy-destroy', '--verbose', '-s', core.get_hostname(), '-l', core.options.username)
