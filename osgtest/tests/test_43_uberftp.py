@@ -16,6 +16,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
     def test_01_copy_local_to_server_uberftp(self):
         core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
@@ -35,6 +36,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
     def test_02_copy_server_to_local_uberftp(self):
         core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
@@ -54,6 +56,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
     def test_03_copy_local_to_server_uberftp_parallel(self):
         core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')
 
         hostname = socket.getfqdn()
         temp_dir_source = tempfile.mkdtemp()
@@ -80,6 +83,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
     def test_04_copy_server_to_local_uberftp_parallel(self):
         core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')
 
         hostname = socket.getfqdn()
         temp_dir_source = tempfile.mkdtemp()
