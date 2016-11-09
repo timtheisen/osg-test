@@ -8,7 +8,7 @@ import osgtest.library.osgunittest as osgunittest
 class TestStartGatekeeper(osgunittest.OSGTestCase):
 
     def test_01_start_gatekeeper(self):
-        core.config['globus-gatekeeper.started-service'] = False
+        core.state['globus-gatekeeper.started-service'] = False
         core.state['globus-gatekeeper.running'] = False
         core.skip_ok_unless_installed('globus-gatekeeper')
         core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
@@ -25,7 +25,8 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
                 os.chmod('/var/log/globus', 0777)
 
             service.check_start('globus-gatekeeper')
-            core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
+            core.state['globus-gatekeeper.started-service'] = True
+            core.state['globus-gatekeeper.running'] = True
 
     def test_02_start_seg(self):
         core.state['globus.started-seg'] = False
