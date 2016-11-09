@@ -14,6 +14,7 @@ class TestGridFTP(osgunittest.OSGTestCase):
     def test_01_copy_local_to_server(self):
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'globus-ftp-client',
                                       'globus-proxy-utils', 'globus-gass-copy-progs')
+        self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
@@ -33,6 +34,7 @@ class TestGridFTP(osgunittest.OSGTestCase):
     def test_02_copy_server_to_local(self):
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'globus-ftp-client',
                                       'globus-proxy-utils', 'globus-gass-copy-progs')
+        self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
