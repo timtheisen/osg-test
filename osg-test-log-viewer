@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import urllib2
+import tkFont
 
 
 
@@ -105,13 +106,16 @@ class Application(Frame):
         Frame.__init__(self, master)
         self.pack(fill=BOTH, expand=True)
 
+        self.font = tkFont.Font(family='Sans', size=9)
+        self.textfont = tkFont.Font(family='Monospace', size=9)
+
         self.top = Frame(self)
         self.top.pack(side=TOP, fill=X)
 
-        self.quit_btn = Button(self.top, text="QUIT", fg="red", command=self.quit)
+        self.quit_btn = Button(self.top, text="QUIT", fg="red", command=self.quit, font=self.font)
         self.quit_btn.pack(side=LEFT)
 
-        self.copy_section_btn = Button(self.top, text="Copy Section to X Clipboard", command=self.copy_section)
+        self.copy_section_btn = Button(self.top, text="Copy Section to X Clipboard", command=self.copy_section, font=self.font)
         self.copy_section_btn.pack(side=LEFT)
 
         self.bot = Frame(self)
@@ -120,21 +124,21 @@ class Application(Frame):
         self.section_scrollbar = Scrollbar(self.bot)
         self.section_scrollbar.pack(side=LEFT, fill=Y)
 
-        self.section_lbx = Listbox(self.bot, selectmode=BROWSE)
+        self.section_lbx = Listbox(self.bot, selectmode=BROWSE, font=self.font)
         self.section_lbx.pack(side=LEFT, fill=BOTH, expand=True)
         self.current = None
 
         self.section_lbx.config(yscrollcommand=self.section_scrollbar.set)
         self.section_scrollbar.config(command=self.section_lbx.yview)
 
-        self.filelabel = Label(self.top, text=logfile)
+        self.filelabel = Label(self.top, text=logfile, font=self.font)
         self.filelabel.pack(side=RIGHT)
 
-        self.label = Label(self.top, text="")
+        self.label = Label(self.top, text="", font=self.font)
         self.label.pack(side=LEFT, fill=X)
 
 
-        self.text = ScrolledText.ScrolledText(self.bot)
+        self.text = ScrolledText.ScrolledText(self.bot, font=self.textfont)
         self.text.pack(side=RIGHT, fill=BOTH, expand=True)
 
         self.logdata = logdata
