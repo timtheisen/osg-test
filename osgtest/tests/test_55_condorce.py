@@ -51,7 +51,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.general_requirements()
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge')
-        self.skip_ok_unless(core.state['torque.pbs-server-running'])
+        self.skip_ok_unless(service.is_running('pbs_server'))
 
         cwd = os.getcwd()
         os.chdir('/tmp')

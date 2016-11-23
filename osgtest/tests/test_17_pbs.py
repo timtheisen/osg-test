@@ -22,7 +22,8 @@ set server scheduling=true
 set server acl_hosts += *
 set server acl_host_enable = True
 """
-    required_rpms = ['torque-mom',
+    required_rpms = ['torque',
+                     'torque-mom',
                      'torque-server',
                      'torque-scheduler',
                      'torque-client', # for qmgr
@@ -30,15 +31,8 @@ set server acl_host_enable = True
 
 
     def test_01_start_munge(self):
-        if core.el_release() == 5:
-            core.config['munge.lockfile'] = '/var/lock/subsys/munge'
-        elif core.el_release() == 6:
-            core.config['munge.lockfile'] = '/var/lock/subsys/munged'
-        elif core.el_release() == 7:
-            core.config['munge.lockfile'] = '/var/run/munge/munged.pid'
         core.config['munge.keyfile'] = '/etc/munge/munge.key'
-        core.state['munge.running'] = False
-
+        core.state['munge.started-service'] = False
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(service.is_running('munge'), 'already running')
 
@@ -46,17 +40,10 @@ set server acl_host_enable = True
         command = ('/usr/sbin/create-munge-key', '-f',)
         stdout, _, fail = core.check_system(command, 'Create munge key')
         self.assert_(stdout.find('error') == -1, fail)
-
         service.check_start('munge')
-        core.state['munge.running'] = True
 
     def test_02_start_mom(self):
-        if core.el_release() <= 6:
-            core.config['torque.mom-lockfile'] = '/var/lock/subsys/pbs_mom'
-        else:
-            core.config['torque.mom-lockfile'] = '/var/lib/torque/mom_priv/mom.lock'
-        core.state['torque.pbs-mom-running'] = False
-
+        core.state['pbs_mom.started-service'] = False
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(service.is_running('pbs_mom'), 'PBS mom already running')
 
@@ -68,61 +55,36 @@ set server acl_host_enable = True
         files.write(core.config['torque.mom-layout'],
                     "nodes=0",
                     owner='pbs')
-
         service.check_start('pbs_mom')
-        core.state['torque.pbs-mom-running'] = True
-
 
     def test_03_start_pbs_sched(self):
-        if core.el_release() <= 6:
-            core.config['torque.sched-lockfile'] = '/var/lock/subsys/pbs_sched'
-        else:
-            core.config['torque.sched-lockfile'] = '/var/lib/torque/sched_priv/sched.lock'
-        core.state['torque.pbs-sched-running'] = False
-
+        core.state['pbs_sched.started-service'] = False
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_ok_if(service.is_running('pbs_sched'), 'PBS sched already running')
-
         service.check_start('pbs_sched')
-        core.state['torque.pbs-sched-running'] = True
 
-    def test_04_start_pbs(self):
-        if core.el_release() <= 6:
-            core.config['torque.pbs-lockfile'] = '/var/lock/subsys/pbs_server'
-        else:
-            core.config['torque.pbs-lockfile'] = '/var/lib/torque/server_priv/server.lock'
+    def test_04_start_trqauthd(self):
         core.state['trqauthd.started-service'] = False
-        core.state['torque.pbs-server-running'] = False
-        core.state['torque.pbs-server-started'] = False
-        core.state['torque.pbs-configured'] = False
-        core.state['torque.nodes-up'] = False
-        core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
         core.config['torque.pbs-servername-file'] = '/var/lib/torque/server_name'
-
         core.skip_ok_unless_installed(*self.required_rpms)
-        if os.path.exists(core.config['torque.pbs-lockfile']):
-            core.state['torque.pbs-server-running'] = True
-            self.skip_ok('pbs server apparently running')
-
+        self.skip_ok_if(service.is_running('trqauthd'), 'trqauthd is already running')
         # set hostname as servername instead of localhost
+        # config required before starting trqauthd
         files.write(core.config['torque.pbs-servername-file'],
                     "%s" % core.get_hostname(),
                     owner='pbs')
-        core.state['torque.pbs-configured'] = True
-
-        # trqauthd is required for the pbs_server
         service.check_start('trqauthd')
 
-        if not os.path.exists('/var/lib/torque/server_priv/serverdb'):
-            if core.el_release() <= 6:
-                command = 'service pbs_server create' # this creates the default config and starts the service
-            else:
-                # XXX: "service pbs_server create" doesn't work for systemd, and I haven't found a
-                #      systemd equivalent to do the "create" step in el7 ... The following was
-                #      distilled from the el6 init.d script:  (but please correct as necessary)
-                command = ('/usr/sbin/pbs_server -d /var/lib/torque -t create -f && '
-                           'sleep 10 && /usr/bin/qterm')
+    def test_05_configure_pbs(self):
+        core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
+        core.config['torque.pbs-serverdb'] = '/var/lib/torque/server_priv/serverdb'
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_ok_if(service.is_running('pbs_server'), 'pbs server already running')
 
+        files.preserve(core.config['torque.pbs-serverdb'], 'pbs')
+        if not os.path.exists(core.config['torque.pbs-serverdb']):
+            command = ('/usr/sbin/pbs_server -d /var/lib/torque -t create -f && '
+                       'sleep 10 && /usr/bin/qterm')
             stdout, _, fail = core.check_system(command, 'create initial pbs serverdb config', shell=True)
             self.assert_(stdout.find('error') == -1, fail)
 
@@ -133,9 +95,13 @@ set server acl_host_enable = True
                     "%s np=1 num_node_boards=1\n" % core.get_hostname(),
                     owner='pbs')
 
-        # Sometimes the restart command throws an error on stop but still manages
-        # to kill the service, meaning that the service doesn't get brought back up
-        service.check_stop('pbs_server')
+    def test_06_start_pbs(self):
+        core.state['pbs_server.started-service'] = False
+        core.state['torque.nodes-up'] = False
+
+        core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(service.is_running('trqauthd'), 'pbs_server requires trqauthd')
+        self.skip_ok_if(service.is_running('pbs_server'), 'pbs server already running')
 
         server_log = '/var/log/torque/server_logs/' + date.today().strftime('%Y%m%d')
         try:
@@ -143,10 +109,7 @@ set server acl_host_enable = True
         except OSError:
             server_log_stat = None
 
-
         service.check_start('pbs_server')
-        core.state['torque.pbs-server-started'] = True
-        core.state['torque.pbs-server-running'] = True
 
         # Wait until the server is up before writing the rest of the config
         core.monitor_file(server_log, server_log_stat, '.*Server Ready.*', 60.0)
