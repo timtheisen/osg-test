@@ -1,6 +1,7 @@
 test_04_java
 test_05_mysqld
 test_06_fetch_crl
+test_07_munge
 test_09_jobs
 test_10_condor
 test_11_condor_cron
@@ -61,6 +62,7 @@ test_89_condor
 test_90_bestman
 test_91_pbs
 test_92_gsiopenssh
+test_94_munge
 test_95_mysqld
 test_96_proxy
 test_97_java
