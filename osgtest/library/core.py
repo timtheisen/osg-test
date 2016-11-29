@@ -55,6 +55,11 @@ _log_filename = None
 _last_log_had_output = True
 _el_release = None
 
+SLURM_PACKAGES = ['slurm',
+                  'slurm-munge',
+                  'slurm-perlapi',
+                  'slurm-plugins',
+                  'slurm-sql']
 
 # ------------------------------------------------------------------------------
 # Global Functions

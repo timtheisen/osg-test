@@ -2,7 +2,6 @@ import re
 
 import osgtest.library.core as core
 import osgtest.library.yum as yum
-import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
 class TestInstall(osgunittest.OSGTestCase):
@@ -28,17 +27,24 @@ class TestInstall(osgunittest.OSGTestCase):
         # Install packages
         core.state['install.transaction_ids'] = []
         fail_msg = ''
-        for package in core.options.packages:
+        pkg_repo_dict = dict((x, core.options.extrarepos) for x in core.options.packages)
 
+        # FIXME: Install slurm out of contrib if we're running 'All' tests until
+        # SOFTWARE-1733 gives us a generalized solution
+        if any(x in pkg_repo_dict.keys() for x in ['osg-tested-internal', 'osg-tested-internal-gram']) and \
+           float(core.osg_release()) > 3.2:
+            all_slurm_packages = core.SLURM_PACKAGES + ['slurm-slurmdbd']
+            pkg_repo_dict.update(dict((x, ['osg-contrib']) for x in all_slurm_packages))
+
+        for pkg, repos in pkg_repo_dict.items():
             # Do not try to re-install packages
-            if core.rpm_is_installed(package):
+            if core.rpm_is_installed(pkg):
                 continue
 
             # Attempt installation
             command = ['yum', '-y']
-            for repo in core.options.extrarepos:
-                command.append('--enablerepo=%s' % repo)
-            command += ['install', package]
+            command += ['--enablerepo=%s' % x for x in repos]
+            command += ['install', pkg]
 
             retry_fail, _, stdout, _ = yum.retry_command(command)
             if retry_fail == '':   # the command succeeded
@@ -47,8 +53,8 @@ class TestInstall(osgunittest.OSGTestCase):
                     # transaction IDs so we can undo each transaction in the
                     # proper order
                     core.state['install.transaction_ids'].append(yum.get_transaction_id())
-                command = ('rpm', '--verify', package)
-                core.check_system(command, 'Verify %s' % (package))
+                command = ('rpm', '--verify', pkg)
+                core.check_system(command, 'Verify %s' % (pkg))
                 yum.parse_output_for_packages(stdout)
 
             fail_msg += retry_fail
