@@ -30,14 +30,12 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
 
     def test_02_start_seg(self):
         core.state['globus.started-seg'] = False
-        core.config['globus.seg-lockfile'] = '/var/lock/subsys/globus-scheduler-event-generator'
-
         core.skip_ok_unless_installed('globus-scheduler-event-generator-progs')
         # globus-job-run against PBS hangs with the SEG so we disable it and use
         # globus-grid-job-manager-pbs-setup-poll instead
         # https://jira.opensciencegrid.org/browse/SOFTWARE-1929
         self.skip_ok_if(core.el_release() == 5, 'Disable the SEG for EL5')
-        self.skip_ok_if(os.path.exists(core.config['globus.seg-lockfile']), 'SEG already running')
+        self.skip_ok_if(service.is_running('globus-scheduler-event-generator'), 'SEG already running')
 
         service.check_start('globus-scheduler-event-generator')
         core.state['globus.started-seg'] = True
