@@ -32,7 +32,7 @@ def stop():
     service.check_stop(daemon_name())
 
 def is_running():
-    service.is_running(daemon_name())
+    return service.is_running(daemon_name())
 
 def _get_command(user='root', database=None):
     command = ['mysql', '-N', '-B', '--user=' + str(user)]
