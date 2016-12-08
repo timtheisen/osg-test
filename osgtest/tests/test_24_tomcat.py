@@ -85,6 +85,12 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = %s\n' % log_level,
                      owner='tomcat', backup=True)
 
+        old_str  =  "1catalina.org.apache.juli.FileHandler.prefix = catalina."
+        repl_str = ("1catalina.org.apache.juli.FileHandler.prefix = catalina\n"
+                    "1catalina.org.apache.juli.FileHandler.rotatable = false")
+        files.replace(core.config['tomcat.logging-conf'], old_str, repl_str,
+                      owner='tomcat', backup=False)
+
         service.check_start(tomcat.pkgname())
         if core.options.nightly:
             timeout = 3600.0
