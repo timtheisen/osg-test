@@ -92,16 +92,16 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         self.slurm_reqs()
         self.skip_ok_if(service.is_running(core.config['slurm.service-name']), 'slurm already running')
 
-        try:
-            ctld_stat = os.stat(CTLD_LOG)
-        except OSError:
-            ctld_stat = None
+        stat = core.get_stat(CTLD_LOG)
 
         command = ['slurmctld']
         core.check_system(command, 'enable slurmctld')
         service.check_start(core.config['slurm.service-name'])
 
-        core.monitor_file(CTLD_LOG, ctld_stat, 'slurm_rpc_node_registration complete for %s' % SHORT_HOSTNAME, 60.0)
+        core.monitor_file(CTLD_LOG,
+                          stat,
+                          'slurm_rpc_node_registration complete for %s' % SHORT_HOSTNAME,
+                          60.0)
         command = ['scontrol', 'update', 'nodename=%s' % SHORT_HOSTNAME, 'state=idle']
         core.check_system(command, 'enable slurm node')
 

@@ -161,10 +161,8 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         core.state['condor-ce.gums-auth'] = True
 
         service.check_stop('condor-ce')
-        try:
-            stat = os.stat(core.config['condor-ce.collectorlog'])
-        except OSError:
-            stat = None
+
+        stat = core.get_stat(core.config['condor-ce.collectorlog'])
 
         service.check_start('condor-ce')
         # Wait for the schedd to come back up

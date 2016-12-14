@@ -122,9 +122,7 @@ gridmapfile -> good | bad
             self.skip_ok('already running')
 
         service.check_start('condor-ce')
-        try:
-            stat = os.stat(core.config['condor-ce.collectorlog'])
-        except OSError:
-            stat = None
+
+        stat = core.get_stat(core.config['condor-ce.collectorlog'])
         if condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0):
             core.state['condor-ce.schedd-ready'] = True

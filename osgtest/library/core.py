@@ -1,5 +1,6 @@
 """Support and convenience functions for tests."""
 
+import errno
 import os
 import os.path
 import pwd
@@ -139,6 +140,14 @@ def remove_log():
     """Removes the detailed log file; not for general use."""
     os.remove(_log_filename)
 
+def get_stat(filename):
+    '''Return stat for 'filename', None if the file does not exist'''
+    try:
+        return os.stat(filename)
+    except OSError, exc:
+        if exc.errno == errno.ENOENT:
+            return None
+        raise
 
 def monitor_file(filename, old_stat, sentinel, timeout):
     """Monitors a file for the sentinel regex
