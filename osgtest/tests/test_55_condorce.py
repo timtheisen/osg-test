@@ -12,6 +12,52 @@ import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
+
+    def run_blahp_trace(self, lrms):
+        """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
+        lrms_cache_prefix = {'pbs': 'qstat', 'slurm': 'slurm'}
+
+        cwd = os.getcwd()
+        os.chdir('/tmp')
+        command = ('condor_ce_trace', '-a osgTestBatchSystem = %s' % lrms.lower(), '--debug', core.get_hostname())
+        trace_out, _, _ = core.check_system(command, 'ce trace against %s' % lrms.lower(), user=True)
+
+        try:
+            backend_jobid = re.search(r'%s_JOBID=(\d+)' % lrms.upper(), trace_out).group(1)
+        except AttributeError:
+            # failed to find backend job ID
+            self.fail('did not run against %s' % lrms.upper())
+        cache_file = '/var/tmp/%s_cache_%s/blahp_results_cache' % (lrms_cache_prefix[lrms.lower()],
+                                                                   core.options.username)
+        with open(cache_file, 'r') as handle:
+            cache = handle.read()
+
+        # Verify backend job ID in cache for multiple formats between the different
+        # versions of the blahp. For blahp-1.18.16.bosco-1.osg32:
+        #
+        # 2: [BatchJobId="2"; WorkerNode="fermicloud171.fnal.gov-0"; JobStatus=4; ExitCode= 0; ]\n
+        #
+        # For blahp-1.18.25.bosco-1.osg33:
+        #
+        # 5347907	"(dp0
+        # S'BatchJobId'
+        # p1
+        # S'""5347907""'
+        # p2
+        # sS'WorkerNode'
+        # p3
+        # S'""node1358""'
+        # p4
+        # sS'JobStatus'
+        # p5
+        # S'2'
+        # p6
+        # s."
+        self.assert_(re.search(r'BatchJobId[=\s"\'p1S]+%s' % backend_jobid, cache),
+                     'Job %s not found in %s blahp cache:\n%s' % (backend_jobid, lrms.upper(), cache))
+
+        os.chdir(cwd)
+
     def general_requirements(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
@@ -52,47 +98,21 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge')
         self.skip_ok_unless(service.is_running('pbs_server'))
+        self.run_blahp_trace('pbs')
 
-        cwd = os.getcwd()
-        os.chdir('/tmp')
+    def test_06_slurm_trace(self):
+        self.general_requirements()
+        core.skip_ok_unless_installed('slurm',
+                                      'slurm-munge',
+                                      'slurm-perlapi',
+                                      'slurm-plugins',
+                                      'slurm-sql')
+        self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
+        self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
+        self.skip_ok_unless(service.is_running('slurm'))
+        self.run_blahp_trace('slurm')
 
-        command = ('condor_ce_trace', '-a osgTestPBS = True', '--debug', core.get_hostname())
-        trace_out, _, _ = core.check_system(command, 'ce trace against pbs', user=True)
-
-        pbs_jobid = re.search(r'PBS_JOBID=(\d+)', trace_out).group(1)
-        pbs_cache_file = '/var/tmp/qstat_cache_%s/blahp_results_cache' % core.options.username
-
-        f = open(pbs_cache_file, 'r')
-        pbs_cache = f.read()
-        f.close()
-
-        # Verify PBS job ID in cache for multiple formats between the different
-        # versions of the blahp. For blahp-1.18.16.bosco-1.osg32:
-        #
-        # 2: [BatchJobId="2"; WorkerNode="fermicloud171.fnal.gov-0"; JobStatus=4; ExitCode= 0; ]\n
-        #
-        # For blahp-1.18.25.bosco-1.osg33:
-        #
-        # 5347907	"(dp0
-        # S'BatchJobId'
-        # p1
-        # S'""5347907""'
-        # p2
-        # sS'WorkerNode'
-        # p3
-        # S'""node1358""'
-        # p4
-        # sS'JobStatus'
-        # p5
-        # S'2'
-        # p6
-        # s."
-        self.assert_(re.search(r'BatchJobId[=\s"\'p1S]+%s' % pbs_jobid, pbs_cache),
-                     'Job %s not found in PBS blahp cache:\n%s' % (pbs_jobid, pbs_cache))
-
-        os.chdir(cwd)
-
-    def test_06_ping_with_gums(self):
+    def test_07_ping_with_gums(self):
         core.state['condor-ce.gums-auth'] = False
         self.general_requirements()
         core.skip_ok_unless_installed('gums-service')
@@ -154,7 +174,7 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
         self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
 
-    def test_07_ceview(self):
+    def test_08_ceview(self):
         core.config['condor-ce.view-listening'] = False
         self.general_requirements()
         core.skip_ok_unless_installed('htcondor-ce-view')

@@ -22,6 +22,7 @@ test_25_voms_admin
 test_26_bestman
 test_27_osg_info_services
 test_28_gsiopenssh
+test_29_slurm
 test_30_misc
 test_35_osg_configure
 test_38_cvmfs
@@ -44,6 +45,7 @@ test_55_condorce
 test_56_lcgutil
 test_57_osg_info_services
 test_59_gsiopenssh
+test_74_slurm
 test_75_gums
 test_76_tomcat
 test_77_myproxy
