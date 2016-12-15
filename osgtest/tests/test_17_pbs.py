@@ -51,7 +51,7 @@ set server acl_host_enable = True
         self.skip_ok_if(service.is_running('pbs_sched'), 'PBS sched already running')
         service.check_start('pbs_sched')
 
-    def test_05_start_trqauthd(self):
+    def test_03_start_trqauthd(self):
         core.state['trqauthd.started-service'] = False
         core.config['torque.pbs-servername-file'] = '/var/lib/torque/server_name'
         core.skip_ok_unless_installed(*self.required_rpms)
@@ -67,6 +67,7 @@ set server acl_host_enable = True
         core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
         core.config['torque.pbs-serverdb'] = '/var/lib/torque/server_priv/serverdb'
         core.skip_ok_unless_installed(*self.required_rpms)
+        self.skip_bad_unless(service.is_running('trqauthd'), 'pbs_server requires trqauthd')
         self.skip_ok_if(service.is_running('pbs_server'), 'pbs server already running')
 
         files.preserve(core.config['torque.pbs-serverdb'], 'pbs')
