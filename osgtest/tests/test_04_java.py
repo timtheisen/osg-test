@@ -1,10 +1,6 @@
-import re
-
 import osgtest.library.yum as yum
 import osgtest.library.core as core
 import osgtest.library.java as java
-import osgtest.library.files as files
-import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
 
 class TestJava(osgunittest.OSGTestCase):
