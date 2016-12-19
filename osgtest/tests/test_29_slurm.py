@@ -1,0 +1,107 @@
+import osgtest.library.core as core
+import osgtest.library.files as files
+import osgtest.library.mysql as mysql
+import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
+
+CLUSTER_NAME = 'osg_test'
+CTLD_LOG = '/var/log/slurm/slurmctld.log'
+SHORT_HOSTNAME = core.get_hostname().split('.')[0]
+
+SLURMDBD_CONFIG = """AuthType=auth/munge
+DbdHost=localhost
+SlurmUser=slurm
+DebugLevel=debug5
+LogFile=/var/log/slurm/slurmdbd.log
+StorageType=accounting_storage/mysql
+StorageLoc=%(name)s
+StorageUser=%(user)s
+StoragePass=%(pass)s
+"""
+
+SLURM_CONFIG = """AccountingStorageHost=localhost
+AccountingStorageLoc=/tmp/slurm_job_accounting.txt
+AccountingStorageType=accounting_storage/slurmdbd
+AuthType=auth/munge
+ClusterName=%(cluster)s
+ControlMachine=%(short_hostname)s
+JobAcctGatherType=jobacct_gather/linux
+KillWait=30
+NodeName=%(short_hostname)s Procs=1 RealMemory=128 State=UNKNOWN
+PartitionName=debug Nodes=%(short_hostname)s Default=YES MaxTime=INFINITE State=UP
+ReturnToService=2
+SlurmUser=slurm
+SlurmctldDebug=debug5
+SlurmctldTimeout=300
+SlurmctldLogFile=%(ctld_log)s
+SlurmdLogFile=/var/log/slurm/slurm.log
+SlurmdDebug=debug5
+StateSaveLocation=/var/spool/slurmd
+"""
+
+class TestStartSlurm(osgunittest.OSGTestCase):
+
+    def slurm_reqs(self):
+        core.skip_ok_unless_installed(*core.SLURM_PACKAGES)
+        self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
+
+    def test_01_slurm_config(self):
+        self.slurm_reqs()
+        core.config['slurm.config'] = '/etc/slurm/slurm.conf'
+        files.write(core.config['slurm.config'],
+                    SLURM_CONFIG % {'short_hostname': SHORT_HOSTNAME, 'cluster': CLUSTER_NAME, 'ctld_log': CTLD_LOG},
+                    owner='slurm',
+                    chmod=0644)
+
+    def test_02_start_slurmdbd(self):
+        core.state['slurmdbd.started-service'] = False
+        self.slurm_reqs()
+        core.skip_ok_unless_installed('slurm-slurmdbd')
+        self.skip_bad_unless(mysql.is_running(), 'slurmdbd requires mysql')
+        core.config['slurmdbd.config'] = '/etc/slurm/slurmdbd.conf'
+        core.config['slurmdbd.user'] = "'osg-test-slurm'@'localhost'"
+        core.config['slurmdbd.name'] = "osg_test_slurmdb"
+
+        mysql.check_execute("create database %s; " % core.config['slurmdbd.name'], 'create slurmdb')
+        mysql.check_execute("create user %s; " % core.config['slurmdbd.user'], 'add slurmdb user')
+        mysql.check_execute("grant usage on *.* to %s; " % core.config['slurmdbd.user'], 'slurmdb user access')
+        mysql.check_execute("grant all privileges on %s.* to %s identified by '%s'; " % (core.config['slurmdbd.name'],
+                                                                                         core.config['slurmdbd.user'],
+                                                                                         core.options.password),
+                            'slurmdb user permissions')
+        mysql.check_execute("flush privileges;", 'reload privileges')
+
+        db_config_vals = {'name':core.config['slurmdbd.name'],
+                          'user':core.config['slurmdbd.user'].split('\'')[1],
+                          'pass':core.options.password}
+        files.write(core.config['slurmdbd.config'],
+                    SLURMDBD_CONFIG % db_config_vals,
+                    owner='slurm',
+                    chmod=0644)
+        service.check_start('slurmdbd')
+
+        # Adding the cluster to the database
+        command = ('sacctmgr', '-i', 'add', 'cluster', CLUSTER_NAME)
+        core.check_system(command, 'add slurm cluster')
+
+    def test_03_start_slurm(self):
+        core.config['slurm.service-name'] = 'slurm'
+        if core.el_release() == 7:
+            core.config['slurm.service-name'] += 'd'
+        core.state['%s.started-service' % core.config['slurm.service-name']] = False
+        self.slurm_reqs()
+        self.skip_ok_if(service.is_running(core.config['slurm.service-name']), 'slurm already running')
+
+        stat = core.get_stat(CTLD_LOG)
+
+        command = ['slurmctld']
+        core.check_system(command, 'enable slurmctld')
+        service.check_start(core.config['slurm.service-name'])
+
+        core.monitor_file(CTLD_LOG,
+                          stat,
+                          'slurm_rpc_node_registration complete for %s' % SHORT_HOSTNAME,
+                          60.0)
+        command = ['scontrol', 'update', 'nodename=%s' % SHORT_HOSTNAME, 'state=idle']
+        core.check_system(command, 'enable slurm node')
+

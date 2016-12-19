@@ -38,10 +38,3 @@ class TestStopPBS(osgunittest.OSGTestCase):
 
         for mom_file in ['config', 'layout']:
             files.restore(core.config['torque.mom-%s' % mom_file], 'pbs')
-
-    def test_05_stop_munge(self):
-        core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_unless(core.state['munge.started-service'], 'munge not running')
-        service.check_stop('munge')
-        files.restore(core.config['munge.keyfile'], 'pbs')
-

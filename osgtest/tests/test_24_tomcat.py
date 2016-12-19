@@ -65,10 +65,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         core.state['tomcat.started'] = False
         catalina_log = tomcat.catalinafile()
 
-        try:
-            initial_stat = os.stat(catalina_log)
-        except OSError:
-            initial_stat = None
+        initial_stat = core.get_stat(catalina_log)
 
         if tomcat.majorver() > 5:
             tomcat_sentinel = r'Server startup in \d+ ms'

@@ -43,17 +43,24 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
 ALL_DEBUG=D_FULLDEBUG
+JOB_ROUTER_DEFAULTS = $(JOB_ROUTER_DEFAULTS) [set_default_maxMemory = 128;]
 JOB_ROUTER_ENTRIES = \\
    [ \\
      GridResource = "batch pbs"; \\
      TargetUniverse = 9; \\
      name = "Local_PBS"; \\
-     Requirements = target.osgTestPBS =?= true; \\
+     Requirements = target.osgTestBatchSystem =?= "pbs"; \\
+   ] \\
+   [ \\
+     GridResource = "batch slurm"; \\
+     TargetUniverse = 9; \\
+     name = "Local_Slurm"; \\
+     Requirements = target.osgTestBatchSystem =?= "slurm"; \\
    ] \\
    [ \\
      TargetUniverse = 5; \\
      name = "Local_Condor"; \\
-     Requirements = target.osgTestPBS =!= true; \\
+     Requirements = (target.osgTestBatchSystem =!= "pbs" && target.osgTestBatchSystem =!= "slurm"); \\
    ]
 
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
@@ -115,9 +122,7 @@ gridmapfile -> good | bad
             self.skip_ok('already running')
 
         service.check_start('condor-ce')
-        try:
-            stat = os.stat(core.config['condor-ce.collectorlog'])
-        except OSError:
-            stat = None
+
+        stat = core.get_stat(core.config['condor-ce.collectorlog'])
         if condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0):
             core.state['condor-ce.schedd-ready'] = True

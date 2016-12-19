@@ -232,7 +232,7 @@ class TestGratia(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.state['gridftp.started-server'], 'gridftp server not running')
         self.skip_bad_unless(core.state['gratia.gridftp-logs-copied'], 'gridftp logs not copied')
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         if core.package_version_compare('gratia-probe-gridftp-transfer', '1.17.0-1') >= 0:
@@ -289,7 +289,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.glexec_meter-running'] = False
         self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/glexec/glexec_meter',)
@@ -348,7 +348,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.dcache-storage-running'] = False
         self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
@@ -422,7 +422,7 @@ class TestGratia(osgunittest.OSGTestCase):
                              'gatekeeper not running')
         self.skip_bad_unless(core.state['condor.running-service'], message='Condor service not running')
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/condor/condor_meter',)
@@ -469,7 +469,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
         core.state['gratia.bdii-status-running'] = False
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
@@ -516,7 +516,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.pbs-running'] = False
         self.skip_bad_if(core.state['gratia.pbs-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
@@ -564,7 +564,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.sge-running'] = False
         self.skip_bad_if(core.state['gratia.sge-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/sge/sge_meter.cron.sh',)
