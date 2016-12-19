@@ -6,14 +6,14 @@
 # ------------------------------------------------------------------------------
 
 PACKAGE := osg-test
-VERSION := 1.9.1
+VERSION := 1.10.0
 
 
 # ------------------------------------------------------------------------------
 # Other configuration: May need to change for a release
 # ------------------------------------------------------------------------------
 
-SBIN_FILES := osg-test
+SBIN_FILES := osg-test osg-test-log-viwer
 INSTALL_SBIN_DIR := usr/sbin
 
 SHARE_DIR := files
