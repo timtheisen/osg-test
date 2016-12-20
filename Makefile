@@ -13,7 +13,7 @@ VERSION := 1.10.0
 # Other configuration: May need to change for a release
 # ------------------------------------------------------------------------------
 
-SBIN_FILES := osg-test osg-test-log-viwer
+SBIN_FILES := osg-test osg-test-log-viewer
 INSTALL_SBIN_DIR := usr/sbin
 
 SHARE_DIR := files
