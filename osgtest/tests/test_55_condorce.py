@@ -96,7 +96,8 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_05_pbs_trace(self):
         self.general_requirements()
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
-        core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge')
+        core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge',
+                                      by_dependency=True)
         self.skip_ok_unless(service.is_running('pbs_server'))
         self.run_blahp_trace('pbs')
 

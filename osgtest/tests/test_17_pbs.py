@@ -32,7 +32,7 @@ set server acl_host_enable = True
 
     def test_01_start_mom(self):
         core.state['pbs_mom.started-service'] = False
-        core.skip_ok_unless_installed(*self.required_rpms)
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
         self.skip_ok_if(service.is_running('pbs_mom'), 'PBS mom already running')
 
         core.config['torque.mom-config'] = '/var/lib/torque/mom_priv/config'
@@ -47,14 +47,14 @@ set server acl_host_enable = True
 
     def test_02_start_pbs_sched(self):
         core.state['pbs_sched.started-service'] = False
-        core.skip_ok_unless_installed(*self.required_rpms)
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
         self.skip_ok_if(service.is_running('pbs_sched'), 'PBS sched already running')
         service.check_start('pbs_sched')
 
     def test_03_start_trqauthd(self):
         core.state['trqauthd.started-service'] = False
         core.config['torque.pbs-servername-file'] = '/var/lib/torque/server_name'
-        core.skip_ok_unless_installed(*self.required_rpms)
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
         self.skip_ok_if(service.is_running('trqauthd'), 'trqauthd is already running')
         # set hostname as servername instead of localhost
         # config required before starting trqauthd
@@ -66,7 +66,7 @@ set server acl_host_enable = True
     def test_04_configure_pbs(self):
         core.config['torque.pbs-nodes-file'] = '/var/lib/torque/server_priv/nodes'
         core.config['torque.pbs-serverdb'] = '/var/lib/torque/server_priv/serverdb'
-        core.skip_ok_unless_installed(*self.required_rpms)
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
         self.skip_bad_unless(service.is_running('trqauthd'), 'pbs_server requires trqauthd')
         self.skip_ok_if(service.is_running('pbs_server'), 'pbs server already running')
 
@@ -88,7 +88,7 @@ set server acl_host_enable = True
         core.state['pbs_server.started-service'] = False
         core.state['torque.nodes-up'] = False
 
-        core.skip_ok_unless_installed(*self.required_rpms)
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
         self.skip_bad_unless(service.is_running('trqauthd'), 'pbs_server requires trqauthd')
         self.skip_ok_if(service.is_running('pbs_server'), 'pbs server already running')
 
