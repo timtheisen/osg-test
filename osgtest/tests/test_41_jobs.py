@@ -25,7 +25,10 @@ class TestRunJobs(osgunittest.OSGTestCase):
         os.chdir(tmp_dir)
         os.chmod(tmp_dir, 0777)
 
-        stdout = core.check_system(command, message, user=True)[0]
+        try:
+            stdout = core.check_system(command, message, user=True, timeout=600)[0]
+        except osgunittest.TimeoutException:
+            self.fail("Job failed to complete in 10 minute window")
 
         if verify_environment:
             self.verify_job_environment(stdout)
