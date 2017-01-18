@@ -1,5 +1,6 @@
 import re
 
+from collections import OrderedDict
 import osgtest.library.core as core
 import osgtest.library.yum as yum
 import osgtest.library.osgunittest as osgunittest
@@ -27,11 +28,11 @@ class TestInstall(osgunittest.OSGTestCase):
         # Install packages
         core.state['install.transaction_ids'] = []
         fail_msg = ''
-        pkg_repo_dict = dict((x, core.options.extrarepos) for x in core.options.packages)
+        pkg_repo_dict = OrderedDict((x, core.options.extrarepos) for x in core.options.packages)
 
         # FIXME: Install slurm out of contrib if we're running 'All' tests until
         # SOFTWARE-1733 gives us a generalized solution
-        if any(x in pkg_repo_dict.keys() for x in ['osg-tested-internal', 'osg-tested-internal-gram']) and \
+        if any(x in pkg_repo_dict for x in ['osg-tested-internal', 'osg-tested-internal-gram']) and \
            float(core.osg_release()) > 3.2:
             all_slurm_packages = core.SLURM_PACKAGES + ['slurm-slurmdbd']
             pkg_repo_dict.update(dict((x, ['osg-contrib']) for x in all_slurm_packages))
