@@ -32,7 +32,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
         # FIXME: Install slurm out of contrib if we're running 'All' tests until
         # SOFTWARE-1733 gives us a generalized solution
-        if any(x in pkg_repo_dict.keys() for x in ['osg-tested-internal', 'osg-tested-internal-gram']) and \
+        if any(x in pkg_repo_dict for x in ['osg-tested-internal', 'osg-tested-internal-gram']) and \
            float(core.osg_release()) > 3.2:
             all_slurm_packages = core.SLURM_PACKAGES + ['slurm-slurmdbd']
             pkg_repo_dict.update(dict((x, ['osg-contrib']) for x in all_slurm_packages))
