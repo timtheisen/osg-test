@@ -98,7 +98,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge',
                                       by_dependency=True)
-        self.skip_ok_unless(service.is_running('pbs_server'))
+        self.skip_ok_unless(service.is_running('pbs_server'), 'pbs service not running')
         self.run_blahp_trace('pbs')
 
     def test_06_slurm_trace(self):
@@ -110,7 +110,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
                                       'slurm-sql')
         self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
-        self.skip_ok_unless(service.is_running('slurm'))
+        self.skip_ok_unless(service.is_running('slurm'), 'slurm service not running')
         self.run_blahp_trace('slurm')
 
     def test_07_ping_with_gums(self):
