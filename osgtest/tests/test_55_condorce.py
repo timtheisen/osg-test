@@ -110,7 +110,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
                                       'slurm-sql')
         self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
-        self.skip_ok_unless(service.is_running('slurm'), 'slurm service not running')
+        self.skip_ok_unless(service.is_running(core.config['slurm.service-name']), 'slurm service not running')
         self.run_blahp_trace('slurm')
 
     def test_07_ping_with_gums(self):
