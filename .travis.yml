@@ -1,0 +1,24 @@
+sudo: required
+env:
+  matrix:
+  - OS_TYPE=centos OS_VERSION=6 PACKAGE=htcondor-ce-condor
+  - OS_TYPE=centos OS_VERSION=6 PACKAGE=osg-gridftp
+  - OS_TYPE=centos OS_VERSION=6 PACKAGE=osg-gums
+  - OS_TYPE=centos OS_VERSION=7 PACKAGE=htcondor-ce-condor
+  - OS_TYPE=centos OS_VERSION=7 PACKAGE=osg-gridftp
+  - OS_TYPE=centos OS_VERSION=7 PACKAGE=osg-gums
+
+services:
+  - docker
+
+before_install:
+  - sudo apt-get update
+  - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+  - sudo service docker restart
+  - sleep 5
+  - sudo docker pull centos:centos${OS_VERSION}
+
+script:
+ # Run tests in Container
+- travis-ci/setup_tests.sh ${OS_VERSION} ${PACKAGE}
+
