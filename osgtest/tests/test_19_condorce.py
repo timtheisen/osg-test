@@ -14,7 +14,8 @@ class TestStartCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         core.config['condor-ce.condor-cfg'] = '/etc/condor/config.d/99-osgtest.condor.conf'
-        contents = """SCHEDD_INTERVAL=1"""
+        contents = """SCHEDD_INTERVAL=1
+QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
 
         files.write(core.config['condor-ce.condor-cfg'],
                     contents,
