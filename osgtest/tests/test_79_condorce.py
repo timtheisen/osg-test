@@ -5,12 +5,12 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStopCondorCE(osgunittest.OSGTestCase):
     def test_01_stop_condorce(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         self.skip_ok_unless(core.state['condor-ce.started-service'], 'did not start server')
         service.check_stop('condor-ce')
 
     def test_02_restore_config(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client', 'htcondor-ce-condor')
+        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         if core.rpm_is_installed('gums-service') and core.state['condor-ce.gums-auth']:
             files.restore(core.config['condor-ce.lcmapsdb'], 'condor-ce.gums')
