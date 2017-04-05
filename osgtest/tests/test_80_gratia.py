@@ -23,21 +23,24 @@ class TestStopGratia(osgunittest.OSGTestCase):
 
     #This test drops the gratia database
     def test_02_uninstall_gratia_database(self):
+        core.skip_ok_unless_installed('gratia-service')
 
-        core.skip_ok_unless_installed('gratia-service')    
-       
         filename = "/tmp/gratia_admin_pass." + str(os.getpid()) + ".txt"
-        contents="[client]\n" + "password=\n"
+        contents = "[client]\n" + "password=\n"
         files.write(filename, contents, backup=False)
-        
-        #Command to drop the gratia database is:
-        #echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered  --user=root --port=3306         
-        command = "echo \"drop database gratia_osgtest;\" | mysql --defaults-extra-file=\"" + filename + "\" -B --unbuffered  --user=root --port=3306"
+
+        # Command to drop the gratia database is:
+        # echo "drop database gratia;" | mysql --defaults-extra-file="/tmp/gratia_admin_pass.<pid>.txt" -B --unbuffered
+        # --user=root --port=3306
+        command = "echo \"drop database gratia_osgtest;\" | " + \
+                  "mysql --defaults-extra-file=\"" + \
+                  filename + \
+                  "\" -B --unbuffered  --user=root --port=3306"
         core.check_system(command, 'Unable to drop Gratia Database.', shell=True)
         files.remove(filename)
         #At this time, remove the gratia reader password file also
         files.remove(core.config['gratia.sql.file'])
-                
+
     #This test cleans up gridftp related files
     def test_03_cleanup_gridftp(self):
 
