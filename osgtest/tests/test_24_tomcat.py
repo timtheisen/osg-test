@@ -15,17 +15,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         command = ('/var/lib/trustmanager-tomcat/configure.sh',)
         core.check_system(command, 'Config trustmanager')
 
-    def test_02_config_tomcat_properties(self):
-        if core.missing_rpm(tomcat.pkgname(), 'emi-trustmanager-tomcat'):
-            return
-
-        server_xml_path = os.path.join(tomcat.sysconfdir(), 'server.xml')
-        old_contents = files.read(server_xml_path, True)
-        pattern = re.compile(r'crlRequired=".*?"', re.IGNORECASE)
-        new_contents = pattern.sub('crlRequired="false"', old_contents)
-        files.write(server_xml_path, new_contents, owner='tomcat')
-
-    def test_03_config_tomcat(self):
+    def test_02_config_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
         old_contents = files.read(tomcat.conffile(), True)
@@ -41,7 +31,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         new_contents = '\n'.join([old_contents] + lines)
         files.write(tomcat.conffile(), new_contents, owner='tomcat')
 
-    def test_04_disable_persistence(self):
+    def test_03_disable_persistence(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
         if core.el_release() > 5:
@@ -55,10 +45,18 @@ class TestStartTomcat(osgunittest.OSGTestCase):
 '''
             files.write(tomcat.contextfile(), contents, owner='tomcat')
 
-    def test_04_configure_gratia(self):
-        core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
+    def test_04_config_tomcat_properties(self):
+        if core.missing_rpm(tomcat.pkgname(), 'gratia-service'):
+            return
+
         command = ('/usr/share/gratia/configure_tomcat',)
         core.check_system(command, 'Unable to configure Gratia.')
+        server_xml_path = os.path.join(tomcat.sysconfdir(), 'server.xml')
+        files.replace_regexpr(server_xml_path,
+                              "(<Server.*\n)",
+                              r'\1<Listener className="org.apache.catalina.core.JasperListener"/>',
+                              owner='gratia',
+                              backup=True)
 
     def test_05_start_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())

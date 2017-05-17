@@ -21,8 +21,8 @@ class TestStopTomcat(osgunittest.OSGTestCase):
         service.stop('voms-admin')
 
     def test_03_deconfig_tomcat_properties(self):
-        core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
-        files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'tomcat')
+        core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
+        files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'gratia')
 
     def test_04_deconfig_catalina_logging(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
