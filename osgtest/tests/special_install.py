@@ -89,6 +89,16 @@ class TestInstall(osgunittest.OSGTestCase):
 
         core.state['install.release-updated'] = True
 
+    def test_04_remove_bestman2_server_dep_libs(self):
+        if core.options.updaterelease != "3.4":
+            return
+
+        # bestman2 and jetty have been dropped from OSG 3.4. bestman2-server-dep-libs requires a version of jetty-http
+        # less than what's available in EPEL, which causes `yum update` fails. We no longer care about bestman2 so we
+        # can just remove the offending package
+        command = ['yum', '-y', 'remove', 'bestman2-server-dep-libs']
+        core.check_system(command, "Failed to remove bestman2-server-dep-libs")
+
     def test_04_update_packages(self):
         if not (core.options.updaterepos and core.state['install.installed']):
             return
