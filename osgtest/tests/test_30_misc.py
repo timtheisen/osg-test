@@ -64,14 +64,3 @@ class TestMisc(osgunittest.OSGTestCase):
         stdout, _, _ = core.check_system(cmdbase + ['lfc-python.x86_64'], 'lfc-python multilib (64bit)')
         if stdout.strip() == '':
             self.fail('64-bit lfc-python not found in 64-bit repo')
-
-        # Find the 32-bit lfc-python26 rpm (on el5 only)
-        if core.el_release() == 5:
-            stdout, _, _ = core.check_system(cmdbase + ['lfc-python26.i386'], 'lfc-python26 multilib (32bit)')
-            if stdout.strip() == '':
-                self.fail('32-bit lfc-python not found in 64-bit repo')
-
-            # Sanity check: find the 64-bit lfc-python26 rpm
-            stdout, _, _ = core.check_system(cmdbase + ['lfc-python26.x86_64'], 'lfc-python26 multilib (64bit)')
-            if stdout.strip() == '':
-                self.fail('64-bit lfc-python not found in 64-bit repo')

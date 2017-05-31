@@ -77,23 +77,7 @@ class TestCleanup(osgunittest.OSGTestCase):
 
         yum.clean(*core.config['yum.clean_repos'])
 
-    def test_02_obsoleting_packages(self):
-        # If packages were obsoleted in upgrade, remove the packages that obsoleted them
-        # Also skip if we didn't install anything
-        if core.el_release() > 5 or len(core.options.packages) == 0:
-            return
-        self.skip_ok_unless(core.state['install.replace'], 'no packages were replaced')
-
-        # This also removes any package that required the obsoleted packages! If we're not
-        # supposed to be removing these packages, they will be considered
-        # orphaned and reinstalled in test_04_orphaned_packages
-        command = ['yum', '-y', 'remove'] + core.state['install.replace']
-        fail_msg, _, stdout, _ = yum.retry_command(command)
-        if fail_msg:
-            self.fail(fail_msg)
-        yum.parse_output_for_packages(stdout)
-
-    def test_03_remove_packages(self):
+    def test_02_remove_packages(self):
         # We didn't ask to install anything
         if len(core.options.packages) == 0:
             return
@@ -103,44 +87,16 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.log_message('No packages installed')
             return
 
-        el_version = core.el_release()
+        core.state['install.transaction_ids'].reverse()
+        for transaction in core.state['install.transaction_ids']:
+            command = ['yum', 'history', 'undo', '-y', transaction]
+            for repo in core.options.extrarepos:
+                command.append('--enablerepo=%s' % repo)
+            fail_msg, _, _, _ = yum.retry_command(command)
+            if fail_msg:
+                self.fail(fail_msg)
 
-        if el_version >= 6:
-            # Rolling back is a lot more reliable in yum post EL5
-            core.state['install.transaction_ids'].reverse()
-            for transaction in core.state['install.transaction_ids']:
-                command = ['yum', 'history', 'undo', '-y', transaction]
-                for repo in core.options.extrarepos:
-                    command.append('--enablerepo=%s' % repo)
-                fail_msg, _, stdout, _ = yum.retry_command(command)
-                if fail_msg:
-                    self.fail(fail_msg)
-        elif el_version == 5:
-            # rpm -Uvh --rollback was very finicky so we had to
-            # spin up our own method of rolling back installations
-            if len(core.state['install.updated']) != 0:
-                command = ['yum', 'downgrade', '-y'] + core.state['install.updated']
-                fail_msg, _, stdout, _ = yum.retry_command(command)
-                if fail_msg:
-                    self.fail(fail_msg)
-                # Remove packages from install list that were brought in as deps for `yum update`
-                yum.parse_output_for_packages(stdout)
-
-            if len(core.state['install.installed']) != 0:
-                for pkg in core.state['install.os_updates']:
-                    try:
-                        core.state['install.installed'].remove(pkg)
-                    except ValueError:
-                        pass # it was already removed from under us
-                rpm_erase_list = self.list_special_install_rpms(core.state['install.installed'])
-                package_count = len(rpm_erase_list)
-                command = ['rpm', '--quiet', '--erase'] + rpm_erase_list
-                core.check_system(command, 'Remove %d packages' % (package_count))
-            else:
-                core.log_message('No new RPMs')
-                return
-
-    def test_04_selinux(self):
+    def test_03_selinux(self):
         if not core.options.selinux:
             return
 
@@ -148,7 +104,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         if core.state['selinux.mode'] == 'permissive':
             core.check_system(('setenforce', 'Permissive'), 'set selinux mode to permissive')
 
-    def test_05_restore_orphaned_packages(self):
+    def test_04_restore_orphaned_packages(self):
         # We didn't ask to install anything and thus didn't remove anything
         if len(core.options.packages) == 0:
             return
@@ -164,12 +120,12 @@ class TestCleanup(osgunittest.OSGTestCase):
             if fail_msg:
                 self.fail(fail_msg)
 
-    def test_06_restore_mapfile(self):
+    def test_05_restore_mapfile(self):
         if core.state['system.wrote_mapfile']:
             files.restore(core.config['system.mapfile'], 'user')
 
 
-    def test_07_cleanup_test_certs(self):
+    def test_06_cleanup_test_certs(self):
         certs_dir = '/etc/grid-security/certificates'
         if core.state['certs.ca_created']:
             files.remove(os.path.join(certs_dir, 'OSG-Test-CA.*'))
@@ -198,7 +154,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             files.remove(core.config['certs.hostcert'])
             files.remove(core.config['certs.hostkey'])
 
-    def test_08_remove_test_user(self):
+    def test_07_remove_test_user(self):
         if not core.state['general.user_added']:
             core.log_message('Did not add user')
             return
@@ -231,7 +187,7 @@ class TestCleanup(osgunittest.OSGTestCase):
 
     # The backups test should always be last, in case any prior tests restore
     # files from backup.
-    def test_09_backups(self):
+    def test_08_backups(self):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''
