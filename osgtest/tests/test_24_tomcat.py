@@ -34,16 +34,13 @@ class TestStartTomcat(osgunittest.OSGTestCase):
     def test_03_disable_persistence(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
-        if core.el_release() > 5:
-            # Disabling persistence doesn't appear to work on EL5
-            # https://tomcat.apache.org/tomcat-5.5-doc/config/manager.html#Disable_Session_Persistence
-            contents='''
+        contents='''
 <Context>
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
     <Manager pathname="" />
 </Context>
 '''
-            files.write(tomcat.contextfile(), contents, owner='tomcat')
+        files.write(tomcat.contextfile(), contents, owner='tomcat')
 
     def test_04_config_tomcat_properties(self):
         if core.missing_rpm(tomcat.pkgname(), 'gratia-service'):

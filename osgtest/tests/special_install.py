@@ -49,11 +49,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
             retry_fail, _, stdout, _ = yum.retry_command(command)
             if retry_fail == '':   # the command succeeded
-                if core.el_release() >= 6:
-                    # RHEL 6 does not have the rollback option, so store the
-                    # transaction IDs so we can undo each transaction in the
-                    # proper order
-                    core.state['install.transaction_ids'].append(yum.get_transaction_id())
+                core.state['install.transaction_ids'].append(yum.get_transaction_id())
                 command = ('rpm', '--verify', pkg)
                 core.check_system(command, 'Verify %s' % (pkg))
                 yum.parse_output_for_packages(stdout)
@@ -115,6 +111,4 @@ class TestInstall(osgunittest.OSGTestCase):
         if fail_msg:
             self.fail(fail_msg)
         else:
-            if core.el_release() >= 6:
-                core.state['install.transaction_ids'].append(yum.get_transaction_id())
-
+            core.state['install.transaction_ids'].append(yum.get_transaction_id())

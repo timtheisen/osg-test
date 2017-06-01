@@ -44,11 +44,6 @@ esac
 # Determine platform-specific details
 release=`cat /etc/redhat-release`
 case $release in
-    *5.* )
-        rpm_name='epel-release-5-4.noarch.rpm'
-        rpm_path='http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
-        osg_name="osg-$version-el5-release-latest.rpm"
-        ;;
     *6.* )
         rpm_name='epel-release-6-8.noarch.rpm'
         rpm_path='http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
