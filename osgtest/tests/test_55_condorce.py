@@ -150,6 +150,7 @@ gumsclient -> good | bad
 gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
 ''' % (hostname, hostname)
 
+        core.config['condor-ce.lcmapsdb'] = os.path.join('/', 'etc', 'lcmaps.db')
         core.config['condor-ce.gums-properties'] = '/etc/gums/gums-client.properties'
         core.config['condor-ce.gsi-authz'] = '/etc/grid-security/gsi-authz.conf'
 

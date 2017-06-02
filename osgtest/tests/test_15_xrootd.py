@@ -21,6 +21,25 @@ u xrootd /tmp a
 
 class TestStartXrootd(osgunittest.OSGTestCase):
 
+    def test_01_config_auth(self):
+        if core.osg_release() < 3.4:
+            return
+
+        core.skip_ok_unless_installed('xrootd', 'lcmaps-plugins-voms', 'xrootd-lcmaps', by_dependency=True)
+
+        if core.el_release() > 6:
+            core.config['xrootd.env'] = os.path.join('/etc', 'systemd', 'system', 'xrootd.d', 'osg-test.conf')
+            os.makedirs(os.path.dirname(core.config['xrootd.env']))
+            files.write(core.config['xrootd.env'],
+                        "[Service]\nEnvironment=\"LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1\"",
+                        owner='xrootd')
+        else:
+            core.config['xrootd.env'] = os.path.join('/etc', 'sysconfig', 'xrootd')
+            files.append(core.config['xrootd.env'],
+                         '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
+export LCMAPS_DEBUG_LEVEL=5''',
+                         owner='xrootd')
+
     def test_01_start_xrootd(self):
         core.config['xrootd.pid-file'] = '/var/run/xrootd/xrootd-default.pid'
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
