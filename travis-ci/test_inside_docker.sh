@@ -1,7 +1,7 @@
 #!/bin/sh -xe
 
 OS_VERSION=$1
-PACKAGE=$2
+PACKAGES=$2
 
 ls -l /home
 
@@ -47,5 +47,6 @@ cp /etc/condor/config.d/99-local.conf /etc/condor-ce/config.d/99-local.conf
 export _condor_CONDOR_CE_TRACE_ATTEMPTS=60
 
 # Ok, do actual testing
+INSTALL_STR="--install ${PACKAGES//,/ --install }"
 echo "------------ OSG Test --------------"
-osg-test -vad --hostcert --no-cleanup --install ${PACKAGE}
+osg-test -vad --hostcert --no-cleanup ${INSTALL_STR}
