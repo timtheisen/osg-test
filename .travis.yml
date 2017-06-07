@@ -1,12 +1,12 @@
 sudo: required
 env:
   matrix:
-  - OS_TYPE=centos OS_VERSION=6 PACKAGE=htcondor-ce-condor
-  - OS_TYPE=centos OS_VERSION=6 PACKAGE=osg-gridftp
-  - OS_TYPE=centos OS_VERSION=6 PACKAGE=osg-gums
-  - OS_TYPE=centos OS_VERSION=7 PACKAGE=htcondor-ce-condor
-  - OS_TYPE=centos OS_VERSION=7 PACKAGE=osg-gridftp
-  - OS_TYPE=centos OS_VERSION=7 PACKAGE=osg-gums
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=htcondor-ce-condor
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,vo-client-lcmaps-voms,rsv
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gums
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=htcondor-ce-condor
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,vo-client-lcmaps-voms,rsv
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gums
 
 services:
   - docker
@@ -20,5 +20,5 @@ before_install:
 
 script:
  # Run tests in Container
-- travis-ci/setup_tests.sh ${OS_VERSION} ${PACKAGE}
+- travis-ci/setup_tests.sh ${OS_VERSION} ${PACKAGES}
 
