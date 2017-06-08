@@ -8,10 +8,10 @@ import unittest
 class TestLcMaps(osgunittest.OSGTestCase):
 
     def test_01_configure(self):
-        core.skip_ok_unless_installed('lcmaps', 'lcmaps-db-templates')
-
         core.config['lcmaps.db'] = os.path.join('/etc', 'lcmaps.db')
         core.config['lcmaps.gsi-authz'] = os.path.join('/etc', 'grid-security', 'gsi-authz.conf')
+
+        core.skip_ok_unless_installed('lcmaps', 'lcmaps-db-templates')
 
         template = files.read(os.path.join('/usr', 'share', 'lcmaps', 'templates', 'lcmaps.db.vomsmap'),
                               as_single_string=True)
