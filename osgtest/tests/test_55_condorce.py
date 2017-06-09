@@ -13,6 +13,13 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
 
+    def setUp(self):
+        # Enforce GSI auth for testing
+        os.environ['_condor_SEC_CLIENT_AUTHENTICATION_METHODS'] = 'GSI'
+
+    def tearDown(self):
+        os.environ.pop('_condor_SEC_CLIENT_AUTHENTICATION_METHODS')
+
     def run_blahp_trace(self, lrms):
         """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
         lrms_cache_prefix = {'pbs': 'qstat', 'slurm': 'slurm'}
