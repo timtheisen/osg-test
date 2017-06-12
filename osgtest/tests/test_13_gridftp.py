@@ -12,7 +12,7 @@ class TestStartGridFTP(osgunittest.OSGTestCase):
             return
 
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'lcmaps-plugins-voms')
-        core.config['gridftp.env'] = os.path.join('/etc', 'sysconfig', 'globus-gridftp-server')
+        core.config['gridftp.env'] = '/etc/sysconfig/globus-gridftp-server'
         files.append(core.config['gridftp.env'],
                      '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
 export LCMAPS_DEBUG_LEVEL=5''',

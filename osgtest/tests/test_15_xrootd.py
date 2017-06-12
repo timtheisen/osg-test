@@ -28,13 +28,13 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('xrootd', 'lcmaps-plugins-voms', 'xrootd-lcmaps', by_dependency=True)
 
         if core.el_release() > 6:
-            core.config['xrootd.env'] = os.path.join('/etc', 'systemd', 'system', 'xrootd.d', 'osg-test.conf')
+            core.config['xrootd.env'] = '/etc/systemd/system/xrootd.d/osg-test.conf'
             os.makedirs(os.path.dirname(core.config['xrootd.env']))
             files.write(core.config['xrootd.env'],
                         "[Service]\nEnvironment=\"LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1\"",
                         owner='xrootd')
         else:
-            core.config['xrootd.env'] = os.path.join('/etc', 'sysconfig', 'xrootd')
+            core.config['xrootd.env'] = '/etc/sysconfig/xrootd'
             files.append(core.config['xrootd.env'],
                          '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
 export LCMAPS_DEBUG_LEVEL=5''',

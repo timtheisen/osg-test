@@ -42,7 +42,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
             return
 
         core.skip_ok_unless_installed('htcondor-ce', 'lcmaps-plugins-voms')
-        core.config['condorce.env'] = os.path.join('/etc', 'sysconfig', 'condor-ce')
+        core.config['condorce.env'] = '/etc/sysconfig/condor-ce'
         files.append(core.config['condorce.env'],
                      '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
 export LCMAPS_DEBUG_LEVEL=5''',
