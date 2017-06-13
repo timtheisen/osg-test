@@ -54,7 +54,10 @@ export LCMAPS_DEBUG_LEVEL=5''',
         # Set up Condor, PBS, and Slurm routes
         # Leave the GRIDMAP knob in tact to verify that it works with the LCMAPS VOMS plugin
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
+        core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile.osg-test'
+
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
+CERTIFICATE_MAPFILE = %s
 ALL_DEBUG=D_FULLDEBUG
 JOB_ROUTER_DEFAULTS = $(JOB_ROUTER_DEFAULTS) [set_default_maxMemory = 128;]
 JOB_ROUTER_ENTRIES = \\
@@ -79,7 +82,7 @@ JOB_ROUTER_ENTRIES = \\
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
 JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
 JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
-"""
+""" % core.config['condor-ce.condorce_mapfile']
 
         if core.rpm_is_installed('htcondor-ce-view'):
             condor_contents += "\nDAEMON_LIST = $(DAEMON_LIST), CEVIEW, GANGLIAD, SCHEDD"
@@ -92,7 +95,6 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
 
         # Add host DN to condor_mapfile
         if core.options.hostcert:
-            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
             hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
             mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
             mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
