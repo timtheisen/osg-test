@@ -1,11 +1,11 @@
 sudo: required
 env:
   matrix:
-  - OS_TYPE=centos OS_VERSION=6 PACKAGES=htcondor-ce-condor
-  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,vo-client-lcmaps-voms,rsv
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
   - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gums
-  - OS_TYPE=centos OS_VERSION=7 PACKAGES=htcondor-ce-condor
-  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,vo-client-lcmaps-voms,rsv
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
   - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gums
 
 services:

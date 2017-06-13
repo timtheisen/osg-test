@@ -15,3 +15,9 @@ class TestStopXrootd(osgunittest.OSGTestCase):
         # TODO: use check_stop after SOFTWARE-2514 is released
         service.stop(core.config['xrootd_service'])
 
+    def test_02_restore_config(self):
+        if core.osg_release() < 3.4:
+            return
+
+        core.skip_ok_unless_installed('xrootd', 'lcmaps-plugins-voms', 'xrootd-lcmaps', by_dependency=True)
+        files.restore(core.config['xrootd.env'], 'xrootd')

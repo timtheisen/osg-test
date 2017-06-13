@@ -37,10 +37,22 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         core.check_system(command, 'Reconfigure Condor')
         self.assert_(service.is_running('condor'), 'Condor not running after reconfig')
 
-    def test_03_configure_ce(self):
+    def test_03_configure_auth(self):
+        if core.osg_release() < 3.4:
+            return
+
+        core.skip_ok_unless_installed('htcondor-ce', 'lcmaps-plugins-voms')
+        core.config['condorce.env'] = '/etc/sysconfig/condor-ce'
+        files.append(core.config['condorce.env'],
+                     '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
+export LCMAPS_DEBUG_LEVEL=5''',
+                     owner='condorce')
+
+    def test_04_configure_ce(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
-        # Configure condor-ce to use the gridmap file and set up PBS and Condor routes
+        # Set up Condor, PBS, and Slurm routes
+        # Leave the GRIDMAP knob in tact to verify that it works with the LCMAPS VOMS plugin
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
 ALL_DEBUG=D_FULLDEBUG
@@ -78,13 +90,6 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
                     owner='condor-ce',
                     chmod=0644)
 
-        # lcmaps needs to know to use the gridmap file instead of GUMS
-        core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
-        lcmaps_contents = """authorize_only:
-gridmapfile -> good | bad
-"""
-        files.append(core.config['condor-ce.lcmapsdb'], lcmaps_contents, owner='condor-ce')
-
         # Add host DN to condor_mapfile
         if core.options.hostcert:
             core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
@@ -97,7 +102,7 @@ gridmapfile -> good | bad
                         owner='condor-ce',
                         chmod=0644)
 
-    def test_04_start_condorce(self):
+    def test_05_start_condorce(self):
         if core.el_release() >= 7:
             core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
         else:

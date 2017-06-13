@@ -18,6 +18,12 @@ class TestStopCondorCE(osgunittest.OSGTestCase):
             files.restore(core.config['condor-ce.gums-properties'], 'condor-ce')
         files.restore(core.config['condor-ce.condor-cfg'], 'condor-ce')
         files.restore(core.config['condor-ce.condor-ce-cfg'], 'condor-ce')
-        files.restore(core.config['condor-ce.lcmapsdb'], 'condor-ce')
         if core.options.hostcert:
             files.restore(core.config['condor-ce.condorce_mapfile'], 'condor-ce')
+
+    def test_03_restore_auth(self):
+        if core.osg_release() < 3.4:
+            return
+
+        core.skip_ok_unless_installed('htcondor-ce', 'lcmaps-plugins-voms')
+        files.restore(core.config['condorce.env'], 'condorce')

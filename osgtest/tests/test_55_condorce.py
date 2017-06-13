@@ -13,6 +13,13 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestCondorCE(osgunittest.OSGTestCase):
 
+    def setUp(self):
+        # Enforce GSI auth for testing
+        os.environ['_condor_SEC_CLIENT_AUTHENTICATION_METHODS'] = 'GSI'
+
+    def tearDown(self):
+        os.environ.pop('_condor_SEC_CLIENT_AUTHENTICATION_METHODS')
+
     def run_blahp_trace(self, lrms):
         """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
         lrms_cache_prefix = {'pbs': 'qstat', 'slurm': 'slurm'}
@@ -150,6 +157,7 @@ gumsclient -> good | bad
 gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
 ''' % (hostname, hostname)
 
+        core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
         core.config['condor-ce.gums-properties'] = '/etc/gums/gums-client.properties'
         core.config['condor-ce.gsi-authz'] = '/etc/grid-security/gsi-authz.conf'
 
