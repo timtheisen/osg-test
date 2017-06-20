@@ -20,7 +20,6 @@ test_23_gratia
 test_24_tomcat
 test_25_voms_admin
 test_26_bestman
-test_27_osg_info_services
 test_28_gsiopenssh
 test_29_slurm
 test_30_misc
@@ -42,8 +41,6 @@ test_58_gfal2util
 test_53_gums
 test_54_gratia
 test_55_condorce
-test_56_lcgutil
-test_57_osg_info_services
 test_59_gsiopenssh
 test_74_slurm
 test_75_gums
@@ -52,7 +49,6 @@ test_77_myproxy
 test_78_voms
 test_79_condorce
 test_80_gratia
-test_81_osg_info_services
 test_82_cvmfs
 test_83_rsv
 test_84_xrootd
