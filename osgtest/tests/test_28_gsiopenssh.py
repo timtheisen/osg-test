@@ -6,7 +6,7 @@ from osgtest.library import service
 
 SSHD_CONFIG = "/etc/gsissh/sshd_config"
 SSHD_CONFIG_TEXT = r'''
-Port %(port)d
+Port %(port)s
 AuthorizedKeysFile .ssh/authorized_keys
 UsePrivilegeSeparation sandbox
 
@@ -30,7 +30,7 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gsi-openssh-server', 'gsi-openssh-clients')
 
     def test_01_set_config(self):
-        port = core.config['gsissh.port'] = 2222
+        port = core.config['gsisshd.port'] = '2222'
 
         files.write(
             SSHD_CONFIG,
@@ -42,9 +42,9 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
         if not core.state['selinux.mode']:
             self.skip_ok('SELinux disabled')
         core.skip_ok_unless_installed('policycoreutils-python')
-        port = core.config['gsissh.port']
-        core.check_system(['semanage', 'port', '--add', '-t', 'ssh_port_t', '--proto', 'tcp', str(port)],
-                          message="Allow [gsi]sshd to use port %d" % port)
+        port = core.config['gsisshd.port']
+        core.check_system(['semanage', 'port', '--add', '-t', 'ssh_port_t', '--proto', 'tcp', port],
+                          message="Allow [gsi]sshd to use port %s" % port)
 
     def test_03_start(self):
         core.state['gsisshd.started-service'] = False

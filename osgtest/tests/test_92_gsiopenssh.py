@@ -19,9 +19,9 @@ class TestStopGSIOpenSSH(osgunittest.OSGTestCase):
         if not core.state['selinux.mode']:
             self.skip_ok('no selinux')
         core.skip_ok_unless_installed('policycoreutils-python')
-        port = core.config['gsissh.port']
-        core.check_system(['semanage', 'port', '--delete', '--proto', 'tcp', str(port)],
-                          message="Forbid [gsi]sshd to use port %d" % port)
+        port = core.config['gsisshd.port']
+        core.check_system(['semanage', 'port', '--delete', '--proto', 'tcp', port],
+                          message="Forbid [gsi]sshd to use port %s" % port)
 
     def test_03_restore_config(self):
         files.restore(SSHD_CONFIG, owner='gsissh')
