@@ -10,7 +10,7 @@ SSHD_CONFIG = "/etc/gsissh/sshd_config"
 class TestStopGSIOpenSSH(osgunittest.OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed('gsi-openssh-server', 'gsi-openssh-clients')
-        self.skip_ok_if(core.state['gsisshd.can-run'], "Couldn't run gsisshd (see above)")
+        self.skip_ok_unless(core.state['gsisshd.can-run'], "Couldn't run gsisshd (see above)")
 
     def test_01_stop(self):
         service.check_stop('gsisshd')

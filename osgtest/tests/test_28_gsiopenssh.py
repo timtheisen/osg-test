@@ -31,6 +31,12 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
 
     def test_01_set_config(self):
         port = core.config['gsisshd.port'] = '2222'
+        core.state['gsisshd.can-run'] = (not (
+            core.el_release() >= 7 and
+            core.state['selinux.mode'] and
+            not core.rpm_is_installed('policycoreutils-python')))
+        self.skip_ok_unless(core.state['gsisshd.can-run'],
+                            "Can't run with SELinux on EL >= 7 without policycoreutils-python")
 
         files.write(
             SSHD_CONFIG,
@@ -48,9 +54,5 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
 
     def test_03_start(self):
         core.state['gsisshd.started-service'] = False
-        core.state['gsisshd.can-run'] = True
-        if core.el_release() >= 7 and core.state['selinux.mode'] and not core.rpm_is_installed(
-                'policycoreutils-python'):
-            core.state['gsisshd.can-run'] = False
-            self.skip_ok("Can't run with SELinux on EL >= 7 without policycoreutils-python")
+        self.skip_ok_unless(core.state['gsisshd.can-run'], "Can't run gsisshd (see above)")
         service.check_start('gsisshd')
