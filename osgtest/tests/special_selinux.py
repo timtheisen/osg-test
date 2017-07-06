@@ -6,6 +6,7 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestSelinux(osgunittest.OSGTestCase):
     def test_01_selinux(self):
+        core.state['selinux.mode'] = None
         if not core.options.selinux:
             return
 

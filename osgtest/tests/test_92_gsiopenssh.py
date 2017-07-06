@@ -14,5 +14,12 @@ class TestStopGSIOpenSSH(osgunittest.OSGTestCase):
     def test_01_stop(self):
         service.check_stop('gsisshd')
 
-    def test_02_restore_config(self):
+    def test_02_unset_selinux_port(self):
+        if not core.state['selinux.mode']:
+            self.skip_ok('no selinux')
+        port = core.config['gsissh.port']
+        core.check_system(['semanage', 'port', '--delete', '--proto', 'tcp', str(port)],
+                          message="Forbid [gsi]sshd to use port %d" % port)
+
+    def test_03_restore_config(self):
         files.restore(SSHD_CONFIG, owner='gsissh')
