@@ -40,11 +40,17 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
 
     def test_02_setup_selinux_port(self):
         if not core.state['selinux.mode']:
-            self.skip_ok('no selinux')
+            self.skip_ok('SELinux disabled')
+        core.skip_ok_unless_installed('policycoreutils-python')
         port = core.config['gsissh.port']
         core.check_system(['semanage', 'port', '--add', '-t', 'ssh_port_t', '--proto', 'tcp', str(port)],
                           message="Allow [gsi]sshd to use port %d" % port)
 
     def test_03_start(self):
         core.state['gsisshd.started-service'] = False
+        core.state['gsisshd.can-run'] = True
+        if core.el_release() >= 7 and core.state['selinux.mode'] and not core.rpm_is_installed(
+                'policycoreutils-python'):
+            core.state['gsisshd.can-run'] = False
+            self.skip_ok("Can't run with SELinux on EL >= 7 without policycoreutils-python")
         service.check_start('gsisshd')

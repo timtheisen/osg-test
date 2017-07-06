@@ -20,6 +20,7 @@ class TestGSIOpenSSH(osgunittest.OSGTestCase):
 
     def setUp(self):
         core.skip_ok_unless_installed('gsi-openssh-server', 'gsi-openssh-clients')
+        self.skip_ok_if(core.state['gsisshd.can-run'], "Couldn't run gsisshd (see above)")
         self.skip_ok_unless(core.state['proxy.created'] or core.state['voms.got-proxy'], 'no proxy')
         self.skip_bad_unless(core.state['gsisshd.started-service'], 'gsisshd service not running')
 
