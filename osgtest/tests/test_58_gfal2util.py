@@ -37,6 +37,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         TestGFAL2Util.__local_path = TestGFAL2Util.__temp_dir + '/gfal2util_get_copied_file.txt'
 
     def test_01_copy_local_to_server_gfal2_util(self):
+        core.skip_ok_unless_installed('bestman2-server')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         self.setup_temp_paths()
         os.chmod(TestGFAL2Util.__temp_dir, 0777)
         command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_srm_url())
@@ -47,6 +49,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_copy_server_to_local_gfal2_util(self):
+        core.skip_ok_unless_installed('bestman2-server')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         command = ('gfal-copy', '-v', self.get_srm_url(), 'file://' + TestGFAL2Util.__local_path)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('gfal2-util copy, URL to local', command, status, stdout, stderr)
@@ -56,6 +60,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         files.remove(TestGFAL2Util.__local_path)
 
     def test_03_remove_server_file_gfal2_util(self):
+        core.skip_ok_unless_installed('bestman2-server')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         command = ('gfal-rm', '-v', self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('gfal2-util remove, URL file', command, status, stdout, stderr)
@@ -65,6 +71,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         files.remove(TestGFAL2Util.__temp_dir)
 
     def test_04_copy_local_to_server_gfal2_gftp_util(self):
+        core.skip_ok_unless_installed('osg-gridftp')
+        self.skip_bad_unless(core.state['gridftp.running-server'], 'gridftp server not running')
         self.setup_temp_paths()
         os.chmod(TestGFAL2Util.__temp_dir, 0777)
         command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_gftp_url())
