@@ -130,14 +130,6 @@ class TestGratia(osgunittest.OSGTestCase):
         (condor:fermicloud101.fnal.gov, recordId= Record
         (Id: fermicloud101.fnal.gov:3390.0 CreateTime: 14 July 2013 at 22:22:48 GMT KeyInfo: null) ) saved.
 
-        2013-07-14 17:24:18,376 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails
-        (bdii-status:fermicloud101.fnal.gov, recordId= Record
-        (Id: fermicloud101.fnal.gov:3446.0 CreateTime: 14 July 2013 at 22:23:48 GMT KeyInfo: null) ) saved.
-
-        2013-07-14 17:24:19,631 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails
-        100 / 100 (bdii_compute:BNL-ATLAS-Condor:fermicloud101.fnal.gov, recordId= Record
-        (Id: fermicloud101.fnal.gov:3446.1 CreateTime: 14 July 2013 at 22:23:56 GMT KeyInfo: null) ) saved.
-
         2013-07-14 17:24:50,465 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 31 / 31
         (pbs-lsf:fermicloud101.fnal.gov, recordId= Record
         (Id: fermicloud101.fnal.gov:4549.0 CreateTime: 14 July 2013 at 22:24:19 GMT KeyInfo: null) ) saved. """
@@ -224,7 +216,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.gridftp-logs-copied'] = True
 
 
-    #This test executes the GridftpTransferProbeDriver
+    #This test executes the gridftp-transfer probe
     def test_06_execute_gridftptransfer_probedriver(self):
         core.state['gratia.gridftp-transfer-running'] = False
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service', 'globus-gridftp-server-progs',
@@ -232,11 +224,15 @@ class TestGratia(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.state['gridftp.started-server'], 'gridftp server not running')
         self.skip_bad_unless(core.state['gratia.gridftp-logs-copied'], 'gridftp logs not copied')
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
-        command = ('/usr/share/gratia/gridftp-transfer/GridftpTransferProbeDriver',)
-        core.check_system(command, 'Unable to execute GridftpTransferProbeDriver.')
+        if core.package_version_compare('gratia-probe-gridftp-transfer', '1.17.0-1') >= 0:
+            probe_script = 'gridftp-transfer_meter'
+        else:
+            probe_script = 'GridftpTransferProbeDriver'
+        command = ('/usr/share/gratia/gridftp-transfer/%s' % probe_script,)
+        core.check_system(command, 'Unable to execute %s.' % probe_script)
         core.config['gratia.gridftp-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.gridftp-transfer" + \
                                                  core.config['gratia.tmpdir.postfix']
         if core.state['gratia.database-installed'] == True:
@@ -244,7 +240,7 @@ class TestGratia(osgunittest.OSGTestCase):
             self.assert_(result, 'gridftp-transfer outbox check failed.')
         core.state['gratia.gridftp-transfer-running'] = True
 
-    #This test checks the database after the successful execution of GridftpTransferProbeDriver
+    #This test checks the database after the successful execution of the gridftp-transfer probe
     def test_07_checkdatabase_gridftptransfer_probedriver(self):
         core.skip_ok_unless_installed('gratia-probe-gridftp-transfer', 'gratia-service')
         self.skip_bad_if(core.state['gratia.gridftp-transfer-running'] == False, 'gridftp transfer probe not running')
@@ -285,7 +281,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.glexec_meter-running'] = False
         self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/glexec/glexec_meter',)
@@ -344,7 +340,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.dcache-storage-running'] = False
         self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
@@ -414,10 +410,11 @@ class TestGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
         core.skip_ok_unless_one_installed('htcondor-ce-condor', 'globus-gram-job-manager-condor')
         self.skip_bad_if(core.state['gratia.condor-logs-copied'] == False)
-        self.skip_bad_unless(core.state['globus-gatekeeper.running'] or core.state['condor-ce.started'], 'gatekeeper not running')
+        self.skip_bad_unless(core.state['globus-gatekeeper.running'] or core.state['condor-ce.started-service'],
+                             'gatekeeper not running')
         self.skip_bad_unless(core.state['condor.running-service'], message='Condor service not running')
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/condor/condor_meter',)
@@ -453,51 +450,14 @@ class TestGratia(osgunittest.OSGTestCase):
                                                                atLeastOneRecord=True),
                          'Failed Probe Data Validation in Database.')
 
-    #This test customizes /etc/gratia/bdii-status/ProbeConfig file
-    def test_20_modify_bdii_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
-        probeconfig = core.config['gratia.config.dir'] + "/bdii-status/ProbeConfig"
-        self.modify_probeconfig(probeconfig)
-
-    #This test executes bdii-status
-    def test_21_execute_bdii_status(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
-        core.state['gratia.bdii-status-running'] = False
-        if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
-            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
-            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
-        command = ('/usr/share/gratia/bdii-status/bdii_cese_record',)
-        core.check_system(command, 'Unable to execute bdii-status.')
-        core.config['gratia.bdii-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.bdii_" + "*" + \
-                                              core.config['gratia.tmpdir.postfix']
-        # TODO: Implement bdii outbox check
-        core.state['gratia.bdii-status-running'] = True
-
-    #This test checks database after bdii-status is run
-    def test_22_checkdatabase_bdii_status(self):
-        core.skip_ok_unless_installed('gratia-probe-bdii-status', 'gratia-service')
-        self.skip_bad_if(core.state['gratia.bdii-status-running'] == False,
-                         'Need to have gratia-probe-bdii-status running.')
-
-        self.assertEqual(True, self.isProbeInfoProcessed('bdii'),
-                         'Sentinel signifying that Probe Information was processed NOT found.')
-
-        command = "echo \"use gratia_osgtest; select count(*) from ComputeElement;" + \
-                  core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command,
-                                                               'Unable to query count from ComputeElement table.',
-                                                               atLeastOneRecord=True),
-                         'Failed Probe Data Validation in Database.')
-
     #This test customizes /etc/gratia/condor/ProbeConfig file
-    def test_23_modify_pbs_probeconfig(self):
+    def test_20_modify_pbs_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         probeconfig = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
         self.modify_probeconfig(probeconfig)
 
     #This test copies pbs probe related logs
-    def test_24_copy_pbs_logs(self):
+    def test_21_copy_pbs_logs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         core.state['gratia.pbs-logs-copied'] = False
         pbs_log = '/usr/share/osg-test/gratia/20130603'
@@ -506,12 +466,12 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.pbs-logs-copied'] = True
 
     #This test executes pbs probe
-    def test_25_execute_pbs(self):
+    def test_22_execute_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         core.state['gratia.pbs-running'] = False
         self.skip_bad_if(core.state['gratia.pbs-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/pbs-lsf/pbs-lsf_meter.cron.sh',)
@@ -524,7 +484,7 @@ class TestGratia(osgunittest.OSGTestCase):
         core.state['gratia.pbs-running'] = True
 
     #This test checks database after pbs is run
-    def test_26_checkdatabase_pbs(self):
+    def test_23_checkdatabase_pbs(self):
         core.skip_ok_unless_installed('gratia-probe-pbs-lsf', 'gratia-service')
         self.skip_bad_if(core.state['gratia.pbs-running'] == False, 'Need to have pbs running.')
 
@@ -540,13 +500,13 @@ class TestGratia(osgunittest.OSGTestCase):
                                                                '30'),
                          'Failed Probe Data Validation in Database.')
 
-    def test_27_modify_sge_probeconfig(self):
+    def test_24_modify_sge_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
         probeconfig = core.config['gratia.config.dir'] + "/sge/ProbeConfig"
         self.modify_probeconfig(probeconfig)
         self.patternreplace(probeconfig, "SGEAccountingFile=\"\"", "SGEAccountingFile=\"/var/log/accounting\"")
 
-    def test_28_copy_sge_logs(self):
+    def test_25_copy_sge_logs(self):
         core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
         core.state['gratia.sge-logs-copied'] = False
         sge_log = '/usr/share/osg-test/gratia/accounting'
@@ -554,12 +514,12 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assert_(self.copy_probe_logs(sge_log, dst_dir), "sge log copy failed.")
         core.state['gratia.sge-logs-copied'] = True
 
-    def test_29_execute_sge(self):
+    def test_26_execute_sge(self):
         core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
         core.state['gratia.sge-running'] = False
         self.skip_bad_if(core.state['gratia.sge-logs-copied'] == False)
         if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = os.stat(core.config['gratia.log.file'])
+            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
         command = ('/usr/share/gratia/sge/sge_meter.cron.sh',)
@@ -571,7 +531,7 @@ class TestGratia(osgunittest.OSGTestCase):
             self.assert_(result, 'sge outbox check failed.')
         core.state['gratia.sge-running'] = True
 
-    def test_30_checkdatabase_sge(self):
+    def test_27_checkdatabase_sge(self):
         core.skip_ok_unless_installed('gratia-probe-sge', 'gratia-service')
         self.skip_bad_if(core.state['gratia.sge-running'] == False, 'Need to have sge running.')
         self.assertEqual(True, self.isProbeInfoProcessed('sge'),

@@ -1,6 +1,7 @@
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestStartBestman(osgunittest.OSGTestCase):
@@ -77,11 +78,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.state['bestman.server-running'] = False
 
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
-        retcode, _, _ = core.system(('service', 'bestman2', 'status'))
-        # bestman2 init script follows LSB standards for return codes:
-        # 0 = running, 1 = not running, 3 = stale pidfile (i.e. it crashed)
-        # We want to start it up if it's not running or had crashed
-        if retcode == 0:
+        if service.is_running('bestman2'):
             core.state['bestman.server-running'] = True
             self.skip_ok('apparently running')
 
@@ -91,18 +88,8 @@ class TestStartBestman(osgunittest.OSGTestCase):
             for logfile in ('bestman2.log', 'event.srm.log'):
                 core.system(('cat', os.path.join(logdir, logfile)))
 
-        command = ('service', 'bestman2', 'start')
         try:
-            stdout, _, fail = core.check_system(command, 'Starting bestman2')
-            self.assert_(stdout.find('FAILED') == -1, fail)
-            self.assert_(os.path.exists(core.config['bestman.pid-file']),
-                         'Bestman server PID file missing')
-            # 'service bestman2 status' checks if the process mentioned in the pid
-            # file is actually running, which can detect if bestman crashed right
-            # after startup. In theory it's vulnerable to problems caused by pid
-            # re-use, but those are unlikely
-            command = ('service', 'bestman2', 'status')
-            stdout, _, fail = core.check_system(command, 'Verifying bestman2 started')
+            service.check_start('bestman2')
         except AssertionError:
             _dump_logfiles()
             raise

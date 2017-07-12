@@ -1,7 +1,6 @@
 import os
-import unittest
 
-from osgtest.library import core, osgunittest
+from osgtest.library import core, service, osgunittest
 
 class TestStartRSV(osgunittest.OSGTestCase):
 
@@ -23,11 +22,6 @@ class TestStartRSV(osgunittest.OSGTestCase):
         # Before we start RSV, make sure Condor-Cron is up
         self.skip_bad_unless(core.state['condor-cron.running-service'], 'Condor-Cron not running')
 
-        command = ('service', 'rsv', 'start')
-        stdout, _, fail = core.check_system(command, 'Start RSV')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(os.path.exists(core.config['rsv.lockfile']),
-                     'RSV run lock file missing')
-
+        service.check_start('rsv')
         core.state['rsv.started-service'] = True
         core.state['rsv.running-service'] = True

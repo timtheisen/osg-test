@@ -8,11 +8,12 @@ import osgtest.library.osgunittest as osgunittest
 class TestStartGatekeeper(osgunittest.OSGTestCase):
 
     def test_01_start_gatekeeper(self):
-        core.config['globus-gatekeeper.started-service'] = False
+        core.state['globus-gatekeeper.started-service'] = False
         core.state['globus-gatekeeper.running'] = False
         core.skip_ok_unless_installed('globus-gatekeeper')
+        core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
 
-        if not service.is_running('globus-gatekeeper'):
+        if service.is_stopped('globus-gatekeeper'):
             # DEBUG: Set up gatekeeper debugging
             core.config['jobmanager-config'] = '/etc/globus/globus-gram-job-manager.conf'
             conf_path = core.config['jobmanager-config']
@@ -23,25 +24,19 @@ class TestStartGatekeeper(osgunittest.OSGTestCase):
                 os.mkdir('/var/log/globus')
                 os.chmod('/var/log/globus', 0777)
 
-            service.start('globus-gatekeeper')
-            core.state['globus-gatekeeper.running'] = service.is_running('globus-gatekeeper')
-            self.assert_(core.state['globus-gatekeeper.running'], 'globus-gatekeeper failed to start')
+            service.check_start('globus-gatekeeper')
+            core.state['globus-gatekeeper.started-service'] = True
+            core.state['globus-gatekeeper.running'] = True
 
     def test_02_start_seg(self):
         core.state['globus.started-seg'] = False
-        core.config['globus.seg-lockfile'] = '/var/lock/subsys/globus-scheduler-event-generator'
-
         core.skip_ok_unless_installed('globus-scheduler-event-generator-progs')
         # globus-job-run against PBS hangs with the SEG so we disable it and use
         # globus-grid-job-manager-pbs-setup-poll instead
         # https://jira.opensciencegrid.org/browse/SOFTWARE-1929
-        self.skip_ok_if(core.el_release() == 5, 'Disable the SEG for EL5')
-        self.skip_ok_if(os.path.exists(core.config['globus.seg-lockfile']), 'SEG already running')
-        command = ('service', 'globus-scheduler-event-generator', 'start')
-        stdout, _, fail = core.check_system(command, 'Start Globus SEG')
-        self.assert_(stdout.find('FAILED') == -1, fail)
-        self.assert_(os.path.exists(core.config['globus.seg-lockfile']),
-                     'Globus SEG run lock file missing')
+        self.skip_ok_if(service.is_running('globus-scheduler-event-generator'), 'SEG already running')
+
+        service.check_start('globus-scheduler-event-generator')
         core.state['globus.started-seg'] = True
 
     def test_03_configure_globus_pbs(self):

@@ -1,5 +1,4 @@
 import os
-from datetime import date
 
 import osgtest.library.core as core
 
@@ -34,12 +33,16 @@ def conffile():
     "Path of main config file of Tomcat"
     return os.path.join(sysconfdir(), pkgname() + ".conf")
 
+def contextfile():
+    "Path of main context.xml file of Tomcat"
+    return os.path.join(sysconfdir(), 'context.xml')
+
 def catalinafile():
     "Path of Catalina log file that contains the startup sentinel"
     if majorver() <= 6:
         return os.path.join(logdir(), 'catalina.out')
     else:
-        return os.path.join(logdir(), 'catalina.%s.log' % date.strftime(date.today(), '%F'))
+        return os.path.join(logdir(), 'catalina.log')
 
 def pidfile():
     "Path of pid file of a running Tomcat"

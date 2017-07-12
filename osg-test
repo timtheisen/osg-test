@@ -28,6 +28,8 @@ def parse_command_line():
                 "extrarepos": [],
                 "exitonfail": False,
                 "hostcert": False,
+                # Allow VMU nightly tests to have longer test timeouts
+                "nightly": False,
                 "packages": [],
                 "password": 'vdttest',
                 "printtest": True,

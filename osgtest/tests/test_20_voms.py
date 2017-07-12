@@ -1,10 +1,11 @@
 import cagen
 import os
-import socket
 
 import osgtest.library.core as core
 import osgtest.library.files as files
+import osgtest.library.service as service
 import osgtest.library.tomcat as tomcat
+import osgtest.library.voms as voms
 import osgtest.library.osgunittest as osgunittest
 
 class TestStartVOMS(osgunittest.OSGTestCase):
@@ -16,7 +17,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.config['certs.vomskey'] = '/etc/grid-security/voms/vomskey.pem'
 
     def test_02_install_voms_certs(self):
-        core.skip_ok_unless_installed('voms-server')
+        voms.skip_ok_unless_installed()
         vomscert = core.config['certs.vomscert']
         vomskey = core.config['certs.vomskey']
         self.skip_ok_if(core.check_file_and_perms(vomscert, 'voms', 0644) and
@@ -37,44 +38,26 @@ class TestStartVOMS(osgunittest.OSGTestCase):
 
     def test_04_config_voms(self):
         core.config['voms.vo'] = 'osgtestvo'
-        core.config['voms.lsc-dir'] = '/etc/grid-security/vomsdir/osgtestvo'
         core.config['voms.lock-file'] = '/var/lock/subsys/voms.osgtestvo'
         core.config['voms.vo-webapp'] = os.path.join(
             tomcat.datadir(), "conf/Catalina/localhost/voms#osgtestvo.xml")
         core.config['voms.webapp-log'] = os.path.join(
             tomcat.logdir(), 'voms-admin-osgtestvo.log')
+        # The DB created by voms-admin would have the user 'admin-osgtestvo',
+        # but the voms_install_db script provided by voms-server does not
+        # like usernames with '-' in them.
+        core.config['voms.dbusername'] = 'voms_' + core.config['voms.vo']
 
-    def test_05_configure_voms_admin(self):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
+    def test_05_create_vo(self):
+        voms.skip_ok_unless_installed()
 
-        # Find full path to libvomsmysql.so
-        command = ('rpm', '--query', '--list', 'voms-mysql-plugin')
-        stdout = core.check_system(command, 'List VOMS-MySQL files')[0]
-        voms_mysql_files = stdout.strip().split('\n')
-        voms_mysql_so_path = None
-        for voms_mysql_path in voms_mysql_files:
-            if 'libvomsmysql.so' in voms_mysql_path:
-                voms_mysql_so_path = voms_mysql_path
-        self.assert_(voms_mysql_so_path is not None,
-                     'Could not find VOMS MySQL shared library path')
-        self.assert_(os.path.exists(voms_mysql_so_path),
-                     'VOMS MySQL shared library path does not exist')
-
-        # Configure VOMS Admin with new VO
-        db_user_name = 'admin-' + core.config['voms.vo']
-        command = ('voms-admin-configure', 'install',
-                   '--vo', core.config['voms.vo'],
-                   '--dbtype', 'mysql', '--createdb', '--deploy-database',
-                   '--dbauser', 'root', '--dbapwd', '', '--dbport', '3306',
-                   '--dbusername', db_user_name, '--dbpassword', 'secret',
-                   '--port', '15151', '--sqlloc', voms_mysql_so_path,
-                   '--mail-from', 'root@localhost', '--smtp-host', 'localhost',
-                   '--cert', core.config['certs.vomscert'],
-                   '--key', core.config['certs.vomskey'],
-                   '--read-access-for-authenticated-clients')
-        stdout, _, fail = core.check_system(command, 'Configure VOMS Admin')
-        good_message = 'VO %s installation finished' % (core.config['voms.vo'])
-        self.assert_(good_message in stdout, fail)
+        use_voms_admin = core.rpm_is_installed('voms-admin-server')
+        voms.create_vo(vo=core.config['voms.vo'],
+                       dbusername=core.config['voms.dbusername'],
+                       dbpassword='secret',
+                       vomscert=core.config['certs.vomscert'],
+                       vomskey=core.config['certs.vomskey'],
+                       use_voms_admin=use_voms_admin)
 
     def test_06_add_local_admin(self):
         core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
@@ -105,19 +88,11 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         files.write(path, contents, backup=False)
 
     def test_08_advertise(self):
-        core.skip_ok_unless_installed('voms-admin-server')
+        voms.skip_ok_unless_installed()
 
-        hostname = socket.getfqdn()
-        vomses_path = '/etc/vomses'
-        host_dn, host_issuer = cagen.certificate_info(core.config['certs.hostcert'])
-        contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
-                    (core.config['voms.vo'], hostname, 15151, host_dn, core.config['voms.vo']))
-        files.write(vomses_path, contents, owner='voms', chmod=0644)
-
-        if not os.path.isdir(core.config['voms.lsc-dir']):
-            os.makedirs(core.config['voms.lsc-dir'])
-        vo_lsc_path = os.path.join(core.config['voms.lsc-dir'], hostname + '.lsc')
-        files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False, chmod=0644)
+        voms.advertise_lsc(core.config['voms.vo'], core.config['certs.hostcert'])
+        files.preserve('/etc/vomses', owner='voms')
+        voms.advertise_vomses(core.config['voms.vo'], core.config['certs.hostcert'])
 
         core.system('ls -ldF /etc/*vom*', shell=True)
         core.system(('find', '/etc/grid-security/vomsdir', '-ls'))
@@ -125,14 +100,16 @@ class TestStartVOMS(osgunittest.OSGTestCase):
     def test_09_start_voms(self):
         core.state['voms.started-server'] = False
 
-        core.skip_ok_unless_installed('voms-server')
+        voms.skip_ok_unless_installed()
         self.skip_ok_if(os.path.exists(core.config['voms.lock-file']), 'apparently running')
 
-        command = ('service', 'voms', 'start')
-        stdout, _, fail = core.check_system(command, 'Start VOMS service')
-        self.assertEqual(stdout.find('FAILED'), -1, fail)
-        self.assert_(os.path.exists(core.config['voms.lock-file']),
-                     'VOMS server PID file is missing')
+        if core.el_release() < 7:
+            core.config['voms_service'] = 'voms'
+        else:
+            core.config['voms_service'] = 'voms@' + core.config['voms.vo']
+
+        service.check_start(core.config['voms_service'])
+
         core.state['voms.started-server'] = True
 
     def test_10_install_vo_webapp(self):
@@ -140,8 +117,5 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('voms-admin-server')
         self.skip_ok_if(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
 
-        command = ('service', 'voms-admin', 'start')
-        core.check_system(command, 'Install VOMS Admin webapp(s)')
-        self.assert_(os.path.exists(core.config['voms.vo-webapp']),
-                     'VOMS Admin VO context file is missing')
+        service.check_start('voms-admin')
         core.state['voms.installed-vo-webapp'] = True

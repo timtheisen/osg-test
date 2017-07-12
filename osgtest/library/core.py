@@ -1,5 +1,6 @@
 """Support and convenience functions for tests."""
 
+import errno
 import os
 import os.path
 import pwd
@@ -55,6 +56,11 @@ _log_filename = None
 _last_log_had_output = True
 _el_release = None
 
+SLURM_PACKAGES = ['slurm',
+                  'slurm-munge',
+                  'slurm-perlapi',
+                  'slurm-plugins',
+                  'slurm-sql']
 
 # ------------------------------------------------------------------------------
 # Global Functions
@@ -94,6 +100,7 @@ def start_log():
     _log.write('  - Timeout: %s\n' % str(options.timeout))
     _log.write('  - Create hostcert: %s\n' % str(options.hostcert))
     _log.write('  - Backup MySQL: %s\n' % str(options.backupmysql))
+    _log.write('  - Nightly: %s\n' % str(options.nightly))
     _log.flush()
 
 
@@ -133,6 +140,14 @@ def remove_log():
     """Removes the detailed log file; not for general use."""
     os.remove(_log_filename)
 
+def get_stat(filename):
+    '''Return stat for 'filename', None if the file does not exist'''
+    try:
+        return os.stat(filename)
+    except OSError, exc:
+        if exc.errno == errno.ENOENT:
+            return None
+        raise
 
 def monitor_file(filename, old_stat, sentinel, timeout):
     """Monitors a file for the sentinel regex
@@ -429,6 +444,20 @@ def version_compare(evr1, evr2):
 
     return rpm.labelCompare((epoch1, version1, release1), (epoch2, version2, release2))
 
+def package_version_compare(package_name, evr):
+    """Compare EVR of installed package_name to provided evr and return:
+      -1 if the package version is older than evr,
+       0 if the package version is equal to evr,
+       1 if the package version is newer than evr.
+
+    evr can be a string ("[E:]V[-R]") or 3-element tuple or list.
+
+    This is a wrapper around 'version_compare' that avoids having to call
+    'get_package_envra' and extract (e,v,r)
+    """
+    e,n,v,r,a = get_package_envra(package_name)
+    return version_compare((e,v,r), evr)
+
 
 def diagnose(message, command, status, stdout, stderr):
     """Constructs a detailed failure message based on arguments."""
@@ -560,6 +589,20 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
 
     return (p.returncode, stdout, stderr)
 
+def wait_for_file(filename, timeout):
+    """Wait maximum 'timeout' seconds for filename to be created. Returns True
+    if created within the timeout, False otherwise.
+
+    """
+    elapsed_time = 0
+    while elapsed_time <= timeout:
+        if os.path.exists(filename):
+            return True
+        else:
+            time.sleep(1)
+            elapsed_time += 1
+
+    return False
 
 def el_release():
     """Return the major version of the Enterprise Linux release the system is

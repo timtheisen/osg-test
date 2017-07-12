@@ -31,11 +31,6 @@ def retry_command(command, timeout_seconds=3600):
     deadline = time.time() + timeout_seconds
     fail_msg, status, stdout, stderr = '', '', '', ''
 
-    # EPEL released xrootd-compat (2/17/2015), which requires xrootd >= 4.1,
-    # which is not available in 3.1
-    if core.config['install.original-release-ver'] == '3.1':
-        command.append('--exclude=xrootd-compat*')
-
     # Loop for retries
     while True:
 

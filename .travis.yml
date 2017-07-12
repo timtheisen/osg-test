@@ -1,0 +1,24 @@
+sudo: required
+env:
+  matrix:
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gums
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
+  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gums
+
+services:
+  - docker
+
+before_install:
+  - sudo apt-get update
+  - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+  - sudo service docker restart
+  - sleep 5
+  - sudo docker pull centos:centos${OS_VERSION}
+
+script:
+ # Run tests in Container
+- travis-ci/setup_tests.sh ${OS_VERSION} ${PACKAGES}
+

@@ -1,7 +1,5 @@
 import osgtest.library.core as core
 import osgtest.library.java as java
-import osgtest.library.files as files
-import osgtest.library.tomcat as tomcat
 import osgtest.library.osgunittest as osgunittest
 
 class TestCleanupJava(osgunittest.OSGTestCase):

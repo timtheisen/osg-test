@@ -1,6 +1,7 @@
 test_04_java
 test_05_mysqld
 test_06_fetch_crl
+test_07_munge
 test_09_jobs
 test_10_condor
 test_11_condor_cron
@@ -19,7 +20,8 @@ test_23_gratia
 test_24_tomcat
 test_25_voms_admin
 test_26_bestman
-test_27_osg_info_services
+test_28_gsiopenssh
+test_29_slurm
 test_30_misc
 test_35_osg_configure
 test_38_cvmfs
@@ -39,15 +41,14 @@ test_58_gfal2util
 test_53_gums
 test_54_gratia
 test_55_condorce
-test_56_lcgutil
-test_57_osg_info_services
+test_59_gsiopenssh
+test_74_slurm
 test_75_gums
 test_76_tomcat
 test_77_myproxy
 test_78_voms
 test_79_condorce
 test_80_gratia
-test_81_osg_info_services
 test_82_cvmfs
 test_83_rsv
 test_84_xrootd
@@ -58,6 +59,8 @@ test_88_condor_cron
 test_89_condor
 test_90_bestman
 test_91_pbs
+test_92_gsiopenssh
+test_94_munge
 test_95_mysqld
 test_96_proxy
 test_97_java

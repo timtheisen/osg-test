@@ -1,4 +1,3 @@
-import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
@@ -6,64 +5,35 @@ import osgtest.library.service as service
 
 class TestStopPBS(osgunittest.OSGTestCase):
 
-    required_rpms = ['torque-mom',
+    required_rpms = ['torque',
+                     'torque-mom',
                      'torque-server',
                      'torque-scheduler',
                      'torque-client',
                      'munge']
 
-    def test_01_stop_mom(self):
-        core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(core.state['torque.pbs-mom-running'] == False, 'did not start pbs mom server')
+    def test_01_stop_server(self):
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
+        self.skip_ok_unless(core.state['pbs_server.started-service'], 'did not start pbs server')
+        service.check_stop('pbs_server')
+        files.restore(core.config['torque.pbs-serverdb'], 'pbs')
+        files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
 
-        command = ('service', 'pbs_mom', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop pbs mom')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(not os.path.exists(core.config['torque.mom-lockfile']),
-                     'PBS mom run lock file still present')
+    def test_02_stop_trqauthd(self):
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
+        self.skip_ok_unless(core.state['trqauthd.started-service'], 'did not start trqauthd')
+        service.check_stop('trqauthd')
+        files.restore(core.config['torque.pbs-servername-file'], 'pbs')
+
+    def test_03_stop_scheduler(self):
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
+        self.skip_ok_unless(core.state['pbs_sched.started-service'], 'did not start pbs scheduler')
+        service.check_stop('pbs_sched')
+
+    def test_04_stop_mom(self):
+        core.skip_ok_unless_installed(*self.required_rpms, by_dependency=True)
+        self.skip_ok_unless(core.state['pbs_mom.started-service'], 'did not start pbs mom server')
+        service.stop('pbs_mom')
 
         for mom_file in ['config', 'layout']:
             files.restore(core.config['torque.mom-%s' % mom_file], 'pbs')
-        core.state['torque.pbs-mom-running'] = False
-
-    def test_02_stop_server(self):
-        core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(core.state['torque.pbs-server-started'] == False, 'did not start pbs server')
-
-        command = ('service', 'pbs_server', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop pbs server')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(not os.path.exists(core.config['torque.pbs-lockfile']),
-                     'PBS server run lock file still present')
-
-        if core.state['trqauthd.started-service']:
-            service.stop('trqauthd')
-
-        files.restore(core.config['torque.pbs-servername-file'], 'pbs')
-        files.restore(core.config['torque.pbs-nodes-file'], 'pbs')
-        core.state['torque.pbs-server-running'] = False
-
-    def test_03_stop_scheduler(self):
-        core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(core.state['torque.pbs-sched-running'] == False, 'did not start pbs scheduler')
-
-        command = ('service', 'pbs_sched', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop pbs scheduler')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(not os.path.exists(core.config['torque.sched-lockfile']),
-                     'PBS server run lock file still present')
-
-        core.state['torque.pbs-sched-running'] = False
-
-    def test_04_stop_munge(self):
-        core.skip_ok_unless_installed(*self.required_rpms)
-        self.skip_ok_if(core.state['munge.running'] == False, 'munge not running')
-
-        command = ('service', 'munge', 'stop')
-        stdout, _, fail = core.check_system(command, 'Stop munge daemon')
-        self.assert_(stdout.find('error') == -1, fail)
-        self.assert_(not os.path.exists(core.config['munge.lockfile']),
-                     'munge lock file still present')
-        core.state['munge.running'] = False
-        files.restore(core.config['munge.keyfile'], 'pbs')
-

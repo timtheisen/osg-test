@@ -12,30 +12,28 @@ class TestStopTomcat(osgunittest.OSGTestCase):
     def test_01_stop_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
-        service.stop('tomcat')
+        service.check_stop(tomcat.pkgname())
 
     def test_02_remove_vo_webapp(self):
         core.skip_ok_unless_installed('voms-admin-server')
         self.skip_ok_unless(core.state['voms.installed-vo-webapp'], 'did not start webapp')
-
-        command = ('service', 'voms-admin', 'stop')
-        core.check_system(command, 'Uninstall VOMS Admin webapp(s)')
-        self.assert_(not os.path.exists(core.config['voms.vo-webapp']),
-                     'VOMS Admin VO context file still exists')
+        # TODO: use check_stop after SOFTWARE-2514 is released
+        service.stop('voms-admin')
 
     def test_03_deconfig_tomcat_properties(self):
-        core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
-        files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'tomcat')
+        core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
+        files.restore(os.path.join(tomcat.sysconfdir(), 'server.xml'), 'gratia')
 
     def test_04_deconfig_catalina_logging(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
+        files.restore(core.config['tomcat.logging-conf'], 'tomcat')
 
-        # We don't use self.skip_ok_unless() here to avoid
-        # filling the okskip list with uninteresting results
-        if core.el_release() == 5:
-            files.restore(core.config['tomcat.logging-conf'], 'tomcat')
+    def test_05_deconfig_context(self):
+        core.skip_ok_unless_installed(tomcat.pkgname())
+        self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
+        files.restore(tomcat.contextfile(), 'tomcat')
 
-    def test_04_remove_trustmanager(self):
+    def test_06_remove_trustmanager(self):
         core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
 
         # mv -f /etc/tomcat5/server.xml.old-trustmanager /etc/tomcat5/server.xml
@@ -61,7 +59,7 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
         core.log_message('EMI trustmanager removed')
     
-    def test_05_deconfig_tomcat(self):
+    def test_07_deconfig_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
         files.restore(tomcat.conffile(), 'tomcat')
