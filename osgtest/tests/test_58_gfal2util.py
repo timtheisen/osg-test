@@ -25,6 +25,12 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
     def get_srm_url(self):
         return self.get_srm_url_base() + TestGFAL2Util.__remote_path
 
+    def get_gftp_url_base(self):
+        return 'gsiftp://%s/' % (TestGFAL2Util.__hostname)
+    
+    def get_gftp_url(self):
+        return return self.get_gftp_url_base() + TestGFAL2Util.__remote_path
+
     def setup_temp_paths(self):
         TestGFAL2Util.__temp_dir = tempfile.mkdtemp()
         TestGFAL2Util.__remote_path = TestGFAL2Util.__temp_dir + '/gfal2util_put_copied_file.txt'
@@ -57,4 +63,14 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_removed, 'Copied file still exists')
         files.remove(TestGFAL2Util.__temp_dir)
+
+    def test_04_copy_local_to_server_gfal2_gftp_util(self):
+        self.setup_temp_paths()
+        os.chmod(TestGFAL2Util.__temp_dir, 0777)
+        command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_gftp_url())
+        status, stdout, stderr = core.system(command, True)
+        fail = core.diagnose('gfal2-util copy, local to GridFTP URL', command, status, stdout, stderr)
+        file_copied = os.path.exists(TestGFAL2Util.__remote_path)
+        self.assertEqual(status, 0, fail)
+        self.assert_(file_copied, 'Copied file missing')
 
