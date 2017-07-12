@@ -29,7 +29,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         return 'gsiftp://%s/' % (TestGFAL2Util.__hostname)
     
     def get_gftp_url(self):
-        return return self.get_gftp_url_base() + TestGFAL2Util.__remote_path
+        return self.get_gftp_url_base() + TestGFAL2Util.__remote_path
 
     def setup_temp_paths(self):
         TestGFAL2Util.__temp_dir = tempfile.mkdtemp()
