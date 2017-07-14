@@ -70,7 +70,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         files.remove(TestGFAL2Util.__temp_dir)
 
     def test_04_copy_local_to_server_gfal2_gftp_util(self):
-        core.skip_ok_unless_installed('osg-gridftp', 'gfal2-plugin-gridftp')
+        core.skip_ok_unless_installed('globus-gridftp-server-progs', 'gfal2-plugin-gridftp')
         self.skip_bad_unless(core.state['gridftp.running-server'], 'gridftp server not running')
         self.setup_temp_paths()
         os.chmod(TestGFAL2Util.__temp_dir, 0777)
