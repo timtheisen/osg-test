@@ -16,8 +16,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
 
     def setUp(self):
         self.skip_ok_unless(core.state['proxy.created'] or core.state['voms.got-proxy'])
-        core.skip_ok_unless_installed('bestman2-server', 'gfal2-util', 'gfal2-plugin-srm', 'gfal2-plugin-file')
-        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
+        core.skip_ok_unless_installed('gfal2-util', 'gfal2-plugin-file')
 
     def get_srm_url_base(self):
         return 'srm://%s:%s/%s?SFN=' % (TestGFAL2Util.__hostname, TestGFAL2Util.__port, TestGFAL2Util.__sfn)
@@ -25,12 +24,20 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
     def get_srm_url(self):
         return self.get_srm_url_base() + TestGFAL2Util.__remote_path
 
+    def get_gftp_url_base(self):
+        return 'gsiftp://%s/' % (TestGFAL2Util.__hostname)
+    
+    def get_gftp_url(self):
+        return self.get_gftp_url_base() + TestGFAL2Util.__remote_path
+
     def setup_temp_paths(self):
         TestGFAL2Util.__temp_dir = tempfile.mkdtemp()
         TestGFAL2Util.__remote_path = TestGFAL2Util.__temp_dir + '/gfal2util_put_copied_file.txt'
         TestGFAL2Util.__local_path = TestGFAL2Util.__temp_dir + '/gfal2util_get_copied_file.txt'
 
     def test_01_copy_local_to_server_gfal2_util(self):
+        core.skip_ok_unless_installed('bestman2-server', 'gfal2-plugin-srm')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         self.setup_temp_paths()
         os.chmod(TestGFAL2Util.__temp_dir, 0777)
         command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_srm_url())
@@ -41,6 +48,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_copy_server_to_local_gfal2_util(self):
+        core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         command = ('gfal-copy', '-v', self.get_srm_url(), 'file://' + TestGFAL2Util.__local_path)
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('gfal2-util copy, URL to local', command, status, stdout, stderr)
@@ -50,6 +59,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         files.remove(TestGFAL2Util.__local_path)
 
     def test_03_remove_server_file_gfal2_util(self):
+        core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm')
+        self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         command = ('gfal-rm', '-v', self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('gfal2-util remove, URL file', command, status, stdout, stderr)
@@ -57,4 +68,16 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_removed, 'Copied file still exists')
         files.remove(TestGFAL2Util.__temp_dir)
+
+    def test_04_copy_local_to_server_gfal2_gftp_util(self):
+        core.skip_ok_unless_installed('osg-gridftp', 'gfal2-plugin-gridftp')
+        self.skip_bad_unless(core.state['gridftp.running-server'], 'gridftp server not running')
+        self.setup_temp_paths()
+        os.chmod(TestGFAL2Util.__temp_dir, 0777)
+        command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_gftp_url())
+        status, stdout, stderr = core.system(command, True)
+        fail = core.diagnose('gfal2-util copy, local to GridFTP URL', command, status, stdout, stderr)
+        file_copied = os.path.exists(TestGFAL2Util.__remote_path)
+        self.assertEqual(status, 0, fail)
+        self.assert_(file_copied, 'Copied file missing')
 
