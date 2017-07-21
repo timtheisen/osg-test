@@ -54,7 +54,19 @@ export LCMAPS_DEBUG_LEVEL=5''',
         # Set up Condor, PBS, and Slurm routes
         # Leave the GRIDMAP knob in tact to verify that it works with the LCMAPS VOMS plugin
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
-        core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile.osg-test'
+        # Add host DN to condor_mapfile
+        if core.options.hostcert:
+            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile.osg-test'
+            hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
+            mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
+            mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
+                                              "%s@daemon.opensciencegrid.org\n" % core.get_hostname())
+            files.write(core.config['condor-ce.condorce_mapfile'],
+                        mapfile_contents,
+                        owner='condor-ce',
+                        chmod=0644)
+        else:
+            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
 
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
 CERTIFICATE_MAPFILE = %s
@@ -92,17 +104,6 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
                     condor_contents,
                     owner='condor-ce',
                     chmod=0644)
-
-        # Add host DN to condor_mapfile
-        if core.options.hostcert:
-            hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
-            mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
-            mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
-                                              "%s@daemon.opensciencegrid.org\n" % core.get_hostname())
-            files.write(core.config['condor-ce.condorce_mapfile'],
-                        mapfile_contents,
-                        owner='condor-ce',
-                        chmod=0644)
 
     def test_05_start_condorce(self):
         if core.el_release() >= 7:
