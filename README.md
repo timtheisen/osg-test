@@ -25,7 +25,7 @@ The test software is written in Python and consists of:
 -   The tests themselves (also Python modules) in `osgtest/tests`
 -   Extra files needed at runtime in `files`
 
-The whole system uses the standard Python `unittest` framework to run. Note that all tests have to be compatible with Python 2.4; when reading the docs for `unittest`, keep note of when a feature was introduced.
+The whole system uses the standard Python `unittest` framework to run. Note that all tests have to be compatible with Python 2.6; when reading the docs for `unittest`, keep note of when a feature was introduced.
 
 ### Test Sequence
 
@@ -49,7 +49,7 @@ The `test_*` modules are organized roughly into three phases, based on the seque
 Coding Tips
 -----------
 
-It is important to know the basics of the Python `unittest` module; [read the documentation for it](http://docs.python.org/release/2.4.3/lib/module-unittest.html). We build on top of the `unittest` module, by providing an `osgunittest` module that inherits from it.
+It is important to know the basics of the Python `unittest` module; [read the documentation for it](http://docs.python.org/2.6/library/unittest.html). We build on top of the `unittest` module, by providing an `osgunittest` module that inherits from it.
 
 ### Basic Structure of a Test Module
 
@@ -76,11 +76,9 @@ class TestFooBarBaz(osgunittest.OSGTestCase):
     # Tests return (success) or raise (failure)
 ```
 
-**Note:** `osgunittest` was introduced in osg-test 1.2.5; tests written for earlier versions may still be using `unittest` directly. These tests should be updated to use `osgunittest` instead.
-
 ### Test Assertions
 
-Within each test function, use the [TestCase object functions](http://docs.python.org/release/2.4.3/lib/testcase-objects.html) to assert things that should be true:
+Within each test function, use the [TestCase object functions](http://docs.python.org/2.6/library/unittest.html#unittest.TestCase) to assert things that should be true:
 
 ```python
 def test_99_example(self):
@@ -257,12 +255,12 @@ Before you go and commit your changes, it's a good idea to make sure they don't 
 1.  Start a fermicloud VM and install the OSG RPMs, the latest build of `osg-test` and `osg-tested-internal`.
 2.  Get rid of the old tests:
     ```
-    # For RHEL 6, CentOS 6, and SL6 or OSG 3 older than 3.1.15
+    # For RHEL 6, CentOS 6, and SL6
     [root@client ~]$ rm -rf /usr/lib/python2.6/site-packages/osgtest
     # For RHEL 7, CentOS 7, and SL7
     [root@client ~]$ rm -rf /usr/lib/python2.7/site-packages/osgtest
     ```
-3.  `cd` into your clone of the `osg-test` repo and copy over your tests to your VM: 
+3.  `cd` into your clone of the `osg-test` repo and copy over your tests to your VM:
     ```
     # For RHEL 6, CentOS 6, and SL6 VMs
     [user@client ~]$ scp -r osgtest/ <VM HOSTNAME>:/usr/lib/python2.6/site-packages
