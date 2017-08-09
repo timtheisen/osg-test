@@ -41,7 +41,7 @@ def check_start(service_name, timeout=10):
     it starts running within a 'timeout' second window (default=10s)
     """
     start(service_name)
-    assert is_running(service_name, timeout), "%s is not running" % service_name
+    assert is_running(service_name, timeout=10), "%s is not running" % service_name
 
 def stop(service_name):
     """
@@ -75,7 +75,7 @@ def check_stop(service_name, timeout=10):
     stops running within a 'timeout' second window (default=10s)
     """
     stop(service_name)
-    assert is_stopped(service_name, timeout), "%s is still running" % service_name
+    assert is_stopped(service_name, timeout=10), "%s is still running" % service_name
 
 def status(service_name):
     """
@@ -103,7 +103,7 @@ def check_status(service_name, expected_status, timeout=10):
 
     return status_rc == expected_status
 
-def is_running(service_name, timeout=10):
+def is_running(service_name, timeout=1):
     """
     Return True if 'service_name' is determined to be running via init script or
     systemd, according to LSB init standards, before 'timeout'
@@ -111,7 +111,7 @@ def is_running(service_name, timeout=10):
     """
     return check_status(service_name, STATUS_RUNNING, timeout)
 
-def is_stopped(service_name, timeout=10):
+def is_stopped(service_name, timeout=1):
     """
     Return True if service_name is properly stopped (exit code = 3) via init
     script or systemd, according to LSB, init standards, before 'timeout'

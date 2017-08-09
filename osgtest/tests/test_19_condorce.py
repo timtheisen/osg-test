@@ -35,7 +35,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
 
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(service.is_running('condor'), 'Condor not running after reconfig')
+        self.assert_(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
 
     def test_03_configure_auth(self):
         if core.osg_release() < 3.4:
