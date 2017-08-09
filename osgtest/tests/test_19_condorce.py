@@ -117,16 +117,6 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
         core.config['condor-ce.collectorlog'] = condor.ce_config_val('COLLECTOR_LOG')
 
         if service.is_running('condor-ce'):
-            # Required to accept changes to the mapfile, which caused
-            # issues in the nightly due to bad htcondor-ce-2.0.8-2
-            # packaging remove after OSG 3.3.17. We don't use service.stop()
-            # because it only stops services that we've started
-            if core.el_release() < 7:
-                command = ('service', 'condor-ce', 'stop')
-            else:
-                command = ('systemctl', 'stop', 'condor-ce')
-            core.check_system(command, 'Stop condor-ce service')
-            service.check_start('condor-ce')
             core.state['condor-ce.schedd-ready'] = True
             self.skip_ok('already running')
 
