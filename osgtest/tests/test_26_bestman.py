@@ -80,7 +80,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         if service.is_running('bestman2'):
             core.state['bestman.server-running'] = True
-            self.skip_ok('apparently running')
+            self.skip_ok('bestman2 already running')
 
         # Dump the bestman logs into the test logs for debugging
         def _dump_logfiles():
