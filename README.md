@@ -7,6 +7,24 @@ osg-test
 
 OSG Software's integration testing suite used in the nightly [VM tests](https://github.com/opensciencegrid/vm-test-runs).
 
+Motivation
+----------
+
+### Test Framework ###
+
+Why should we consider using a different test framework than other people? Most automated testing frameworks (many, if not most, based on the venerable JUnit) support tests that are mostly independent of each other and consequently can be run in any order. Because we are doing integration tests, ours are necessarily more coupled than that. For example, testing globus-job-run requires that the appropriate RPMs are installed, a test user is created and set up with a certificate, the gatekeeper service is configured and running, and so forth. And then, when tests are done, we want to stop services and remove packages. We want to express all of these steps as tests, because they are all things that could fail as a result of our packaging and hence are part of the system under test.
+
+Other testing frameworks often support fixtures, which bracket a set of tests with set-up and tear-down code. While this feature sounds promising, typically it has the wrong semantics for our use cases. Generally, we want to install, configure, and start a set of services once, then run many tests that use the services, then stop and remove them. The start-up costs are often high; for example, our VOMS setup takes roughly 40 seconds to configure and start, not counting installation time. The problem is that test fixtures are usually applied per test, with the idea that each test needs a clean environment in which to run.
+
+### Design Requirements ###
+
+-   Each test, or perhaps group of related tests, has dependencies that must be met. If they are not met at run time, then the test(s) should be skipped (and reported as such). There seem to be two classes of dependencies. *Sequence dependencies* define a DAG of tests, such that some test(s) must occur before others. This static information is used by the test framework to topologically sort the tests into a valid sequence. *State dependencies* define what state the system must be in for the test(s) to run. For example, a test may require a service to be running. If the prior test that starts the service fails, then the service is marked as not running, and the dependent test is skipped. State dependencies include information about which packages are installed.
+-   Framework should be as minimal as possible and (ideally) unaware of our specific contents.
+-   Atomic unit of work is a test.
+-   All operations are expressed as tests, including installation, configuration, service start/stop, etc.
+-   Tests should express requirements clearly and simply, so that distributed team of developers can work independently and with minimal confusion.
+
+
 Where to Write Tests
 --------------------
 
