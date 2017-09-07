@@ -3,9 +3,12 @@ osg-test
 
 [![Build Status](https://travis-ci.org/opensciencegrid/osg-test.svg?branch=master)](https://travis-ci.org/opensciencegrid/osg-test)
 
----
+- [Motivation](#motivation)
+- [Running the OSG Automated Tests](#running-the-osg-automated-tests)
+- [osg-test usage](#osg-test-usage)
+- [Writing Tests](#writing-tests)
 
-OSG Software's integration testing suite used in the nightly [VM tests](https://github.com/opensciencegrid/vm-test-runs).
+The `osg-test` package contains software that performs automated, functional integration tests an OSG Software installation. `osg-test` acts as the driver for the OSG Software's in the nightly [VM tests](https://github.com/opensciencegrid/vm-test-runs).
 
 Motivation
 ----------
@@ -24,9 +27,107 @@ Other testing frameworks often support fixtures, which bracket a set of tests wi
 -   All operations are expressed as tests, including installation, configuration, service start/stop, etc.
 -   Tests should express requirements clearly and simply, so that distributed team of developers can work independently and with minimal confusion.
 
+Running the OSG Automated Tests
+-------------------------------
 
-Where to Write Tests
---------------------
+**WARNING!** The tests and associated test framework run as `root` and may destroy your system! It is **strongly** recommended that `osg-test` be run only on “disposable” systems — ones that can be reimaged or reinstalled from scratch with little effort. Virtual machines are ideal for this kind of test.
+
+All steps are performed as `root`:
+
+1.  Clone the git repository and `cd` into it:
+
+        [root@client ~ ] $ git clone https://github.com/brianhlin/osg-test.git
+        [root@client ~ ] $ cd osg-test
+
+2.  Bootstrap the test system using the `osg-testing` yum repository. The `osg release` is required as the first argument and takes the form of '<major version>.<minor version>' e.g. `3.2`. To get `osg-test` from the `osg-development` Yum repository, replace the second argument with `development`; to get `osg-test` from the production repository, omit the second argument. This step makes sure that both the EPEL and OSG repositories are available, then installs and verifies the `osg-test` package itself.
+
+        [root@client ~] $ ./bootstrap-osg-test <osg release> testing
+
+3.  Run the tests (see below for options). Be sure to direct the stdout/stderr to a file to get all the information from the test run (the dump-file option only outputs some of the output to a file): 
+
+        [root@client ~] $ osg-test -vadi <PACKAGE> -r osg-testing > <output file> 2>&1
+
+`osg-test` Usage
+----------------
+
+Fundamentally, the `osg-test` script runs tests and reports on their results. However, the script can also perform many of the housekeeping tasks associated with setting up and tearing down the test environment, including adding (and later removing) a test user and its X.509 certificate, installing (and later removing) one or more RPMs, and so on. The following options are available:
+
+| Option                       | Description                                                                                                                                                                                                                                |
+|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-a`, `--add-user`           | Add and configure the test user account (see also `-u` below). By default, the script assumes that the test user account already exists and is configured with a valid X.509 certificate in its `.globus` directory.                       |
+| `--cilogon`                  | Generate CILogon-like certificates                                                                                                                                                                                                         |
+| `-c`, `--config` FILE        | Configuration file to use that specifies command-line options. See below for syntax                                                                                                                                                        |
+| `-d`, `--dump-output`        | After all test output, print all commands and their output from the test run. Typically generates **a lot** of output.                                                                                                                     |
+| `--df`, `--dump-file` FILE   | Like `--dump-output`, but prints the output to a file instead of the console                                                                                                                                                               |
+| `-e`, `--exit-on-fail`       | Stop tests on first failure and output the results                                                                                                                                                                                         |
+| `-g`, `--update-repo` REPO   | Enable the given repository when using yum to update packages. Use actual repo names, such as `osg-testing` and `osg-development`.                                                                                                         |
+| `-i`, `--install` PACKAGE    | Before running tests, use `yum` to install the given package; may be specified more than once to install more than one top-level package. By default, the script assumes that the user has installed all packages to be tested in advance. |
+| `-m`, `--manual-run`         | Speeds up osg-test in the case where it is run by hand. May not be suitable when running multiple instances of osg-test at once.                                                                                                           |
+| `-n`, `--no-cleanup`         | Do not run clean-up steps. Opposite of `--cleanup`                                                                                                                                                                                         |
+| `-p`, `--password` PASSWORD  | Password for the grid certificate of the test user. Defaults to the password that works with the X.509 certificate for the default test user.                                                                                              |
+| `-s`, `--securepass`         | Prompt for the password instead of specifying it in the command line.                                                                                                                                                                      |
+| `-r`, `--extra-repo` REPO    | Enable the given extra repository (in addition to production) when using yum to install packages. Use actual repo names, such as `osg-testing` and `osg-development`. Can be used multiple times with different repositories.              |
+| `--update-release` RELEASE   | OSG release version (e.g. 3.2) to use when updating packages specified with -i.                                                                                                                                                            |
+| `--tarballs`                 | Test client tarballs instead of RPM-based installation.                                                                                                                                                                                    |
+| `--tarball-test-dir`         | The location of the tarball test files (if non-standard).                                                                                                                                                                                  |
+| `--no-print-test-name`       | Do not print test name before command output                                                                                                                                                                                               |
+| `--hostcert`                 | Create host cert                                                                                                                                                                                                                           |
+| `-T`, `--no-tests`           | Skip running the tests themselves. Useful for running/testing just the set-up and/or clean-up steps.                                                                                                                                       |
+| `-u`, `--test-user` USERNAME | Use the test user account with the given name. See also the `-a` and `-p` options.                                                                                                                                                         |
+| `-v`, `--verbose`            | Print the name of each test as it is run; generally a good idea.                                                                                                                                                                           |
+| `-h`, `--help`               | Print usage information and exit.                                                                                                                                                                                                          |
+| `--version`                  | Print the script version and exit.                                                                                                                                                                                                         |
+
+### Config file syntax ###
+
+Unfortunately, the names of the variables in the config file are not the same as their names on the command line. Below is a translation table and an example config file.
+
+| Command-Line         | Config File   | Default Value |
+|:---------------------|:--------------|:--------------|
+| --add-user           | adduser       | False         |
+| --cilogon            | cilogon       | True          |
+| --dump-output        | dumpout       | False         |
+| --dump-file          | dumpfile      | None          |
+| --extra-repo         | extrarepos    | []            |
+| --exit-on-fail       | exitonfail    | False         |
+| --update-repo        | updaterepos   | []            |
+| --install            | packages      | []            |
+| --manual-run         | manualrun     | False         |
+| --no-cleanup         | skip_cleanup  | False         |
+| --no-print-test-name | printtest     | False         |
+| --password           | password      | vdttest       |
+| --securepass         | securepass    | False         |
+| --update-release     | updaterelease | None          |
+| --tarballs           | tarballs      | False         |
+| --no-tests           | skiptests     | False         |
+| --test-user          | username      | vdttest       |
+| --verbose            | verbose       | False         |
+|                      | backupmysql   | False         |
+|                      | hostcert      | False         |
+|                      | nightly       | False         |
+|                      | selinux       | False         |
+
+
+Example configuration file:
+
+``` console
+[Config]
+adduser=True
+dumpout=True
+dumpfile=/tmp/dumpfile
+updaterepos=osg-development,osg-upcoming-development
+packages=osg-gums,osg-voms
+skip_cleanup=False
+password=test
+extrarepos=osg-testing,osg-prerelease
+tarballs=False
+skiptests=False
+username=user
+verbose=True
+```
+
+Writing Tests
+-------------
 
 All of the OSG Software automated tests are located in the `osg-test` software and package.
 
