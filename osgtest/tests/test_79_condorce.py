@@ -12,10 +12,6 @@ class TestStopCondorCE(osgunittest.OSGTestCase):
     def test_02_restore_config(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
-        if core.rpm_is_installed('gums-service') and core.state['condor-ce.gums-auth']:
-            files.restore(core.config['condor-ce.lcmapsdb'], 'condor-ce.gums')
-            files.restore(core.config['condor-ce.gsi-authz'], 'condor-ce')
-            files.restore(core.config['condor-ce.gums-properties'], 'condor-ce')
         files.restore(core.config['condor-ce.condor-cfg'], 'condor-ce')
         files.restore(core.config['condor-ce.condor-ce-cfg'], 'condor-ce')
         if core.options.hostcert:
