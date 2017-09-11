@@ -26,7 +26,7 @@ class TestSingularity(osgunittest.OSGTestCase):
 
         # If the previous command failed, output better debug info
         if status != 0:
-            self.debug_cvmfs(singularity_repo)
+            self.fail("failed to find /cvmfs/%s" % singularity_repo)
 
         command = ('ls', self.__cvmfs_image)
         status, stdout, stderr = core.system(command, False)
