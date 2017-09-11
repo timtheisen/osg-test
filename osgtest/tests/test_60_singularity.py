@@ -12,7 +12,6 @@ class TestSingularity(osgunittest.OSGTestCase):
     def test_01_singularity(self):
         core.skip_ok_unless_installed('singularity-runtime')
         core.skip_ok_unless_installed('cvmfs')
-        core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)
         core.state['cvmfs.mounted'] = False
 
         command = ('ls', '/cvmfs')
