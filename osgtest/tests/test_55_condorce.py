@@ -167,19 +167,25 @@ gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
                       '# globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
                       owner='condor-ce')
-        core.state['condor-ce.gums-auth'] = True
+        try:
+            core.state['condor-ce.gums-auth'] = True
 
-        service.check_stop('condor-ce')
+            service.check_stop('condor-ce')
 
-        stat = core.get_stat(core.config['condor-ce.collectorlog'])
+            stat = core.get_stat(core.config['condor-ce.collectorlog'])
 
-        service.check_start('condor-ce')
-        # Wait for the schedd to come back up
-        self.failUnless(condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0),
-                        'Schedd failed to restart within the 1 min window')
-        command = ('condor_ce_ping', 'WRITE', '-verbose')
-        stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
-        self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+            service.check_start('condor-ce')
+            # Wait for the schedd to come back up
+            self.failUnless(condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0),
+                            'Schedd failed to restart within the 1 min window')
+            command = ('condor_ce_ping', 'WRITE', '-verbose')
+            stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
+            self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+
+        finally:
+            files.restore(core.config['condor-ce.lcmapsdb'], 'condor-ce.gums')
+            files.restore(core.config['condor-ce.gsi-authz'], 'condor-ce')
+            files.restore(core.config['condor-ce.gums-properties'], 'condor-ce')
 
     def test_08_ceview(self):
         core.config['condor-ce.view-listening'] = False

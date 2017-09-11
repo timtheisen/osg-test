@@ -9,7 +9,7 @@ class TestStartCondorCron(osgunittest.OSGTestCase):
         core.state['condor-cron.running-service'] = False
 
         core.skip_ok_unless_installed('condor-cron')
-        if service.is_running('condor-cron'):
+        if service.is_running('condor-cron', timeout=1):
             core.state['condor-cron.running-service'] = True
             self.skip_ok('already running')
 

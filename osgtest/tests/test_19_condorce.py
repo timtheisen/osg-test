@@ -35,7 +35,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
 
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(service.is_running('condor'), 'Condor not running after reconfig')
+        self.assert_(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
 
     def test_03_configure_auth(self):
         if core.osg_release() < 3.4:
@@ -54,7 +54,19 @@ export LCMAPS_DEBUG_LEVEL=5''',
         # Set up Condor, PBS, and Slurm routes
         # Leave the GRIDMAP knob in tact to verify that it works with the LCMAPS VOMS plugin
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
-        core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile.osg-test'
+        # Add host DN to condor_mapfile
+        if core.options.hostcert:
+            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile.osg-test'
+            hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
+            mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
+            mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
+                                              "%s@daemon.opensciencegrid.org\n" % core.get_hostname())
+            files.write(core.config['condor-ce.condorce_mapfile'],
+                        mapfile_contents,
+                        owner='condor-ce',
+                        chmod=0644)
+        else:
+            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
 
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
 CERTIFICATE_MAPFILE = %s
@@ -93,17 +105,6 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
                     owner='condor-ce',
                     chmod=0644)
 
-        # Add host DN to condor_mapfile
-        if core.options.hostcert:
-            hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
-            mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
-            mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
-                                              "%s@daemon.opensciencegrid.org\n" % core.get_hostname())
-            files.write(core.config['condor-ce.condorce_mapfile'],
-                        mapfile_contents,
-                        owner='condor-ce',
-                        chmod=0644)
-
     def test_05_start_condorce(self):
         if core.el_release() >= 7:
             core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
@@ -116,16 +117,6 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
         core.config['condor-ce.collectorlog'] = condor.ce_config_val('COLLECTOR_LOG')
 
         if service.is_running('condor-ce'):
-            # Required to accept changes to the mapfile, which caused
-            # issues in the nightly due to bad htcondor-ce-2.0.8-2
-            # packaging remove after OSG 3.3.17. We don't use service.stop()
-            # because it only stops services that we've started
-            if core.el_release() < 7:
-                command = ('service', 'condor-ce', 'stop')
-            else:
-                command = ('systemctl', 'stop', 'condor-ce')
-            core.check_system(command, 'Stop condor-ce service')
-            service.check_start('condor-ce')
             core.state['condor-ce.schedd-ready'] = True
             self.skip_ok('already running')
 
