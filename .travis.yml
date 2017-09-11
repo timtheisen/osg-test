@@ -2,7 +2,7 @@ sudo: required
 env:
   matrix:
   - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun,singularity-runtime
-  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,simularity-runtime
+  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,singularity-runtime
   - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun,singularity-runtime
   - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,singularity-runtime
 
