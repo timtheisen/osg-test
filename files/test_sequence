@@ -64,3 +64,4 @@ test_94_munge
 test_95_mysqld
 test_96_proxy
 test_97_java
+test_60_singularity
