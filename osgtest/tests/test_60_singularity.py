@@ -7,7 +7,7 @@ import tempfile
 class TestSingularity(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
-    __cvfms_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6 cat /etc/redhat-release'
+    __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6 cat /etc/redhat-release'
 
     def test_01_singularity(self):
         core.skip_ok_unless_installed('singularity-runtime')
