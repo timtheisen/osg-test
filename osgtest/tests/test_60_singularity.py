@@ -7,7 +7,7 @@ import tempfile
 class TestSingularity(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
-    __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6 cat /etc/redhat-release'
+    __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6'
 
     def test_01_singularity(self):
         core.skip_ok_unless_installed('singularity-runtime')
@@ -33,8 +33,7 @@ class TestSingularity(osgunittest.OSGTestCase):
         self.assert_(file_exists, 'cvfms image missing')
         
         #command = ('bash', '-c', 'source ' + self.__check_path)
-        command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image)
+        command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'lsb_release -a')
         status, stdout, stderr = core.system(command, False)
-        fail = core.diagnose('singularity checking a file',
-                             command, status, stdout, stderr)
+        fail = core.diagnose('singularity checking a file', command, status, stdout, stderr)
         self.assertEqual(status, 0, fail)
