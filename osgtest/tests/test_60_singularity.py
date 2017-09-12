@@ -34,7 +34,6 @@ class TestSingularity(osgunittest.OSGTestCase):
         
         #command = ('bash', '-c', 'source ' + self.__check_path)
         command= ('singularity', '-v', '-d', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
-        singularity -v exec --bind /cvmfs /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6 echo "working"
         status, stdout, stderr = core.system(command, False)
         fail = core.diagnose('singularity checking a file', command, status, stdout, stderr)
         self.assertEqual(status, 0, fail)
