@@ -33,8 +33,7 @@ class TestSingularity(osgunittest.OSGTestCase):
         self.assert_(file_exists, 'cvfms image missing')
         
         #command = ('bash', '-c', 'source ' + self.__check_path)
-        #command = "singularity exec --containall --bind /cvmfs --home $HOME:/srv /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6 cat /etc/redhat-release"
-        command= ('singularity', 'exec', '--containall', '--bind', 'cvmfs', self.__cvmfs_image, 'cat', '/etc/redhat-release')
+        command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'lsb_release -a')
         status, stdout, stderr = core.system(command, False)
         fail = core.diagnose('singularity checking a file',
                              command, status, stdout, stderr)
