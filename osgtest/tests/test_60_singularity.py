@@ -26,7 +26,7 @@ class TestSingularity(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('cvmfs')
         singularity_repo = 'singularity.opensciencegrid.org'
         if core.el_release() <= 6:
-             mountSingularityCVMFSRepo(self, singularity_repo)
+             self.mountSingularityCVMFSRepo(singularity_repo)
         core.state['cvmfs.mounted'] = False
 
         command = ('ls', '/cvmfs')
