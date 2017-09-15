@@ -10,7 +10,7 @@ class TestSingularity(osgunittest.OSGTestCase):
     __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6'
 
     def mountSingularityCVMFSRepo(self, repo):
-        command = ('mkdir', '-p', 'singularity.opensciencegrid.org')
+        command = ('mkdir', '-p', /cvmfs + repo)
         status, stdout, stderr = core.system(command, False)
         if status != 0:
             self.fail("failed to mkdir /cvmfs/%s" % repo)
@@ -18,7 +18,7 @@ class TestSingularity(osgunittest.OSGTestCase):
         command = ('mount', '-t', 'cvmfs', 'repo', '/cvmfs/' + repo)
         status, stdout, stderr = core.system(command, False)
         if status != 0:
-            self.fail("failed to mount: %s, error: %s" % (repo,stderr))
+            self.fail("failed to mount: %s, error: %s" % (repo,stdout))
                                
 
     def test_01_singularity(self):
