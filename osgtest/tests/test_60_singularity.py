@@ -9,9 +9,23 @@ class TestSingularity(osgunittest.OSGTestCase):
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
     __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6'
 
+    def mountSingularityCVMFSRepo(self, repo):
+        command = ('mkdir', '-p', 'singularity.opensciencegrid.org')
+        status, stdout, stderr = core.system(command, False)
+        if status != 0:
+            self.fail("failed to mkdir /cvmfs/%s" % repo)
+
+        command = ('mount', '-t', 'cvmfs', 'repo', '/cvmfs/' + repo)
+         if status != 0:
+            self.fail("failed to mount" % repo)
+                               
+
     def test_01_singularity(self):
         core.skip_ok_unless_installed('singularity-runtime')
         core.skip_ok_unless_installed('cvmfs')
+        singularity_repo = 'singularity.opensciencegrid.org'
+        if core.el_release() <= 6:
+             mountSingularityCVMFSRepo(self, singularity_repo)
         core.state['cvmfs.mounted'] = False
 
         command = ('ls', '/cvmfs')
@@ -20,7 +34,6 @@ class TestSingularity(osgunittest.OSGTestCase):
         self.assert_(file_exists, 'Cvmfs mount point missing')
         core.state['cvmfs.mounted'] = True
 
-        singularity_repo = 'singularity.opensciencegrid.org'
         command = ('ls', '/cvmfs/' + singularity_repo)
         status, stdout, stderr = core.system(command, False)
 
