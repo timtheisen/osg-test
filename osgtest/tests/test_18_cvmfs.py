@@ -72,11 +72,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         if core.state['cvmfs.version'] < ('2', '1'):
             command = ('service', 'cvmfs', 'restartautofs')
         else:
-            if core.el_release() >= 7:
-                command = ('service', 'autofs', 'restart')
-            else:
-                command = ('bash','-x', '/etc/init.d/autofs', 'restart')
-                #command = ('service', 'autofs', 'restart')
+            command = ('service', 'autofs', 'restart')
         stdout, stderr, fail = core.check_system(command, 'Start cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
         core.state['cvmfs.started-server'] = True
