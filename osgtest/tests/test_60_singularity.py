@@ -16,7 +16,8 @@ class TestSingularity(osgunittest.OSGTestCase):
             self.fail("failed to mkdir /cvmfs/%s" % repo)
 
         command = ('mount', '-t', 'cvmfs', 'repo', '/cvmfs/' + repo)
-         if status != 0:
+        status, stdout, stderr = core.system(command, False)
+        if status != 0:
             self.fail("failed to mount" % repo)
                                
 
