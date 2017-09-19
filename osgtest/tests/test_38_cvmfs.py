@@ -11,15 +11,11 @@ class TestCvmfs(osgunittest.OSGTestCase):
     core.config['cvmfs.debug-dirs'] = []
 
     def mountSingularityCVMFSRepo(self, repo):
-        command = ('mkdir', '-p', /cvmfs + repo)
-        status, stdout, stderr = core.system(command, False)
-        if status != 0:
-            self.fail("failed to mkdir /cvmfs/%s" % repo)
+        command = ('mkdir', '-p', '/cvmfs/' + repo)
+        core.check_system(command, 'Manually creating cvmfs dir')
 
         command = ('mount', '-t', 'cvmfs', 'repo', '/cvmfs/' + repo)
-        status, stdout, stderr = core.system(command, False)
-        if status != 0:
-            self.fail("failed to mount: %s, error: %s" % (repo,stdout))
+        core.check_system(command, 'Manually mounting cvmfs singularity repo')
 
     def debug_cvmfs(self, repo):
         temp_dir = tempfile.mkdtemp()
@@ -113,28 +109,16 @@ class TestCvmfs(osgunittest.OSGTestCase):
     def test_04_singularity(self):
         core.skip_ok_unless_installed('singularity-runtime')
         core.skip_ok_unless_installed('cvmfs')
+        core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)
         singularity_repo = 'singularity.opensciencegrid.org'
         if core.el_release() <= 6:
              self.mountSingularityCVMFSRepo(singularity_repo)
-        core.state['cvmfs.mounted'] = False
-
-        command = ('ls', '/cvmfs')
-        status, stdout, stderr = core.system(command, False)
-        file_exists = os.path.exists('/cvmfs')
-        self.assert_(file_exists, 'Cvmfs mount point missing')
-        core.state['cvmfs.mounted'] = True
-
         command = ('ls', '/cvmfs/' + singularity_repo)
-        status, stdout, stderr = core.system(command, False)
-
-        # If the previous command failed, output better debug info                                                                                                                                 
-        if status != 0:
-            self.fail("failed to find /cvmfs/%s" % singularity_repo)
-
+        core.check_system(command, "testing cvmfs access to singularity repo")
+        
         command = ('ls', self.__cvmfs_image)
-        status, stdout, stderr = core.system(command, False)
-        self.assert_(file_exists, 'cvfms image missing')
+        core.check_system(command, "testing cvmfs access to singularity image")
+
         command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
-        status, stdout, stderr = core.system(command, False)
-        fail = core.diagnose('singularity checking a file', command, status, stdout, stderr)
-        self.assertEqual(status, 0, fail)
+        core.check_system(command, "'singularity checking a file")
+
