@@ -7,6 +7,7 @@ import tempfile
 class TestCvmfs(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
+    __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6'
     core.config['cvmfs.debug-dirs'] = []
 
     def debug_cvmfs(self, repo):
@@ -97,3 +98,19 @@ class TestCvmfs(osgunittest.OSGTestCase):
         # If the previous command failed, output better debug info
         if status != 0:
             self.debug_cvmfs(oasis_repo)
+
+    def test_04_singularity(self):
+        core.skip_ok_unless_installed('singularity-runtime')
+        core.skip_ok_unless_installed('cvmfs')
+        core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)
+        singularity_repo = 'singularity.opensciencegrid.org'
+
+        command = ('ls', '/cvmfs/' + singularity_repo)
+        core.check_system(command, "testing cvmfs access to singularity repo")
+        
+        command = ('ls', self.__cvmfs_image)
+        core.check_system(command, "testing cvmfs access to singularity image")
+
+        command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
+        core.check_system(command, "'singularity checking a file")
+
