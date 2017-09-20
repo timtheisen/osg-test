@@ -10,13 +10,6 @@ class TestCvmfs(osgunittest.OSGTestCase):
     __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6'
     core.config['cvmfs.debug-dirs'] = []
 
-    def mountSingularityCVMFSRepo(self, repo):
-        command = ('mkdir', '-p', '/cvmfs/' + repo)
-        core.check_system(command, 'Manually creating cvmfs dir')
-
-        command = ('mount', '-t', 'cvmfs', 'repo', '/cvmfs/' + repo)
-        core.check_system(command, 'Manually mounting cvmfs singularity repo')
-
     def debug_cvmfs(self, repo):
         temp_dir = tempfile.mkdtemp()
         core.config['cvmfs.debug-dirs'].append(temp_dir)
@@ -111,8 +104,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('cvmfs')
         core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)
         singularity_repo = 'singularity.opensciencegrid.org'
-        if core.el_release() <= 6:
-             self.mountSingularityCVMFSRepo(singularity_repo)
+
         command = ('ls', '/cvmfs/' + singularity_repo)
         core.check_system(command, "testing cvmfs access to singularity repo")
         
