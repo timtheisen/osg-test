@@ -64,3 +64,6 @@ class TestStopTomcat(osgunittest.OSGTestCase):
 
         files.restore(tomcat.conffile(), 'tomcat')
 
+    def test_08_stop_haveged(self):
+        core.skip_ok_unless_installed(tomcat.pkgname(), 'haveged')
+        service.check_stop('haveged')
