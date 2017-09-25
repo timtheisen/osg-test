@@ -17,8 +17,15 @@ class TestStartGridFTP(osgunittest.OSGTestCase):
                      '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
 export LCMAPS_DEBUG_LEVEL=5''',
                      owner='gridftp')
-
-    def test_02_start_gridftp(self):
+    
+    def test_02_configure_hdfs_gridftp(self):
+        core.skip_ok_unless_installed('globus-gridftp-server-progs', 'hadoop-hdfs')
+        core.config['automated-tests-gridftp.conf'] = '/etc/gridftp.d/automated-tests.conf')
+        file_contents = "$GRIDFTP_HDFS_MOUNT_POINT /"
+        files.write(core.config['automated-tests-gridftp.conf'],
+                    file_contents, 'root')
+                    
+    def test_03_start_gridftp(self):
         core.state['gridftp.started-server'] = False
         core.state['gridftp.running-server'] = False
 
