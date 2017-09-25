@@ -20,10 +20,9 @@ export LCMAPS_DEBUG_LEVEL=5''',
     
     def test_02_configure_hdfs_gridftp(self):
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'hadoop-hdfs')
-        core.config['automated-tests-gridftp.conf'] = '/etc/gridftp.d/automated-tests.conf'
-        file_contents = "$GRIDFTP_HDFS_MOUNT_POINT /"
-        files.write(core.config['automated-tests-gridftp.conf'],
-                    file_contents, 'root')
+        #core.config['automated-tests-gridftp.conf'] = '/etc/gridftp.d/automated-tests.conf'
+        #file_contents = "$GRIDFTP_HDFS_MOUNT_POINT /etc"
+        #files.write(core.config['automated-tests-gridftp.conf'], file_contents, 'root')
                     
     def test_03_start_gridftp(self):
         core.state['gridftp.started-server'] = False
