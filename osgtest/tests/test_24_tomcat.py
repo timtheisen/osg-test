@@ -15,11 +15,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         command = ('/var/lib/trustmanager-tomcat/configure.sh',)
         core.check_system(command, 'Config trustmanager')
 
-    def test_02_start_haveged(self):
-        core.skip_ok_unless_installed(tomcat.pkgname(), 'haveged')
-        service.check_start('haveged')
-
-    def test_03_config_tomcat(self):
+    def test_02_config_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
         old_contents = files.read(tomcat.conffile(), True)
@@ -35,7 +31,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
         new_contents = '\n'.join([old_contents] + lines)
         files.write(tomcat.conffile(), new_contents, owner='tomcat')
 
-    def test_04_disable_persistence(self):
+    def test_03_disable_persistence(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         self.skip_ok_if(core.options.nightly, 'Allow persistence in the nightlies')
         contents='''
@@ -46,7 +42,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
 '''
         files.write(tomcat.contextfile(), contents, owner='tomcat')
 
-    def test_05_config_tomcat_properties(self):
+    def test_04_config_tomcat_properties(self):
         if core.missing_rpm(tomcat.pkgname(), 'gratia-service'):
             return
 
@@ -59,7 +55,7 @@ class TestStartTomcat(osgunittest.OSGTestCase):
                               owner='gratia',
                               backup=True)
 
-    def test_06_start_tomcat(self):
+    def test_05_start_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         core.state['tomcat.started'] = False
         catalina_log = tomcat.catalinafile()

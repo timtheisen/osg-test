@@ -1,3 +1,4 @@
+test_03_haveged
 test_04_java
 test_05_mysqld
 test_06_fetch_crl
@@ -64,3 +65,4 @@ test_94_munge
 test_95_mysqld
 test_96_proxy
 test_97_java
+test_98_haveged
