@@ -17,12 +17,8 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
                 files.remove(temp_dir, force=True)
         except KeyError:
             pass # tempdir was never created
-        
-        if core.state['cvmfs.version'] < ('2', '1'):
-            command = ('service', 'cvmfs', 'stop')
-        else:
-            command = ('cvmfs_config', 'umount')
-        stdout, _, fail = core.check_system(command, 'Stop Cvmfs server')
+
+        stdout, _, fail = core.check_system(('cvmfs_config', 'umount'), 'Stop Cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
 
         files.restore("/etc/fuse.conf","cvmfs")
