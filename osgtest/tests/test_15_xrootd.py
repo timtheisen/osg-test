@@ -53,12 +53,6 @@ export LCMAPS_DEBUG_LEVEL=5''',
         core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir, '.globus', 'usercert.pem')
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
 
-        # Determine xrootd package name
-        if core.rpm_is_installed('xrootd4'):
-            core.config['xrootd.package'] = 'xrootd4'
-        elif core.rpm_is_installed('xrootd'):
-            core.config['xrootd.package'] = 'xrootd'
-
         user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
