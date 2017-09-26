@@ -62,19 +62,10 @@ class TestStartTomcat(osgunittest.OSGTestCase):
 
         initial_stat = core.get_stat(catalina_log)
 
-        if tomcat.majorver() > 5:
-            tomcat_sentinel = r'Server startup in \d+ ms'
-            # tomcat5 doesn't have an explicit sentinel for server startup
-            # so we use a heartbeat-like message that shows up in catalin.out
-            # with an increased log level
-            log_level = 'FINER'
-        else:
-            tomcat_sentinel = r'Start expire sessions'
-            log_level = 'FINEST'
-
+        tomcat_sentinel = r'Server startup in \d+ ms'
         # Bump log level
         core.config['tomcat.logging-conf'] = os.path.join(tomcat.sysconfdir(), 'logging.properties')
-        files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = %s\n' % log_level,
+        files.append(core.config['tomcat.logging-conf'], 'org.apache.catalina.level = %s\n' % 'FINER',
                      owner='tomcat', backup=True)
 
         old_str  =  "1catalina.org.apache.juli.FileHandler.prefix = catalina."
