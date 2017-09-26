@@ -11,7 +11,7 @@ class TestCleanupJobs(osgunittest.OSGTestCase):
     """Clean any configuration we touched for running jobs"""
 
     def test_01_restore_job_env(self):
-        core.skip_ok_unless_one_installed(['htcondor-ce', 'globus-gatekeeper', 'condor'])
+        core.skip_ok_unless_one_installed(['htcondor-ce', 'condor'])
 
         files.restore(core.config['osg.job-environment'], owner='pbs')
         files.restore(core.config['osg.local-job-environment'], owner='pbs')
