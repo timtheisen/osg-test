@@ -24,7 +24,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         automount_conf_path='/etc/auto.master'
         files.preserve(automount_conf_path, 'cvmfs')
         try:
-	    contents = files.read(automount_conf_path)
+            contents = files.read(automount_conf_path)
         except IOError:
             #Sometimes this file doesn't exist
             contents=[]
