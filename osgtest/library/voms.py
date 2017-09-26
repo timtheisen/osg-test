@@ -148,6 +148,7 @@ def is_installed():
         if not core.dependency_is_installed(dep):
             return False
 
+    # TODO: drop this check when 3.3 is completely EOL
     if core.el_release() >= 7:
         epoch, _, version, release, _ = core.get_package_envra('voms-server')
         if core.version_compare((epoch, version, release), '2.0.12-3.2') < 0:
