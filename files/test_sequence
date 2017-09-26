@@ -37,10 +37,10 @@ test_49_jobs
 test_50_voms
 test_51_edgmkgridmap
 test_52_bestman
-test_58_gfal2util
 test_53_gums
 test_54_gratia
 test_55_condorce
+test_58_gfal2util
 test_59_gsiopenssh
 test_74_slurm
 test_75_gums
