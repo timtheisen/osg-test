@@ -20,19 +20,10 @@ class TestJava(osgunittest.OSGTestCase):
         if java.is_openjdk_installed() or java.is_openjdk_devel_installed():
             core.config['java.old-ver'] = {}
 
-    def test_01_fix_symlinks(self):
-        if core.rpm_is_installed('jdk') and \
-           (java.is_openjdk_installed() or java.is_openjdk_devel_installed()):
-            # We regenerate these symlinks via alternatives so it's unnecessary to back them up
-            command = ('rm', '-f', '/usr/bin/java', '/usr/bin/javac', '/usr/bin/javadoc', '/usr/bin/jar')
-            core.check_system(command, 'Remove old symlinks')
-            command = ['yum', 'reinstall', '-y', java.JAVA_RPM, java.JAVAC_RPM]
-            yum.retry_command(command)
-
-    def test_02_select_java_ver(self):
+    def test_01_select_java_ver(self):
         if java.is_openjdk_installed():
             self._select_alternatives('java')
 
-    def test_03_select_javac_ver(self):
+    def test_02_select_javac_ver(self):
         if java.is_openjdk_devel_installed():
             self._select_alternatives('javac')
