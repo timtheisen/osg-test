@@ -13,9 +13,9 @@ class TestConfigureJobs(osgunittest.OSGTestCase):
     """Configurations for running jobs"""
 
     def test_01_set_job_env(self):
-        # Jobs get submitted with globus-job-run, condor_run, and condor_ce_run
+        # Jobs get submitted with condor_run and condor_ce_run
         core.state['jobs.env-set'] = False
-        core.skip_ok_unless_one_installed(['htcondor-ce', 'globus-gatekeeper', 'condor'])
+        core.skip_ok_unless_one_installed(['htcondor-ce', 'condor'])
 
         osg_libdir = os.path.join('/var', 'lib', 'osg')
         try:

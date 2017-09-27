@@ -5,7 +5,6 @@ test_07_munge
 test_09_jobs
 test_10_condor
 test_11_condor_cron
-test_12_gatekeeper
 test_13_gridftp
 test_14_lcmaps
 test_15_xrootd
@@ -54,7 +53,6 @@ test_83_rsv
 test_84_xrootd
 test_85_lcmaps
 test_86_gridftp
-test_87_gatekeeper
 test_88_condor_cron
 test_89_condor
 test_90_bestman
