@@ -1,5 +1,4 @@
 import re
-import unittest
 
 from osgtest.library import core, osgunittest
 

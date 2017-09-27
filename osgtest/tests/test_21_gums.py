@@ -1,9 +1,6 @@
 import cagen
 import os
 import re
-import socket
-import stat
-import unittest
 
 import osgtest.library.core as core
 import osgtest.library.files as files
