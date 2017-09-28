@@ -1,12 +1,8 @@
 import os
-import shutil
-import time
-import datetime
 
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.service as service
 import osgtest.library.tomcat as tomcat
 
 class TestStopGratia(osgunittest.OSGTestCase):

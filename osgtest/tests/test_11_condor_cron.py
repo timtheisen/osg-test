@@ -1,4 +1,3 @@
-import os
 import osgtest.library.core as core
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service

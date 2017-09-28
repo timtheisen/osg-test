@@ -5,9 +5,7 @@ import osgtest.library.osgunittest as osgunittest
 import socket
 import shutil
 import tempfile
-import unittest
 import pwd
-import re
 
 
 class TestXrootd(osgunittest.OSGTestCase):

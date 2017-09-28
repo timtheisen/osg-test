@@ -1,5 +1,3 @@
-import os
-
 import osgtest.library.core as core
 import osgtest.library.condor as condor
 import osgtest.library.osgunittest as osgunittest

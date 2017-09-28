@@ -4,7 +4,6 @@ import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import socket
 import tempfile
-import unittest
 
 class TestGFAL2Util(osgunittest.OSGTestCase):
 

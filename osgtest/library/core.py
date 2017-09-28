@@ -311,7 +311,7 @@ def missing_rpm(*packages):
 
     If any package is missing, list all missing packages in a skip() message.
     """
-    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
+    if isinstance(packages[0], (list, tuple)):
         packages = packages[0]
 
     missing = []
@@ -346,7 +346,7 @@ def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
         raise TypeError("skip_ok_unless_installed() got unexpected keyword argument(s) '%s'" %
                         ("', '".join(kwargs.keys())))
 
-    if isinstance(packages_or_dependencies[0], list) or isinstance(packages_or_dependencies[0], tuple):
+    if isinstance(packages_or_dependencies[0], (list, tuple)):
         packages_or_dependencies = packages_or_dependencies[0]
 
     missing = []
@@ -383,8 +383,8 @@ def skip_ok_unless_one_installed(*packages):
      Raise osgunittest.SkipOkException if at least one of the packages are installed                                                           
      otherwise return None.                                                                                                                    
     """
-    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
-                packages = packages[0]
+    if isinstance(packages[0], (list, tuple)):
+        packages = packages[0]
     installed = []
     for package in packages:
         if rpm_is_installed(package):
@@ -499,7 +499,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
     if shell:
         if not isinstance(command, str):
             command = ' '.join(command)
-    elif not (isinstance(command, list) or isinstance(command, tuple)):
+    elif not isinstance(command, (list, tuple)):
         try:
             repr(command)
         except TypeError:

@@ -1,4 +1,3 @@
-import cagen
 import os
 import osgtest.library.core as core
 import osgtest.library.files as files

@@ -34,28 +34,24 @@ class TestCvmfs(osgunittest.OSGTestCase):
         command = ('cat', default_local)
         status, stdout, stderr = core.system(command, False)
 
-        if core.state['cvmfs.version'] < ('2', '1'):
-            command = ('service', 'cvmfs', 'probe')
-            status, stdout, stderr = core.system(command, False)
-        else:
-            # Dave Dykstra suggested running cvmfs probe against a different
-            # set of repositories than are currently set up, so we modify them
-            # just for this test. (See SOFTWARE-1097)
+        # Dave Dykstra suggested running cvmfs probe against a different
+        # set of repositories than are currently set up, so we modify them
+        # just for this test. (See SOFTWARE-1097)
 
-            # In the future, this test might be removed since we do not want
-            # to depend on external services, and it's redundant to probe the
-            # repos that we have already mounted.
-            files.replace(
-                default_local,
-                'CVMFS_REPOSITORIES=cms.cern.ch',
-                'CVMFS_REPOSITORIES=' + probe_repos,
-                owner='cvmfsprobe')
-            try:
-                command = ('cvmfs_config', 'probe')
-                status, stdout, stderr = core.system(command, False)
-                self.assertEqual(status, 0, core.diagnose('cvmfs probe', command, status, stdout, stderr))
-            finally:
-                files.restore(default_local, 'cvmfsprobe')
+        # In the future, this test might be removed since we do not want
+        # to depend on external services, and it's redundant to probe the
+        # repos that we have already mounted.
+        files.replace(
+            default_local,
+            'CVMFS_REPOSITORIES=cms.cern.ch',
+            'CVMFS_REPOSITORIES=' + probe_repos,
+            owner='cvmfsprobe')
+        try:
+            command = ('cvmfs_config', 'probe')
+            status, stdout, stderr = core.system(command, False)
+            self.assertEqual(status, 0, core.diagnose('cvmfs probe', command, status, stdout, stderr))
+        finally:
+            files.restore(default_local, 'cvmfsprobe')
 
     def test_02_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')

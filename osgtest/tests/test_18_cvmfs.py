@@ -1,8 +1,6 @@
-import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import unittest
 
 class TestStartCvmfs(osgunittest.OSGTestCase):
 
@@ -47,19 +45,9 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         files.write("/etc/cvmfs/domain.d/cern.ch.local", contents, owner='cvmfs', chmod=0644)
 
 
-    def record_cvmfs_version(self):
-        core.state['cvmfs.version'] = tuple()
-
-        cvmfs_version_string = core.get_package_envra('cvmfs')[2]
-        cvmfs_version = tuple(cvmfs_version_string.split("."))
-
-        core.state['cvmfs.version'] = cvmfs_version
-
-
     def test_01_setup_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')
 
-        self.record_cvmfs_version()
         self.setup_fuse()
         self.setup_automount()
         self.setup_cvmfs()
@@ -69,11 +57,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('cvmfs')
 
-        if core.state['cvmfs.version'] < ('2', '1'):
-            command = ('service', 'cvmfs', 'restartautofs')
-        else:
-            command = ('service', 'autofs', 'restart')
-        stdout, stderr, fail = core.check_system(command, 'Start cvmfs server')
+        stdout, stderr, fail = core.check_system(('service', 'autofs', 'restart'), 'Start cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
         core.state['cvmfs.started-server'] = True
 
