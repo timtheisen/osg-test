@@ -63,4 +63,3 @@ class TestStopTomcat(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
         files.restore(tomcat.conffile(), 'tomcat')
-
