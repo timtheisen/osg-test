@@ -66,3 +66,4 @@ test_95_mysqld
 test_96_proxy
 test_97_java
 test_98_haveged
+
