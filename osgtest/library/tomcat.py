@@ -2,20 +2,12 @@ import os
 
 import osgtest.library.core as core
 
-def majorver():
-    "Tomcat major version"
-    if core.el_release() == 7:
-        return 7
-    if core.el_release() == 6:
-        return 6
-    else:
-        return 5
-
 def pkgname():
     "Name of the Tomcat package"
-    if majorver() <= 6:
-        return "tomcat" + str(majorver())
-    return "tomcat"
+    if core.el_release() == 6:
+        return "tomcat6"
+    else:
+        return "tomcat"
 
 def datadir():
     "Path of data directory of Tomcat"
@@ -39,7 +31,7 @@ def contextfile():
 
 def catalinafile():
     "Path of Catalina log file that contains the startup sentinel"
-    if majorver() <= 6:
+    if pkgname() == "tomcat6":
         return os.path.join(logdir(), 'catalina.out')
     else:
         return os.path.join(logdir(), 'catalina.log')
@@ -50,8 +42,5 @@ def pidfile():
 
 def serverlibdir():
     "Path of the server libraries dir of Tomcat"
-    if majorver() >= 6:
-        return os.path.join(datadir(), "lib")
-    else:
-        return os.path.join(datadir(), "server/lib")
+    return os.path.join(datadir(), "lib")
 

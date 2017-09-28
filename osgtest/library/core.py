@@ -406,14 +406,7 @@ def get_package_envra(package_name):
         raise OSError(status, stdout)
 
     envra = stdout.strip().split(' ')
-    # On EL5 machines, both i386 and x86_64 versions of packages get installed, causing this function to always fail
-    if (len(envra) == 10 and
-        envra[0] == envra[5] and
-        envra[1] == envra[6] and
-        envra[2] == envra[7] and
-        envra[3] == envra[8]):
-            envra = envra[0:5]
-    elif len(envra) != 5:
+    if len(envra) != 5:
         raise OSError(status, stdout)
     (epoch, name, version, release, arch) = envra
     # Missing epoch is displayed as '(none)' but treated by rpm as '0'
@@ -606,8 +599,8 @@ def wait_for_file(filename, timeout):
 
 def el_release():
     """Return the major version of the Enterprise Linux release the system is
-    running. SL/RHEL/CentOS 5.x will return 5; SL/RHEL/CentOS 6.x will return
-    6.
+    running. SL/RHEL/CentOS 6.x will return 6; SL/RHEL/CentOS 7.x will return
+    7.
 
     """
     global _el_release
