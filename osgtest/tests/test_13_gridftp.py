@@ -30,3 +30,12 @@ export LCMAPS_DEBUG_LEVEL=5''',
         service.check_start('globus-gridftp-server')
         core.state['gridftp.running-server'] = True
         core.state['gridftp.started-server'] = True
+    
+    def test_03_configure_cksums_dir(self):
+        core.skip_ok_unless_installed('gridftp-hdfs')
+        checksums_dir = '/cksums'
+        command = ('mkdir', '-p', checksums_dir)
+        core.check_system(command, 'Creating gridftp hadoop cheksums dir')
+        
+        command= ('chmod', 'a+w', checksums_dir)
+        core.check_system(command, 'Making checksums dir writable')

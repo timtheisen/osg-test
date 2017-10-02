@@ -112,5 +112,5 @@ class TestCvmfs(osgunittest.OSGTestCase):
         core.check_system(command, "testing cvmfs access to singularity image")
 
         command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
-        core.check_system(command, "'singularity checking a file")
+        core.check_system(command, "singularity checking a file")
 
