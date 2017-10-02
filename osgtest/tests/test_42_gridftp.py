@@ -18,15 +18,11 @@ class TestGridFTP(osgunittest.OSGTestCase):
         temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
         gsiftp_url = 'gsiftp://%s%s/copied_file.txt' % (hostname, temp_dir)
-        command = ('globus-url-copy', 'file://' + TestGridFTP.__data_path,
+        command = ('globus-url-copy', '-v', 'file://' + TestGridFTP.__data_path,
                    gsiftp_url)
-
-        status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('GridFTP copy, local to URL',
-                             command, status, stdout, stderr)
+        core.check_system(command, "GridFTP copy, local to URL", user='vdttest')
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
         shutil.rmtree(temp_dir)
-        self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_copy_server_to_local(self):
