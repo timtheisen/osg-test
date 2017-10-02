@@ -76,5 +76,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
          os.chmod(TestGFAL2Util.__temp_dir,0777)
          command = ('gfal-copy', '-v', '-f', self.get_gftp_url_base() + TestGFAL2Util.__data_path, 'file://' + TestGFAL2Util.__temp_dir)
          core.check_system(command, "gfal2-util copy from  GridFTP URL to local", user='vdttest')
-
-
+         file_copied = os.path.exists(TestGFAL2Util.__temp_dir + 'test_gridftp_data.txt')
+         self.assert_(file_copied, 'Copied file missing')
+         files.remove(file_copied)
+'
