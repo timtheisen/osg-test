@@ -28,25 +28,20 @@ class TestRSV(osgunittest.OSGTestCase):
 
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')
-        return
 
     def stop_rsv(self):
         core.check_system(('rsv-control', '--off'), 'rsv-control --off')
-        return
 
     def config_and_restart(self):
         self.stop_rsv()
         core.check_system(('osg-configure', '-c', '-m', 'rsv'), 'osg-configure -c -m rsv')
         self.start_rsv()
-        return
-
 
     def run_metric(self, metric, host=host):
         command = ('rsv-control', '--run', '--host', host, metric)
         stdout = core.check_system(command, ' '.join(command))[0]
 
         self.assert_(re.search('metricStatus: OK', stdout) is not None)
-        return
 
     def load_config_file(self):
         """ Load /etc/rsv/rsv.conf """
@@ -70,8 +65,6 @@ class TestRSV(osgunittest.OSGTestCase):
         config.remove_option('rsv', 'service-key')
         config.remove_option('rsv', 'service-proxy')
         self.write_config_file(config)
-        return
-
 
     def use_service_cert(self):
         """ Switch to using a service certificate instead of a user proxy """
@@ -83,14 +76,11 @@ class TestRSV(osgunittest.OSGTestCase):
         config.set('rsv', 'service-proxy', config.get('rsv', 'proxy-file'))
         config.remove_option('rsv', 'proxy-file')
         self.write_config_file(config)
-        return
-
 
     def use_condor_g(self):
         config = self.load_config_file()
         config.set('rsv', 'use-condor-g', 'True')
         self.write_config_file(config)
-        return
 
     def test_001_set_config_vals(self):
         core.config['rsv.certfile'] = "/etc/grid-security/rsv/rsvcert.pem"
@@ -114,8 +104,6 @@ class TestRSV(osgunittest.OSGTestCase):
         os.chmod(core.config['rsv.certfile'], 0444)
         os.chown(core.config['rsv.keyfile'], rsv_uid, rsv_gid)
         os.chmod(core.config['rsv.keyfile'], 0400)
-        return
-
 
     def test_003_setup_grid_mapfile(self):
         core.skip_ok_unless_installed('rsv')
@@ -123,7 +111,6 @@ class TestRSV(osgunittest.OSGTestCase):
         # Register the cert in the gridmap file
         cert_subject = cagen.certificate_info(core.config['rsv.certfile'])[0]
         files.append(core.config['system.mapfile'], '"%s" rsv\n' % (cert_subject), owner='rsv')
-
 
     def test_004_load_default_config(self):
         core.skip_ok_unless_installed('rsv')
@@ -134,8 +121,6 @@ class TestRSV(osgunittest.OSGTestCase):
         self.config.optionxform = str
         self.config.read(core.config['rsv.osg-configure-config-file'])
         core.config['rsv.default-config'] = self.config
-        return
-
 
     def test_010_version(self):
         core.skip_ok_unless_installed('rsv')
@@ -145,8 +130,6 @@ class TestRSV(osgunittest.OSGTestCase):
 
         # The rsv-control --version just returns a string like '1.0.0'.
         self.assert_(re.search(r'\d+.\d+.\d+', stdout) is not None)
-        return
-
 
     def test_011_list(self):
         core.skip_ok_unless_installed('rsv')
@@ -158,8 +141,6 @@ class TestRSV(osgunittest.OSGTestCase):
         # of the metrics start with 'org.osg.'.  So just check for that string
         # once and we'll call it good enough.
         self.assert_(re.search('org.osg.', stdout) is not None)
-        return
-
 
     def test_012_list_with_cron(self):
         core.skip_ok_unless_installed('rsv')
@@ -169,8 +150,6 @@ class TestRSV(osgunittest.OSGTestCase):
 
         # One of the header columns will say 'Cron times'
         self.assert_(re.search('Cron times', stdout) is not None)
-        return
-
 
     def test_013_profiler(self):
         core.skip_ok_unless_installed('rsv')
@@ -182,8 +161,6 @@ class TestRSV(osgunittest.OSGTestCase):
         self.assert_(re.search('Running the rsv-profiler', stdout) is not None)
         self.assert_(os.path.exists(profiler_tarball))
         files.remove(profiler_tarball)
-        return
-
 
     def test_024_rsv_control_bad_arg(self):
         core.skip_ok_unless_installed('rsv')
@@ -191,22 +168,16 @@ class TestRSV(osgunittest.OSGTestCase):
         command = ('rsv-control', '--kablooey')
         ret, _, _ = core.system(command, 'rsv-control --kablooey')
         self.assert_(ret != 0)
-        return
-
 
     def test_020_stop_rsv(self):
         core.skip_ok_unless_installed('rsv')
 
         self.stop_rsv()
-        return
-
 
     def test_021_start_rsv(self):
         core.skip_ok_unless_installed('rsv')
 
         self.start_rsv()
-        return
-
 
     def test_022_job_list(self):
         core.skip_ok_unless_installed('rsv')
@@ -217,8 +188,6 @@ class TestRSV(osgunittest.OSGTestCase):
         # TODO
         # Make sure that the header prints at least.  We can improve this
         self.assert_(re.search('OWNER', stdout) is not None)
-        return
-
 
     def test_023_job_list_parsable(self):
         core.skip_ok_unless_installed('rsv')
@@ -232,41 +201,31 @@ class TestRSV(osgunittest.OSGTestCase):
 
         # The separator is a pipe, so just make sure we got one of those
         #self.assert_(re.search('\|', stdout) is not None)
-        return
-
 
     def test_030_ping_metric(self):
         core.skip_ok_unless_installed('rsv')
 
         self.run_metric('org.osg.general.ping-host')
-        return
-
 
     def test_031_hostcert_expiry_metric(self):
         core.skip_ok_unless_installed('rsv')
 
         self.run_metric('org.osg.local.hostcert-expiry')
-        return
-
 
     def test_051_osg_version_metric(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 
         self.run_metric('org.osg.general.osg-version')
-        return
 
     # Print Java version info, mostly useful for debugging test runs.
     def test_053_java_version_metric(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
         self.run_metric('org.osg.general.java-version')
-        return
 
     def test_075_switch_to_condor_g(self):
         core.skip_ok_unless_installed('rsv')
 
         self.use_condor_g()
-        return
-
 
     def test_100_html_consumer(self):
         # This test must come after some of the metric tests so that we have
@@ -282,11 +241,8 @@ class TestRSV(osgunittest.OSGTestCase):
         stdout = core.check_system("su -c '/usr/libexec/rsv/consumers/html-consumer' rsv", "run html-consumer", shell=True)[0]
         self.assert_('html-consumer initializing' in stdout)
 
-
         new_mtime = os.stat(index_file).st_mtime
         self.assert_(old_mtime != new_mtime)
-        return
-
 
     #def test_101_fetch_index_via_apache(self):
     #    if core.missing_rpm('rsv', 'httpd'):
