@@ -189,19 +189,6 @@ class TestRSV(osgunittest.OSGTestCase):
         # Make sure that the header prints at least.  We can improve this
         self.assert_(re.search('OWNER', stdout) is not None)
 
-    def test_023_job_list_parsable(self):
-        core.skip_ok_unless_installed('rsv')
-
-        # This test is currently failing because there are no enabled metrics.  Until
-        # we add some RSV configuration to enable metrics.
-
-        # Check the parsable job-list output
-        #command = ('rsv-control', '--job-list', '--parsable')
-        #stdout = core.check_system(command, 'rsv-control --job-list --parsable')[0]
-
-        # The separator is a pipe, so just make sure we got one of those
-        #self.assert_(re.search('\|', stdout) is not None)
-
     def test_030_ping_metric(self):
         core.skip_ok_unless_installed('rsv')
 
@@ -244,13 +231,8 @@ class TestRSV(osgunittest.OSGTestCase):
         new_mtime = os.stat(index_file).st_mtime
         self.assert_(old_mtime != new_mtime)
 
-    #def test_101_fetch_index_via_apache(self):
-    #    if core.missing_rpm('rsv', 'httpd'):
-    #        return
-    #
-    #    return
 
-# Test to write:
+# Tests to write:
 # - run gratia-consumer?
 # - run other metrics?
 #     org.osg.batch.jobmanagers-available                       | OSG-CE
