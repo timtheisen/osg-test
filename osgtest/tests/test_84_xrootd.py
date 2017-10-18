@@ -12,8 +12,7 @@ class TestStopXrootd(osgunittest.OSGTestCase):
             files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
         self.skip_ok_if(core.state['xrootd.started-server'] == False, 'did not start server')
-        # TODO: use check_stop after SOFTWARE-2514 is released
-        service.stop(core.config['xrootd_service'])
+        service.check_stop(core.config['xrootd_service'])
 
     def test_02_restore_config(self):
         if core.osg_release() < 3.4:
