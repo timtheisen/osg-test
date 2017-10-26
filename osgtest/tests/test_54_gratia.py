@@ -122,10 +122,6 @@ class TestGratia(osgunittest.OSGTestCase):
         (glexec:fermicloud101.fnal.gov, recordId= Record
         (Id: fermicloud101.fnal.gov:3299.0 CreateTime: 14 July 2013 at 22:21:48 GMT KeyInfo: null) ) saved.
 
-        2013-07-14 17:22:48,204 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 3 / 3
-        (dCache-storage:fermicloud101.fnal.gov, recordId= Record
-        (Id: fermicloud101.fnal.gov:3356.0 CreateTime: 14 July 2013 at 22:22:18 GMT KeyInfo: null) ) saved
-
         2013-07-14 17:23:18,294 gratia.service(Thread-66) [FINE]: RecordProcessor: 0: ProbeDetails 2 / 2
         (condor:fermicloud101.fnal.gov, recordId= Record
         (Id: fermicloud101.fnal.gov:3390.0 CreateTime: 14 July 2013 at 22:22:48 GMT KeyInfo: null) ) saved.
@@ -314,82 +310,6 @@ class TestGratia(osgunittest.OSGTestCase):
                                                                'Unable to query Gratia Database MasterSummaryData table.',
                                                                '302'),
                          'Failed Probe Data Validation in Database.')
-
-    #This test customizes /etc/gratia/dCache-storage/ProbeConfig file
-    def test_12_modify_dcache_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        probeconfig = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
-        self.modify_probeconfig(probeconfig)
-        self.patternreplace(probeconfig, "InfoProviderUrl", "InfoProviderUrl=\"http://fndca3a.fnal.gov:2288/info\"")
-
-    #This test copies logs for dcache probe
-    def test_13_copy_dcache_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        core.state['gratia.dcache-logs-copied'] = False
-        self.assert_(self.copy_probe_logs(), "dcache log copy failed.")
-        core.state['gratia.dcache-logs-copied'] = True
-
-    #This test executes dCache-storage
-    def test_14_execute_dcache_storage(self):
-        # Malformed XML errors due to network issues (SOFTWARE-1748)
-        core.state['gratia.dcache-whitelisted-error'] = False
-        whitelisted_errors = ['The element type "metric" must be terminated by the matching end-tag "</metric>".',
-                              'XML document structures must start and end within the same entity.']
-
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        core.state['gratia.dcache-storage-running'] = False
-        self.skip_bad_if(core.state['gratia.dcache-logs-copied'] == False)
-        if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
-            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
-            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
-        command = ('/usr/share/gratia/dCache-storage/dCache-storage_meter.cron.sh',)
-        status, stdout, stderr = core.system(command)
-        if status != 0:
-            for error in whitelisted_errors:
-                if error in stdout:
-                    core.state['gratia.dcache-whitelisted-error'] = True
-                    break
-            if not core.state['gratia.dcache-whitelisted-error']:
-                self.fail(core.diagnose('Unable to execute dCache-storage.', command, status, stdout, stderr))
-
-        core.config['gratia.dcache-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.dCache-storage" + \
-                                                core.config['gratia.tmpdir.postfix']
-        if core.state['gratia.database-installed'] == True:
-            result = self.isProbeOutboxDirEmpty(core.config['gratia.dcache-temp-dir'])
-            self.assert_(result, 'dCache-storage outbox check failed.')
-        core.state['gratia.dcache-storage-running'] = True
-
-
-    #This test checks the database after the successful execution of dCache-storage
-    def test_15_checkdatabase_dcache_storage(self):
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        self.skip_ok_if(core.state['gratia.dcache-whitelisted-error'], 'caught whitelisted error')
-        self.skip_bad_unless(core.state['gratia.dcache-storage-running'])
-
-        self.assertEqual(True, self.isProbeInfoProcessed('dCache-storage'),
-                         'Sentinel signifying that Probe Information was processed NOT found.')
-
-        command = "echo \"use gratia_osgtest; " + \
-                  "select TotalSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + \
-                  core.config['gratia.sql.querystring'],
-        status, total_space, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database TotalSpace from StorageElementRecord table.')
-
-        command = "echo \"use gratia_osgtest; " + \
-                  "select FreeSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + \
-                  core.config['gratia.sql.querystring'],
-        status, free_space, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database FreeSpace from StorageElementRecord table.')
-
-        command = "echo \"use gratia_osgtest; " + \
-                  "select UsedSpace from StorageElementRecord where ProbeName like 'dCache-storage%';" + \
-                  core.config['gratia.sql.querystring'],
-        status, used_space, _ = core.system(command, shell=True)
-        self.assertEqual(status, 0, 'Unable to query Gratia Database UsedSpace from StorageElementRecord table.')
-
-        #Need to assert only after converting string to long...
-        self.assert_(long(total_space) == (long(free_space) + long(used_space)))
 
     #This test customizes /etc/gratia/condor/ProbeConfig file
     def test_16_modify_condor_probeconfig(self):
