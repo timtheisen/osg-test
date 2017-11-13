@@ -40,7 +40,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 export LCMAPS_DEBUG_LEVEL=5''',
                          owner='xrootd')
 
-    def test_01_start_xrootd(self):
+    def test_02_configure_xrootd(self):
         core.config['xrootd.pid-file'] = '/var/run/xrootd/xrootd-default.pid'
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
@@ -52,12 +52,6 @@ export LCMAPS_DEBUG_LEVEL=5''',
         vdt_pw = pwd.getpwnam(core.options.username)
         core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir, '.globus', 'usercert.pem')
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
-
-        # Determine xrootd package name
-        if core.rpm_is_installed('xrootd4'):
-            core.config['xrootd.package'] = 'xrootd4'
-        elif core.rpm_is_installed('xrootd'):
-            core.config['xrootd.package'] = 'xrootd'
 
         user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
@@ -75,6 +69,14 @@ export LCMAPS_DEBUG_LEVEL=5''',
                         chown=(user.pw_uid, user.pw_gid))
             core.state['xrootd.backups-exist'] = True
 
+    def test_03_configure_hdfs(self):
+        core.skip_ok_unless_installed('xrootd-hdfs')
+        cfgfile = '/etc/xrootd/xrootd-clustered.cfg'
+        XROOTD_HDFS_CONFIG = "ofs.osslib /usr/lib64/libXrdHdfs.so"
+        files.append(cfgfile, XROOTD_HDFS_CONFIG, backup=False)
+        
+    def test_04_start_xrootd(self):
+        core.skip_ok_unless_installed('xrootd', by_dependency=True)
         if core.el_release() < 7:
             core.config['xrootd_service'] = "xrootd"
         else:
@@ -82,4 +84,3 @@ export LCMAPS_DEBUG_LEVEL=5''',
 
         service.check_start(core.config['xrootd_service'])
         core.state['xrootd.started-server'] = True
-

@@ -1,12 +1,8 @@
 import os
-import shutil
-import time
-import datetime
 
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.service as service
 import osgtest.library.tomcat as tomcat
 
 class TestStopGratia(osgunittest.OSGTestCase):
@@ -77,22 +73,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 # reraise the exception, as it's an unexpected error
                 raise
         
-    #This test cleans up dcache related files
-    def test_05_cleanup_dcache(self):
-
-        core.skip_ok_unless_installed('gratia-probe-dcache-storage', 'gratia-service')
-        try:
-            probeconfig = core.config['gratia.config.dir'] + "/dCache-storage/ProbeConfig"
-            owner = os.path.basename(os.path.dirname(probeconfig))
-            files.restore(probeconfig, owner)
-        except OSError, e:
-            if e.errno == 2:
-                # suppress "No such file or directory" error
-                pass
-            else:
-                # reraise the exception, as it's an unexpected error
-                raise
-
     #This test cleans up condor related files
     def test_06_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')

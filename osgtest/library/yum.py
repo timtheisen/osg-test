@@ -15,9 +15,7 @@ def clean(*repos):
     if not repos: # clean all repos if none specified
         repos = ['*']
 
-    for subcmd in ('all', 'expire-cache'):
-        cmd = ['yum'] + ['--enablerepo=' + x for x in repos] + ['clean', subcmd]
-        core.system(cmd)
+    core.system(['yum'] + ['--enablerepo=' + x for x in repos] + ['clean', 'all'])
 
 
 def retry_command(command, timeout_seconds=3600):

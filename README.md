@@ -39,16 +39,16 @@ All steps are performed as `root`:
         [root@client ~ ] $ git clone https://github.com/brianhlin/osg-test.git
         [root@client ~ ] $ cd osg-test
 
-2.  Bootstrap the test system using the `osg-testing` yum repository. The `osg release` is required as the first argument and takes the form of '<major version>.<minor version>' e.g. `3.2`. To get `osg-test` from the `osg-development` Yum repository, replace the second argument with `development`; to get `osg-test` from the production repository, omit the second argument. This step makes sure that both the EPEL and OSG repositories are available, then installs and verifies the `osg-test` package itself.
+2.  Bootstrap the test system using the `osg-testing` yum repository. The `osg release` is required as the first argument and takes the form of `<major version>.<minor version>` e.g. `3.2`. To get `osg-test` from the `osg-development` Yum repository, replace the second argument with `development`; to get `osg-test` from the production repository, omit the second argument. This step makes sure that both the EPEL and OSG repositories are available, then installs and verifies the `osg-test` package itself.
 
         [root@client ~] $ ./bootstrap-osg-test <osg release> testing
 
-3.  Run the tests (see below for options). Be sure to direct the stdout/stderr to a file to get all the information from the test run (the dump-file option only outputs some of the output to a file): 
+3.  Run the tests (see below for options). Be sure to direct the stdout/stderr to a file to get all the information from the test run (the dump-file option only outputs some of the output to a file):
 
         [root@client ~] $ osg-test -vadi <PACKAGE> -r osg-testing > <output file> 2>&1
 
-`osg-test` Usage
-----------------
+osg-test Script Usage
+---------------------
 
 Fundamentally, the `osg-test` script runs tests and reports on their results. However, the script can also perform many of the housekeeping tasks associated with setting up and tearing down the test environment, including adding (and later removing) a test user and its X.509 certificate, installing (and later removing) one or more RPMs, and so on. The following options are available:
 

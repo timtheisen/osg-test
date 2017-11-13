@@ -104,7 +104,7 @@ def write(path, contents, owner=None, backup=True, chown=(0,0), chmod=0600):
     temp_fd, temp_path = tempfile.mkstemp(prefix=os.path.basename(path) + '.', suffix='.osgtest-new',
                                           dir=os.path.dirname(path))
     temp_file = os.fdopen(temp_fd, 'w')
-    if isinstance(contents, list) or isinstance(contents, tuple):
+    if isinstance(contents, (list, tuple)):
         temp_file.writelines(contents)
     else:
         temp_file.write(contents)

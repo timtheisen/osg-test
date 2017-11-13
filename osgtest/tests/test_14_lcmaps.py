@@ -1,9 +1,6 @@
-import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import shutil
-import unittest
 
 class TestLcMaps(osgunittest.OSGTestCase):
 

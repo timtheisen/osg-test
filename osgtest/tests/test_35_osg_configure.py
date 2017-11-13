@@ -1,11 +1,8 @@
 import os
 import re
-import unittest
 import sys
-import cStringIO
 
 import osgtest.library.core as core
-import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
 class TestOSGConfigure(osgunittest.OSGTestCase):

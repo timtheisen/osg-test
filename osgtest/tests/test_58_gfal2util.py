@@ -4,7 +4,6 @@ import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import socket
 import tempfile
-import unittest
 
 class TestGFAL2Util(osgunittest.OSGTestCase):
 
@@ -69,15 +68,14 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assert_(file_removed, 'Copied file still exists')
         files.remove(TestGFAL2Util.__temp_dir)
 
-    def test_04_copy_local_to_server_gfal2_gftp_util(self):
-        core.skip_ok_unless_installed('globus-gridftp-server-progs', 'gfal2-plugin-gridftp')
-        self.skip_bad_unless(core.state['gridftp.running-server'], 'gridftp server not running')
-        self.setup_temp_paths()
-        os.chmod(TestGFAL2Util.__temp_dir, 0777)
-        command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_gftp_url())
-        status, stdout, stderr = core.system(command, True)
-        fail = core.diagnose('gfal2-util copy, local to GridFTP URL', command, status, stdout, stderr)
-        file_copied = os.path.exists(TestGFAL2Util.__remote_path)
-        self.assertEqual(status, 0, fail)
-        self.assert_(file_copied, 'Copied file missing')
+    def test_04_copy_server_to_local_gfal2_gftp_util(self):
+         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'gfal2-plugin-gridftp')
+         self.skip_ok_unless(core.state['gridftp.running-server'], 'gridftp server not running')
+         self.setup_temp_paths()
+         os.chmod(TestGFAL2Util.__temp_dir,0777)
+         command = ('gfal-copy', '-v', '-f', self.get_gftp_url_base() + TestGFAL2Util.__data_path, 'file://' + TestGFAL2Util.__local_path)
+         core.check_system(command, "gfal2-util copy from  GridFTP URL to local", user='vdttest')
+         file_copied = os.path.exists(TestGFAL2Util.__local_path)
+         self.assert_(file_copied, 'Copied file missing')
+         files.remove(TestGFAL2Util.__local_path)
 

@@ -311,7 +311,7 @@ def missing_rpm(*packages):
 
     If any package is missing, list all missing packages in a skip() message.
     """
-    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
+    if isinstance(packages[0], (list, tuple)):
         packages = packages[0]
 
     missing = []
@@ -346,7 +346,7 @@ def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
         raise TypeError("skip_ok_unless_installed() got unexpected keyword argument(s) '%s'" %
                         ("', '".join(kwargs.keys())))
 
-    if isinstance(packages_or_dependencies[0], list) or isinstance(packages_or_dependencies[0], tuple):
+    if isinstance(packages_or_dependencies[0], (list, tuple)):
         packages_or_dependencies = packages_or_dependencies[0]
 
     missing = []
@@ -383,8 +383,8 @@ def skip_ok_unless_one_installed(*packages):
      Raise osgunittest.SkipOkException if at least one of the packages are installed                                                           
      otherwise return None.                                                                                                                    
     """
-    if isinstance(packages[0], list) or isinstance(packages[0], tuple):
-                packages = packages[0]
+    if isinstance(packages[0], (list, tuple)):
+        packages = packages[0]
     installed = []
     for package in packages:
         if rpm_is_installed(package):
@@ -406,14 +406,7 @@ def get_package_envra(package_name):
         raise OSError(status, stdout)
 
     envra = stdout.strip().split(' ')
-    # On EL5 machines, both i386 and x86_64 versions of packages get installed, causing this function to always fail
-    if (len(envra) == 10 and
-        envra[0] == envra[5] and
-        envra[1] == envra[6] and
-        envra[2] == envra[7] and
-        envra[3] == envra[8]):
-            envra = envra[0:5]
-    elif len(envra) != 5:
+    if len(envra) != 5:
         raise OSError(status, stdout)
     (epoch, name, version, release, arch) = envra
     # Missing epoch is displayed as '(none)' but treated by rpm as '0'
@@ -506,7 +499,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
     if shell:
         if not isinstance(command, str):
             command = ' '.join(command)
-    elif not (isinstance(command, list) or isinstance(command, tuple)):
+    elif not isinstance(command, (list, tuple)):
         try:
             repr(command)
         except TypeError:
@@ -606,8 +599,8 @@ def wait_for_file(filename, timeout):
 
 def el_release():
     """Return the major version of the Enterprise Linux release the system is
-    running. SL/RHEL/CentOS 5.x will return 5; SL/RHEL/CentOS 6.x will return
-    6.
+    running. SL/RHEL/CentOS 6.x will return 6; SL/RHEL/CentOS 7.x will return
+    7.
 
     """
     global _el_release

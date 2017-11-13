@@ -1,8 +1,6 @@
-import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import unittest
 
 class TestStopCvmfs(osgunittest.OSGTestCase):
 
@@ -17,18 +15,9 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
                 files.remove(temp_dir, force=True)
         except KeyError:
             pass # tempdir was never created
-        
-        if core.state['cvmfs.version'] < ('2', '1'):
-            command = ('service', 'cvmfs', 'stop')
-        else:
-            command = ('cvmfs_config', 'umount')
-        stdout, _, fail = core.check_system(command, 'Stop Cvmfs server')
+
+        stdout, _, fail = core.check_system(('cvmfs_config', 'umount'), 'Stop Cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
-        # Restart autofs to bring network filesystems back (specifically
-        # homedirs on el5 fermicloud vms)
-        if core.state['cvmfs.version'] >= ('2', '1'):
-            stdout, _, fail = core.check_system(('service', 'autofs', 'restart'), 'Restart autofs')
-            self.assert_(stdout.find('FAILED') == -1, fail)
 
         files.restore("/etc/fuse.conf","cvmfs")
         files.restore("/etc/auto.master","cvmfs")
