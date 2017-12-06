@@ -9,14 +9,8 @@ class TestCert(osgunittest.OSGTestCase):
         core.state['certs.ca_created'] = False
         core.config['certs.test-ca'] = '/etc/grid-security/certificates/OSG-Test-CA.pem'
         self.skip_ok_if(os.path.exists(core.config['certs.test-ca']), 'OSG TEST CA already exists')
-        if core.options.cilogon:
-            subject_prefix = '/DC=org/DC=opensciencegrid/C=US/'
-            mimic_ca = 'cilogon'
-        else:
-            subject_prefix = '/DC=org/DC=Open Science Grid/'
-            mimic_ca = 'digicert'
-        core.config['certs.ca-subject'] = subject_prefix + 'O=OSG Software/CN=OSG Test CA'
-        CA(core.config['certs.ca-subject'], mimic=mimic_ca)
+        core.config['certs.ca-subject'] = '/DC=org/DC=opensciencegrid/C=US/O=OSG Software/CN=OSG Test CA'
+        CA(core.config['certs.ca-subject'])
         core.state['certs.ca_created'] = True
 
     def test_02_install_host_cert(self):

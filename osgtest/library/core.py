@@ -84,7 +84,6 @@ def start_log():
     _log.write('Start time: ' + time.strftime('%Y-%m-%d %H:%M:%S') + '\n\n')
     _log.write('Options:\n')
     _log.write('  - Add user: %s\n' % str(options.adduser))
-    _log.write('  - CILogon-style certs: %s\n' % str(options.cilogon))
     _log.write('  - Config file: %s\n' % options.config)
     _log.write('  - Dump output: %s\n' % str(options.dumpout))
     _log.write('  - Dump file: %s\n' % options.dumpfile)
