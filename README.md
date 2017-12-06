@@ -55,7 +55,6 @@ Fundamentally, the `osg-test` script runs tests and reports on their results. Ho
 | Option                       | Description                                                                                                                                                                                                                                |
 |------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `-a`, `--add-user`           | Add and configure the test user account (see also `-u` below). By default, the script assumes that the test user account already exists and is configured with a valid X.509 certificate in its `.globus` directory.                       |
-| `--cilogon`                  | Generate CILogon-like certificates                                                                                                                                                                                                         |
 | `-c`, `--config` FILE        | Configuration file to use that specifies command-line options. See below for syntax                                                                                                                                                        |
 | `-d`, `--dump-output`        | After all test output, print all commands and their output from the test run. Typically generates **a lot** of output.                                                                                                                     |
 | `--df`, `--dump-file` FILE   | Like `--dump-output`, but prints the output to a file instead of the console                                                                                                                                                               |
@@ -85,7 +84,6 @@ Unfortunately, the names of the variables in the config file are not the same as
 | Command-Line         | Config File   | Default Value |
 |:---------------------|:--------------|:--------------|
 | --add-user           | adduser       | False         |
-| --cilogon            | cilogon       | True          |
 | --dump-output        | dumpout       | False         |
 | --dump-file          | dumpfile      | None          |
 | --extra-repo         | extrarepos    | []            |
