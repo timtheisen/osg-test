@@ -14,11 +14,12 @@ class TestCert(osgunittest.OSGTestCase):
         core.state['certs.ca_created'] = True
 
     def test_02_install_host_cert(self):
-        self.skip_ok_unless(os.path.exists(core.config['certs.test-ca']), "OSG Test CA doesn't exist")
         core.state['certs.hostcert_created'] = False
         grid_dir = '/etc/grid-security/'
         core.config['certs.hostcert'] = os.path.join(grid_dir, 'hostcert.pem')
         core.config['certs.hostkey'] = os.path.join(grid_dir, 'hostkey.pem')
+
+        self.skip_ok_unless(os.path.exists(core.config['certs.test-ca']), "OSG Test CA doesn't exist")
 
         if core.options.hostcert and not os.path.exists(core.config['certs.hostcert']):
             test_ca = CA.load(core.config['certs.test-ca'])
