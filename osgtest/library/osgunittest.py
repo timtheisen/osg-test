@@ -24,6 +24,12 @@ class OkSkipException(AssertionError):
     """
     pass
 
+class ExcludedException(AssertionError):
+    """
+    This exception represents a test getting excluded because it is not
+    normally run for the given osg release series.
+    """
+    pass
 
 class BadSkipException(AssertionError):
     """
@@ -144,6 +150,12 @@ class OSGTestCase(unittest.TestCase):
                 else:
                     pass
                 return
+            except ExcludedException:
+                if canSkip:
+                    result.addExclude(self, sys.exc_info())
+                else:
+                    pass
+                return
             except BadSkipException:
                 if canSkip:
                     result.addBadSkip(self, sys.exc_info())
@@ -171,6 +183,11 @@ class OSGTestCase(unittest.TestCase):
             except OkSkipException:
                 if canSkip:
                     result.addOkSkip(self, sys.exc_info())
+                else:
+                    pass
+            except ExcludedException:
+                if canSkip:
+                    result.addExclude(self, sys.exc_info())
                 else:
                     pass
             except BadSkipException:
@@ -226,11 +243,16 @@ class OSGTestResult(unittest.TestResult):
         unittest.TestResult.__init__(self)
         self.okSkips = []
         self.badSkips = []
+        self.excludes = []
         self.timeouts = []
 
     def addOkSkip(self, test, err):
         """Called when an ok skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
         self.okSkips.append((test, self.osg_exc_info_to_string(err, test)))
+
+    def addExclude(self, test, err):
+        """Called when a test is excluded. 'err' is a tuple as returned by sys.exc_info()"""
+        self.excludes.append((test, self.osg_exc_info_to_string(err, test)))
 
     def addBadSkip(self, test, err):
         """Called when a bad skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
@@ -341,6 +363,7 @@ class OSGTextTestResult(OSGTestResult):
         self.printErrorList('TIMEOUT', self.timeouts)
         self.printSkipList('BAD SKIPS', self.badSkips)
         self.printSkipList('OK SKIPS', self.okSkips)
+        self.printSkipList('EXCLUDED', self.excludes)
 
     def printErrorList(self, flavour, errors):
         """Print all of one flavor of error to the stream."""
@@ -368,6 +391,13 @@ class OSGTextTestResult(OSGTestResult):
             self.stream.writeln("okskip")
         elif self.dots:
             self.stream.write("s")
+
+    def addExclude(self, test, reason):
+        OSGTestResult.addExclude(self, test, reason)
+        if self.showAll:
+            self.stream.writeln("excluded")
+        elif self.dots:
+            self.stream.write("x")
 
     def addBadSkip(self, test, reason):
         OSGTestResult.addBadSkip(self, test, reason)

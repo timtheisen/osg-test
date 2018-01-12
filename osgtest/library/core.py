@@ -710,7 +710,9 @@ def remove_cert(target_key):
 def osgrelease(*releases):
     """
     Return a decorator that will only call its function when the current
-    osg_release version is specified in the list of releases.
+    osg_release version is specified in the list of releases; otherwise
+    ExcludedException is raised and the test is added to the 'excluded'
+    list.
 
         class TestFoo(osgunittest.OSGTestCase):
 
@@ -723,6 +725,9 @@ def osgrelease(*releases):
         def run_fn_if_osg_release_ok(*args, **kwargs):
             if osg_release() in releases:
                 return fn(*args, **kwargs)
+            else:
+                msg = "excluding for OSG %s" % osg_release()
+                raise osgunittest.ExcludedException(msg)
         return run_fn_if_osg_release_ok
     return osg_release_decorator
 
