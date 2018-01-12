@@ -4,6 +4,8 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
+from osgtest.library.core import osgrelease
+
 class TestStartBestman(osgunittest.OSGTestCase):
 
     def test_01_config_certs(self):
@@ -12,6 +14,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.config['certs.bestmancert'] = '/etc/grid-security/bestman/bestmancert.pem'
         core.config['certs.bestmankey'] = '/etc/grid-security/bestman/bestmankey.pem'
 
+    @osgrelease(3.3)
     def test_02_install_bestman_certs(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         if os.path.exists(core.config['certs.bestmancert']) and os.path.exists(core.config['certs.bestmankey']):
@@ -19,6 +22,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0644)
         core.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
 
+    @osgrelease(3.3)
     def test_03_modify_sudoers(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
         sudoers_path = '/etc/sudoers'
@@ -49,6 +53,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         if not had_srm_cmd_line or not had_requiretty_commented:
             files.write(sudoers_path, new_contents, owner='bestman')
 
+    @osgrelease(3.3)
     def test_04_modify_bestman_conf(self):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
 
@@ -72,6 +77,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         log4j_contents = log4j_contents.replace('FATAL', 'INFO')
         files.write(log4j_path, log4j_contents, backup=False)
 
+    @osgrelease(3.3)
     def test_05_start_bestman(self):
         core.config['bestman.pid-file'] = '/var/run/bestman2.pid'
         core.state['bestman.started-server'] = False

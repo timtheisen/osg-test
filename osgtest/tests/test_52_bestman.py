@@ -5,6 +5,8 @@ import osgtest.library.osgunittest as osgunittest
 import socket
 import tempfile
 
+from osgtest.library.core import osgrelease
+
 class TestBestman(osgunittest.OSGTestCase):
 
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
@@ -13,6 +15,7 @@ class TestBestman(osgunittest.OSGTestCase):
     __hostname = socket.getfqdn()
 
 
+    @osgrelease(3.3)
     def setUp(self):
         self.skip_ok_unless(core.state['proxy.created'] or core.state['voms.got-proxy'])
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
