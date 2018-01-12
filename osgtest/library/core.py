@@ -348,17 +348,8 @@ def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
     if isinstance(packages_or_dependencies[0], (list, tuple)):
         packages_or_dependencies = packages_or_dependencies[0]
 
-    missing = []
-    if by_dependency:
-        dependencies = packages_or_dependencies
-        for dependency in dependencies:
-            if not dependency_is_installed(dependency):
-                missing.append(dependency)
-    else:
-        packages = packages_or_dependencies
-        for package in packages:
-            if not rpm_is_installed(package):
-                missing.append(package)
+    is_installed = dependency_is_installed if by_dependency else rpm_is_installed
+    missing = [ x for x in packages_or_dependencies if not is_installed(x) ]
 
     if len(missing) > 0:
         raise osgunittest.OkSkipException(message or 'missing %s' % ' '.join(missing))
