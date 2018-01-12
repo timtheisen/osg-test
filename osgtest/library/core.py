@@ -715,3 +715,23 @@ def remove_cert(target_key):
         target_dir = state[target_key + '-dir']
         if len(os.listdir(target_dir)) == 0:
             os.rmdir(target_dir)
+
+def osgrelease(*releases):
+    """
+    Return a decorator that will only call its function when the current
+    osg_release version is specified in the list of releases.
+
+        class TestFoo(osgunittest.OSGTestCase):
+
+            @osgrelease(3.4)
+            def test_bar_34_only(self):
+                ...
+    """
+    releases = map(str, releases)  # convert float args to str
+    def osg_release_decorator(fn):
+        def run_fn_if_osg_release_ok(*args, **kwargs):
+            if osg_release() in releases:
+                return fn(*args, **kwargs)
+        return run_fn_if_osg_release_ok
+    return osg_release_decorator
+
