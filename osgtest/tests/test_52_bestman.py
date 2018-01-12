@@ -32,12 +32,14 @@ class TestBestman(osgunittest.OSGTestCase):
         TestBestman.__remote_path = TestBestman.__temp_dir + '/bestman_put_copied_file.txt'
         TestBestman.__local_path = TestBestman.__temp_dir + '/bestman_get_copied_file.txt'
 
+    @osgrelease(3.3)
     def test_01_ping(self):
         command = ('srm-ping', self.get_srm_url_base(), '-debug')
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('Bestman Ping', command, status, stdout, stderr)
         self.assertEqual(status, 0, fail) 
  
+    @osgrelease(3.3)
     def test_02_copy_local_to_server(self):
         self.setup_temp_paths()
         os.chmod(TestBestman.__temp_dir, 0777)
@@ -48,6 +50,7 @@ class TestBestman(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
+    @osgrelease(3.3)
     def test_03_copy_server_to_local(self):
         command = ('srm-copy', self.get_srm_url(), 'file://' + TestBestman.__local_path, '-debug')
         status, stdout, stderr = core.system(command, True)
@@ -57,6 +60,7 @@ class TestBestman(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
         files.remove(TestBestman.__local_path)
 
+    @osgrelease(3.3)
     def test_04_remove_server_file(self):
         command = ('srm-rm', self.get_srm_url(), '-debug')
         status, stdout, stderr = core.system(command, True)
