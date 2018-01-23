@@ -268,7 +268,7 @@ class OSGTestResult(unittest.TestResult):
         """
         exctype, value, _ = err
 
-        if exctype in (OkSkipException, BadSkipException, TimeoutException):
+        if exctype in (OkSkipException, ExcludedException, BadSkipException, TimeoutException):
             return str(value)
             # TODO Need some way to print out the line that caused the skip
             # if there is no message.
