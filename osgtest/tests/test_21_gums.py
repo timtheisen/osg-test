@@ -15,7 +15,6 @@ class TestStartGUMS(osgunittest.OSGTestCase):
 
     core.config['gums.password'] = 'osgGUMS!'
 
-    @core.osgrelease(3.3)
     def test_01_config_certs(self):
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
