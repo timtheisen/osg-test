@@ -1,13 +1,15 @@
-import cagen
 import os
-import osgtest.library.core as core
-import osgtest.library.files as files
-import osgtest.library.osgunittest as osgunittest
 import pwd
 import socket
 
+import cagen
+import osgtest.library.core as core
+import osgtest.library.files as files
+import osgtest.library.osgunittest as osgunittest
+
 class TestEdgMkGridmap(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.3)
     def test_01_config_mkgridmap(self):
         core.config['edg.conf'] = '/usr/share/osg-test/edg-mkgridmap.conf'
 
@@ -20,6 +22,7 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         files.write(core.config['edg.conf'], contents, owner='edg')
         core.system(('cat', core.config['edg.conf']))
 
+    @core.osgrelease(3.3)
     def test_02_edg_mkgridmap(self):
         core.skip_ok_unless_installed('edg-mkgridmap', 'voms-admin-server')
         self.skip_bad_unless(core.state['voms-admin.read-members'], 'Cannot read VO member list')
@@ -45,6 +48,7 @@ class TestEdgMkGridmap(osgunittest.OSGTestCase):
         contents = files.read(os.environ['GRIDMAP'], True)
         self.assert_(expected in contents, 'Expected grid-mapfile contents')
 
+    @core.osgrelease(3.3)
     def test_03_clean_edg_mkgridmap(self):
         core.skip_ok_unless_installed('edg-mkgridmap', 'voms-admin-server')
         self.skip_bad_unless(core.state['voms-admin.read-members'], 'Cannot read VO member list')
