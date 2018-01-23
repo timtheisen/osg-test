@@ -348,17 +348,8 @@ def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
     if isinstance(packages_or_dependencies[0], (list, tuple)):
         packages_or_dependencies = packages_or_dependencies[0]
 
-    missing = []
-    if by_dependency:
-        dependencies = packages_or_dependencies
-        for dependency in dependencies:
-            if not dependency_is_installed(dependency):
-                missing.append(dependency)
-    else:
-        packages = packages_or_dependencies
-        for package in packages:
-            if not rpm_is_installed(package):
-                missing.append(package)
+    is_installed = dependency_is_installed if by_dependency else rpm_is_installed
+    missing = [ x for x in packages_or_dependencies if not is_installed(x) ]
 
     if len(missing) > 0:
         raise osgunittest.OkSkipException(message or 'missing %s' % ' '.join(missing))
@@ -618,14 +609,17 @@ def el_release():
     return _el_release
 
 
-def osg_release():
+def osg_release(update_state=False):
     """
     Return the version of osg-release. If the query fails, the test module fails.
     """
+    if not update_state and 'general.osg_release_ver' in state:
+        return state['general.osg_release_ver']
     try:
         _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
     except OSError:
         _, _, osg_release_ver, _, _ = get_package_envra('osg-release-itb')
+    state['general.osg_release_ver'] = osg_release_ver
     return osg_release_ver
 
 
@@ -712,3 +706,28 @@ def remove_cert(target_key):
         target_dir = state[target_key + '-dir']
         if len(os.listdir(target_dir)) == 0:
             os.rmdir(target_dir)
+
+def osgrelease(*releases):
+    """
+    Return a decorator that will only call its function when the current
+    osg_release version is specified in the list of releases; otherwise
+    ExcludedException is raised and the test is added to the 'excluded'
+    list.
+
+        class TestFoo(osgunittest.OSGTestCase):
+
+            @osgrelease(3.4)
+            def test_bar_34_only(self):
+                ...
+    """
+    releases = map(str, releases)  # convert float args to str
+    def osg_release_decorator(fn):
+        def run_fn_if_osg_release_ok(*args, **kwargs):
+            if osg_release() in releases:
+                return fn(*args, **kwargs)
+            else:
+                msg = "excluding for OSG %s" % osg_release()
+                raise osgunittest.ExcludedException(msg)
+        return run_fn_if_osg_release_ok
+    return osg_release_decorator
+

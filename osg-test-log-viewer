@@ -44,7 +44,7 @@ def load_logdata_from_handle(handle):
                                     line)
         match = (re.match(r'message:\s*%s:\s*(.+?)\s*$' % datetime_re, line) or
                  command_match or
-                 re.match(r'((?:FAIL|ERROR|BAD SKIPS|OK SKIPS).+?)\s*$', line) or
+                 re.match(r'((?:FAIL|ERROR|BAD SKIPS|OK SKIPS|EXCLUDED).+?)\s*$', line) or
                  re.match(r'(OSG-TEST LOG)', line))
         output_delimiter = re.match(r'(?:STDOUT|STDERR):[{}]', line)
 

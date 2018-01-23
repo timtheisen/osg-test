@@ -1,6 +1,6 @@
-import cagen
 import os
 import re
+import cagen
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -14,11 +14,13 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     # ==========================================================================
 
     core.config['gums.password'] = 'osgGUMS!'
-    
+
+    @core.osgrelease(3.3)
     def test_01_config_certs(self):
         core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
         core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
 
+    @core.osgrelease(3.3)
     def test_02_install_http_certs(self):
         core.skip_ok_unless_installed('gums-service')
         httpcert = core.config['certs.httpcert']
@@ -33,6 +35,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
     # END: (MOSTLY) COPIED FROM test_20_voms.py
     # ==========================================================================
 
+    @core.osgrelease(3.3)
     def test_03_setup_gums_database(self):
         core.skip_ok_unless_installed('gums-service')
         command = ('gums-setup-mysql-database', '--noprompt', '--user', 'gums', '--host', 'localhost:3306',
@@ -41,6 +44,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         self.assert_('ERROR' not in stdout,
                      'gums-setup-mysql-database failure message')
 
+    @core.osgrelease(3.3)
     def test_04_add_mysql_admin(self):
         core.skip_ok_unless_installed('gums-service')
         host_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
@@ -55,6 +59,7 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         command = ('mysql', '--user=gums', '-p' + core.config['gums.password'], '--execute=' + mysql_command)
         core.check_system(command, 'Could not add GUMS MySQL admin')
 
+    @core.osgrelease(3.3)
     def test_05_gums_configuration(self):
         core.skip_ok_unless_installed('gums-service')
         core.config['gums.config-file'] = '/etc/gums/gums.config'
