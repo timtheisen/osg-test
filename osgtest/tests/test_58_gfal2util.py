@@ -34,6 +34,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         TestGFAL2Util.__remote_path = TestGFAL2Util.__temp_dir + '/gfal2util_put_copied_file.txt'
         TestGFAL2Util.__local_path = TestGFAL2Util.__temp_dir + '/gfal2util_get_copied_file.txt'
 
+        
+    @core.osgrelease(3.3)
     def test_01_copy_local_to_server_gfal2_util(self):
         core.skip_ok_unless_installed('bestman2-server', 'gfal2-plugin-srm')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
@@ -46,6 +48,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
+    @core.osgrelease(3.3)
     def test_02_copy_server_to_local_gfal2_util(self):
         core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
@@ -57,6 +60,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
         files.remove(TestGFAL2Util.__local_path)
 
+    @core.osgrelease(3.3)
     def test_03_remove_server_file_gfal2_util(self):
         core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
