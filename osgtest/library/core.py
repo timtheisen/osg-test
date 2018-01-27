@@ -731,3 +731,26 @@ def osgrelease(*releases):
         return run_fn_if_osg_release_ok
     return osg_release_decorator
 
+def elrelease(*releases):
+    """
+    Return a decorator that will only call its function when the current
+    el_release version is specified in the list of releases; otherwise
+    ExcludedException is raised and the test is added to the 'excluded'
+    list.
+
+        class TestFoo(osgunittest.OSGTestCase):
+
+            @elrelease(7)
+            def test_bar_el7_only(self):
+                ...
+    """
+    def el_release_decorator(fn):
+        def run_fn_if_el_release_ok(*args, **kwargs):
+            if el_release() in releases:
+                return fn(*args, **kwargs)
+            else:
+                msg = "excluding for EL%s" % el_release()
+                raise osgunittest.ExcludedException(msg)
+        return run_fn_if_el_release_ok
+    return el_release_decorator
+
