@@ -14,19 +14,27 @@ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}
 
 yum -y install yum-plugin-priorities
 rpm -Uvh https://repo.grid.iu.edu/osg/3.4/osg-3.4-el${OS_VERSION}-release-latest.rpm
-yum -y install make git openssl
+yum -y install make git openssl rpm-build
 
-# Source osg-ca-generator repo version
-git clone https://github.com/opensciencegrid/osg-ca-generator.git
-pushd osg-ca-generator
-git rev-parse HEAD
-make install
-popd
+# Prepare the RPM environment
+mkdir -p /tmp/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+cat >> /etc/rpm/macros.dist << EOF
+%dist .osg.el${OS_VERSION}
+%osg 1
+EOF
 
-# Install osg-test
+SPEC="osg-test/rpm/osg-test.spec"
+cp $SPEC /tmp/rpmbuild/SPECS
+package_version=`grep -m 1 Version $SPEC | awk '{print $2}'`
 pushd osg-test
-make install
+git archive --format=tar --prefix=osg-test-${package_version}/ HEAD  | gzip >/tmp/rpmbuild/SOURCES/osg-test-${package_version}.tar.gz
 popd
+
+# Build the RPM
+rpmbuild --define '_topdir /tmp/rpmbuild' -ba /tmp/rpmbuild/SPECS/osg-test.spec
+
+# After building the RPM, try to install it
+yum localinstall -y /tmp/rpmbuild/RPMS/noarch/osg-test*
 
 # HTCondor really, really wants a domain name.  Fake one.
 sed /etc/hosts -e "s/`hostname`/`hostname`.unl.edu `hostname`/" > /etc/hosts.new
