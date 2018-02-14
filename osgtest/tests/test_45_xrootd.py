@@ -32,7 +32,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
 
-        status, stdout, stderr = core.system(command, True)
+        status, stdout, stderr = core.system(command, user=True)
 
         fail = core.diagnose('xrdcp copy, local to URL',
                              command, status, stdout, stderr)
@@ -60,7 +60,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         local_path = temp_target_dir + '/copied_file.txt'
         command = ('xrdcp', '--debug', '3', xrootd_url, local_path)
 
-        status, stdout, stderr = core.system(command, True)
+        status, stdout, stderr = core.system(command, user=True)
         
         fail = core.diagnose('Xrootd xrdcp copy, URL to local',
                              command, status, stdout, stderr)
@@ -91,7 +91,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         # Copy a file in and see if it made it into the fuse mount
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, "/tmp")
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-        status, stdout, stderr = core.system(command, True)
+        status, stdout, stderr = core.system(command, user=True)
        
         command = ('ls', "/tmp/copied_file.txt")
         stdout, stderr, fail = core.check_system(command, "Checking file is copied to xrootd fuse mount correctly", user=True)
