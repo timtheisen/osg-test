@@ -66,8 +66,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_02_configure_hdfs(self):
         core.skip_ok_unless_installed('xrootd-hdfs')
-        XROOTD_HDFS_CONFIG = "ofs.osslib /usr/lib64/libXrdHdfs.so"
-        files.append(core.config['xrootd.config'], XROOTD_HDFS_CONFIG, backup=False)
+        hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"
+        files.append(core.config['xrootd.config'], hdfs_config, backup=False)
 
     def test_03_start_xrootd(self):
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
