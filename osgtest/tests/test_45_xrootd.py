@@ -30,7 +30,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0777)
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
-        command = ('xrdcp', TestXrootd.__data_path , xrootd_url)
+        command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
 
         status, stdout, stderr = core.system(command, True)
 
@@ -58,7 +58,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         f.close()
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_source_dir)
         local_path = temp_target_dir + '/copied_file.txt'
-        command = ('xrdcp', xrootd_url, local_path)
+        command = ('xrdcp', '--debug', '3', xrootd_url, local_path)
 
         status, stdout, stderr = core.system(command, True)
         
@@ -90,7 +90,7 @@ class TestXrootd(osgunittest.OSGTestCase):
        
         # Copy a file in and see if it made it into the fuse mount
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, "/tmp")
-        command = ('xrdcp', TestXrootd.__data_path , xrootd_url)
+        command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
         status, stdout, stderr = core.system(command, True)
        
         command = ('ls', "/tmp/copied_file.txt")
