@@ -14,9 +14,3 @@ class TestStopXrootd(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['xrootd.started-server'] == False, 'did not start server')
         service.check_stop(core.config['xrootd_service'])
 
-    def test_02_restore_config(self):
-        if core.osg_release() < 3.4:
-            return
-
-        core.skip_ok_unless_installed('xrootd', 'lcmaps-plugins-voms', 'xrootd-lcmaps', by_dependency=True)
-        files.restore(core.config['xrootd.env'], 'xrootd')

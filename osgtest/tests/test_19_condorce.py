@@ -36,18 +36,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         core.check_system(command, 'Reconfigure Condor')
         self.assert_(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
 
-    def test_03_configure_auth(self):
-        if core.osg_release() < 3.4:
-            return
-
-        core.skip_ok_unless_installed('htcondor-ce', 'lcmaps-plugins-voms')
-        core.config['condorce.env'] = '/etc/sysconfig/condor-ce'
-        files.append(core.config['condorce.env'],
-                     '''export LLGT_VOMS_ENABLE_CREDENTIAL_CHECK=1
-export LCMAPS_DEBUG_LEVEL=5''',
-                     owner='condorce')
-
-    def test_04_configure_ce(self):
+    def test_03_configure_ce(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
         # Set up Condor, PBS, and Slurm routes
@@ -104,7 +93,7 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
                     owner='condor-ce',
                     chmod=0644)
 
-    def test_05_start_condorce(self):
+    def test_04_start_condorce(self):
         if core.el_release() >= 7:
             core.config['condor-ce.lockfile'] = '/var/lock/condor-ce/htcondor-ceLock'
         else:
