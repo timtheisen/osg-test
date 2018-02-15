@@ -37,8 +37,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.backups-exist'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        vdt_pw = pwd.getpwnam(core.options.username)
-        core.config['certs.usercert'] = os.path.join(vdt_pw.pw_dir, '.globus', 'usercert.pem')
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
 
         user = pwd.getpwnam("xrootd")
