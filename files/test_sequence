@@ -26,15 +26,15 @@ test_30_misc
 test_35_osg_configure
 test_38_cvmfs
 test_40_proxy
+test_48_myproxy
+test_50_voms
 test_41_jobs
 test_42_gridftp
 test_43_uberftp
 test_44_glexec
 test_45_xrootd
 test_47_rsv
-test_48_myproxy
 test_49_jobs
-test_50_voms
 test_51_edgmkgridmap
 test_52_bestman
 test_53_gums
