@@ -18,5 +18,5 @@ before_install:
 
 script:
  # Run tests in Container
-- travis-ci/setup_tests.sh ${OS_VERSION} ${PACKAGES}
+- travis-ci/setup_tests.sh
 
