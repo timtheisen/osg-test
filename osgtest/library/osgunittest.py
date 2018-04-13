@@ -4,8 +4,6 @@ Extended unit testing framework for OSG.
 In order to meet the requirements of OSG testing, some extensions to the
 standard Python unittest library have been made:
 - additional test statuses 'OkSkip' and 'BadSkip'
-  see https://twiki.grid.iu.edu/bin/view/SoftwareTeam/NewTestStatusDesignDoc
-
 """
 # quiet all the 'Method could be a function' or 'Invalid name' warnings;
 # I'm following the conventions unittest set.
