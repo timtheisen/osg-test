@@ -126,7 +126,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gums-service')
 
         # Setting up GUMS auth using the instructions here:
-        # twiki.grid.iu.edu/bin/view/Documentation/Release3/InstallComputeElement#8_1_Using_GUMS_for_Authorization
+        # https://opensciencegrid.github.io/docs/compute-element/install-htcondor-ce/#authentication-with-gums
         hostname = core.get_hostname()
 
         lcmaps_contents = '''gumsclient = "lcmaps_gums_client.mod"

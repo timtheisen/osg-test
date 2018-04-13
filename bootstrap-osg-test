@@ -79,7 +79,8 @@ on_error_die "Could not enable epel"
 osg_rpm=`rpm -q osg-release 2>/dev/null`
 if [ $? -eq 1 ]; then
     echo -n "Downloading $osg_name... "
-    curl --fail --location --output $osg_name --retry 10 --silent https://repo.grid.iu.edu/osg/$version/$osg_name
+    curl --fail --location --output $osg_name --retry 10 --silent \
+         https://repo.opensciencegrid.org/osg/$version/$osg_name
     on_error_die "Could not download $osg_name"
     echo -n 'Installing osg-release... '
     rpm --install --nosignature $osg_name
