@@ -18,7 +18,7 @@ class TestBestman(osgunittest.OSGTestCase):
     @osgrelease(3.3)
     def setUp(self):
         self.skip_ok_unless(core.state['proxy.created'] or core.state['voms.got-proxy'])
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'gums-service')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
 
     def get_srm_url_base(self):
