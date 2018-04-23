@@ -38,7 +38,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         
     @core.osgrelease(3.3)
     def test_01_copy_local_to_server_gfal2_util(self):
-        core.skip_ok_unless_installed('bestman2-server', 'gfal2-plugin-srm')
+        core.skip_ok_unless_installed('bestman2-server', 'gfal2-plugin-srm', 'gums-service')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         self.setup_temp_paths()
         os.chmod(TestGFAL2Util.__temp_dir, 0777)
@@ -51,7 +51,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
 
     @core.osgrelease(3.3)
     def test_02_copy_server_to_local_gfal2_util(self):
-        core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm')
+        core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm', 'gums-service')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         command = ('gfal-copy', '-v', self.get_srm_url(), 'file://' + TestGFAL2Util.__local_path)
         status, stdout, stderr = core.system(command, True)
@@ -63,7 +63,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
 
     @core.osgrelease(3.3)
     def test_03_remove_server_file_gfal2_util(self):
-        core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm')
+        core.skip_ok_unless_installed('bestman2-server',  'gfal2-plugin-srm', 'gums-service')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         command = ('gfal-rm', '-v', self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
