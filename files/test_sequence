@@ -23,7 +23,6 @@ test_26_bestman
 test_28_gsiopenssh
 test_29_slurm
 test_30_misc
-test_35_osg_configure
 test_38_cvmfs
 test_40_proxy
 test_48_myproxy
