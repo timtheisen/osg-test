@@ -7,6 +7,9 @@ import osgtest.library.tomcat as tomcat
 
 class TestStopGratia(osgunittest.OSGTestCase):
 
+    def setUp(self):
+        self.skip_ok_if(core.el_release() > 6, "Do not run Gratia tests on EL7")
+
     #This test removes the http certificates, if not already removed earlier
     def test_01_remove_certs(self):
 
