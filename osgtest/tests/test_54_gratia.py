@@ -7,6 +7,9 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestGratia(osgunittest.OSGTestCase):
 
+    def setUp(self):
+        self.skip_ok_if(core.el_release() > 6, "Do not run Gratia tests on EL7")
+
     def patternreplace(self, infile_name, pattern, full_line, insert_after=False):
         """This method is taken from test_28 - we can consider moving it to core.py module
      This helper method loops through the passed in infile line by line.

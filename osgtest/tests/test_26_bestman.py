@@ -16,7 +16,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
 
     @osgrelease(3.3)
     def test_02_install_bestman_certs(self):
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'gums-service')
         if os.path.exists(core.config['certs.bestmancert']) and os.path.exists(core.config['certs.bestmankey']):
             return
         core.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0644)
@@ -24,7 +24,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
 
     @osgrelease(3.3)
     def test_03_modify_sudoers(self):
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'gums-service')
         sudoers_path = '/etc/sudoers'
         contents = files.read(sudoers_path)
         srm_cmd = 'Cmnd_Alias SRM_CMD = /bin/rm, /bin/mkdir, /bin/rmdir, /bin/mv, /bin/cp, /bin/ls'
@@ -55,7 +55,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
 
     @osgrelease(3.3)
     def test_04_modify_bestman_conf(self):
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'gums-service')
 
         bestman_rc_path = '/etc/bestman2/conf/bestman2.rc'
         old_port = 'securePort=8443'
@@ -83,7 +83,7 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.state['bestman.started-server'] = False
         core.state['bestman.server-running'] = False
 
-        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client')
+        core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'gums-service')
         if service.is_running('bestman2'):
             core.state['bestman.server-running'] = True
             self.skip_ok('bestman2 already running')

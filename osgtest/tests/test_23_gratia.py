@@ -8,6 +8,9 @@ import osgtest.library.tomcat as tomcat
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
+    def setUp(self):
+        self.skip_ok_if(core.el_release() > 6, "Do not run Gratia tests on EL7")
+
     def patternreplace(self, infile_name, pattern, full_line):
         """This helper method loops through the passed in infile line by line.
      If it finds the passed in pattern, it replaces the whole line with
