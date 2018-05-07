@@ -199,11 +199,6 @@ class TestRSV(osgunittest.OSGTestCase):
 
         self.run_metric('org.osg.local.hostcert-expiry')
 
-    def test_051_osg_version_metric(self):
-        core.skip_ok_unless_installed('rsv', 'htcondor-ce')
-
-        self.run_metric('org.osg.general.osg-version')
-
     # Print Java version info, mostly useful for debugging test runs.
     def test_053_java_version_metric(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
@@ -233,9 +228,7 @@ class TestRSV(osgunittest.OSGTestCase):
 
 
 # Tests to write:
-# - run gratia-consumer?
 # - run other metrics?
-#     org.osg.batch.jobmanagers-available                       | OSG-CE
 #     org.osg.certificates.cacert-expiry                        | OSG-CE
 #     org.osg.certificates.crl-expiry                           | OSG-CE
 #     org.osg.general.osg-directories-CE-permissions            | OSG-CE
