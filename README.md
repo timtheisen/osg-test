@@ -386,7 +386,7 @@ Before you go and commit your changes, it's a good idea to make sure they don't 
     ```
 4.  Run the tests and monitor their output:
     ```
-    [root@client ~]$ osg-test -vad > <OUTFILE>
+    [root@client ~]$ osg-test -vad > <OUTFILE> 2>&1 &
     [root@client ~]$ tail -f <OUTFILE>
     ```
 
