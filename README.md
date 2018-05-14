@@ -36,7 +36,7 @@ All steps are performed as `root`:
 
 1.  Clone the git repository and `cd` into it:
 
-        [root@client ~ ] $ git clone https://github.com/brianhlin/osg-test.git
+        [root@client ~ ] $ git clone https://github.com/opensciencegrid/osg-test.git
         [root@client ~ ] $ cd osg-test
 
 2.  Bootstrap the test system using the `osg-testing` yum repository. The `osg release` is required as the first argument and takes the form of `<major version>.<minor version>` e.g. `3.2`. To get `osg-test` from the `osg-development` Yum repository, replace the second argument with `development`; to get `osg-test` from the production repository, omit the second argument. This step makes sure that both the EPEL and OSG repositories are available, then installs and verifies the `osg-test` package itself.
