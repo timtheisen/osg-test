@@ -13,6 +13,8 @@ class TestStopSlurm(osgunittest.OSGTestCase):
         self.slurm_reqs()
         self.skip_ok_unless(core.state['%s.started-service' % core.config['slurm.service-name']], 'did not start slurm')
         service.check_stop(core.config['slurm.service-name']) # service requires config so we stop it first
+        if core.el_release() == 7:
+            service.check_stop(core.config['slurm.ctld-service-name'])
         files.restore(core.config['slurm.config'], 'slurm')
 
     def test_02_stop_slurmdbd(self):

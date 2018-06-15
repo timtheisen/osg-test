@@ -4,6 +4,8 @@ import osgtest.library.mysql as mysql
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
 
+import time
+
 CLUSTER_NAME = 'osg_test'
 CTLD_LOG = '/var/log/slurm/slurmctld.log'
 SHORT_HOSTNAME = core.get_hostname().split('.')[0]
@@ -39,6 +41,21 @@ SlurmdDebug=debug5
 StateSaveLocation=/var/spool/slurmd
 """
 
+SLURM_CGROUPS_CONFIG = """CgroupAutomount=yes
+CgroupMountpoint=/cgroup
+ConstrainCores=no
+ConstrainRAMSpace=no
+"""
+
+SLURM_CGROUPS_DEVICE_CONFIG = """/dev/null
+/dev/urandom
+/dev/zero
+/dev/sda*
+/dev/cpu/*/*
+/dev/pts/*
+"""
+
+
 class TestStartSlurm(osgunittest.OSGTestCase):
 
     def slurm_reqs(self):
@@ -50,6 +67,20 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         core.config['slurm.config'] = '/etc/slurm/slurm.conf'
         files.write(core.config['slurm.config'],
                     SLURM_CONFIG % {'short_hostname': SHORT_HOSTNAME, 'cluster': CLUSTER_NAME, 'ctld_log': CTLD_LOG},
+                    owner='slurm',
+                    chmod=0644)
+        core.config['cgroup.config'] = '/etc/slurm/cgroup.conf'
+        config = SLURM_CGROUPS_CONFIG
+        if core.el_release() == 6:
+            config += "\nCgroupMountpoint=/cgroup"
+        files.write(core.config['cgroup.config'],
+                    SLURM_CGROUPS_CONFIG,
+                    owner='slurm',
+                    chmod=0644)
+
+        core.config['cgroup_allowed_devices_file.conf'] = '/etc/slurm/cgroup_allowed_devices_file.conf'
+        files.write(core.config['cgroup_allowed_devices_file.conf'],
+                    SLURM_CGROUPS_DEVICE_CONFIG,
                     owner='slurm',
                     chmod=0644)
 
@@ -88,20 +119,27 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         core.config['slurm.service-name'] = 'slurm'
         if core.el_release() == 7:
             core.config['slurm.service-name'] += 'd'
+            core.config['slurm.ctld-service-name'] = 'slurmctld'
         core.state['%s.started-service' % core.config['slurm.service-name']] = False
         self.slurm_reqs()
         self.skip_ok_if(service.is_running(core.config['slurm.service-name']), 'slurm already running')
 
         stat = core.get_stat(CTLD_LOG)
 
-        command = ['slurmctld']
-        core.check_system(command, 'enable slurmctld')
-        service.check_start(core.config['slurm.service-name'])
+        if core.el_release() == 7:
+            # slurmctld is handled by /etc/init.d/slurm on EL6
+            command = ['slurmctld']
+            core.check_system(command, 'enable slurmctld')
+            service.check_start(core.config['slurm.service-name'])
+            service.check_start(core.config['slurm.ctld-service-name'])
+        else:
+            service.check_start(core.config['slurm.service-name'])
 
         core.monitor_file(CTLD_LOG,
                           stat,
                           'slurm_rpc_node_registration complete for %s' % SHORT_HOSTNAME,
                           60.0)
+        time.sleep(10)
         command = ['scontrol', 'update', 'nodename=%s' % SHORT_HOSTNAME, 'state=idle']
         core.check_system(command, 'enable slurm node')
 
