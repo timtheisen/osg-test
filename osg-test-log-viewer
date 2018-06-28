@@ -1,14 +1,16 @@
 #!/usr/bin/python
 """View the output from osg-test in a structured way"""
+from __future__ import print_function
 
-from Tkinter import *
-import ScrolledText
+import six
+from six.moves.tkinter import *
+from six.moves import tkinter_scrolledtext as ScrolledText
+from six.moves import tkinter_font as tkFont
+from six.moves import urllib
 import os
 import re
 import subprocess
 import sys
-import urllib2
-import tkFont
 
 
 
@@ -23,7 +25,7 @@ class Section(object):
 
 def is_empty(text):
     "True if a block of text is empty except for whitespace"
-    return not re.search('\S', text)
+    return not re.search(r'\S', text)
 
 
 def load_logdata_from_handle(handle):
@@ -35,7 +37,8 @@ def load_logdata_from_handle(handle):
     current_test = ""
 
     for line in handle:
-        line = line.rstrip()
+        if six.PY3:
+            line = line.decode(errors="replace").rstrip()
         command_match = re.match(r'(?x)osgtest: \s* ' + datetime_re + r''': \s*
                                     (?P<test>[^:]+:[^:]+):
                                     (?P<lineno>\d+): \s*
@@ -76,25 +79,19 @@ def load_logdata_from_handle(handle):
 
 def load_logdata_from_file(filename):
     try:
-        filehandle = open(filename, 'r')
-        try:
+        with open(filename) as filehandle:
             return load_logdata_from_handle(filehandle)
-        finally:
-            filehandle.close()
-    except IOError, e:
-        print >> sys.stderr, "Error reading file %s: %s" % (filename, e.strerror)
+    except IOError as e:
+        print("Error reading file %s: %s" % (filename, e.strerror), file=sys.stderr)
         sys.exit(1)
 
 
 def load_logdata_from_url(url):
     try:
-        urlhandle = urllib2.urlopen(url)
-        try:
-            return load_logdata_from_handle(urlhandle)
-        finally:
-            urlhandle.close()
-    except urllib2.URLError, e:
-        print >> sys.stderr, "Error reading URL %s: %s" % (url, e.strerror)
+        urlhandle = urllib.request.urlopen(url)
+        return load_logdata_from_handle(urlhandle)
+    except urllib.error as e:
+        print("Error reading URL %s: %s" % (url, e.strerror), file=sys.stderr)
         sys.exit(1)
 
 
@@ -179,8 +176,8 @@ class Application(Frame):
 
 def main():
     if len(sys.argv) != 2:
-        print "Usage: %s <LOG FILENAME OR URL>" % sys.argv[0]
-        print "View the output of osg-test"
+        print("Usage: %s <LOG FILENAME OR URL>" % sys.argv[0])
+        print("View the output of osg-test")
         sys.exit(2)
     logpath = sys.argv[1]
     if '://' not in logpath:
