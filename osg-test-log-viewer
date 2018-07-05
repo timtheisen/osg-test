@@ -38,7 +38,8 @@ def load_logdata_from_handle(handle):
 
     for line in handle:
         if six.PY3:
-            line = line.decode(errors="replace").rstrip()
+            line = line.decode(errors="replace")
+        line = line.rstrip()
         command_match = re.match(r'(?x)osgtest: \s* ' + datetime_re + r''': \s*
                                     (?P<test>[^:]+:[^:]+):
                                     (?P<lineno>\d+): \s*
