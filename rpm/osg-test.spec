@@ -21,6 +21,7 @@ installation.
 Summary:   Views the output of %{name}
 Group:     Applications/Grid
 Requires:  tkinter
+Requires:  python-six
 
 %description log-viewer
 A GUI for viewing the output of %{name} in a structured manner.
