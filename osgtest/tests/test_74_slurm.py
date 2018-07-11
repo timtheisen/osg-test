@@ -16,6 +16,8 @@ class TestStopSlurm(osgunittest.OSGTestCase):
         if core.el_release() == 7:
             service.check_stop(core.config['slurm.ctld-service-name'])
         files.restore(core.config['slurm.config'], 'slurm')
+        files.restore(core.config['cgroup.config'], 'slurm')
+        files.restore(core.config['cgroup_allowed_devices_file.conf'], 'slurm')
 
     def test_02_stop_slurmdbd(self):
         self.slurm_reqs()
