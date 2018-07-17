@@ -74,7 +74,7 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         if core.el_release() == 6:
             config += "\nCgroupMountpoint=/cgroup"
         files.write(core.config['cgroup.config'],
-                    SLURM_CGROUPS_CONFIG,
+                    config,
                     owner='slurm',
                     chmod=0644)
 
