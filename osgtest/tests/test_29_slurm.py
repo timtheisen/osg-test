@@ -8,6 +8,7 @@ import time
 
 CLUSTER_NAME = 'osg_test'
 CTLD_LOG = '/var/log/slurm/slurmctld.log'
+SLURM_LOG = '/var/log/slurm/slurm.log'
 SHORT_HOSTNAME = core.get_hostname().split('.')[0]
 
 SLURMDBD_CONFIG = """AuthType=auth/munge
@@ -139,7 +140,11 @@ class TestStartSlurm(osgunittest.OSGTestCase):
                           stat,
                           'slurm_rpc_node_registration complete for %s' % SHORT_HOSTNAME,
                           60.0)
-        time.sleep(10)
+        log_stat = core.get_stat(SLURM_LOG)
+        core.monitor_file(SLURM_LOG,
+                          log_stat,
+                          'slurmd started',
+                          60.0)
         command = ['scontrol', 'update', 'nodename=%s' % SHORT_HOSTNAME, 'state=idle']
         core.check_system(command, 'enable slurm node')
 
