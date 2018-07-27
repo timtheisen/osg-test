@@ -199,6 +199,17 @@ class TestRSV(osgunittest.OSGTestCase):
 
         self.run_metric('org.osg.local.hostcert-expiry')
 
+    def test_032_cacert_expiry(self):
+        core.skip_ok_unless_installed('rsv')
+
+        self.run_metric('org.osg.certificates.cacert-expiry')
+
+    def test_033_crlcert_expiry(self):
+        core.skip_ok_unless_installed('rsv')
+
+        self.run_metric('org.osg.certificates.crl-expiry')
+
+
     # Print Java version info, mostly useful for debugging test runs.
     def test_053_java_version_metric(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
