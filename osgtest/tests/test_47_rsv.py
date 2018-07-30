@@ -37,11 +37,15 @@ class TestRSV(osgunittest.OSGTestCase):
         core.check_system(('osg-configure', '-c', '-m', 'rsv'), 'osg-configure -c -m rsv')
         self.start_rsv()
 
-    def run_metric(self, metric, host=host):
+    def run_metric(self, metric, host=host, accept_status=['OK']):
         command = ('rsv-control', '--run', '--host', host, metric)
         stdout = core.check_system(command, ' '.join(command))[0]
 
-        self.assert_(re.search('metricStatus: OK', stdout) is not None)
+        metric_passed = False
+        for status in accept_status:
+            if re.search("metricStatus: %s".format(status), stdout) is not None:
+                metric_passed = True
+        self.assert_(metric_passed)
 
     def load_config_file(self):
         """ Load /etc/rsv/rsv.conf """
@@ -202,12 +206,14 @@ class TestRSV(osgunittest.OSGTestCase):
     def test_032_cacert_expiry(self):
         core.skip_ok_unless_installed('rsv')
 
-        self.run_metric('org.osg.certificates.cacert-expiry')
+        self.run_metric('org.osg.certificates.cacert-expiry',
+                        accept_status=['OK', 'WARNING'])
 
     def test_033_crlcert_expiry(self):
         core.skip_ok_unless_installed('rsv')
 
-        self.run_metric('org.osg.certificates.crl-expiry')
+        self.run_metric('org.osg.certificates.crl-expiry',
+                        accept_status=['OK', 'WARNING'])
 
 
     # Print Java version info, mostly useful for debugging test runs.
