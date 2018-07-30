@@ -43,7 +43,7 @@ class TestRSV(osgunittest.OSGTestCase):
 
         metric_passed = False
         for status in accept_status:
-            if re.search("metricStatus: %s".format(status), stdout) is not None:
+            if re.search("metricStatus: {0}".format(status), stdout) is not None:
                 metric_passed = True
         self.assert_(metric_passed)
 
