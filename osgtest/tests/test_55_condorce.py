@@ -110,11 +110,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_06_slurm_trace(self):
         self.general_requirements()
-        core.skip_ok_unless_installed('slurm',
-                                      'slurm-munge',
-                                      'slurm-perlapi',
-                                      'slurm-plugins',
-                                      'slurm-sql')
+        core.skip_ok_unless_installed(core.SLURM_PACKAGES)
         self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         self.skip_ok_unless(service.is_running(core.config['slurm.service-name']), 'slurm service not running')
