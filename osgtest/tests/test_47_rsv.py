@@ -204,13 +204,13 @@ class TestRSV(osgunittest.OSGTestCase):
         self.run_metric('org.osg.local.hostcert-expiry')
 
     def test_032_cacert_expiry(self):
-        core.skip_ok_unless_installed('rsv')
+        core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 
         self.run_metric('org.osg.certificates.cacert-expiry',
                         accept_status=['OK', 'WARNING'])
 
     def test_033_crlcert_expiry(self):
-        core.skip_ok_unless_installed('rsv')
+        core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 
         self.run_metric('org.osg.certificates.crl-expiry',
                         accept_status=['OK', 'WARNING'])
