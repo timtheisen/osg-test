@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   2.2.0
+Version:   2.2.1
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -41,6 +41,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Tue Aug 7 2017 Suchandra Thapa <ssthapa@uchicago.edu>
+- Add crl and ca expiration tests for RSV
+- Update to use Slurm 17.11.7
+
 * Fri Apr 27 2018 Brian Lin <blin@cs.wisc.edu> 2.2.0-1
 - Move proxy generation to the beginning of the tests
 - Add xrootd-lcmaps tests
