@@ -41,7 +41,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
-* Tue Aug 7 2017 Suchandra Thapa <ssthapa@uchicago.edu>
+* Tue Aug 7 2018 Suchandra Thapa <ssthapa@uchicago.edu>
 - Add crl and ca expiration tests for RSV
 - Update to use Slurm 17.11.7
 
