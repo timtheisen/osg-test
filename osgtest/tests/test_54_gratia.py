@@ -47,14 +47,14 @@ class TestGratia(osgunittest.OSGTestCase):
             os.makedirs(user_vo_map_dir)
             try:
                 shutil.copy(user_vo_map_file, user_vo_map_dir)
-            except IOError, e:
+            except IOError as e:
                 core.log_message("Unable to copy file. %s" % e)
                 return False
         elif not os.path.exists(os.path.join(user_vo_map_dir, 'user-vo-map')):
             # Directory exists, copy file, if the file is not already present
             try:
                 shutil.copy(user_vo_map_file, user_vo_map_dir)
-            except IOError, e:
+            except IOError as e:
                 core.log_message("Unable to copy file. %s" % e)
                 return False
         else: #both directory and file are present and so, do nothing...
@@ -72,7 +72,7 @@ class TestGratia(osgunittest.OSGTestCase):
                         os.makedirs(logdirectory)
                     shutil.copy(log, logdirectory)
                     core.log_message(str(os.listdir(logdirectory)))
-                except IOError, e:
+                except IOError as e:
                     core.log_message("Unable to copy log. %s" % e)
                     return False
         #If we've reached this far, it's a success

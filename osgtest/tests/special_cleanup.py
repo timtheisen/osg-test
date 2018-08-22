@@ -134,7 +134,7 @@ class TestCleanup(osgunittest.OSGTestCase):
                     dest = os.readlink(abs_link_path)
                     if re.match(r'OSG-Test-CA\.', dest):
                         files.remove(abs_link_path)
-                except OSError, e:
+                except OSError as e:
                     if e.errno == errno.EINVAL:
                         continue
 

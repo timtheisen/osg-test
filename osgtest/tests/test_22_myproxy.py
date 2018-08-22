@@ -15,11 +15,11 @@ class TestStartMyProxy(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('myproxy-server')
         myproxycert = core.config['certs.myproxycert']
         myproxykey = core.config['certs.myproxykey']
-        self.skip_ok_if(core.check_file_and_perms(myproxycert, 'myproxy', 0644) and
-                        core.check_file_and_perms(myproxykey, 'myproxy', 0400),
+        self.skip_ok_if(core.check_file_and_perms(myproxycert, 'myproxy', 0o644) and
+                        core.check_file_and_perms(myproxykey, 'myproxy', 0o400),
                         'myproxy cert exists and has proper permissions')
-        core.install_cert('certs.myproxycert', 'certs.hostcert', 'myproxy', 0644)
-        core.install_cert('certs.myproxykey', 'certs.hostkey', 'myproxy', 0400)
+        core.install_cert('certs.myproxycert', 'certs.hostcert', 'myproxy', 0o644)
+        core.install_cert('certs.myproxykey', 'certs.hostkey', 'myproxy', 0o400)
 
     def test_03_config_myproxy(self):
         core.skip_ok_unless_installed('myproxy-server')

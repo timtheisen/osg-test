@@ -42,7 +42,7 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
             SSHD_CONFIG,
             SSHD_CONFIG_TEXT % {'port': port},
             owner='gsissh',
-            chmod=0600)
+            chmod=0o600)
 
     def test_02_setup_selinux_port(self):
         if not core.state['selinux.mode']:

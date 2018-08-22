@@ -105,9 +105,9 @@ class TestRSV(osgunittest.OSGTestCase):
 
         (rsv_uid, rsv_gid) = pwd.getpwnam('rsv')[2:4]
         os.chown(core.config['rsv.certfile'], rsv_uid, rsv_gid)
-        os.chmod(core.config['rsv.certfile'], 0444)
+        os.chmod(core.config['rsv.certfile'], 0o444)
         os.chown(core.config['rsv.keyfile'], rsv_uid, rsv_gid)
-        os.chmod(core.config['rsv.keyfile'], 0400)
+        os.chmod(core.config['rsv.keyfile'], 0o400)
 
     def test_003_setup_grid_mapfile(self):
         core.skip_ok_unless_installed('rsv')
