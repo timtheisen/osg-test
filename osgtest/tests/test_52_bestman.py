@@ -42,7 +42,7 @@ class TestBestman(osgunittest.OSGTestCase):
     @osgrelease(3.3)
     def test_02_copy_local_to_server(self):
         self.setup_temp_paths()
-        os.chmod(TestBestman.__temp_dir, 0777)
+        os.chmod(TestBestman.__temp_dir, 0o777)
         command = ('srm-copy', 'file://' + TestBestman.__data_path, self.get_srm_url(), '-debug')
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('Bestman copy, local to URL', command, status, stdout, stderr)

@@ -74,7 +74,7 @@ def preserve(path, owner):
     else:
         _backups[backup_id] = None
 
-def write(path, contents, owner=None, backup=True, chown=(0,0), chmod=0600):
+def write(path, contents, owner=None, backup=True, chown=(0,0), chmod=0o600):
     """Write the contents to a file at the path.
 
     The 'owner' argument (default: None) is a string that identifies the owner

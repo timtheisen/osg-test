@@ -74,7 +74,7 @@ def advertise_lsc(vo, hostcert='/etc/grid-security/hostcert.pem'):
     if not os.path.isdir(lsc_dir):
         os.makedirs(lsc_dir)
     vo_lsc_path = os.path.join(lsc_dir, hostname + '.lsc')
-    files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False, chmod=0644)
+    files.write(vo_lsc_path, (host_dn + '\n', host_issuer + '\n'), backup=False, chmod=0o644)
 
 
 def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
@@ -86,7 +86,7 @@ def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
     vomses_path = '/etc/vomses'
     contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
                 (vo, hostname, 15151, host_dn, vo))
-    files.write(vomses_path, contents, backup=False, chmod=0644)
+    files.write(vomses_path, contents, backup=False, chmod=0o644)
 
 
 def add_user(vo, usercert, use_voms_admin=False):

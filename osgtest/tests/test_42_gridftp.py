@@ -16,7 +16,7 @@ class TestGridFTP(osgunittest.OSGTestCase):
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
-        os.chmod(temp_dir, 0777)
+        os.chmod(temp_dir, 0o777)
         gsiftp_url = 'gsiftp://%s%s/copied_file.txt' % (hostname, temp_dir)
         command = ('globus-url-copy', '-v', 'file://' + TestGridFTP.__data_path,
                    gsiftp_url)
@@ -32,7 +32,7 @@ class TestGridFTP(osgunittest.OSGTestCase):
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
-        os.chmod(temp_dir, 0777)
+        os.chmod(temp_dir, 0o777)
         gsiftp_url = 'gsiftp://' + hostname + TestGridFTP.__data_path
         local_path = temp_dir + '/copied_file.txt'
         command = ('globus-url-copy', gsiftp_url, 'file://' + local_path)

@@ -20,7 +20,7 @@ class TestConfigureJobs(osgunittest.OSGTestCase):
         osg_libdir = os.path.join('/var', 'lib', 'osg')
         try:
             os.makedirs(osg_libdir)
-        except OSError, exc:
+        except OSError as exc:
             if exc.errno != errno.EEXIST:
                 raise
         core.config['osg.job-environment'] = os.path.join(osg_libdir, 'osg-job-environment.conf')
@@ -28,10 +28,10 @@ class TestConfigureJobs(osgunittest.OSGTestCase):
 
         files.write(core.config['osg.job-environment'],
                     "#!/bin/sh\nJOB_ENV='vdt'\nexport JOB_ENV",
-                    owner='pbs', chmod=0644)
+                    owner='pbs', chmod=0o644)
         files.write(core.config['osg.local-job-environment'],
                     "#!/bin/sh\nLOCAL_JOB_ENV='osg'\nexport LOCAL_JOB_ENV",
-                    owner='pbs', chmod=0644)
+                    owner='pbs', chmod=0o644)
 
         core.state['jobs.env-set'] = True
 

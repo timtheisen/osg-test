@@ -63,7 +63,7 @@ class TestUser(osgunittest.OSGTestCase):
         # Set up directories
         user = pwd.getpwnam(core.options.username)
         os.chown(user.pw_dir, user.pw_uid, user.pw_gid)
-        os.chmod(user.pw_dir, 0755)
+        os.chmod(user.pw_dir, 0o755)
 
         # Set up certificate
         globus_dir = os.path.join(user.pw_dir, '.globus')
@@ -80,7 +80,7 @@ class TestUser(osgunittest.OSGTestCase):
             return
         try:
             password_entry = pwd.getpwnam(core.options.username)
-        except KeyError, e:
+        except KeyError as e:
             self.fail("User '%s' should exist but does not" % core.options.username)
         self.assert_(password_entry.pw_dir != '/', "User '%s' has home directory at '/'" % (core.options.username))
         self.assert_(os.path.isdir(password_entry.pw_dir),
@@ -93,4 +93,4 @@ class TestUser(osgunittest.OSGTestCase):
                      (core.config['user.cert_subject'], password_entry.pw_name),
                      owner='user')
         core.state['system.wrote_mapfile'] = True
-        os.chmod(core.config['system.mapfile'], 0644)
+        os.chmod(core.config['system.mapfile'], 0o644)

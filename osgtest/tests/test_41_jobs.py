@@ -23,7 +23,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
         tmp_dir = tempfile.mkdtemp()
         old_cwd = os.getcwd()
         os.chdir(tmp_dir)
-        os.chmod(tmp_dir, 0777)
+        os.chmod(tmp_dir, 0o777)
 
         try:
             stdout = core.check_system(command, message, user=True, timeout=600)[0]
