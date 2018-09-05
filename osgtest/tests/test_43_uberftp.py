@@ -18,7 +18,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
-        os.chmod(temp_dir, 0777)
+        os.chmod(temp_dir, 0o777)
         local_dir  = '/usr/share/osg-test'
         local_path = 'test_gridftp_data.txt'
         ftp_cmd = 'cd %s; lcd %s; put %s' % (temp_dir, local_dir, local_path)
@@ -38,7 +38,7 @@ class TestUberFTP(osgunittest.OSGTestCase):
 
         hostname = socket.getfqdn()
         temp_dir = tempfile.mkdtemp()
-        os.chmod(temp_dir, 0777)
+        os.chmod(temp_dir, 0o777)
         local_dir  = '/usr/share/osg-test'
         local_path = 'test_gridftp_data.txt'
         ftp_cmd = 'cd %s; lcd %s; get %s' % (local_dir, temp_dir, local_path)
@@ -59,8 +59,8 @@ class TestUberFTP(osgunittest.OSGTestCase):
         hostname = socket.getfqdn()
         temp_dir_source = tempfile.mkdtemp()
         temp_dir_dest = tempfile.mkdtemp()
-        os.chmod(temp_dir_source, 0777)
-        os.chmod(temp_dir_dest, 0777)
+        os.chmod(temp_dir_source, 0o777)
+        os.chmod(temp_dir_dest, 0o777)
         filename = 'testfile_10MB'
         full_path = os.path.join(temp_dir_source, filename)
         command = ('dd', 'if=/dev/zero', 'of=' + full_path, 'bs=10485760',
@@ -86,8 +86,8 @@ class TestUberFTP(osgunittest.OSGTestCase):
         hostname = socket.getfqdn()
         temp_dir_source = tempfile.mkdtemp()
         temp_dir_dest = tempfile.mkdtemp()
-        os.chmod(temp_dir_source, 0777)
-        os.chmod(temp_dir_dest, 0777)
+        os.chmod(temp_dir_source, 0o777)
+        os.chmod(temp_dir_dest, 0o777)
         filename = 'testfile_10MB'
         full_path = (os.path.join(temp_dir_source, filename))
         command = ('dd', 'if=/dev/zero', 'of=' + full_path, 'bs=10485760',

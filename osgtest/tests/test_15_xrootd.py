@@ -42,8 +42,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         user = pwd.getpwnam("xrootd")
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
-            core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0644)
-            core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0400)
+            core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
+            core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
 
             lcmaps_packages = ('lcmaps', 'lcmaps-db-templates', 'xrootd-lcmaps', 'vo-client', 'vo-client-lcmaps-voms')
             if all([core.rpm_is_installed(x) for x in lcmaps_packages]):

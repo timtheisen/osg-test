@@ -69,7 +69,7 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         files.write(core.config['slurm.config'],
                     SLURM_CONFIG % {'short_hostname': SHORT_HOSTNAME, 'cluster': CLUSTER_NAME, 'ctld_log': CTLD_LOG},
                     owner='slurm',
-                    chmod=0644)
+                    chmod=0o644)
         core.config['cgroup.config'] = '/etc/slurm/cgroup.conf'
         config = SLURM_CGROUPS_CONFIG
         if core.el_release() == 6:
@@ -77,13 +77,13 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         files.write(core.config['cgroup.config'],
                     config,
                     owner='slurm',
-                    chmod=0644)
+                    chmod=0o644)
 
         core.config['cgroup_allowed_devices_file.conf'] = '/etc/slurm/cgroup_allowed_devices_file.conf'
         files.write(core.config['cgroup_allowed_devices_file.conf'],
                     SLURM_CGROUPS_DEVICE_CONFIG,
                     owner='slurm',
-                    chmod=0644)
+                    chmod=0o644)
 
     def test_02_start_slurmdbd(self):
         core.state['slurmdbd.started-service'] = False
@@ -109,7 +109,7 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         files.write(core.config['slurmdbd.config'],
                     SLURMDBD_CONFIG % db_config_vals,
                     owner='slurm',
-                    chmod=0644)
+                    chmod=0o644)
         service.check_start('slurmdbd')
 
         # Adding the cluster to the database

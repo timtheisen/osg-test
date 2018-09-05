@@ -33,7 +33,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         TestGFAL2Util.__temp_dir = tempfile.mkdtemp()
         TestGFAL2Util.__remote_path = TestGFAL2Util.__temp_dir + '/gfal2util_put_copied_file.txt'
         TestGFAL2Util.__local_path = TestGFAL2Util.__temp_dir + '/gfal2util_get_copied_file.txt'
-        os.chmod(TestGFAL2Util.__temp_dir,0777)
+        os.chmod(TestGFAL2Util.__temp_dir,0o777)
 
         
     @core.osgrelease(3.3)
@@ -41,7 +41,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('bestman2-server', 'gfal2-plugin-srm', 'gums-service')
         self.skip_bad_unless(core.state['bestman.server-running'], 'bestman server not running')
         self.setup_temp_paths()
-        os.chmod(TestGFAL2Util.__temp_dir, 0777)
+        os.chmod(TestGFAL2Util.__temp_dir, 0o777)
         command = ('gfal-copy', '-v', 'file://' + TestGFAL2Util.__data_path, self.get_srm_url())
         status, stdout, stderr = core.system(command, True)
         fail = core.diagnose('gfal2-util copy, local to URL', command, status, stdout, stderr)

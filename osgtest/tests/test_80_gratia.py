@@ -50,7 +50,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             probeconfig = core.config['gratia.config.dir'] + "/gridftp-transfer/ProbeConfig"
             owner = os.path.basename(os.path.dirname(probeconfig))
             files.restore(probeconfig, owner)
-        except OSError, e:
+        except OSError as e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
                 pass
@@ -68,7 +68,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
             owner = os.path.basename(os.path.dirname(probeconfig))
             files.restore(probeconfig, owner)
-        except OSError, e:
+        except OSError as e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
                 pass
@@ -83,7 +83,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             probeconfig = core.config['gratia.config.dir'] + "/condor/ProbeConfig"
             owner = os.path.basename(os.path.dirname(probeconfig))
             files.restore(probeconfig, owner)
-        except OSError, e:
+        except OSError as e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
                 pass
@@ -99,7 +99,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             probeconfig = core.config['gratia.config.dir'] + "/pbs-lsf/ProbeConfig"
             owner = os.path.basename(os.path.dirname(probeconfig))
             files.restore(probeconfig, owner)
-        except OSError, e:
+        except OSError as e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
                 pass
@@ -115,7 +115,7 @@ class TestStopGratia(osgunittest.OSGTestCase):
             probeconfig = core.config['gratia.config.dir'] + "/sge/ProbeConfig"
             owner = os.path.basename(os.path.dirname(probeconfig))
             files.restore(probeconfig, owner)
-        except OSError, e:
+        except OSError as e:
             if e.errno == 2:
                 # suppress "No such file or directory" error
                 pass

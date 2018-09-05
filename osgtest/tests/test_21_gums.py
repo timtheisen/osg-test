@@ -23,11 +23,11 @@ class TestStartGUMS(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gums-service')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
-        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0644) and
-                        core.check_file_and_perms(httpkey, 'tomcat', 0400),
+        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0o644) and
+                        core.check_file_and_perms(httpkey, 'tomcat', 0o400),
                         'HTTP cert exists and has proper permissions')
-        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
-        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0o644)
+        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0o400)
 
     # ==========================================================================
     # END: (MOSTLY) COPIED FROM test_20_voms.py

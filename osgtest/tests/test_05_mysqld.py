@@ -28,7 +28,7 @@ class TestStartMySQL(osgunittest.OSGTestCase):
         self.assert_(not os.path.exists(backup), 'mysql-backup already exists')
         try:
             shutil.move(core.config['mysql.datadir'], backup)
-        except IOError, e:
+        except IOError as e:
             if e.errno == 2:
                 # Folder doesn't exist so we don't have to worry about backups
                 pass

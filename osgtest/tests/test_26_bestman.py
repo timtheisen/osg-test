@@ -19,8 +19,8 @@ class TestStartBestman(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('bestman2-server', 'bestman2-client', 'gums-service')
         if os.path.exists(core.config['certs.bestmancert']) and os.path.exists(core.config['certs.bestmankey']):
             return
-        core.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0644)
-        core.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0400)
+        core.install_cert('certs.bestmancert', 'certs.hostcert', 'bestman', 0o644)
+        core.install_cert('certs.bestmankey', 'certs.hostkey', 'bestman', 0o400)
 
     @osgrelease(3.3)
     def test_03_modify_sudoers(self):

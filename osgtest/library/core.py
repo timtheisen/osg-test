@@ -1,4 +1,5 @@
 """Support and convenience functions for tests."""
+from __future__ import print_function
 
 import errno
 import os
@@ -127,9 +128,9 @@ def end_log():
 def dump_log(outfile=None):
     if outfile is None:
         logfile = open(_log_filename, 'r')
-        print '\n'
+        print('\n')
         for line in logfile:
-            print line.rstrip('\n')
+            print(line.rstrip('\n'))
         logfile.close()
     else:
         shutil.copy(_log_filename, outfile)
@@ -143,7 +144,7 @@ def get_stat(filename):
     '''Return stat for 'filename', None if the file does not exist'''
     try:
         return os.stat(filename)
-    except OSError, exc:
+    except OSError as exc:
         if exc.errno == errno.ENOENT:
             return None
         raise
@@ -493,7 +494,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         try:
             repr(command)
         except TypeError:
-            print 'Need list or tuple, got %s' % type(command)
+            print('Need list or tuple, got %s' % type(command))
     if use_test_user:
         command = ['runuser', options.username, '-c', ' '.join(map(__prepare_shell_argument, command))]
 
@@ -603,7 +604,7 @@ def el_release():
                 release_file.close()
             match = re.search(r"release (\d)", release_text)
             _el_release = int(match.group(1))
-        except (EnvironmentError, TypeError, ValueError), e:
+        except (EnvironmentError, TypeError, ValueError) as e:
             _log.write("Couldn't determine redhat release: " + str(e) + "\n")
             sys.exit(1)
     return _el_release
@@ -642,7 +643,7 @@ def check_file_and_perms(file_path, owner_name, permissions):
         try:
             file_stat = os.stat(file_path)
             return (file_stat.st_uid == owner_uid and
-                    file_stat.st_mode & 07777 == permissions and
+                    file_stat.st_mode & 0o7777 == permissions and
                     stat.S_ISREG(file_stat.st_mode))
         except OSError:  # file does not exist
             return False
@@ -684,7 +685,7 @@ def install_cert(target_key, source_key, owner_name, permissions):
         os.makedirs(target_dir)
         state[target_key + '-dir'] = target_dir
         os.chown(target_dir, user.pw_uid, user.pw_gid)
-        os.chmod(target_dir, 0755)
+        os.chmod(target_dir, 0o755)
 
     shutil.copy(source_path, target_path)
     state[target_key] = target_path
@@ -697,12 +698,12 @@ def remove_cert(target_key):
     paths associated with the key, as created by the install_cert()
     function.
     """
-    if state.has_key(target_key):
+    if target_key in state:
         os.remove(state[target_key])
-    if state.has_key(target_key + '-backup'):
+    if target_key + '-backup' in state:
         shutil.move(state[target_key + '-backup'],
                     state[target_key])
-    if state.has_key(target_key + '-dir'):
+    if target_key + '-dir' in state:
         target_dir = state[target_key + '-dir']
         if len(os.listdir(target_dir)) == 0:
             os.rmdir(target_dir)

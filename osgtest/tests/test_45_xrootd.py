@@ -29,7 +29,7 @@ class TestXrootd(osgunittest.OSGTestCase):
                 os.chown(temp_dir, user[2], user[3])
         else:
             temp_dir = tempfile.mkdtemp()
-        os.chmod(temp_dir, 0777)
+        os.chmod(temp_dir, 0o777)
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
 
@@ -52,8 +52,8 @@ class TestXrootd(osgunittest.OSGTestCase):
         hostname = socket.getfqdn()
         temp_source_dir = tempfile.mkdtemp()
         temp_target_dir = tempfile.mkdtemp()
-        os.chmod(temp_source_dir, 0777)
-        os.chmod(temp_target_dir, 0777)
+        os.chmod(temp_source_dir, 0o777)
+        os.chmod(temp_target_dir, 0o777)
         f = open(temp_source_dir + "/copied_file.txt", "w")
         f.write("This is some test data for an xrootd test.")
         f.close()

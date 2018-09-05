@@ -75,41 +75,41 @@ class OSGTestCase(unittest.TestCase):
 
     def skip_ok(self, message=None):
         "Skip (ok) unconditionally"
-        raise OkSkipException, message
+        raise OkSkipException(message)
 
     def skip_ok_if(self, expr, message=None):
         "Skip (ok) if the expression is true"
         if expr:
-            raise OkSkipException, message
+            raise OkSkipException(message)
 
     def skip_ok_unless(self, expr, message=None):
         "Skip (ok) if the expression is false"
         if not expr:
-            raise OkSkipException, message
+            raise OkSkipException(message)
 
     def skip_bad(self, message=None):
         "Skip (bad) unconditionally"
-        raise BadSkipException, message
+        raise BadSkipException(message)
 
     def skip_bad_if(self, expr, message=None):
         "Skip (bad) if the expression is true"
         if expr:
-            raise BadSkipException, message
+            raise BadSkipException(message)
 
     def skip_bad_unless(self, expr, message=None):
         "Skip (bad) if the expression is false"
         if not expr:
-            raise BadSkipException, message
+            raise BadSkipException(message)
 
     def assertSubsetOf(self, a, b, message=None):
         "Ensure that a is a subset of b "
         if not set(a).issubset(set(b)):
-            raise AssertionError, message
+            raise AssertionError(message)
 
     def failIfSubsetOf(self, a, b, message=None):
         "Ensure that a is not a subset of b"
         if set(a).issubset(set(b)):
-            raise AssertionError, message
+            raise AssertionError(message)
 
     # This is mostly a copy of the method from unittest in python 2.4.
     # There is some code here to test if the 'result' object accepts 'skips',

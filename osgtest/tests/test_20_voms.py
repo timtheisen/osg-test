@@ -20,21 +20,21 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         voms.skip_ok_unless_installed()
         vomscert = core.config['certs.vomscert']
         vomskey = core.config['certs.vomskey']
-        self.skip_ok_if(core.check_file_and_perms(vomscert, 'voms', 0644) and
-                        core.check_file_and_perms(vomskey, 'voms', 0400),
+        self.skip_ok_if(core.check_file_and_perms(vomscert, 'voms', 0o644) and
+                        core.check_file_and_perms(vomskey, 'voms', 0o400),
                         'VOMS cert exists and has proper permissions')
-        core.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0644)
-        core.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0400)
+        core.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0o644)
+        core.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0o400)
 
     def test_03_install_http_certs(self):
         core.skip_ok_unless_installed('voms-admin-server')
         httpcert = core.config['certs.httpcert']
         httpkey = core.config['certs.httpkey']
-        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0644) and
-                        core.check_file_and_perms(httpkey, 'tomcat', 0400),
+        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0o644) and
+                        core.check_file_and_perms(httpkey, 'tomcat', 0o400),
                         'HTTP cert exists and has proper permissions')
-        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0644)
-        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0400)
+        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0o644)
+        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0o400)
 
     def test_04_config_voms(self):
         core.config['voms.vo'] = 'osgtestvo'

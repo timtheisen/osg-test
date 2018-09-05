@@ -19,7 +19,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         files.write(core.config['condor-ce.condor-cfg'],
                     contents,
                     owner='condor-ce',
-                    chmod=0644)
+                    chmod=0o644)
 
     def test_02_reconfigure_condor(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
@@ -52,7 +52,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
             files.write(core.config['condor-ce.condorce_mapfile'],
                         mapfile_contents,
                         owner='condor-ce',
-                        chmod=0644)
+                        chmod=0o644)
         else:
             core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
 
@@ -91,7 +91,7 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
         files.write(core.config['condor-ce.condor-ce-cfg'],
                     condor_contents,
                     owner='condor-ce',
-                    chmod=0644)
+                    chmod=0o644)
 
     def test_04_start_condorce(self):
         if core.el_release() >= 7:
