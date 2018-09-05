@@ -48,7 +48,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             lcmaps_packages = ('lcmaps', 'lcmaps-db-templates', 'xrootd-lcmaps', 'vo-client', 'vo-client-lcmaps-voms')
             if all([core.rpm_is_installed(x) for x in lcmaps_packages]):
                 core.log_message("Using xrootd-lcmaps authentication")
-                sec_protocol = '-authzfun:libXrdLcmaps.so -authzfunparms:--loglevel,5'
+                sec_protocol = '-authzfun:libXrdLcmaps.so -authzfunparms:--loglevel,5,--policy,authorize_only'
             else:
                 core.log_message("Using XRootD mapfile authentication")
                 sec_protocol = '-gridmap:/etc/grid-security/xrd/xrdmapfile'
