@@ -1,5 +1,7 @@
 #!/bin/bash
 
+UPSTREAM=https://github.com/opensciencegrid
+
 on_error_die()
 {
     if [ $? -ne 0 ]; then
@@ -10,32 +12,6 @@ on_error_die()
         echo 'done'
     fi
 }
-
-if [ $# -lt 1 ]; then
-    echo "Requires the major version number, i.e. 3.2 for 3.2.0"
-    echo "usage: $0 <major version> [testing|development]"
-    exit 1
-fi
-
-if [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
-    version=$1
-else
-    echo "Major version should be in the form of '<number>.<number>, i.e. 3.2"
-    echo "usage: $0 <major version> [testing|development]"
-    exit 1
-fi
-
-extra_repo=
-case $2 in
-    test|testing)     extra_repo='--enablerepo=osg-testing';;
-    dev|development)  extra_repo='--enablerepo=osg-development';;
-    '') ;;
-    *)
-        echo "$0: unknown option '$1'"
-        echo "usage: $0 <major version> [testing|development]"
-        exit 1
-        ;;
-esac
 
 # Determine platform-specific details
 release=`cat /etc/redhat-release`
@@ -100,11 +76,13 @@ echo -n 'Verify yum-plugin-priorities... '
 rpm --verify yum-plugin-priorities
 on_error_die "Could not verify yum-plugin-priorities"
 
-# Always erase and install, to get latest
-rpm -e osg-test >/dev/null 2>&1
-echo -n "Install osg-test... "
-yum -y --quiet $extra_repo install osg-test
-on_error_die "Could not install osg-test"
-echo -n 'Verify osg-test... '
-rpm --verify osg-test
-on_error_die "Could not verify osg-test"
+cd /tmp
+for repo in osg-test osg-ca-generator; do
+    git clone $UPSTREAM/$repo
+    on_error_die "Failed to clone $UPSTREAM/$repo"
+    pushd $repo
+    make install
+    on_error_die "Failed to install $repo"
+    popd
+done
+
