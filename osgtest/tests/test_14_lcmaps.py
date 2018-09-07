@@ -20,3 +20,16 @@ class TestLcMaps(osgunittest.OSGTestCase):
                     "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n",
                     owner='lcmaps')
 
+    def test_02_xrootd_policy(self):
+        core.skip_ok_unless_installed('xrootd-lcmaps', *self.required_rpms)
+
+        files.append(core.config['lcmaps.db'],
+                     '''xrootd_policy:
+verifyproxynokey -> banfile
+banfile -> banvomsfile | bad
+banvomsfile -> gridmapfile | bad
+gridmapfile -> good | vomsmapfile
+vomsmapfile -> good | defaultmapfile
+defaultmapfile -> good | bad
+''',
+                     backup=False)
