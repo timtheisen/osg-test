@@ -22,7 +22,7 @@ class TestLcMaps(osgunittest.OSGTestCase):
 
     def test_02_xrootd_policy(self):
         core.skip_ok_unless_installed('xrootd-lcmaps', *self.required_rpms)
-        core.skip_ok_unless(core.package_version_compare('xrootd-lcmaps', '1.4.0') >= 0)
+        self.skip_ok_unless(core.package_version_compare('xrootd-lcmaps', '1.4.0') >= 0)
 
         files.append(core.config['lcmaps.db'],
                      '''xrootd_policy:
