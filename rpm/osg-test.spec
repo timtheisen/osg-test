@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   2.2.1
+Version:   2.2.2
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -41,6 +41,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Tue Oct 02 2018 Carl Edquist <edquist@cs.wisc.edu> - 2.2.2-1
+- Update bootstrap-osg-test to fetch from source control (SOFTWARE-2232)
+- Allow installing slurm without all of osg-tested-internal (SOFTWARE-3347)
+- Conditionalize xrootd policy based on lcmaps version (SOFTWARE-3396)
+
 * Tue Aug 7 2018 Suchandra Thapa <ssthapa@uchicago.edu>
 - Add crl and ca expiration tests for RSV
 - Update to use Slurm 17.11.7
