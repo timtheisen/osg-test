@@ -23,7 +23,9 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         # ERROR verify called on empty data blob
         'verify called on empty data blob',
         # VERBOSE(0) SDG-G2/0: CRL signature failed
-        'CRL signature failed'
+        'CRL signature failed',
+        # LWP::Protocol::http::Socket: connect: No route to host at /usr/share/perl5/LWP/Protocol/http.pm line 51.
+        'LWP::Protocol::http::Socket',
     ]
 
     def output_is_acceptable(self, fetch_crl_output):
