@@ -29,6 +29,9 @@ class TestFetchCrl(osgunittest.OSGTestCase):
     ]
 
     def output_is_acceptable(self, fetch_crl_output):
+        """All lines output from fetch-crl are considered an error. We whitelist
+        a few transient ones.
+        """
         all_lines_ok = True
         for line in fetch_crl_output.rstrip('\n').split('\n'):
             if not line:  # skip blank lines
