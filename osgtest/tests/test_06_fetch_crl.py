@@ -40,6 +40,7 @@ class TestFetchCrl(osgunittest.OSGTestCase):
                     break
             if not line_ok:
                 all_lines_ok = False
+                core.log_message("Found uncaught error message: '%s'" % line.strip())
                 break
         return all_lines_ok
 
