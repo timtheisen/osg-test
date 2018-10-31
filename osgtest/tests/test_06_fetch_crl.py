@@ -31,6 +31,8 @@ class TestFetchCrl(osgunittest.OSGTestCase):
     def output_is_acceptable(self, fetch_crl_output):
         all_lines_ok = True
         for line in fetch_crl_output.rstrip('\n').split('\n'):
+            if not line:  # skip blank lines
+                continue
             line_ok = False
             for error_string in TestFetchCrl.error_message_whitelist:
                 if re.search(error_string, line):
