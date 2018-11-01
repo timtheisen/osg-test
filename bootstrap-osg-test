@@ -13,6 +13,13 @@ on_error_die()
     fi
 }
 
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <OSG RELEASE>"
+    exit 1
+fi
+
+version=$1
+
 # Determine platform-specific details
 release=`cat /etc/redhat-release`
 case $release in
