@@ -85,7 +85,7 @@ on_error_die "Could not verify yum-plugin-priorities"
 
 cd /tmp
 for repo in osg-test osg-ca-generator; do
-    git clone $UPSTREAM/$repo
+    git clone --depth 1 $UPSTREAM/$repo
     on_error_die "Failed to clone $UPSTREAM/$repo"
     pushd $repo
     make install
