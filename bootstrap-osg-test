@@ -23,7 +23,7 @@ if [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
     version=$1
 else
     echo "Major version should be in the form of '<number>.<number>, i.e. 3.2"
-    echo "usage: $0 <major version> [testing|development]"
+    echo "usage: $0 <major version>"
     exit 1
 fi
 
