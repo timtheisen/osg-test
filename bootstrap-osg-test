@@ -15,7 +15,7 @@ on_error_die()
 
 if [ $# -ne 1 ]; then
     echo "Requires the major version number, i.e. 3.2 for 3.2.0"
-    echo "usage: $0 <major version> [testing|development]"
+    echo "usage: $0 <major version>"
     exit 1
 fi
 
