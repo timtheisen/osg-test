@@ -24,7 +24,7 @@ class TestStartCondor(osgunittest.OSGTestCase):
             return
 
         core.config['condor.personal_condor'] = join(condor.config_val('LOCAL_CONFIG_DIR'), '99-personal-condor.conf')
-        files.write(core.config['condor.personal_condor'], personal_condor_config, owner='condor')
+        files.write(core.config['condor.personal_condor'], personal_condor_config, owner='condor', chmod=0o644)
 
         core.config['condor.collectorlog_stat'] = core.get_stat(core.config['condor.collectorlog'])
 
