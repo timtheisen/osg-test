@@ -1,4 +1,5 @@
 import osgtest.library.core as core
+import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
@@ -8,4 +9,5 @@ class TestStopCondor(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('condor')
         self.skip_ok_if(core.state['condor.started-service'] == False, 'did not start server')
         service.check_stop('condor')
+        files.restore(core.config['condor.personal_condor'], 'condor')
         core.state['condor.running-service'] = False
