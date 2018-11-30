@@ -36,7 +36,7 @@ All steps are performed as `root`:
 
 1.  Clone the git repository and `cd` into it:
 
-        [root@client ~ ] $ git clone https://github.com/brianhlin/osg-test.git
+        [root@client ~ ] $ git clone https://github.com/opensciencegrid/osg-test.git
         [root@client ~ ] $ cd osg-test
 
 2.  Bootstrap the test system using the `osg-testing` yum repository. The `osg release` is required as the first argument and takes the form of `<major version>.<minor version>` e.g. `3.2`. To get `osg-test` from the `osg-development` Yum repository, replace the second argument with `development`; to get `osg-test` from the production repository, omit the second argument. This step makes sure that both the EPEL and OSG repositories are available, then installs and verifies the `osg-test` package itself.
@@ -55,7 +55,6 @@ Fundamentally, the `osg-test` script runs tests and reports on their results. Ho
 | Option                       | Description                                                                                                                                                                                                                                |
 |------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `-a`, `--add-user`           | Add and configure the test user account (see also `-u` below). By default, the script assumes that the test user account already exists and is configured with a valid X.509 certificate in its `.globus` directory.                       |
-| `--cilogon`                  | Generate CILogon-like certificates                                                                                                                                                                                                         |
 | `-c`, `--config` FILE        | Configuration file to use that specifies command-line options. See below for syntax                                                                                                                                                        |
 | `-d`, `--dump-output`        | After all test output, print all commands and their output from the test run. Typically generates **a lot** of output.                                                                                                                     |
 | `--df`, `--dump-file` FILE   | Like `--dump-output`, but prints the output to a file instead of the console                                                                                                                                                               |
@@ -85,7 +84,6 @@ Unfortunately, the names of the variables in the config file are not the same as
 | Command-Line         | Config File   | Default Value |
 |:---------------------|:--------------|:--------------|
 | --add-user           | adduser       | False         |
-| --cilogon            | cilogon       | True          |
 | --dump-output        | dumpout       | False         |
 | --dump-file          | dumpfile      | None          |
 | --extra-repo         | extrarepos    | []            |
@@ -388,7 +386,7 @@ Before you go and commit your changes, it's a good idea to make sure they don't 
     ```
 4.  Run the tests and monitor their output:
     ```
-    [root@client ~]$ osg-test -vad > <OUTFILE>
+    [root@client ~]$ osg-test -vad > <OUTFILE> 2>&1 &
     [root@client ~]$ tail -f <OUTFILE>
     ```
 

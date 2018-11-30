@@ -32,9 +32,8 @@ class TestInstall(osgunittest.OSGTestCase):
 
         # FIXME: Install slurm out of contrib if we're running 'All' tests until
         # SOFTWARE-1733 gives us a generalized solution
-        if 'osg-tested-internal' in pkg_repo_dict:
-            all_slurm_packages = core.SLURM_PACKAGES + ['slurm-slurmdbd']
-            pkg_repo_dict.update(dict((x, ['osg-contrib']) for x in all_slurm_packages))
+        if 'osg-tested-internal' in pkg_repo_dict or 'slurm' in pkg_repo_dict:
+            pkg_repo_dict.update(dict((x, ['osg-development']) for x in core.SLURM_PACKAGES))
 
         for pkg, repos in pkg_repo_dict.items():
             # Do not try to re-install packages
@@ -70,8 +69,8 @@ class TestInstall(osgunittest.OSGTestCase):
         core.check_system(command, 'Erase osg-release')
 
         self.assert_(re.match('\d+\.\d+', core.options.updaterelease), "Unrecognized updaterelease format")
-        rpm_url = 'https://repo.grid.iu.edu/osg/' + core.options.updaterelease + '/osg-' + core.options.updaterelease \
-            + '-el' + str(core.el_release()) + '-release-latest.rpm'
+        rpm_url = 'https://repo.opensciencegrid.org/osg/' + core.options.updaterelease + '/osg-' + \
+                  core.options.updaterelease + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Update osg-release')
 
@@ -83,6 +82,7 @@ class TestInstall(osgunittest.OSGTestCase):
             core.options.updaterepos = ['osg']
 
         core.state['install.release-updated'] = True
+        core.osg_release(update_state=True)
 
     def test_04_remove_bestman2_server_dep_libs(self):
         if core.options.updaterelease != "3.4":

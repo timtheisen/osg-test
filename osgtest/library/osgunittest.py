@@ -4,8 +4,6 @@ Extended unit testing framework for OSG.
 In order to meet the requirements of OSG testing, some extensions to the
 standard Python unittest library have been made:
 - additional test statuses 'OkSkip' and 'BadSkip'
-  see https://twiki.grid.iu.edu/bin/view/SoftwareTeam/NewTestStatusDesignDoc
-
 """
 # quiet all the 'Method could be a function' or 'Invalid name' warnings;
 # I'm following the conventions unittest set.
@@ -24,6 +22,12 @@ class OkSkipException(AssertionError):
     """
     pass
 
+class ExcludedException(AssertionError):
+    """
+    This exception represents a test getting excluded because it is not
+    normally run for the given osg release series.
+    """
+    pass
 
 class BadSkipException(AssertionError):
     """
@@ -71,41 +75,41 @@ class OSGTestCase(unittest.TestCase):
 
     def skip_ok(self, message=None):
         "Skip (ok) unconditionally"
-        raise OkSkipException, message
+        raise OkSkipException(message)
 
     def skip_ok_if(self, expr, message=None):
         "Skip (ok) if the expression is true"
         if expr:
-            raise OkSkipException, message
+            raise OkSkipException(message)
 
     def skip_ok_unless(self, expr, message=None):
         "Skip (ok) if the expression is false"
         if not expr:
-            raise OkSkipException, message
+            raise OkSkipException(message)
 
     def skip_bad(self, message=None):
         "Skip (bad) unconditionally"
-        raise BadSkipException, message
+        raise BadSkipException(message)
 
     def skip_bad_if(self, expr, message=None):
         "Skip (bad) if the expression is true"
         if expr:
-            raise BadSkipException, message
+            raise BadSkipException(message)
 
     def skip_bad_unless(self, expr, message=None):
         "Skip (bad) if the expression is false"
         if not expr:
-            raise BadSkipException, message
+            raise BadSkipException(message)
 
     def assertSubsetOf(self, a, b, message=None):
         "Ensure that a is a subset of b "
         if not set(a).issubset(set(b)):
-            raise AssertionError, message
+            raise AssertionError(message)
 
     def failIfSubsetOf(self, a, b, message=None):
         "Ensure that a is not a subset of b"
         if set(a).issubset(set(b)):
-            raise AssertionError, message
+            raise AssertionError(message)
 
     # This is mostly a copy of the method from unittest in python 2.4.
     # There is some code here to test if the 'result' object accepts 'skips',
@@ -144,6 +148,12 @@ class OSGTestCase(unittest.TestCase):
                 else:
                     pass
                 return
+            except ExcludedException:
+                if canSkip:
+                    result.addExclude(self, sys.exc_info())
+                else:
+                    pass
+                return
             except BadSkipException:
                 if canSkip:
                     result.addBadSkip(self, sys.exc_info())
@@ -171,6 +181,11 @@ class OSGTestCase(unittest.TestCase):
             except OkSkipException:
                 if canSkip:
                     result.addOkSkip(self, sys.exc_info())
+                else:
+                    pass
+            except ExcludedException:
+                if canSkip:
+                    result.addExclude(self, sys.exc_info())
                 else:
                     pass
             except BadSkipException:
@@ -226,11 +241,16 @@ class OSGTestResult(unittest.TestResult):
         unittest.TestResult.__init__(self)
         self.okSkips = []
         self.badSkips = []
+        self.excludes = []
         self.timeouts = []
 
     def addOkSkip(self, test, err):
         """Called when an ok skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
         self.okSkips.append((test, self.osg_exc_info_to_string(err, test)))
+
+    def addExclude(self, test, err):
+        """Called when a test is excluded. 'err' is a tuple as returned by sys.exc_info()"""
+        self.excludes.append((test, self.osg_exc_info_to_string(err, test)))
 
     def addBadSkip(self, test, err):
         """Called when a bad skip has occurred. 'err' is a tuple as returned by sys.exc_info()"""
@@ -246,7 +266,7 @@ class OSGTestResult(unittest.TestResult):
         """
         exctype, value, _ = err
 
-        if exctype in (OkSkipException, BadSkipException, TimeoutException):
+        if exctype in (OkSkipException, ExcludedException, BadSkipException, TimeoutException):
             return str(value)
             # TODO Need some way to print out the line that caused the skip
             # if there is no message.
@@ -341,6 +361,7 @@ class OSGTextTestResult(OSGTestResult):
         self.printErrorList('TIMEOUT', self.timeouts)
         self.printSkipList('BAD SKIPS', self.badSkips)
         self.printSkipList('OK SKIPS', self.okSkips)
+        self.printSkipList('EXCLUDED', self.excludes)
 
     def printErrorList(self, flavour, errors):
         """Print all of one flavor of error to the stream."""
@@ -368,6 +389,13 @@ class OSGTextTestResult(OSGTestResult):
             self.stream.writeln("okskip")
         elif self.dots:
             self.stream.write("s")
+
+    def addExclude(self, test, reason):
+        OSGTestResult.addExclude(self, test, reason)
+        if self.showAll:
+            self.stream.writeln("excluded")
+        elif self.dots:
+            self.stream.write("x")
 
     def addBadSkip(self, test, reason):
         OSGTestResult.addBadSkip(self, test, reason)

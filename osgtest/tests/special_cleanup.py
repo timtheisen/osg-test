@@ -69,7 +69,7 @@ class TestCleanup(osgunittest.OSGTestCase):
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')
 
-        rpm_url = 'https://repo.grid.iu.edu/osg/' + core.config['install.original-release-ver']+ '/osg-' + \
+        rpm_url = 'https://repo.opensciencegrid.org/osg/' + core.config['install.original-release-ver']+ '/osg-' + \
             core.config['install.original-release-ver'] + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Downgrade osg-release')
@@ -134,7 +134,7 @@ class TestCleanup(osgunittest.OSGTestCase):
                     dest = os.readlink(abs_link_path)
                     if re.match(r'OSG-Test-CA\.', dest):
                         files.remove(abs_link_path)
-                except OSError, e:
+                except OSError as e:
                     if e.errno == errno.EINVAL:
                         continue
 
