@@ -8,9 +8,9 @@ from osgtest.library import service
 
 
 CACHE_DIR = "/tmp/sccache"
-CACHE_PORT = 1094  # can't change this - stashcp doesn't allow you to specify port
+CACHE_XROOT_PORT = 1094  # can't change this - stashcp doesn't allow you to specify port
 CACHE_HTTP_PORT = 8001
-ORIGIN_PORT = 1095
+ORIGIN_XROOT_PORT = 1095
 ORIGIN_DIR = "/tmp/scorigin"
 CACHE_AUTHFILE_PATH = "/etc/xrootd/Authfile-cache"
 CACHE_CONFIG_PATH = "/etc/xrootd/xrootd-stashcache-cache-server.cfg"
@@ -33,7 +33,7 @@ cms.trace all
 
 ofs.osslib  libXrdPss.so
 # normally this is the redirector but we don't have one in this environment
-pss.origin localhost:{ORIGIN_PORT}
+pss.origin localhost:{ORIGIN_XROOT_PORT}
 pss.cachelib libXrdFileCache.so
 pss.setopt DebugLevel 1
 
@@ -52,7 +52,7 @@ acc.authdb {CACHE_AUTHFILE_PATH}
 sec.protbind * none
 xrd.protocol http:{CACHE_HTTP_PORT} libXrdHttp.so
 
-xrd.port {CACHE_PORT}
+xrd.port {CACHE_XROOT_PORT}
 
 http.listingdeny yes
 http.staticpreload http://static/robots.txt /etc/xrootd/stashcache-robots.txt
@@ -87,7 +87,7 @@ all.pidpath /var/run/xrootd
 oss.localroot {ORIGIN_DIR}
 all.export /
 
-xrd.port {ORIGIN_PORT}
+xrd.port {ORIGIN_XROOT_PORT}
 all.role server
 
 xrootd.trace emsg login stall redirect
@@ -129,7 +129,8 @@ class TestStartStashCache(OSGTestCase):
             ("cache_http_port", CACHE_HTTP_PORT),
             ("origin_dir", ORIGIN_DIR),
             ("cache_dir", CACHE_DIR),
-            ("origin_port", ORIGIN_PORT)
+            ("origin_xroot_port", ORIGIN_XROOT_PORT),
+            ("cache_xroot_port", CACHE_XROOT_PORT)
         ]:
             _setcfg(key, val)
 
