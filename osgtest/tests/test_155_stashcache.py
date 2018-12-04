@@ -1,4 +1,6 @@
 import os
+import pwd
+
 from osgtest.library import core
 from osgtest.library import files
 from osgtest.library.osgunittest import OSGTestCase
@@ -126,13 +128,17 @@ class TestStartStashCache(OSGTestCase):
             ("caches_json_path", CACHES_JSON_PATH),
             ("cache_http_port", CACHE_HTTP_PORT),
             ("origin_dir", ORIGIN_DIR),
-            ("cache_dir", CACHE_DIR)
+            ("cache_dir", CACHE_DIR),
+            ("origin_port", ORIGIN_PORT)
         ]:
             _setcfg(key, val)
 
-        d = os.path.dirname(CACHES_JSON_PATH)
-        if not os.path.isdir(d):
-            os.makedirs(os.path.dirname(d))
+        xrootd_user = pwd.getpwnam("xrootd")
+        for d in [_getcfg("origin_dir"), _getcfg("cache_dir"),
+                  os.path.dirname(_getcfg("caches_json_path"))]:
+            files.safe_makedirs(d)
+            os.chown(d, xrootd_user.pw_uid, xrootd_user.pw_gid)
+
         for key, text in [
             ("cache_config_path", CACHE_CONFIG_TEXT),
             ("cache_authfile_path", CACHE_AUTHFILE_TEXT),

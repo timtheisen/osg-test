@@ -237,3 +237,12 @@ def filesBackedup(path, owner):
         return True
     else:
         return False
+
+
+def safe_makedirs(directory, mode=0o777):
+    """Create a directory and all its parent directories, unless it already
+    exists.
+
+    """
+    if not os.path.isdir(directory):
+        os.makedirs(directory, mode)

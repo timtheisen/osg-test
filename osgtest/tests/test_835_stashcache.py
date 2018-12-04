@@ -1,4 +1,5 @@
 import os
+import shutil
 from osgtest.library import core
 from osgtest.library import files
 from osgtest.library.osgunittest import OSGTestCase
@@ -36,5 +37,7 @@ class TestStopStashCache(OSGTestCase):
         ]:
             files.restore(_getcfg(key), owner=_NAMESPACE)
 
-    def test_04_clean_dirs(self):
-        pass
+    def test_04_delete_dirs(self):
+        for key in ["origin_dir", "cache_dir"]:
+            if os.path.isdir(_getcfg(key)):
+                shutil.rmtree(_getcfg(key))
