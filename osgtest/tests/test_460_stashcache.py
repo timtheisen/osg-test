@@ -79,9 +79,12 @@ class TestStashCache(OSGTestCase):
         self.assertCached(name, contents)
 
     def test_05_stashcp(self):
+        command = ["stashcp", "-d"]
+        if core.package_version_compare('stashcache-client', '5.1.0-5') < 0:
+            command.append("--cache=root://localhost")
         name, contents = self.testfiles[3]
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
-            core.check_system(["stashcp", "-d", "/"+name, tf.name],
+            core.check_system(command + ["/"+name, tf.name],
                               "Checking stashcp")
             result = tf.read()
         self.assertEqual(result, contents, "stashcp'ed file does match expected")
