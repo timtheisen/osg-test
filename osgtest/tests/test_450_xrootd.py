@@ -30,7 +30,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         else:
             temp_dir = tempfile.mkdtemp()
         os.chmod(temp_dir, 0o777)
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
+        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
 
         status, stdout, stderr = core.system(command, user=True)
@@ -57,7 +57,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         f = open(temp_source_dir + "/copied_file.txt", "w")
         f.write("This is some test data for an xrootd test.")
         f.close()
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_source_dir)
+        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_source_dir)
         local_path = temp_target_dir + '/copied_file.txt'
         command = ('xrdcp', '--debug', '3', xrootd_url, local_path)
 

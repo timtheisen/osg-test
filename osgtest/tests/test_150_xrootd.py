@@ -5,6 +5,9 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
+
+XROOTD_PORT = 1096  # chosen so it doesn't conflict w/ the stashcache instances
+
 XROOTD_CFG_TEXT = """\
 cms.space min 2g 5g
 xrootd.seclib /usr/lib64/libXrdSec-4.so
@@ -17,6 +20,7 @@ sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates \
     %s
 acc.authdb /etc/xrootd/auth_file
 ofs.authorize
+xrd.port %d
 """
 
 AUTHFILE_TEXT = """\
@@ -32,6 +36,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.config'] = '/etc/xrootd/xrootd-clustered.cfg'
+        core.config['xrootd.port'] = XROOTD_PORT
         core.config['xrootd.gsi'] = "ON"
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
@@ -58,7 +63,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                             owner="xrootd",
                             chown=(user.pw_uid, user.pw_gid))
 
-            files.append(core.config['xrootd.config'], XROOTD_CFG_TEXT % sec_protocol, owner='xrootd', backup=True)
+            files.append(core.config['xrootd.config'], XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.port']), owner='xrootd', backup=True)
             authfile = '/etc/xrootd/auth_file'
             files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
 
