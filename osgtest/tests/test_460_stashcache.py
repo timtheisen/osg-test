@@ -36,11 +36,14 @@ class TestStashCache(OSGTestCase):
         self.assertEqual(contents, files.read(fpath, as_single_string=True),
                          "cached file %s contents do not match expected" % name)
 
+    def skip_bad_unless_running(self, *services):
+        for svc in services:
+            self.skip_bad_unless(service.is_running(svc), "%s not running" % svc)
+
     @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("stashcache-origin-server", "stashcache-cache-server", "stashcache-client")
-        self.skip_bad_unless(service.is_running("xrootd@stashcache-origin-server"))
-        self.skip_bad_unless(service.is_running("xrootd@stashcache-cache-server"))
+        self.skip_bad_unless_running("xrootd@stashcache-origin-server", "xrootd@stashcache-cache-server")
 
     def test_01_create_files(self):
         xrootd_user = pwd.getpwnam("xrootd")
