@@ -25,8 +25,8 @@ test_290_slurm
 test_300_misc
 test_380_cvmfs
 test_400_proxy
-test_480_myproxy
-test_500_voms
+test_403_myproxy
+test_407_voms
 test_410_jobs
 test_420_gridftp
 test_430_uberftp
