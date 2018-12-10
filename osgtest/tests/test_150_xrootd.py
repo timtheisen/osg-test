@@ -63,7 +63,9 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                             owner="xrootd",
                             chown=(user.pw_uid, user.pw_gid))
 
-            files.append(core.config['xrootd.config'], XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.port']), owner='xrootd', backup=True)
+            files.append(core.config['xrootd.config'],
+                         XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.port']),
+                         owner='xrootd', backup=True)
             authfile = '/etc/xrootd/auth_file'
             files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
 
