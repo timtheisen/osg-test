@@ -33,8 +33,9 @@ class TestStashCache(OSGTestCase):
         fpath = os.path.join(_getcfg("cache_dir"), name)
         self.assertTrue(os.path.exists(fpath),
                         name + " not cached")
-        self.assertEqual(contents, files.read(fpath, as_single_string=True),
-                         "cached file %s contents do not match expected" % name)
+        self.assertEqualVerbose(actual=files.read(fpath, as_single_string=True),
+                                expected=contents,
+                                message="cached file %s mismatch" % name)
 
     def skip_bad_unless_running(self, *services):
         for svc in services:
@@ -58,7 +59,7 @@ class TestStashCache(OSGTestCase):
             core.check_system(["xrdcp", "-d1", "-N", "-f",
                                "root://localhost:%d//%s" % (_getcfg("origin_xroot_port"), name),
                                "-"], "Checking xroot copy from origin")
-        self.assertEqual(result, contents, "downloaded file does not match expected")
+        self.assertEqualVerbose(result, contents, "downloaded file mismatch")
 
     def test_03_http_fetch_from_cache(self):
         name, contents = self.testfiles[1]
@@ -69,7 +70,7 @@ class TestStashCache(OSGTestCase):
             result = f.read()
         except IOError as e:
             self.fail("Unable to download from cache via http: %s" % e)
-        self.assertEqual(result, contents, "downloaded file does not match expected")
+        self.assertEqualVerbose(result, contents, "downloaded file mismatch")
         self.assertCached(name, contents)
 
     def test_04_xroot_fetch_from_cache(self):
@@ -78,7 +79,7 @@ class TestStashCache(OSGTestCase):
             core.check_system(["xrdcp", "-d1", "-N", "-f",
                                "root://localhost:%d//%s" % (_getcfg("cache_xroot_port"), name),
                                "-"], "Checking xroot copy from cache")
-        self.assertEqual(result, contents, "downloaded file does not match expected")
+        self.assertEqualVerbose(result, contents, "downloaded file mismatch")
         self.assertCached(name, contents)
 
     def test_05_stashcp(self):
@@ -90,5 +91,5 @@ class TestStashCache(OSGTestCase):
             core.check_system(command + ["/"+name, tf.name],
                               "Checking stashcp")
             result = tf.read()
-        self.assertEqual(result, contents, "stashcp'ed file does match expected")
+        self.assertEqualVerbose(result, contents, "stashcp'ed file mismatch")
         self.assertCached(name, contents)

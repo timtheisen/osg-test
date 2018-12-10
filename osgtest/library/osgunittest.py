@@ -12,6 +12,19 @@ import sys
 import unittest
 import time
 
+
+# Copied from unittest.util, Python 3.6
+_MAX_LENGTH = 80
+def safe_repr(obj, short=False):
+    try:
+        result = repr(obj)
+    except Exception:
+        result = object.__repr__(obj)
+    if not short or len(result) < _MAX_LENGTH:
+        return result
+    return result[:_MAX_LENGTH] + ' [truncated]...'
+
+
 # Define the classes we need to handle the two new types of test results: ok
 # skip, and bad skip.
 
@@ -110,6 +123,14 @@ class OSGTestCase(unittest.TestCase):
         "Ensure that a is not a subset of b"
         if set(a).issubset(set(b)):
             raise AssertionError(message)
+
+    def assertEqualVerbose(self, actual, expected, message=None):
+        aftermessage = "actual %s != expected %s" % (safe_repr(actual), safe_repr(expected))
+        if message:
+            fullmessage = "%s (%s)" % (message, aftermessage)
+        else:
+            fullmessage = aftermessage
+        self.assertEqual(actual, expected, fullmessage)
 
     # This is mostly a copy of the method from unittest in python 2.4.
     # There is some code here to test if the 'result' object accepts 'skips',
