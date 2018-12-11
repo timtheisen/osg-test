@@ -84,7 +84,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         # This tests xrootd-fuse using a mount in /mnt
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
         self.skip_ok_unless(os.path.exists("/mnt"), "/mnt did not exist")
-        self.skip_ok_if(core.config['xrootd.gsi'] == "ON", 'fuse incompatible with GSI')
 
         if not os.path.exists(TestXrootd.__fuse_path):
             os.mkdir(TestXrootd.__fuse_path)
