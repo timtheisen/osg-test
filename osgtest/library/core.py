@@ -416,13 +416,17 @@ def version_compare(evr1, evr2):
     as a 3-element tuple or list.
 
     """
-    if isinstance(evr1, basestring):
+    if is_string(evr1):
         epoch1, version1, release1 = stringToVersion(evr1)
+    elif isinstance(evr1, bytes):
+        epoch1, version1, release1 = stringToVersion(evr1.decode())
     else:
         epoch1, version1, release1 = evr1
 
-    if isinstance(evr2, basestring):
+    if is_string(evr2):
         epoch2, version2, release2 = stringToVersion(evr2)
+    elif isinstance(evr2, bytes):
+        epoch2, version2, release2 = stringToVersion(evr2.decode())
     else:
         epoch2, version2, release2 = evr2
 
@@ -755,3 +759,12 @@ def elrelease(*releases):
         return run_fn_if_el_release_ok
     return el_release_decorator
 
+
+try:
+    unicode
+except NameError:  # python 3
+    unicode = str
+
+
+def is_string(var):
+    return isinstance(var, (str, unicode))
