@@ -16,18 +16,14 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_01_xrdcp_local_to_server(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
-        if core.config['xrootd.gsi'] == "ON":
-            core.skip_ok_unless_installed('globus-proxy-utils')
+        core.skip_ok_unless_installed('globus-proxy-utils')
         self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
-        temp_dir = "/tmp/vdttest"
         hostname = socket.getfqdn()
-        if core.config['xrootd.gsi'] == "ON":
-            if not os.path.exists(temp_dir):
-                os.mkdir(temp_dir)
-                user = pwd.getpwnam(core.options.username)
-                os.chown(temp_dir, user[2], user[3])
-        else:
-            temp_dir = tempfile.mkdtemp()
+        temp_dir = "/tmp/vdttest"
+        if not os.path.exists(temp_dir):
+            os.mkdir(temp_dir)
+            user = pwd.getpwnam(core.options.username)
+            os.chown(temp_dir, user[2], user[3])
         os.chmod(temp_dir, 0o777)
         xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
@@ -53,8 +49,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
-        if core.config['xrootd.gsi'] == "ON":
-            core.skip_ok_unless_installed('globus-proxy-utils')
+        core.skip_ok_unless_installed('globus-proxy-utils')
         self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
 
         hostname = socket.getfqdn()
