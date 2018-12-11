@@ -88,25 +88,17 @@ class TestXrootd(osgunittest.OSGTestCase):
         if not os.path.exists(TestXrootd.__fuse_path):
             os.mkdir(TestXrootd.__fuse_path)
         hostname = socket.getfqdn()
-        #command = ('xrootdfs',TestXrootd.__fuse_path,'-o','rdr=xroot://localhost:1094//tmp','-o','uid=xrootd')
-        command = ('mount', '-t', 'fuse', '-o', 'rdr=xroot://localhost:1094//tmp,uid=xrootd', 'xrootdfs',
-                   TestXrootd.__fuse_path)
-        command_str = ' '.join(command)
 
         #For some reason, sub process hangs on fuse processes, use os.system
-        #status, stdout, stderr = core.system(command_str,shell=True)
-        os.system(command_str)
+        os.system("mount -t fuse -o rdr=root://localhost:%d//tmp,uid=xrootd xrootdfs %s" %
+                  (core.config['xrootd.port'], TestXrootd.__fuse_path))
 
         # Copy a file in and see if it made it into the fuse mount
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, "/tmp")
-        command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-        core.system(command, user=True)
+        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], "/tmp")
+        core.system(['xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url], user=True)
 
-        command = ('ls', "/tmp/copied_file.txt")
-        core.check_system(command, "Checking file is copied to xrootd fuse mount correctly", user=True)
+        self.assert_(os.path.isfile("/tmp/copied_file.txt"), "Test file not uploaded to FUSE mount")
 
-
-        command = ('umount', TestXrootd.__fuse_path)
-        core.system(command)
+        core.system(['umount', TestXrootd.__fuse_path])
         os.rmdir(TestXrootd.__fuse_path)
         files.remove("/tmp/copied_file.txt")
