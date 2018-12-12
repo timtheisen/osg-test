@@ -33,6 +33,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.config'] = '/etc/xrootd/xrootd-clustered.cfg'
         core.config['xrootd.gsi'] = "ON"
+        core.config['xrootd.multiuser'] = "ON"
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
 
@@ -69,7 +70,15 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"
         files.append(core.config['xrootd.config'], hdfs_config, backup=False)
 
-    def test_03_start_xrootd(self):
+    def test_03_configure_multiuser(self):
+        core.skip_ok_unless_installed('xrootd-multiuser')
+        core.config['xrootd.multiuser'] = "ON"
+        # We need both multiuser and gsi part to test multiuser
+        if core.config['xrootd.multiuser'] == "ON" && core.config['xrootd.gsi'] == "ON":
+           xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
+           files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=True)
+      
+    def test_04_start_xrootd(self):
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
         if core.el_release() < 7:
             core.config['xrootd_service'] = "xrootd"
