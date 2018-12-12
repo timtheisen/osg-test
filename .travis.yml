@@ -1,10 +1,11 @@
 sudo: required
 env:
   matrix:
-  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun
-  - OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
-  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun,singularity-runtime,osg-oasis
-  - OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,singularity-runtime,osg-oasis
+   - OS_TYPE=centos OS_VERSION=7 PACKAGES=xrootd,xrootd-client,xrootd-multiuser,globus-proxy-utils
+  #- OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun
+  #- OS_TYPE=centos OS_VERSION=6 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
+  #- OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun,singularity-runtime,osg-oasis
+  #- OS_TYPE=centos OS_VERSION=7 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,singularity-runtime,osg-oasis
 
 services:
   - docker
