@@ -74,7 +74,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('xrootd-multiuser')
         core.config['xrootd.multiuser'] = "ON"
         # We need both multiuser and gsi part to test multiuser
-        if core.config['xrootd.multiuser'] == "ON" && core.config['xrootd.gsi'] == "ON":
+        if core.config['xrootd.multiuser'] == "ON" and core.config['xrootd.gsi'] == "ON":
            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
            files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=True)
       

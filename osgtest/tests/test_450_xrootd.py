@@ -43,7 +43,13 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
-    def test_02_xrdcp_server_to_local(self):
+    def test_02_test_multiuser(self):
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-multiuser', by_dependency=True)
+        if core.config['xrootd.multiuser'] == "ON":
+            success = core.check_file_and_perms("/tmp/vdttest/copied_file.txt","vdttest",0o7777)
+            self.assert_(success, "Copied file is not owned by vdttest")
+
+    def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
@@ -72,7 +78,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
-    def test_03_xrootd_fuse(self):
+    def test_04_xrootd_fuse(self):
         # This tests xrootd-fuse using a mount in /mnt
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
         self.skip_ok_unless(os.path.exists("/mnt"), "/mnt did not exist")
