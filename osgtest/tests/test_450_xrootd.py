@@ -20,10 +20,9 @@ class TestXrootd(osgunittest.OSGTestCase):
         if core.config['xrootd.gsi'] == "ON":
             core.skip_ok_unless_installed('globus-proxy-utils')
         self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
-
+        temp_dir = "/tmp/vdttest"
         hostname = socket.getfqdn()
         if core.config['xrootd.gsi'] == "ON":
-            temp_dir = "/tmp/vdttest"
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
                 user = pwd.getpwnam(core.options.username)
@@ -39,16 +38,18 @@ class TestXrootd(osgunittest.OSGTestCase):
         fail = core.diagnose('xrdcp copy, local to URL',
                              command, status, stdout, stderr)
         file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
-        shutil.rmtree(temp_dir)
-
+        if core.config['xrootd.multiuser'] != "ON":
+            shutil.rmtree(temp_dir)
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_test_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-multiuser', by_dependency=True)
+        temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
             vdttestpid = pwd.getpwnam("vdttest")
-            owner = stat("/tmp/vdttest/copied_file.txt").st_uid
+            owner = stat(os.path.join(temp_dir, 'copied_file.txt')).st_uid
+            shutil.rmtree(temp_dir)
             self.assertEqual(owner, vdttestpid)
 
     def test_03_xrdcp_server_to_local(self):
