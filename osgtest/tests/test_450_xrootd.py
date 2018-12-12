@@ -3,6 +3,7 @@ import socket
 import shutil
 import tempfile
 import pwd
+from os import stat
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -46,8 +47,9 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_02_test_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-multiuser', by_dependency=True)
         if core.config['xrootd.multiuser'] == "ON":
-            success = core.check_file_and_perms("/tmp/vdttest/copied_file.txt","vdttest",0o7777)
-            self.assert_(success, "Copied file is not owned by vdttest")
+            vdttestpid = pwd.getpwnam("vdttest")
+            owner = stat("/tmp/vdttest/copied_file.txt").st_uid
+            self.assertEqual(owner, vdttestpid)
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
