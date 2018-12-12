@@ -47,8 +47,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-multiuser', by_dependency=True)
         temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
-            vdttestpid = pwd.getpwnam("vdttest")
-            owner = stat(os.path.join(temp_dir, 'copied_file.txt')).st_uid
+            core.check_file_and_perms(os.path.join(temp_dir, 'copied_file.txt'),core.options.username,0o777)
             shutil.rmtree(temp_dir)
             self.assertEqual(owner, vdttestpid)
 
