@@ -48,9 +48,8 @@ class TestXrootd(osgunittest.OSGTestCase):
         temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
             file_path = os.path.join(temp_dir, 'copied_file.txt')
-            expected_owner_uid = pwd.getpwnam(core.options.username)
+            owner_uid = pwd.getpwnam(core.options.username)
             file_stat = os.stat(file_path)
-            file_stat.st_uid == owner_uid and
             self.assertEqual(file_stat.st_uid, owner_uid) 
             self.asset_(file_stat.st_uid == owner_uid, "The file uid owner uid was: %s but the expected one was, %s" %(file_stat.st_uid,owner_uid))
 
