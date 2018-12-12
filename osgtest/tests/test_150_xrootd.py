@@ -33,7 +33,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.config'] = '/etc/xrootd/xrootd-clustered.cfg'
         core.config['xrootd.gsi'] = "ON"
-        core.config['xrootd.multiuser'] = "ON"
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
 
