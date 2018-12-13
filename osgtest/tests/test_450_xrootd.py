@@ -48,10 +48,11 @@ class TestXrootd(osgunittest.OSGTestCase):
         temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
             file_path = os.path.join(temp_dir, 'copied_file.txt')
-            owner_uid = pwd.getpwnam(core.options.username)
-            file_stat = os.stat(file_path)
-            self.assertEqual(file_stat.st_uid, owner_uid) 
-            self.asset_(file_stat.st_uid == owner_uid, "The file uid owner uid was: %s but the expected one was, %s" %(file_stat.st_uid,owner_uid))
+            result_perm = core.check_file_and_perms(file_path, core.options.username, 0o777)
+            #owner_uid = pwd.getpwnam(core.options.username)
+            #file_stat = os.stat(file_path)
+            self.assertEqual(result_perm, True) 
+            #self.asset_(file_stat.st_uid == owner_uid, "The file uid owner uid was: %s but the expected one was, %s" %(file_stat.st_uid,owner_uid))
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
