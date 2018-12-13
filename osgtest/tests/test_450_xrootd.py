@@ -48,7 +48,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
             file_path = os.path.join(temp_dir, 'copied_file.txt')
-            result_perm = core.check_file_and_perms(file_path, core.options.username, 0o777)
+            result_perm = core.check_file_ownership(file_path, core.options.username)
             #owner_uid = pwd.getpwnam(core.options.username)
             #file_stat = os.stat(file_path)
             self.assertEqual(result_perm, True) 
