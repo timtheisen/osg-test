@@ -116,6 +116,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.skip_ok_unless(service.is_running(core.config['slurm.service-name']), 'slurm service not running')
         self.run_blahp_trace('slurm')
 
+    @core.osgrelease('3.3')
     def test_07_ping_with_gums(self):
         core.state['condor-ce.gums-auth'] = False
         self.general_requirements()
