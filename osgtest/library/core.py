@@ -654,9 +654,12 @@ def check_file_and_perms(file_path, owner_name, permissions):
     """Return True if the file at 'file_path' exists, is owned by
     'owner_name', is a file, and has the given permissions; False otherwise
     """
-    file_stat = os.stat(file_path)
-    return (check_file_ownership(file_path, owner_name) and 
-            file_stat.st_mode & 0o7777 == permissions)
+    try:
+        file_stat = os.stat(file_path)
+        return (check_file_ownership(file_path, owner_name) and
+                file_stat.st_mode & 0o7777 == permissions)
+    except OSError:  # file does not exist
+        return False
 
 def parse_env_output(output):
     """
