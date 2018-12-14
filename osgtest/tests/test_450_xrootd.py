@@ -43,16 +43,13 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         self.assert_(file_copied, 'Copied file missing')
 
-    def test_02_test_multiuser(self):
+    def test_02_xrootd_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-multiuser', by_dependency=True)
         temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
             file_path = os.path.join(temp_dir, 'copied_file.txt')
             result_perm = core.check_file_ownership(file_path, core.options.username)
-            #owner_uid = pwd.getpwnam(core.options.username)
-            #file_stat = os.stat(file_path)
             self.assertEqual(result_perm, True) 
-            #self.asset_(file_stat.st_uid == owner_uid, "The file uid owner uid was: %s but the expected one was, %s" %(file_stat.st_uid,owner_uid))
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
