@@ -636,7 +636,7 @@ def get_hostname():
 
 def check_file_ownership(file_path, owner_name):
     """Return True if at 'file_path' exists, is owned by
-    'owner_name' and is a  is a file
+    'owner_name' and is a file
     """
     owner_uid = pwd.getpwnam(owner_name)
     try:

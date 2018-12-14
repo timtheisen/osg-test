@@ -3,7 +3,6 @@ import socket
 import shutil
 import tempfile
 import pwd
-from os import stat
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -49,6 +48,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         if core.config['xrootd.multiuser'] == "ON":
             file_path = os.path.join(temp_dir, 'copied_file.txt')
             result_perm = core.check_file_ownership(file_path, core.options.username)
+            shutil.rmtree(temp_dir)
             self.assertEqual(result_perm, True) 
 
     def test_03_xrdcp_server_to_local(self):
