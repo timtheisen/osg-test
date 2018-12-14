@@ -416,13 +416,17 @@ def version_compare(evr1, evr2):
     as a 3-element tuple or list.
 
     """
-    if isinstance(evr1, basestring):
+    if is_string(evr1):
         epoch1, version1, release1 = stringToVersion(evr1)
+    elif isinstance(evr1, bytes):
+        epoch1, version1, release1 = stringToVersion(evr1.decode())
     else:
         epoch1, version1, release1 = evr1
 
-    if isinstance(evr2, basestring):
+    if is_string(evr2):
         epoch2, version2, release2 = stringToVersion(evr2)
+    elif isinstance(evr2, bytes):
+        epoch2, version2, release2 = stringToVersion(evr2.decode())
     else:
         epoch2, version2, release2 = evr2
 
@@ -634,19 +638,28 @@ def get_hostname():
     except socket.error:
         return None
 
+def check_file_ownership(file_path, owner_name):
+    """Return True if at 'file_path' exists, is owned by
+    'owner_name' and is a file
+    """
+    owner_uid = pwd.getpwnam(owner_name)
+    try:
+        file_stat = os.stat(file_path)
+        return (file_stat.st_uid == owner_uid.pw_uid and
+                stat.S_ISREG(file_stat.st_mode))
+    except OSError:  # file does not exist
+        return False
 
 def check_file_and_perms(file_path, owner_name, permissions):
-        """Return True if the file at 'file_path' exists, is owned by
-        'owner_name', is a file, and has the given permissions; False otherwise
-         """
-        owner_uid = pwd.getpwnam(owner_name)
-        try:
-            file_stat = os.stat(file_path)
-            return (file_stat.st_uid == owner_uid and
-                    file_stat.st_mode & 0o7777 == permissions and
-                    stat.S_ISREG(file_stat.st_mode))
-        except OSError:  # file does not exist
-            return False
+    """Return True if the file at 'file_path' exists, is owned by
+    'owner_name', is a file, and has the given permissions; False otherwise
+    """
+    try:
+        file_stat = os.stat(file_path)
+        return (check_file_ownership(file_path, owner_name) and
+                file_stat.st_mode & 0o7777 == permissions)
+    except OSError:  # file does not exist
+        return False
 
 def parse_env_output(output):
     """
@@ -755,3 +768,12 @@ def elrelease(*releases):
         return run_fn_if_el_release_ok
     return el_release_decorator
 
+
+try:
+    unicode
+except NameError:  # python 3
+    unicode = str
+
+
+def is_string(var):
+    return isinstance(var, (str, unicode))

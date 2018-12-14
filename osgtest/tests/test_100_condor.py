@@ -14,6 +14,7 @@ CONDOR_HOST = $(FULL_HOSTNAME)
 class TestStartCondor(osgunittest.OSGTestCase):
 
     def test_01_start_condor(self):
+        core.state['condor.started-service'] = False
         core.state['condor.running-service'] = False
 
         core.skip_ok_unless_installed('condor')

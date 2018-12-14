@@ -3,12 +3,12 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import osgtest.library.tomcat as tomcat
 
 class TestStopGratia(osgunittest.OSGTestCase):
 
+    @core.elrelease(6)
     def setUp(self):
-        self.skip_ok_if(core.el_release() > 6, "Do not run Gratia tests on EL7")
+        pass
 
     #This test removes the http certificates, if not already removed earlier
     def test_01_remove_certs(self):
@@ -153,8 +153,3 @@ class TestStopGratia(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('gratia-service')
         if files.filesBackedup(core.config['gratia.user-vo-map'], 'root'):
             files.restore(core.config['gratia.user-vo-map'], 'root')
-
-    def test_13_restore_tomcat_template(self):
-        if core.el_release() == 7:
-            core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
-            files.restore(core.config['gratia.broken_template'], 'gratia')
