@@ -8,8 +8,9 @@ import osgtest.library.tomcat as tomcat
 
 class TestStartGratia(osgunittest.OSGTestCase):
 
+    @core.elrelease(6)
     def setUp(self):
-        self.skip_ok_if(core.el_release() > 6, "Do not run Gratia tests on EL7")
+        pass
 
     def patternreplace(self, infile_name, pattern, full_line):
         """This helper method loops through the passed in infile line by line.
@@ -168,13 +169,3 @@ class TestStartGratia(osgunittest.OSGTestCase):
             files.write(core.config['gratia.user-vo-map'],
                         conFileContents,
                         owner='root')
-
-    def test_10_fix_tomcat_template(self):
-        # Fix EL7 bug in Gratia template
-        if core.el_release() == 7:
-            core.skip_ok_unless_installed(tomcat.pkgname(), 'gratia-service')
-            core.config['gratia.broken_template'] = '/usr/share/gratia/server.xml.template'
-            bad_line = r'\s+sSLImplementation=.*'
-            fixed_line = ' '*15 + 'sslImplementationName="org.glite.security.trustmanager.tomcat.TMSSLImplementation"'
-            files.replace_regexpr(core.config['gratia.broken_template'], bad_line, fixed_line, owner='gratia')
-
