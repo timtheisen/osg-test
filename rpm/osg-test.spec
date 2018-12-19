@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   2.2.2
+Version:   2.3.0
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -41,6 +41,13 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Wed Dec 19 2018 Brian Lin <blin@cs.wisc.edu> - 2.3.0-1
+- Add extra digits to the test numbering scheme
+- Fix bootstrap-osg-test (SOFTWARE-2232)
+- Add tests for xrootd-multiuser, StashCache (SOFTWARE-3369, SOFTWARE-3360)
+- Update tests for HTCondor 8.8.0 (SOFTWARE-3473)
+- Re-enable xrootd-fuse tests
+
 * Tue Oct 02 2018 Carl Edquist <edquist@cs.wisc.edu> - 2.2.2-1
 - Update bootstrap-osg-test to fetch from source control (SOFTWARE-2232)
 - Allow installing slurm without all of osg-tested-internal (SOFTWARE-3347)
