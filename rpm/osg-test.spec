@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   2.2.2
+Version:   2.3.0
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -41,27 +41,34 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Wed Dec 19 2018 Brian Lin <blin@cs.wisc.edu> - 2.3.0-1
+- Add extra digits to the test numbering scheme
+- Fix bootstrap-osg-test (SOFTWARE-2232)
+- Add tests for xrootd-multiuser, StashCache (SOFTWARE-3369, SOFTWARE-3360)
+- Update tests for HTCondor 8.8.0 (SOFTWARE-3473)
+- Re-enable xrootd-fuse tests
+
 * Tue Oct 02 2018 Carl Edquist <edquist@cs.wisc.edu> - 2.2.2-1
 - Update bootstrap-osg-test to fetch from source control (SOFTWARE-2232)
 - Allow installing slurm without all of osg-tested-internal (SOFTWARE-3347)
 - Conditionalize xrootd policy based on lcmaps version (SOFTWARE-3396)
 
-* Tue Aug 7 2018 Suchandra Thapa <ssthapa@uchicago.edu>
+* Tue Aug 7 2018 Suchandra Thapa <ssthapa@uchicago.edu> - 2.2.1-1
 - Add crl and ca expiration tests for RSV
 - Update to use Slurm 17.11.7
 
-* Fri Apr 27 2018 Brian Lin <blin@cs.wisc.edu> 2.2.0-1
+* Fri Apr 27 2018 Brian Lin <blin@cs.wisc.edu> - 2.2.0-1
 - Move proxy generation to the beginning of the tests
 - Add xrootd-lcmaps tests
 - Fix BeStMan and gfal test GUMS dependencies
 - Disable Gratia tests on EL7
 - Drop osg-configure unit tests
 
-* Tue Jan 30 2018 Brian Lin <blin@cs.wisc.edu> 2.1.0-1
+* Tue Jan 30 2018 Brian Lin <blin@cs.wisc.edu> - 2.1.0-1
 - Add test decorator to limit tests/modules to specific OSG or EL releases (SOFTWARE-2759)
 - Fix gfal2 tests to not depend on bestman (SOFTWARE-2911)
 
-* Fri Dec 08 2017 Brian Lin <blin@cs.wisc.edu> 2.0.1-1
+* Fri Dec 08 2017 Brian Lin <blin@cs.wisc.edu> - 2.0.1-1
 - Grab slurm from development repos instead of contrib (SOFTWARE-2994)
 - Fix cagen.py calls for osg-ca-generator-1.3.0
 
