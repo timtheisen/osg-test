@@ -20,7 +20,6 @@ test_230_gratia
 test_240_tomcat
 test_280_gsiopenssh
 test_290_slurm
-test_300_misc
 test_380_cvmfs
 test_400_proxy
 test_403_myproxy
