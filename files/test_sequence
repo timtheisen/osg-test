@@ -21,7 +21,6 @@ test_220_myproxy
 test_230_gratia
 test_240_tomcat
 test_250_voms_admin
-test_260_bestman
 test_280_gsiopenssh
 test_290_slurm
 test_300_misc
@@ -39,7 +38,6 @@ test_465_xrootd_tpc
 test_470_rsv
 test_490_jobs
 test_510_edgmkgridmap
-test_520_bestman
 test_530_gums
 test_540_gratia
 test_550_condorce
@@ -61,7 +59,6 @@ test_850_lcmaps
 test_860_gridftp
 test_880_condor_cron
 test_890_condor
-test_900_bestman
 test_910_pbs
 test_920_gsiopenssh
 test_940_munge
@@ -69,4 +66,3 @@ test_950_mysqld
 test_960_proxy
 test_970_java
 test_980_haveged
-
