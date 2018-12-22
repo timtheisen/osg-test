@@ -16,7 +16,6 @@ test_170_pbs
 test_180_cvmfs
 test_190_condorce
 test_200_voms
-test_210_gums
 test_220_myproxy
 test_230_gratia
 test_240_tomcat
@@ -37,13 +36,11 @@ test_460_stashcache
 test_465_xrootd_tpc
 test_470_rsv
 test_490_jobs
-test_530_gums
 test_540_gratia
 test_550_condorce
 test_580_gfal2util
 test_590_gsiopenssh
 test_740_slurm
-test_750_gums
 test_760_tomcat
 test_770_myproxy
 test_780_voms
