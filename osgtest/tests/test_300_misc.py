@@ -4,15 +4,7 @@ from osgtest.library import core, osgunittest
 
 class TestMisc(osgunittest.OSGTestCase):
 
-    def test_01_web100clt(self):
-        core.skip_ok_unless_installed('ndt-client')
-
-        command = ('web100clt', '-v')
-        stdout = core.check_system(command, 'NDT client')[0]
-        self.assert_(re.search('ndt.+version', stdout, re.IGNORECASE)
-                     is not None)
-
-    def test_02_osg_version(self):
+    def test_01_osg_version(self):
         core.skip_ok_unless_installed('osg-version')
 
         command = ('osg-version',)
