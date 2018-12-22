@@ -8,6 +8,11 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStartTomcat(osgunittest.OSGTestCase):
 
+    # tomcat is only used for gratia service now
+    @core.elrelease(6)
+    def setUp(self):
+        pass
+
     def test_02_config_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 

@@ -9,6 +9,11 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStopTomcat(osgunittest.OSGTestCase):
 
+    # tomcat is only used for gratia service now
+    @core.elrelease(6)
+    def setUp(self):
+        pass
+
     def test_01_stop_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
         self.skip_bad_unless(core.state['tomcat.started'], 'Tomcat not started')
