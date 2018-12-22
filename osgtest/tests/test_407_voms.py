@@ -24,12 +24,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
 
-        use_voms_admin = False
-        if core.rpm_is_installed('voms-admin-server') and core.rpm_is_installed('voms-admin-client'):
-            self.skip_bad_unless(core.state['tomcat.started'])
-            use_voms_admin = True
-
-        voms.add_user(core.config['voms.vo'], cert_path, use_voms_admin)
+        voms.add_user(core.config['voms.vo'], cert_path)
 
         core.state['voms.added-user'] = True
 

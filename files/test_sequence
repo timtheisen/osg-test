@@ -19,7 +19,6 @@ test_200_voms
 test_220_myproxy
 test_230_gratia
 test_240_tomcat
-test_250_voms_admin
 test_280_gsiopenssh
 test_290_slurm
 test_300_misc
