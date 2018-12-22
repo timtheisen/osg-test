@@ -37,7 +37,6 @@ test_460_stashcache
 test_465_xrootd_tpc
 test_470_rsv
 test_490_jobs
-test_510_edgmkgridmap
 test_530_gums
 test_540_gratia
 test_550_condorce
