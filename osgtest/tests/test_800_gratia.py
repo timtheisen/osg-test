@@ -58,24 +58,6 @@ class TestStopGratia(osgunittest.OSGTestCase):
                 # reraise the exception, as it's an unexpected error
                 raise
 
-    #This test cleans up glexec related files
-    def test_04_cleanup_glexec(self):
-
-        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        try:
-            files.remove("/var/log/glexec.log")
-            files.remove("/var/lib/gratia/data/glexec_plugin.chk")
-            probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
-            owner = os.path.basename(os.path.dirname(probeconfig))
-            files.restore(probeconfig, owner)
-        except OSError as e:
-            if e.errno == 2:
-                # suppress "No such file or directory" error
-                pass
-            else:
-                # reraise the exception, as it's an unexpected error
-                raise
-        
     #This test cleans up condor related files
     def test_06_cleanup_condor(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')

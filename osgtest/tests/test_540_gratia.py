@@ -258,62 +258,6 @@ class TestGratia(osgunittest.OSGTestCase):
         self.assertEqual(True, self.isProbeDataValidInDatabase(command, probe_validation_msg, atLeastOneRecord=True),
                          'Failed Probe Data Validation in Database.')
 
-    #This test customizes /etc/gratia/glexec/ProbeConfig file
-    def test_08_modify_glexec_probeconfig(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        probeconfig = core.config['gratia.config.dir'] + "/glexec/ProbeConfig"
-        self.modify_probeconfig(probeconfig)
-        self.patternreplace(probeconfig, "gLExecMonitorLog", "gLExecMonitorLog=\"/var/log/glexec.log\"")
-
-    #This test copies glexec.log file from SVN to /var/log
-    def test_09_copy_glexec_logs(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        core.state['gratia.glexec-logs-copied'] = False
-        glexec_log = '/usr/share/osg-test/gratia/glexec.log'
-        dst_dir = '/var/log'
-        self.assert_(self.copy_probe_logs(glexec_log, dst_dir), "glexec log copy failed.")
-        core.state['gratia.glexec-logs-copied'] = True
-
-    #This test executes glexec_meter
-    def test_10_execute_glexec_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        core.state['gratia.glexec_meter-running'] = False
-        self.skip_bad_if(core.state['gratia.glexec-logs-copied'] == False)
-        if os.path.exists(core.config['gratia.log.file']):
-            core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
-            core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
-            core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
-        command = ('/usr/share/gratia/glexec/glexec_meter',)
-        core.check_system(command, 'Unable to execute glexec_meter.')
-        core.config['gratia.glexec-temp-dir'] = core.config['gratia.tmpdir.prefix'] + "subdir.glexec" + \
-                                                core.config['gratia.tmpdir.postfix']
-        if core.state['gratia.database-installed'] == True:
-            result = self.isProbeOutboxDirEmpty(core.config['gratia.glexec-temp-dir'])
-            self.assert_(result, 'glexec_meter outbox check failed.')
-        core.state['gratia.glexec_meter-running'] = True
-
-    #This test checks the database after the successful execution of glexec_meter
-    def test_11_checkdatabase_glexec_meter(self):
-        core.skip_ok_unless_installed('gratia-probe-glexec', 'gratia-service')
-        self.skip_bad_if(core.state['gratia.glexec_meter-running'] == False)
-
-        self.assertEqual(True, self.isProbeInfoProcessed('glexec'),
-                         'Sentinel signifying Probe Information was processed NOT found.')
-
-        command = "echo \"use gratia_osgtest; select Njobs from MasterSummaryData where ProbeName like 'glexec%';" \
-                  + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command,
-                                                               'Unable to query Gratia Database MasterSummaryData table.',
-                                                               '4'),
-                         'Failed Probe Data Validation in Database.')
-
-        command = "echo \"use gratia_osgtest; select WallDuration from MasterSummaryData where ProbeName like 'glexec%';" \
-                  + core.config['gratia.sql.querystring'],
-        self.assertEqual(True, self.isProbeDataValidInDatabase(command,
-                                                               'Unable to query Gratia Database MasterSummaryData table.',
-                                                               '302'),
-                         'Failed Probe Data Validation in Database.')
-
     #This test customizes /etc/gratia/condor/ProbeConfig file
     def test_16_modify_condor_probeconfig(self):
         core.skip_ok_unless_installed('gratia-probe-condor', 'gratia-service')
