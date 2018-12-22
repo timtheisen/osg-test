@@ -8,12 +8,6 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStartTomcat(osgunittest.OSGTestCase):
 
-    def test_01_config_trustmanager(self):
-        core.skip_ok_unless_installed(tomcat.pkgname(), 'emi-trustmanager-tomcat')
-
-        command = ('/var/lib/trustmanager-tomcat/configure.sh',)
-        core.check_system(command, 'Config trustmanager')
-
     def test_02_config_tomcat(self):
         core.skip_ok_unless_installed(tomcat.pkgname())
 
