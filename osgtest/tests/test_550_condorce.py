@@ -116,75 +116,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.skip_ok_unless(service.is_running(core.config['slurm.service-name']), 'slurm service not running')
         self.run_blahp_trace('slurm')
 
-    @core.osgrelease('3.3')
-    def test_07_ping_with_gums(self):
-        core.state['condor-ce.gums-auth'] = False
-        self.general_requirements()
-        core.skip_ok_unless_installed('gums-service')
-
-        # Setting up GUMS auth using the instructions here:
-        # https://opensciencegrid.github.io/docs/compute-element/install-htcondor-ce/#authentication-with-gums
-        hostname = core.get_hostname()
-
-        lcmaps_contents = '''gumsclient = "lcmaps_gums_client.mod"
-             "-resourcetype ce"
-             "-actiontype execute-now"
-             "-capath /etc/grid-security/certificates"
-             "-cert   /etc/grid-security/hostcert.pem"
-             "-key    /etc/grid-security/hostkey.pem"
-             "--cert-owner root"
-# Change this URL to your GUMS server
-             "--endpoint https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort"
-
-verifyproxy = "lcmaps_verify_proxy.mod"
-          "--allow-limited-proxy"
-          " -certdir /etc/grid-security/certificates"
-
-# lcmaps policies require at least two modules, so these are here to
-#   fill in if only one module is needed.  "good | bad" has no effect.
-good        = "lcmaps_dummy_good.mod"
-bad         = "lcmaps_dummy_bad.mod"
-
-authorize_only:
-## Policy 1: GUMS but not SAZ (most common, default)
-gumsclient -> good | bad
-''' % hostname
-
-        gums_properties_contents = '''gums.location=https://%s:8443/gums/services/GUMSAdmin
-gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort
-''' % (hostname, hostname)
-
-        core.config['condor-ce.lcmapsdb'] = '/etc/lcmaps.db'
-        core.config['condor-ce.gums-properties'] = '/etc/gums/gums-client.properties'
-        core.config['condor-ce.gsi-authz'] = '/etc/grid-security/gsi-authz.conf'
-
-        files.write(core.config['condor-ce.lcmapsdb'], lcmaps_contents, owner='condor-ce.gums')
-        files.write(core.config['condor-ce.gums-properties'], gums_properties_contents, owner='condor-ce')
-        files.replace(core.config['condor-ce.gsi-authz'],
-                      '# globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
-                      'globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout',
-                      owner='condor-ce')
-        try:
-            core.state['condor-ce.gums-auth'] = True
-
-            service.check_stop('condor-ce')
-
-            stat = core.get_stat(core.config['condor-ce.collectorlog'])
-
-            service.check_start('condor-ce')
-            # Wait for the schedd to come back up
-            self.failUnless(condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0),
-                            'Schedd failed to restart within the 1 min window')
-            command = ('condor_ce_ping', 'WRITE', '-verbose')
-            stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
-            self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
-
-        finally:
-            files.restore(core.config['condor-ce.lcmapsdb'], 'condor-ce.gums')
-            files.restore(core.config['condor-ce.gsi-authz'], 'condor-ce')
-            files.restore(core.config['condor-ce.gums-properties'], 'condor-ce')
-
-    def test_08_ceview(self):
+    def test_07_ceview(self):
         core.config['condor-ce.view-listening'] = False
         self.general_requirements()
         core.skip_ok_unless_installed('htcondor-ce-view')
