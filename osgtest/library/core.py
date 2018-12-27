@@ -63,6 +63,49 @@ SLURM_PACKAGES = ['slurm',
                   'slurm-perlapi',
                   'slurm-slurmdbd']
 
+
+# ------------------------------------------------------------------------------
+# Helper Classes
+# ------------------------------------------------------------------------------
+
+class PackageVersion:
+    """Compare the installed rpm version of a package to an "[E:]V[-R]" string.
+
+       If the Release field is not specified for [E:]V[-R], it will be ignored
+       for the package's evr in the comparison.  The default Epoch is "0".
+
+       Example package version tests:
+
+            PackageVersion('osg-release')   == '3.4'
+            PackageVersion('xrootd-lcmaps') >= '1.4.0'
+            PackageVersion('voms-server')   <  '2.0.12-3.2'
+
+       Version ranges can also be tested in the normal python fashion:
+
+            '8.4.0' <= PackageVersion('condor') < '8.8.0'
+    """
+
+    def __init__(self, pkgname):
+        e,n,v,r,a = get_package_envra(pkgname)
+        self.evr = e,v,r
+
+    def __repr__(self):
+        return "%s:%s-%s" % self.evr
+
+    def __cmp__(self, evr):
+        if isinstance(evr, str):
+            evr = stringToVersion(evr)
+        else:
+            raise TypeError('PackageVersion compares to "[E:]V[-R]" string')
+
+        if evr[2] is None:
+            pkg_evr = (self.evr[0], self.evr[1], None)
+        else:
+            pkg_evr = self.evr
+
+        return rpm.labelCompare(pkg_evr, evr)
+
+
 # ------------------------------------------------------------------------------
 # Global Functions
 # ------------------------------------------------------------------------------
