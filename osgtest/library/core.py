@@ -449,47 +449,6 @@ def get_package_envra(package_name):
     return (epoch, name, version, release, arch)
 
 
-def version_compare(evr1, evr2):
-    """Compare the EVRs (epoch, version, release) of two RPMs and return
-    - -1 if the first EVR is older than the second,
-    -  0 if the two arguments are equal,
-    -  1 if the first EVR is newer than the second.
-
-    Each EVR may be specified as a string (of the form "V-R" or "E:V-R"), or
-    as a 3-element tuple or list.
-
-    """
-    if is_string(evr1):
-        epoch1, version1, release1 = stringToVersion(evr1)
-    elif isinstance(evr1, bytes):
-        epoch1, version1, release1 = stringToVersion(evr1.decode())
-    else:
-        epoch1, version1, release1 = evr1
-
-    if is_string(evr2):
-        epoch2, version2, release2 = stringToVersion(evr2)
-    elif isinstance(evr2, bytes):
-        epoch2, version2, release2 = stringToVersion(evr2.decode())
-    else:
-        epoch2, version2, release2 = evr2
-
-    return rpm.labelCompare((epoch1, version1, release1), (epoch2, version2, release2))
-
-def package_version_compare(package_name, evr):
-    """Compare EVR of installed package_name to provided evr and return:
-      -1 if the package version is older than evr,
-       0 if the package version is equal to evr,
-       1 if the package version is newer than evr.
-
-    evr can be a string ("[E:]V[-R]") or 3-element tuple or list.
-
-    This is a wrapper around 'version_compare' that avoids having to call
-    'get_package_envra' and extract (e,v,r)
-    """
-    e,n,v,r,a = get_package_envra(package_name)
-    return version_compare((e,v,r), evr)
-
-
 def diagnose(message, command, status, stdout, stderr):
     """Constructs a detailed failure message based on arguments."""
     result = message + '\n'
