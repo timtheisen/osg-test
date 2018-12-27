@@ -85,10 +85,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['gratia.host'] = core.get_hostname()
         core.config['gratia.config.dir'] = '/etc/gratia'
         # The name of the gratia directory changed
-        gratia_version = core.get_package_envra('gratia-service')[2]
-        gratia_version_split = gratia_version.split('.')
-
-        if self.tuple_cmp(gratia_version_split, ['1', '13', '5']) < 0:
+        if core.PackageVersion('gratia-service') < '1.13.5':
             core.config['gratia.directory'] = "collector"
         else:
             core.config['gratia.directory'] = "services"

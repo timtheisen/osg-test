@@ -53,7 +53,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         if all([core.rpm_is_installed(x) for x in lcmaps_packages]):
             core.log_message("Using xrootd-lcmaps authentication")
             sec_protocol = '-authzfun:libXrdLcmaps.so -authzfunparms:--loglevel,5'
-            if core.package_version_compare('xrootd-lcmaps', '1.4.0') >= 0:
+            if core.PackageVersion('xrootd-lcmaps') >= '1.4.0':
                 sec_protocol += ',--policy,authorize_only'
         else:
             core.log_message("Using XRootD mapfile authentication")
