@@ -193,8 +193,7 @@ class TestGratia(osgunittest.OSGTestCase):
     def test_03_show_gratia_database_tables(self):
         core.skip_ok_unless_installed('gratia-service')
         command = "echo \"use gratia_osgtest;show tables;" + core.config['gratia.sql.querystring'] + "| wc -l",
-        gratia_version = tuple(map(int, core.get_package_envra('gratia-service')[2].split('.')))
-        if gratia_version >= (1, 16, 3):
+        if core.PackageVersion('gratia-service') >= '1.16.3':
             expected_table_count = '82'
         else:
             expected_table_count = '81'
@@ -227,7 +226,7 @@ class TestGratia(osgunittest.OSGTestCase):
             core.state['gratia.log.stat'] = core.get_stat(core.config['gratia.log.file'])
             core.log_message('stat.st_ino is: ' + str(core.state['gratia.log.stat'].st_ino))
             core.log_message('stat.st_size is: ' + str(core.state['gratia.log.stat'].st_size))
-        if core.package_version_compare('gratia-probe-gridftp-transfer', '1.17.0-1') >= 0:
+        if core.PackageVersion('gratia-probe-gridftp-transfer') >= '1.17.0-1':
             probe_script = 'gridftp-transfer_meter'
         else:
             probe_script = 'GridftpTransferProbeDriver'

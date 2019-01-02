@@ -3,7 +3,6 @@
 #pylint: disable=R0904
 
 import os
-import rpm
 import shutil
 import tempfile
 
@@ -49,11 +48,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
         # Figure out whether the installed BLAHP package is the same as or later
         # than "blahp-1.18.11.bosco-4.osg*" (in the RPM sense), because it's the
         # first build in which the job environments are correctly passed to PBS.
-        # The release following "osg" does not matter and it is easier to ignore
-        # the OS major version.  This code may be a useful starting point for a
-        # more general library function.
-        blahp_envra = core.get_package_envra('blahp')
-        blahp_pbs_has_env_vars = (rpm.labelCompare(['blahp', '1.18.11.bosco', '4.osg'], blahp_envra[1:4]) <= 0)
+        blahp_pbs_has_env_vars = core.PackageVersion('blahp') >= '1.18.11.bosco-4.osg'
 
         self.run_job_in_tmp_dir(command, 'condor_run a Condor job', verify_environment=blahp_pbs_has_env_vars)
 

@@ -30,39 +30,6 @@ class TestStartGratia(osgunittest.OSGTestCase):
         shutil.move(outfile_name, infile_name)
 
 
-    def tuple_cmp(self, t1, t2):
-        """ This tuple comparsion method assumes:
-     A. Tuple has 3 entries
-     B. An integer comparsion is desired
-     Note that the python "cmp" method does NOT perform integer comparison
-     Similar to python "cmp" method,
-     The return value is negative if t1 < t2, zero if t1 == t2 and strictly positive if t1 > t2."""
-
-        t1_0 = int(t1[0])
-        t1_1 = int(t1[1])
-        t1_2 = int(t1[2])
-
-        t2_0 = int(t2[0])
-        t2_1 = int(t2[1])
-        t2_2 = int(t2[2])
-
-        if t1_0 < t2_0:
-            return -1
-        elif t1_0 > t2_0:
-            return 1
-        else: #t1_0 == t2_0
-            if t1_1 < t2_1:
-                return -1
-            elif t1_1 > t2_1:
-                return 1
-            else: #t1_1 == t2_1
-                if t1_2 < t2_2:
-                    return -1
-                elif t1_2 > t2_2:
-                    return 1
-                else: #t1_2 == t2_2
-                    return 0
-
     #This test preserves the mentioned gratia directory, if it exists
     def test_01_backup_varlibgratia(self):
         core.skip_ok_unless_installed('gratia-service')
@@ -85,10 +52,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
         core.config['gratia.host'] = core.get_hostname()
         core.config['gratia.config.dir'] = '/etc/gratia'
         # The name of the gratia directory changed
-        gratia_version = core.get_package_envra('gratia-service')[2]
-        gratia_version_split = gratia_version.split('.')
-
-        if self.tuple_cmp(gratia_version_split, ['1', '13', '5']) < 0:
+        if core.PackageVersion('gratia-service') < '1.13.5':
             core.config['gratia.directory'] = "collector"
         else:
             core.config['gratia.directory'] = "services"
