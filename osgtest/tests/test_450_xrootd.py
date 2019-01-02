@@ -43,7 +43,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_xrootd_multiuser(self):
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-multiuser', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser', by_dependency=True)
         temp_dir = "/tmp/vdttest"
         if core.config['xrootd.multiuser'] == "ON":
             file_path = os.path.join(temp_dir, 'copied_file.txt')
