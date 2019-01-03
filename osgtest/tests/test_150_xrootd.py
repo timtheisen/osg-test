@@ -71,7 +71,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.append(core.config['xrootd.config'], hdfs_config, backup=False)
 
     def test_03_configure_multiuser(self):
-        core.skip_ok_unless_installed('xrootd-multiuser')
+        core.skip_ok_unless_installed('xrootd-multiuser','globus-proxy-utils', by_dependency=True)
         core.config['xrootd.multiuser'] = "ON"
         # We need both multiuser and gsi part to test multiuser
         if core.config['xrootd.multiuser'] == "ON" and core.config['xrootd.gsi'] == "ON":
