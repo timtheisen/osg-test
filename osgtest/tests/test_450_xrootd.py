@@ -40,12 +40,10 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_02_xrootd_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser', by_dependency=True)
-        self.skip_bad_unless(core.state['xrootd.copied-to-server'] is True, 'File to check ownership does not exist')
-        temp_dir = core.config['xrootd.tmp-dir']
-        if core.config['xrootd.multiuser'] == "ON" and core.state['xrootd.copied-to-server']:
-            file_path = os.path.join(temp_dir, 'copied_file.txt')
-            result_perm = core.check_file_ownership(file_path, core.options.username)
-            self.assertEqual(result_perm, True) 
+        self.skip_bad_unless(core.config['xrootd.multiuser'], 'Xrootd not configured for multiuser')
+        self.skip_bad_unless(core.state['xrootd.copied-to-server'], 'File to check ownership does not exist')
+        file_path = os.path.join(core.config['xrootd.tmp-dir'], 'copied_file.txt')
+        self.assertEqual(core.check_file_ownership(file_path, core.options.username), True) 
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)

@@ -37,7 +37,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         core.config['xrootd.config'] = '/etc/xrootd/xrootd-clustered.cfg'
         core.config['xrootd.port'] = XROOTD_PORT
-        core.config['xrootd.multiuser'] = "OFF"
+        core.config['xrootd.multiuser'] = False
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
 
@@ -77,15 +77,15 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_03_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser','globus-proxy-utils', by_dependency=True)
-        core.config['xrootd.multiuser'] = "ON"
         xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
         files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
+        core.config['xrootd.multiuser'] = True
 
     def test_04_start_xrootd(self):
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
         if core.el_release() < 7:
             core.config['xrootd_service'] = "xrootd"
-        elif core.config['xrootd.multiuser'] == "ON":
+        elif core.config['xrootd.multiuser']:
             core.config['xrootd_service'] = "xrootd-privileged@clustered"
         else:
             core.config['xrootd_service'] = "xrootd@clustered"
