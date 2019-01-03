@@ -229,7 +229,7 @@ if __name__ == '__main__':
 
     # Check for osg-ca-generator, which may have been forgotten in a source install
     try:
-        __import__('cagen')
+        import cagen
     except ImportError:
         sys.exit("Cannot find 'cagen' library. Please install osg-ca-generator")
 
@@ -254,5 +254,6 @@ if __name__ == '__main__':
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
     else:
         print('No tests to run.')
+        EXIT_CODE = 1
     wrap_up()
     sys.exit(EXIT_CODE)

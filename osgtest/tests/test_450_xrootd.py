@@ -17,6 +17,8 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_01_xrdcp_local_to_server(self):
         core.state['xrootd.copied-to-server'] = False
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
+        core.skip_ok_unless_installed('globus-proxy-utils')
+        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
         temp_dir = tempfile.mkdtemp()
         core.config['xrootd.tmp-dir'] = temp_dir
         if core.config['xrootd.gsi'] == "ON":
@@ -25,7 +27,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
         hostname = socket.getfqdn()
         os.chmod(temp_dir, 0o777)
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
+        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
 
         status, stdout, stderr = core.system(command, user=True)
@@ -49,8 +51,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
-        if core.config['xrootd.gsi'] == "ON":
-            core.skip_ok_unless_installed('globus-proxy-utils')
+        core.skip_ok_unless_installed('globus-proxy-utils')
         self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
 
         hostname = socket.getfqdn()
@@ -61,7 +62,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         f = open(temp_source_dir + "/copied_file.txt", "w")
         f.write("This is some test data for an xrootd test.")
         f.close()
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_source_dir)
+        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_source_dir)
         local_path = temp_target_dir + '/copied_file.txt'
         command = ('xrdcp', '--debug', '3', xrootd_url, local_path)
 
@@ -78,32 +79,23 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_04_xrootd_fuse(self):
         # This tests xrootd-fuse using a mount in /mnt
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'xrootd-fuse')
         self.skip_ok_unless(os.path.exists("/mnt"), "/mnt did not exist")
-        self.skip_ok_if(core.config['xrootd.gsi'] == "ON", 'fuse incompatible with GSI')
 
         if not os.path.exists(TestXrootd.__fuse_path):
             os.mkdir(TestXrootd.__fuse_path)
         hostname = socket.getfqdn()
-        #command = ('xrootdfs',TestXrootd.__fuse_path,'-o','rdr=xroot://localhost:1094//tmp','-o','uid=xrootd')
-        command = ('mount', '-t', 'fuse', '-o', 'rdr=xroot://localhost:1094//tmp,uid=xrootd', 'xrootdfs',
-                   TestXrootd.__fuse_path)
-        command_str = ' '.join(command)
 
         #For some reason, sub process hangs on fuse processes, use os.system
-        #status, stdout, stderr = core.system(command_str,shell=True)
-        os.system(command_str)
+        os.system("mount -t fuse -o rdr=root://localhost:%d//tmp,uid=xrootd xrootdfs %s" %
+                  (core.config['xrootd.port'], TestXrootd.__fuse_path))
 
         # Copy a file in and see if it made it into the fuse mount
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, "/tmp")
-        command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-        core.system(command, user=True)
+        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], "/tmp")
+        core.system(['xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url], user=True)
 
-        command = ('ls', "/tmp/copied_file.txt")
-        core.check_system(command, "Checking file is copied to xrootd fuse mount correctly", user=True)
+        self.assert_(os.path.isfile("/tmp/copied_file.txt"), "Test file not uploaded to FUSE mount")
 
-
-        command = ('umount', TestXrootd.__fuse_path)
-        core.system(command)
+        core.system(['umount', TestXrootd.__fuse_path])
         os.rmdir(TestXrootd.__fuse_path)
         files.remove("/tmp/copied_file.txt")
