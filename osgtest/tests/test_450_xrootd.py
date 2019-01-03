@@ -17,14 +17,13 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_01_xrdcp_local_to_server(self):
         core.state['xrootd.copied-to-server'] = False
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
-        if core.config['xrootd.gsi'] == "ON":
-            core.skip_ok_unless_installed('globus-proxy-utils')
-        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
         temp_dir = tempfile.mkdtemp()
         core.config['xrootd.tmp-dir'] = temp_dir
-        hostname = socket.getfqdn()
         if core.config['xrootd.gsi'] == "ON":
+            core.skip_ok_unless_installed('globus-proxy-utils')
             os.chown(temp_dir, user[2], user[3])
+        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
+        hostname = socket.getfqdn()
         os.chmod(temp_dir, 0o777)
         xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
@@ -41,7 +40,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_02_xrootd_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser', by_dependency=True)
-        core.skip_bad_unless(core.state['xrootd.copied-to-server'], is True, 'File to check permission does not exist')
+        self.skip_bad_unless(core.state['xrootd.copied-to-server'], is True, 'File to check permission does not exist')
         temp_dir = core.config['xrootd.tmp-dir']
         if core.config['xrootd.multiuser'] == "ON" and core.state['xrootd.copied-to-server']:
             file_path = os.path.join(temp_dir, 'copied_file.txt')
