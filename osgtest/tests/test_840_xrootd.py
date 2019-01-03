@@ -15,4 +15,3 @@ class TestStopXrootd(osgunittest.OSGTestCase):
         self.skip_ok_if(core.state['xrootd.started-server'], 'did not start server')
         service.check_stop(core.config['xrootd_service'])
         files.remove(core.config['xrootd.tmp-dir'], force=True)
-        
