@@ -41,7 +41,7 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def test_02_xrootd_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser', by_dependency=True)
-        core.skip_bad_unless(core.state['xrootd.copied-to-server'])
+        core.skip_bad_unless(core.state['xrootd.copied-to-server'], is True, 'File to check permission does not exist')
         temp_dir = core.config['xrootd.tmp-dir']
         if core.config['xrootd.multiuser'] == "ON" and core.state['xrootd.copied-to-server']:
             file_path = os.path.join(temp_dir, 'copied_file.txt')
