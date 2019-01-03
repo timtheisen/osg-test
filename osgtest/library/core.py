@@ -63,6 +63,49 @@ SLURM_PACKAGES = ['slurm',
                   'slurm-perlapi',
                   'slurm-slurmdbd']
 
+
+# ------------------------------------------------------------------------------
+# Helper Classes
+# ------------------------------------------------------------------------------
+
+class PackageVersion:
+    """Compare the installed rpm version of a package to an "[E:]V[-R]" string.
+
+       If the Release field is not specified for [E:]V[-R], it will be ignored
+       for the package's evr in the comparison.  The default Epoch is "0".
+
+       Example package version tests:
+
+            PackageVersion('osg-release')   == '3.4'
+            PackageVersion('xrootd-lcmaps') >= '1.4.0'
+            PackageVersion('voms-server')   <  '2.0.12-3.2'
+
+       Version ranges can also be tested in the normal python fashion:
+
+            '8.4.0' <= PackageVersion('condor') < '8.8.0'
+    """
+
+    def __init__(self, pkgname):
+        e,n,v,r,a = get_package_envra(pkgname)
+        self.evr = e,v,r
+
+    def __repr__(self):
+        return "%s:%s-%s" % self.evr
+
+    def __cmp__(self, evr):
+        if isinstance(evr, str):
+            evr = stringToVersion(evr)
+        else:
+            raise TypeError('PackageVersion compares to "[E:]V[-R]" string')
+
+        if evr[2] is None:
+            pkg_evr = (self.evr[0], self.evr[1], None)
+        else:
+            pkg_evr = self.evr
+
+        return rpm.labelCompare(pkg_evr, evr)
+
+
 # ------------------------------------------------------------------------------
 # Global Functions
 # ------------------------------------------------------------------------------
@@ -406,43 +449,6 @@ def get_package_envra(package_name):
     return (epoch, name, version, release, arch)
 
 
-def version_compare(evr1, evr2):
-    """Compare the EVRs (epoch, version, release) of two RPMs and return
-    - -1 if the first EVR is older than the second,
-    -  0 if the two arguments are equal,
-    -  1 if the first EVR is newer than the second.
-
-    Each EVR may be specified as a string (of the form "V-R" or "E:V-R"), or
-    as a 3-element tuple or list.
-
-    """
-    if isinstance(evr1, basestring):
-        epoch1, version1, release1 = stringToVersion(evr1)
-    else:
-        epoch1, version1, release1 = evr1
-
-    if isinstance(evr2, basestring):
-        epoch2, version2, release2 = stringToVersion(evr2)
-    else:
-        epoch2, version2, release2 = evr2
-
-    return rpm.labelCompare((epoch1, version1, release1), (epoch2, version2, release2))
-
-def package_version_compare(package_name, evr):
-    """Compare EVR of installed package_name to provided evr and return:
-      -1 if the package version is older than evr,
-       0 if the package version is equal to evr,
-       1 if the package version is newer than evr.
-
-    evr can be a string ("[E:]V[-R]") or 3-element tuple or list.
-
-    This is a wrapper around 'version_compare' that avoids having to call
-    'get_package_envra' and extract (e,v,r)
-    """
-    e,n,v,r,a = get_package_envra(package_name)
-    return version_compare((e,v,r), evr)
-
-
 def diagnose(message, command, status, stdout, stderr):
     """Constructs a detailed failure message based on arguments."""
     result = message + '\n'
@@ -643,16 +649,19 @@ def check_file_ownership(file_path, owner_name):
         file_stat = os.stat(file_path)
         return (file_stat.st_uid == owner_uid.pw_uid and
                 stat.S_ISREG(file_stat.st_mode))
-    except OSError:  # file does not exist                                                                                                                                                          
+    except OSError:  # file does not exist
         return False
 
 def check_file_and_perms(file_path, owner_name, permissions):
     """Return True if the file at 'file_path' exists, is owned by
     'owner_name', is a file, and has the given permissions; False otherwise
     """
-    file_stat = os.stat(file_path)
-    return (check_file_ownership(file_path, owner_name) and 
-               file_stat.st_mode & 0o7777 == permissions)
+    try:
+        file_stat = os.stat(file_path)
+        return (check_file_ownership(file_path, owner_name) and
+                file_stat.st_mode & 0o7777 == permissions)
+    except OSError:  # file does not exist
+        return False
 
 def parse_env_output(output):
     """
@@ -761,3 +770,12 @@ def elrelease(*releases):
         return run_fn_if_el_release_ok
     return el_release_decorator
 
+
+try:
+    unicode
+except NameError:  # python 3
+    unicode = str
+
+
+def is_string(var):
+    return isinstance(var, (str, unicode))

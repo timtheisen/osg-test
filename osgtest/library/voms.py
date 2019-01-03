@@ -150,8 +150,7 @@ def is_installed():
 
     # TODO: drop this check when 3.3 is completely EOL
     if core.el_release() >= 7:
-        epoch, _, version, release, _ = core.get_package_envra('voms-server')
-        if core.version_compare((epoch, version, release), '2.0.12-3.2') < 0:
+        if core.PackageVersion('voms-server') < '2.0.12-3.2':
             core.log_message("voms-server installed but too old (missing SOFTWARE-2357 fix)")
             return False
 
