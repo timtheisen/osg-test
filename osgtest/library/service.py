@@ -2,6 +2,7 @@
 import time
 
 import osgtest.library.core as core
+from osgtest.library import files
 
 STATUS_RUNNING = 0 # LSB: program is running or service is OK
 STATUS_STOPPED = 3 # LSB: program is not running according to LSB init standards
@@ -35,13 +36,13 @@ def start(service_name):
     core.check_system(command, 'Start ' + service_name + ' service')
     core.state[service_name + '.started-service'] = True
 
-def check_start(service_name, timeout=10):
+def check_start(service_name, timeout=10, logToCheck = None):
     """
     Start a service, 'service_name' via init script or systemd and ensure that
     it starts running within a 'timeout' second window (default=10s)
     """
     start(service_name)
-    assert is_running(service_name, timeout=10), "%s is not running" % service_name
+    assert is_running(service_name, timeout=10, logToCheck = logToCheck), "%s is not running" % service_name
 
 def stop(service_name):
     """
@@ -89,7 +90,7 @@ def status(service_name):
     status_rc, _, _ = core.system(command)
     return status_rc
 
-def check_status(service_name, expected_status, timeout=10):
+def check_status(service_name, expected_status, timeout=10, logToCheck = None):
     """
     Return True if the exit code of the 'service_name' status check is
     expected_status before 'timeout' seconds. Otherwise, False.
@@ -101,15 +102,20 @@ def check_status(service_name, expected_status, timeout=10):
         time.sleep(1)
         timer += 1
 
+    if status_rc != expected_status and logToCheck!= None:
+        LogFileContents = files.read(logToCheck)
+        core.log_message("Last lines of log: %s" % logToCheck)
+        for line in LogFileContents[-9:]:
+            core.log_message(line)
     return status_rc == expected_status
 
-def is_running(service_name, timeout=1):
+def is_running(service_name, timeout=1, logToCheck = None):
     """
     Return True if 'service_name' is determined to be running via init script or
     systemd, according to LSB init standards, before 'timeout'
     seconds. Otherwise, False.
     """
-    return check_status(service_name, STATUS_RUNNING, timeout)
+    return check_status(service_name, STATUS_RUNNING, timeout, logToCheck)
 
 def is_stopped(service_name, timeout=1):
     """

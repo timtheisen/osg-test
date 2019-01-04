@@ -27,10 +27,9 @@ if exec xrootd
   http.cadir /etc/grid-security/certificates
   http.cert /etc/grid-security/xrd/xrdcert.pem
   http.key /etc/grid-security/xrd/xrdkey.pem
-  http.secxtractor /usr/lib64/libXrdLcmaps.so
   http.listingdeny yes
   http.desthttps yes
-
+  http.trace all debug
   # Enable third-party-copy
   http.exthandler xrdtpc libXrdHttpTPC.so
   # Pass the bearer token to the Xrootd authorization framework.
@@ -38,25 +37,20 @@ if exec xrootd
 
   # Enable Macaroons
   ofs.authlib libXrdMacaroons.so libXrdAccSciTokens.so
-
-fi
-
-if named xrd-TPC-1
+  xrd.port %d
   xrd.protocol http:%d /usr/lib64/libXrdHttp-4.so
 fi
+http.exthandler xrdmacaroons libXrdMacaroons.so
+macaroons.secretkey /etc/xrootd/macaroon-secret
+all.sitename VDTTESTSITE
 
-if named xrd-TPC-2
-  xrd.protocol http:%d /usr/lib64/libXrdHttp-4.so
-fi
-end
 """
 
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
-    def test_01_start_xrootd(self):
-        core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
-        core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
-        core.config['xrootd.tpc.config'] = '/etc/xrootd/xrootd-third-party-copy.cfg'
+    def test_01_configure_xrootd(self):
+        core.config['xrootd.tpc.config-1'] = '/etc/xrootd/xrootd-third-party-copy-1.cfg'
+        core.config['xrootd.tpc.config-2'] = '/etc/xrootd/xrootd-third-party-copy-2.cfg'
         core.config['xrootd.tpc.http-port1'] = HTTP_PORT1
         core.config['xrootd.tpc.http-port2'] = HTTP_PORT2
         core.state['xrootd.started-http-server-1'] = False
@@ -64,7 +58,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.state['xrootd.tpc.backups-exist'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        core.skip_ok_unless_installed('xrootd', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'xrootd-scitokens', by_dependency=True)
 
         user = pwd.getpwnam("xrootd")
         core.skip_ok_unless_installed('globus-proxy-utils')
@@ -73,23 +67,33 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         if all([core.rpm_is_installed(x) for x in lcmaps_packages]):
             core.log_message("Using xrootd-lcmaps authentication")
             sec_protocol = '-authzfun:libXrdLcmaps.so -authzfunparms:--loglevel,5'
-            if core.PackageVersion('xrootd-lcmaps') >= '1.4.0':
-                sec_protocol += ',--policy,authorize_only'
+            #XROOTD_CFG_TEXT += "http.secxtractor /usr/lib64/libXrdLcmaps.so/n"
+            sec_protocol += ',--policy,authorize_only'
         else:
             core.log_message("Using XRootD mapfile authentication")
             sec_protocol = '-gridmap:/etc/grid-security/xrd/xrdmapfile'
 
-        files.append(core.config['xrootd.tpc.config'],
-                     XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.port']),
-                     owner='xrootd', backup=True)
+        files.write(core.config['xrootd.tpc.config-1'],
+                     XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.tpc.http-port1'], core.config['xrootd.tpc.http-port1']),
+                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+        files.write(core.config['xrootd.tpc.config-2'],
+                     XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.tpc.http-port2'], core.config['xrootd.tpc.http-port1']),
+                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
         core.state['xrootd.tpc.backups-exist'] = True
-
-    def test_02_start_xrootd(self):
+ 
+    def test_02_create_secret_key(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-scitokens', by_dependency=True)
-        core.config['xrootd_tpc_service_1'] = "xrd-TPC-1@third-party-copy"
-        core.config['xrootd_tpc_service_2'] = "xrd-TPC-2@third-party-copy"
-        service.check_start(core.config['xrootd_tpc_service_1'])
-        service.check_start(core.config['xrootd_tpc_service_2'])
-        
-        core.state['xrootd_tpc_service_1'] = True
-        core.state['xrootd_tpc_service_2'] = True
+        core.config['xrootd.tpc.macaroon-secret'] = '/etc/xrootd/macaroon-secret'
+        core.check_system(["openssl", "rand", "-base64", "-out",
+                               core.config['xrootd.tpc.macaroon-secret'], "64"], "Creating simmetric key")
+
+
+    def test_03_start_xrootd(self):
+        core.skip_ok_unless_installed('xrootd', 'xrootd-scitokens', by_dependency=True)
+        core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
+        core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
+        service.check_start(core.config['xrootd_tpc_service_1'], logToCheck = '/var/log/xrootd/third-party-copy-1/xrootd.log')
+        service.check_start(core.config['xrootd_tpc_service_2'], logToCheck = '/var/log/xrootd/third-party-copy-2/xrootd.log')
+        core.state['xrootd.started-http-server-1'] = True
+        core.state['xrootd.started-http-server-2'] = True
+

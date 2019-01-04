@@ -10,6 +10,7 @@ test_130_gridftp
 test_140_lcmaps
 test_150_xrootd
 test_155_stashcache
+test_158_xrootd_tpc
 test_160_rsv
 test_170_pbs
 test_180_cvmfs
@@ -53,6 +54,7 @@ test_800_gratia
 test_820_cvmfs
 test_830_rsv
 test_835_stashcache
+test_838_xrootd_tpc
 test_840_xrootd
 test_850_lcmaps
 test_860_gridftp

@@ -176,7 +176,7 @@ def append(path, contents, force=False, owner=None, backup=True):
         return
 
     new_contents = old_contents + [contents]
-    write(path, new_contents, backup=False)
+    write(path, new_contents, owner, backup=False)
 
 
 def restore(path, owner):
