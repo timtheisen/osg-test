@@ -107,6 +107,14 @@ class PackageVersion:
 
         return rpm.labelCompare(pkg_evr, evr)
 
+    if not hasattr(__builtins__, 'cmp'):
+        def __eq__(self, evr): return self.__cmp__(evr) == 0
+        def __ne__(self, evr): return self.__cmp__(evr) != 0
+        def __lt__(self, evr): return self.__cmp__(evr) <  0
+        def __le__(self, evr): return self.__cmp__(evr) <= 0
+        def __gt__(self, evr): return self.__cmp__(evr) >  0
+        def __ge__(self, evr): return self.__cmp__(evr) >= 0
+
 
 # ------------------------------------------------------------------------------
 # Global Functions
