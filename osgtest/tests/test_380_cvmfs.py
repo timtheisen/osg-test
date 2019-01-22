@@ -96,7 +96,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
             self.debug_cvmfs(oasis_repo)
 
     def test_04_singularity(self):
-        core.skip_ok_unless_installed('singularity-runtime')
+        core.skip_ok_unless_installed('singularity-runtime', by_dependency=True)
         core.skip_ok_unless_installed('cvmfs')
         core.skip_ok_unless_installed('cvmfs-keys', by_dependency=True)
         singularity_repo = 'singularity.opensciencegrid.org'
