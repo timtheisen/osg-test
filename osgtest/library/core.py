@@ -92,8 +92,6 @@ class PackageVersion:
     def __repr__(self):
         return "%s:%s-%s" % self.evr
 
-    __str__ = __repr__
-
     def __cmp__(self, evr):
         if isinstance(evr, str):
             evr = stringToVersion(evr)
