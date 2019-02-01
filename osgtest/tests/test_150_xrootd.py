@@ -70,7 +70,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         else:
             files.write(core.config['xrootd.config-extra'],
                         XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.port']),
-                        owner='xrootd', chmod=0o644)
+                        owner='xrootd', backup=True, chmod=0o644)
         authfile = '/etc/xrootd/auth_file'
         files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
 
