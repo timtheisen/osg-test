@@ -63,7 +63,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                         owner="xrootd",
                         chown=(user.pw_uid, user.pw_gid))
 
-        if core.PackageVersion('xrootd') < '4.9.0':
+        if core.PackageVersion('xrootd') < '1:4.9.0':
             files.append(core.config['xrootd.config'],
                          XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.port']),
                          owner='xrootd', backup=True)
@@ -79,7 +79,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
     def test_02_configure_hdfs(self):
         core.skip_ok_unless_installed('xrootd-hdfs')
         hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"
-        if core.PackageVersion('xrootd') < '4.9.0':
+        if core.PackageVersion('xrootd') < '1:4.9.0':
             files.append(core.config['xrootd.config'], hdfs_config, backup=False)
         else:
             files.append(core.config['xrootd.config-extra'], hdfs_config, backup=False)
@@ -87,7 +87,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
     def test_03_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser','globus-proxy-utils', by_dependency=True)
         xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
-        if core.PackageVersion('xrootd') < '4.9.0':
+        if core.PackageVersion('xrootd') < '1:4.9.0':
             files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
         else:
             files.append(core.config['xrootd.config-extra'], xrootd_multiuser_conf, owner='xrootd', backup=False)

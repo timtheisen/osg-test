@@ -7,7 +7,7 @@ class TestStopXrootd(osgunittest.OSGTestCase):
 
     def test_01_stop_xrootd(self):
         if core.state['xrootd.backups-exist']:
-            if core.PackageVersion('xrootd') < '4.9.0':
+            if core.PackageVersion('xrootd') < '1:4.9.0':
                 files.restore(core.config['xrootd.config'], "xrootd")
             else:
                 files.restore(core.config['xrootd.config-extra'], "xrootd")
