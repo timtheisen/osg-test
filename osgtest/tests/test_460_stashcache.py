@@ -43,7 +43,10 @@ class TestStashCache(OSGTestCase):
 
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("stashcache-origin-server", "stashcache-cache-server", "stashcache-client")
+        core.skip_ok_unless_installed("stashcache-origin-server",
+                                      "stashcache-cache-server",
+                                      "stashcache-client",
+                                      by_dependency=True)
         self.skip_bad_unless_running("xrootd@stashcache-origin-server", "xrootd@stashcache-cache-server")
 
     def test_01_create_files(self):
