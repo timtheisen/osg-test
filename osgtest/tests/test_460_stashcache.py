@@ -43,8 +43,17 @@ class TestStashCache(OSGTestCase):
 
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("stashcache-origin-server", "stashcache-cache-server", "stashcache-client")
-        self.skip_bad_unless_running("xrootd@stashcache-origin-server", "xrootd@stashcache-cache-server")
+        core.skip_ok_unless_installed("stashcache-origin-server",
+                                      "stashcache-cache-server",
+                                      "stashcache-client",
+                                      by_dependency=True)
+        if core.rpm_is_installed('xcache'):
+            origin_service = "xrootd@stash-origin"
+            cache_service = "xrootd@stash-cache"
+        else:
+            origin_service = "xrootd@stashcache-origin-server"
+            cache_service = "xrootd@stashcache-cache-server"
+        self.skip_bad_unless_running(origin_service, cache_service)
 
     def test_01_create_files(self):
         xrootd_user = pwd.getpwnam("xrootd")

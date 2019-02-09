@@ -20,7 +20,10 @@ def _setcfg(key, val):
 class TestStopStashCache(OSGTestCase):
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("stashcache-origin-server", "stashcache-cache-server", "stashcache-client")
+        core.skip_ok_unless_installed("stashcache-origin-server",
+                                      "stashcache-cache-server",
+                                      "stashcache-client",
+                                      by_dependency=True)
 
     def test_01_stop_origin(self):
         service.check_stop("xrootd@stashcache-origin-server")
