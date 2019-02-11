@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   2.3.0
+Version:   2.3.1
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -41,6 +41,12 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Wed Jan 23 2019 Carl Edquist <edquist@cs.wisc.edu> - 2.3.1-1
+- Require globus-proxy-utils for xrootd-multiuser tests (SOFTWARE-3359, #154)
+- Update test requirements for singularity-3.0.2 (SOFTWARE-3532, #157)
+- Add comparison class for package version tests (#153)
+- Update tests to support XCache 1.0.0 (SOFTWARE-3569)
+
 * Wed Dec 19 2018 Brian Lin <blin@cs.wisc.edu> - 2.3.0-1
 - Add extra digits to the test numbering scheme
 - Fix bootstrap-osg-test (SOFTWARE-2232)
