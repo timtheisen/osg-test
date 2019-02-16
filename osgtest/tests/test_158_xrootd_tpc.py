@@ -41,7 +41,6 @@ if exec xrootd
   xrd.protocol http:%d /usr/lib64/libXrdHttp-4.so
 fi
 http.exthandler xrdmacaroons libXrdMacaroons.so
-macaroons.secretkey /etc/xrootd/macaroon-secret
 all.sitename VDTTESTSITE
 
 """
@@ -81,11 +80,20 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                      owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
         core.state['xrootd.tpc.backups-exist'] = True
  
-    def test_02_create_secret_key(self):
+    def test_02_create_secrets(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-scitokens', by_dependency=True)
-        core.config['xrootd.tpc.macaroon-secret'] = '/etc/xrootd/macaroon-secret'
+        core.config['xrootd.tpc.macaroon-secret-1'] = '/etc/xrootd/macaroon-secret-1'
+        core.config['xrootd.tpc.macaroon-secret-2'] = '/etc/xrootd/macaroon-secret-2'
         core.check_system(["openssl", "rand", "-base64", "-out",
-                               core.config['xrootd.tpc.macaroon-secret'], "64"], "Creating simmetric key")
+                               core.config['xrootd.tpc.macaroon-secret-1'], "64"], "Creating simmetric key")
+        core.check_system(["openssl", "rand", "-base64", "-out",
+                               core.config['xrootd.tpc.macaroon-secret-2'], "64"], "Creating simmetric key")
+        files.append(core.config['xrootd.tpc.config-1'], 
+                         "macaroons.secretkey %s"%(core.config['xrootd.tpc.macaroon-secret-1']),
+                         owner='xrootd', backup=False)
+        files.append(core.config['xrootd.tpc.config-2'],
+                         "macaroons.secretkey %s"%(core.config['xrootd.tpc.macaroon-secret-2']),
+                      owner='xrootd', backup=False)
 
 
     def test_03_start_xrootd(self):
