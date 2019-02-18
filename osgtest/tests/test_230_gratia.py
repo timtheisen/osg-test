@@ -19,7 +19,7 @@ class TestStartGratia(osgunittest.OSGTestCase):
 
         infile = open(infile_name, "r")
         outfile_name = infile_name + ".tmp"
-        outfile = file(outfile_name, 'w')
+        outfile = open(outfile_name, 'w')
 
         #If the pattern is found in a non-comment line, replace the line with the passed in "full_line"
         for line in infile:
