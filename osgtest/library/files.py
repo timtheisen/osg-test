@@ -25,7 +25,7 @@ import os
 import re
 import shutil
 import tempfile
-
+import hashlib
 import osgtest.library.core as core
 
 
@@ -176,7 +176,7 @@ def append(path, contents, force=False, owner=None, backup=True):
         return
 
     new_contents = old_contents + [contents]
-    write(path, new_contents, owner, backup=False)
+    write(path, new_contents, backup=False)
 
 
 def restore(path, owner):
@@ -246,3 +246,21 @@ def safe_makedirs(directory, mode=0o777):
     """
     if not os.path.isdir(directory):
         os.makedirs(directory, mode)
+
+def checksum_file(path):
+    """Return the md5 checksum of a file """
+    if os.path.exists(path):
+        return hashlib.md5(open(path,'rb').read()).hexdigest()
+    else:
+        return False
+
+def checksum_files_match(file1, file2):
+    """Returns true if the checksum of the files matches
+    
+    """
+    checksum1 = checksum_file(file1)
+    checksum2 = checksum_file(file2)
+    if checksum1 and checksum2:
+        return checksum1==checksum2
+    else:
+        return False

@@ -24,7 +24,7 @@ xrd.port %d
 """
 
 AUTHFILE_TEXT = """\
-u * /tmp a
+u * /tmp a /usr/share/ r
 u = /tmp/@=/ a
 u xrootd /tmp a
 """

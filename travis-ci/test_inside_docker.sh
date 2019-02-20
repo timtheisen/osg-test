@@ -57,4 +57,4 @@ export _condor_CONDOR_CE_TRACE_ATTEMPTS=60
 # Ok, do actual testing
 INSTALL_STR="--install ${PACKAGES//,/ --install }"
 echo "------------ OSG Test --------------"
-osg-test --extra-repo osg-testing -vad --hostcert --no-cleanup ${INSTALL_STR}
+osg-test -vad --hostcert --no-cleanup ${INSTALL_STR}

@@ -35,6 +35,7 @@ test_430_uberftp
 test_440_glexec
 test_450_xrootd
 test_460_stashcache
+test_465_xrootd_tpc
 test_470_rsv
 test_490_jobs
 test_510_edgmkgridmap
