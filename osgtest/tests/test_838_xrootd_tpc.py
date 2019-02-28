@@ -17,3 +17,5 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
         service.check_stop(core.config['xrootd_tpc_service_1'])
         service.check_stop(core.config['xrootd_tpc_service_2'])
 
+    def test_02_clean_test_files(self):
+        files.remove("/tmp/test_gridftp_data_tpc.txt", force=True)
