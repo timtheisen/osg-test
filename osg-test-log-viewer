@@ -95,8 +95,11 @@ def load_logdata_from_url(url):
     try:
         urlhandle = urllib.request.urlopen(url)
         return load_logdata_from_handle(urlhandle)
-    except urllib.error as e:
-        print("Error reading URL %s: %s" % (url, e.strerror), file=sys.stderr)
+    except urllib.error.HTTPError as e:
+        print("HTTP error code %d reading URL %s: %s" % (e.code, url, e.reason), file=sys.stderr)
+        sys.exit(1)
+    except urllib.error.URLError as e:
+        print("Error reading URL %s: %s" % (url, e.reason), file=sys.stderr)
         sys.exit(1)
 
 
