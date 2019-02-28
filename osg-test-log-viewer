@@ -13,6 +13,12 @@ import subprocess
 import sys
 
 
+OK_FAIL_COMMAND_PATTERNS = [
+    # These commands don't get highlighted if they return nonzero
+    "rpm --query",
+    "systemctl is-active",
+    r"service\s+\S+\s+status"
+]
 
 
 class Section(object):
@@ -63,10 +69,10 @@ def load_logdata_from_handle(handle):
                     current_test = match.group('test')
 
                 retcode, _, _ = match.group('result').split()
-                if int(retcode) != 0 and 'rpm --query' not in match.group('command'):
-                    color = "red"
-                else:
-                    color = "black"
+                color = "black"
+                if int(retcode) != 0:
+                    if not any(re.search(pattern, match.group('command')) for pattern in OK_FAIL_COMMAND_PATTERNS):
+                        color = "red"
                 section = Section('    ' + match.group('lineno') + ':' + match.group('command'), color=color)
             else:
                 section = Section(match.group(1))
