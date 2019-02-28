@@ -32,7 +32,6 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
                              command, status, stdout, stderr)
         core.config['xrootd.tpc.macaroon-2'] = stdout.strip()
         
-
     def test_02_initate_tpc(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-scitokens', 'x509-scitokens-issuer-client', by_dependency=True)
         headers = {}
@@ -49,5 +48,3 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
         chechskum_match = files.checksum_files_match("/tmp/test_gridftp_data_tpc.txt", "/usr/share/osg-test/test_gridftp_data.txt")
         self.assert_(chechskum_match, 'Files have same contents')
-
-        
