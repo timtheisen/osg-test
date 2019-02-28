@@ -7,9 +7,7 @@ from six.moves.tkinter import *
 from six.moves import tkinter_scrolledtext as ScrolledText
 from six.moves import tkinter_font as tkFont
 from six.moves import urllib
-import os
 import re
-import subprocess
 import sys
 
 
@@ -193,7 +191,7 @@ def main():
         logdata = load_logdata_from_url(logpath)
     root = Tk()
     root.wm_title("osg-test log viewer: " + logpath)
-    app = Application(root, logpath, logdata)
+    Application(root, logpath, logdata)
     root.mainloop()
 
 if __name__ == '__main__':
