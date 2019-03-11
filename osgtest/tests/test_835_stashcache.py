@@ -6,41 +6,44 @@ from osgtest.library.osgunittest import OSGTestCase
 from osgtest.library import service
 
 
-_NAMESPACE = "stashcache"
+NAMESPACE = "stashcache"
 
 
-def _getcfg(key):
-    return core.config["%s.%s" % (_NAMESPACE, key)]
+def getcfg(key):
+    return core.config["%s.%s" % (NAMESPACE, key)]
 
 
-def _setcfg(key, val):
-    core.config["%s.%s" % (_NAMESPACE, key)] = val
+def stop_xrootd(instance):
+    svc = "xrootd@%s" % instance
+    service.check_stop(svc)
 
 
 class TestStopStashCache(OSGTestCase):
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("stashcache-origin-server",
-                                      "stashcache-cache-server",
+        core.skip_ok_unless_installed("stash-origin",
+                                      "stash-cache",
                                       "stashcache-client",
                                       by_dependency=True)
+        self.skip_ok_if(core.PackageVersion("xcache") < "1.0.2")
 
-    def test_01_stop_origin(self):
-        service.check_stop("xrootd@stashcache-origin-server")
+    def test_01_stop_stash_origin(self):
+        stop_xrootd("stash-origin")
 
-    def test_02_stop_cache(self):
-        service.check_stop("xrootd@stashcache-cache-server")
+    def test_02_stop_stash_origin_auth(self):
+        stop_xrootd("stash-origin-auth")
 
-    def test_03_unconfigure(self):
-        for key in [
-            "cache_config_path",
-            "cache_authfile_path",
-            "origin_config_path",
-            "caches_json_path"
-        ]:
-            files.restore(_getcfg(key), owner=_NAMESPACE)
+    def test_03_stop_stash_cache(self):
+        stop_xrootd("stash-cache")
 
-    def test_04_delete_dirs(self):
-        for key in ["origin_dir", "cache_dir"]:
-            if os.path.isdir(_getcfg(key)):
-                shutil.rmtree(_getcfg(key))
+    def test_04_stop_stash_cache_auth(self):
+        stop_xrootd("stash-cache-auth")
+
+    def test_05_unconfigure(self):
+        for path in getcfg("filelist"):
+            files.restore(path, owner=NAMESPACE)
+
+    def test_06_delete_dirs(self):
+        for key in ["OriginRootdir", "CacheRootdir"]:
+            if os.path.isdir(getcfg(key)):
+                shutil.rmtree(getcfg(key))
