@@ -7,7 +7,10 @@ import os.path
 import pwd
 import re
 import rpm
-from rpmUtils.miscutils import stringToVersion
+try:
+    from rpmUtils.miscutils import stringToVersion
+except ImportError:
+    from osgtest.vendor.miscutils import stringToVersion
 import shutil
 import stat
 import subprocess
