@@ -31,6 +31,9 @@ A GUI for viewing the output of %{name} in a structured manner.
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
+%if 0%{?fedora} < 25 && 0%{?rhel} < 8
+rm -rf $RPM_BUILD_ROOT%{python_sitelib}/osgtest/vendor
+%endif
 
 %files
 %{_datadir}/osg-test
