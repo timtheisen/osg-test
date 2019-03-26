@@ -31,6 +31,9 @@ u xrootd /tmp a
 
 class TestStartXrootd(osgunittest.OSGTestCase):
 
+    def setUp(self):
+        self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache conflicts with xrootd tests")
+
     def test_01_start_xrootd(self):
         core.config['xrootd.pid-file'] = '/var/run/xrootd/xrootd-default.pid'
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'

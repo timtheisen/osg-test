@@ -4,6 +4,9 @@ import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 class TestStopXrootdTPC(osgunittest.OSGTestCase):
+    def setUp(self):
+        self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache conflicts with xrootd tests")
+
     @core.elrelease(7,8)
     def test_01_stop_xrootd(self):
         if core.state['xrootd.tpc.backups-exist']:

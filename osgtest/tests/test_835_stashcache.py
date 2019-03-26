@@ -47,3 +47,8 @@ class TestStopStashCache(OSGTestCase):
         for key in ["OriginRootdir", "CacheRootdir"]:
             if os.path.isdir(getcfg(key)):
                 shutil.rmtree(getcfg(key))
+
+    def test_07_remove_certs(self):
+        # Do the keys first, so that the directories will be empty for the certs.
+        core.remove_cert('certs.xrootdkey')
+        core.remove_cert('certs.xrootdcert')

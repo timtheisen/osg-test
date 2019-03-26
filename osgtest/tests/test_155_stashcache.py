@@ -103,8 +103,6 @@ CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
 NAMESPACE = "stashcache"
 
 
-# TODO Set up /etc/grid-security/xrd/xrd{key,cert}.pem then uncomment test_05_start_stash_cache_auth
-
 def setcfg(key, val):
     core.config["%s.%s" % (NAMESPACE, key)] = val
 
@@ -165,6 +163,13 @@ class TestStartStashCache(OSGTestCase):
             files.write(path, contents, owner=NAMESPACE, chmod=0o644)
             filelist.append(path)
 
+        # Install certs.  Normally done in the xrootd tests but they conflict with the StashCache tests
+        # (both use the same config dir)
+        core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
+        core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
+        core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
+        core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
+
     def test_02_start_stash_origin(self):
         start_xrootd("stash-origin")
 
@@ -174,7 +179,5 @@ class TestStartStashCache(OSGTestCase):
     def test_04_start_stash_cache(self):
         start_xrootd("stash-cache")
 
-    # def test_05_start_stash_cache_auth(self):
-    #     self.skip_ok("Skipping until I get xrootd-renew-proxy working")
-    #     start_xrootd("stash-cache-auth")
-
+    def test_05_start_stash_cache_auth(self):
+        start_xrootd("stash-cache-auth")

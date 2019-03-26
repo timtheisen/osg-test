@@ -50,6 +50,9 @@ all.sitename VDTTESTSITE
 """
 
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
+    def setUp(self):
+        self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache conflicts with xrootd tests")
+
     @core.elrelease(7,8)
     def test_01_configure_xrootd(self):
         core.config['xrootd.tpc.config-1'] = '/etc/xrootd/xrootd-third-party-copy-1.cfg'
