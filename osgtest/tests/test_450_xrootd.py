@@ -15,7 +15,8 @@ class TestXrootd(osgunittest.OSGTestCase):
     __fuse_path = '/mnt/xrootd_fuse_test'
 
     def setUp(self):
-        self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache conflicts with xrootd tests")
+        if core.rpm_is_installed("xcache"):
+            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_xrdcp_local_to_server(self):
         core.state['xrootd.copied-to-server'] = False

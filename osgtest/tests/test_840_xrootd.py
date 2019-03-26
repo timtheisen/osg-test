@@ -5,7 +5,8 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStopXrootd(osgunittest.OSGTestCase):
     def setUp(self):
-        self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache conflicts with xrootd tests")
+        if core.rpm_is_installed("xcache"):
+            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_stop_xrootd(self):
         if core.state['xrootd.backups-exist']:
