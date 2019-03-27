@@ -23,7 +23,7 @@ def getcfg(key):
 class TestStashCache(OSGTestCase):
     # testfiles with random contents
     testfiles = [
-        ("testfile%d" % x, str(random.random()))
+        ("testfile%d" % x, str(random.random()) + "\n")
         for x in range(4)
     ]
 
