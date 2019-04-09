@@ -16,7 +16,6 @@ test_180_cvmfs
 test_190_condorce
 test_200_voms
 test_220_myproxy
-test_240_tomcat
 test_280_gsiopenssh
 test_290_slurm
 test_380_cvmfs
@@ -35,7 +34,6 @@ test_550_condorce
 test_580_gfal2util
 test_590_gsiopenssh
 test_740_slurm
-test_760_tomcat
 test_770_myproxy
 test_780_voms
 test_790_condorce
