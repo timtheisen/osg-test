@@ -16,7 +16,6 @@ test_180_cvmfs
 test_190_condorce
 test_200_voms
 test_220_myproxy
-test_230_gratia
 test_240_tomcat
 test_280_gsiopenssh
 test_290_slurm
@@ -32,7 +31,6 @@ test_460_stashcache
 test_465_xrootd_tpc
 test_470_rsv
 test_490_jobs
-test_540_gratia
 test_550_condorce
 test_580_gfal2util
 test_590_gsiopenssh
@@ -41,7 +39,6 @@ test_760_tomcat
 test_770_myproxy
 test_780_voms
 test_790_condorce
-test_800_gratia
 test_820_cvmfs
 test_830_rsv
 test_835_stashcache
