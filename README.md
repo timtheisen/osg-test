@@ -152,16 +152,16 @@ During a test run, the test modules are run in sequence as follows:
 |:---------------------|:----------------------------------------------|:----------------------------------------------------------------------|
 | `special_user.py`    | Tests not suppressed, or explicitly requested | Add user (if asked), Check user, Set up mapfile                       |
 | `special_install.py` | Packages given                                | Check repositories, Clean yum cache, Install packages                 |
-| `test_NN_*.py`       | Tests not suppressed                          | Configure, Test, Tear down                                            |
+| `test_NNN_*.py`      | Tests not suppressed                          | Configure, Test, Tear down                                            |
 | `special_cleanup.py` | Explicitly requested                          | Remove user (if added), Remove packages (if installed)                |
 
 The `test_*` modules are organized roughly into three phases, based on the sequence number of the file:
 
-| Test Files       | Purpose   |
-|:-----------------|:----------|
-| `test_[00-29]_*` | Set up    |
-| `test_[30-69]_*` | Tests     |
-| `test_[70-99]_*` | Tear down |
+| Test Files         | Purpose   |
+|:-------------------|:----------|
+| `test_[000-299]_*` | Set up    |
+| `test_[300-699]_*` | Tests     |
+| `test_[700-999]_*` | Tear down |
 
 Coding Tips
 -----------
