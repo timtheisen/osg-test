@@ -8,8 +8,6 @@ import tempfile
 class TestGFAL2Util(osgunittest.OSGTestCase):
 
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
-    __port = '10443'
-    __sfn = 'srm/v2/server'
     __hostname = socket.getfqdn()
 
 
@@ -17,12 +15,9 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         self.skip_ok_unless(core.state['proxy.created'] or core.state['voms.got-proxy'])
         core.skip_ok_unless_installed('gfal2-util', 'gfal2-plugin-file')
 
-    def get_srm_url_base(self):
-        return 'srm://%s:%s/%s?SFN=' % (TestGFAL2Util.__hostname, TestGFAL2Util.__port, TestGFAL2Util.__sfn)
-
     def get_gftp_url_base(self):
         return 'gsiftp://%s/' % (TestGFAL2Util.__hostname)
-    
+
     def setup_temp_paths(self):
         TestGFAL2Util.__temp_dir = tempfile.mkdtemp()
         TestGFAL2Util.__remote_path = TestGFAL2Util.__temp_dir + '/gfal2util_put_copied_file.txt'
