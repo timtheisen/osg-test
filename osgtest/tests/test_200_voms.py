@@ -4,15 +4,12 @@ import os
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
-import osgtest.library.tomcat as tomcat
 import osgtest.library.voms as voms
 import osgtest.library.osgunittest as osgunittest
 
 class TestStartVOMS(osgunittest.OSGTestCase):
 
     def test_01_config_certs(self):
-        core.config['certs.httpcert'] = '/etc/grid-security/http/httpcert.pem'
-        core.config['certs.httpkey'] = '/etc/grid-security/http/httpkey.pem'
         core.config['certs.vomscert'] = '/etc/grid-security/voms/vomscert.pem'
         core.config['certs.vomskey'] = '/etc/grid-security/voms/vomskey.pem'
 
@@ -26,23 +23,9 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.install_cert('certs.vomscert', 'certs.hostcert', 'voms', 0o644)
         core.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0o400)
 
-    def test_03_install_http_certs(self):
-        core.skip_ok_unless_installed('voms-admin-server')
-        httpcert = core.config['certs.httpcert']
-        httpkey = core.config['certs.httpkey']
-        self.skip_ok_if(core.check_file_and_perms(httpcert, 'tomcat', 0o644) and
-                        core.check_file_and_perms(httpkey, 'tomcat', 0o400),
-                        'HTTP cert exists and has proper permissions')
-        core.install_cert('certs.httpcert', 'certs.hostcert', 'tomcat', 0o644)
-        core.install_cert('certs.httpkey', 'certs.hostkey', 'tomcat', 0o400)
-
     def test_04_config_voms(self):
         core.config['voms.vo'] = 'osgtestvo'
         core.config['voms.lock-file'] = '/var/lock/subsys/voms.osgtestvo'
-        core.config['voms.vo-webapp'] = os.path.join(
-            tomcat.datadir(), "conf/Catalina/localhost/voms#osgtestvo.xml")
-        core.config['voms.webapp-log'] = os.path.join(
-            tomcat.logdir(), 'voms-admin-osgtestvo.log')
         # The DB created by voms-admin would have the user 'admin-osgtestvo',
         # but the voms_install_db script provided by voms-server does not
         # like usernames with '-' in them.
@@ -51,41 +34,11 @@ class TestStartVOMS(osgunittest.OSGTestCase):
     def test_05_create_vo(self):
         voms.skip_ok_unless_installed()
 
-        use_voms_admin = core.rpm_is_installed('voms-admin-server')
         voms.create_vo(vo=core.config['voms.vo'],
                        dbusername=core.config['voms.dbusername'],
                        dbpassword='secret',
                        vomscert=core.config['certs.vomscert'],
-                       vomskey=core.config['certs.vomskey'],
-                       use_voms_admin=use_voms_admin)
-
-    def test_06_add_local_admin(self):
-        core.skip_ok_unless_installed('voms-admin-server', 'voms-mysql-plugin')
-        host_dn, host_issuer = \
-            cagen.certificate_info(core.config['certs.hostcert'])
-        command = ('voms-db-deploy.py', 'add-admin',
-                   '--vo', core.config['voms.vo'],
-                   '--dn', host_dn, '--ca', host_issuer)
-        core.check_system(command, 'Add VO admin')
-
-    def test_07_config_va_properties(self):
-        core.skip_ok_unless_installed('voms-admin-server')
-
-        path = os.path.join('/etc/voms-admin', core.config['voms.vo'],
-                            'voms.service.properties')
-        contents = files.read(path)
-
-        had_csrf_line = False
-        for line in contents:
-            if 'voms.csrf.log_only' in line:
-                line = 'voms.csrf.log_only = true\n'
-                had_csrf_line = True
-            elif line[-1] != '\n':
-                line = line + '\n'
-        if not had_csrf_line:
-            contents += 'voms.csrf.log_only = true\n'
-
-        files.write(path, contents, backup=False)
+                       vomskey=core.config['certs.vomskey'])
 
     def test_08_advertise(self):
         voms.skip_ok_unless_installed()
@@ -111,11 +64,3 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         service.check_start(core.config['voms_service'])
 
         core.state['voms.started-server'] = True
-
-    def test_10_install_vo_webapp(self):
-        core.state['voms.installed-vo-webapp'] = False
-        core.skip_ok_unless_installed('voms-admin-server')
-        self.skip_ok_if(os.path.exists(core.config['voms.vo-webapp']), 'apparently installed')
-
-        service.check_start('voms-admin')
-        core.state['voms.installed-vo-webapp'] = True

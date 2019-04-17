@@ -88,6 +88,7 @@ class TestInstall(osgunittest.OSGTestCase):
         core.state['install.release-updated'] = True
         core.osg_release(update_state=True)
 
+    # TODO: Drop this once we stop doing 3.3->3.4 upgrade tests
     def test_04_remove_bestman2_server_dep_libs(self):
         if core.options.updaterelease != "3.4":
             return
