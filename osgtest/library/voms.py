@@ -27,43 +27,25 @@ def _get_sqlloc():
     return voms_mysql_so_path
 
 
-def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc/grid-security/voms/vomscert.pem', vomskey='/etc/grid-security/voms/vomskey.pem', use_voms_admin=False):
-    """Create the given VO using either voms-admin or the voms_install_db script that comes with voms-server. A new
+def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc/grid-security/voms/vomscert.pem', vomskey='/etc/grid-security/voms/vomskey.pem'):
+    """Create the given VO using the voms_install_db script that comes with voms-server. A new
     database user with the given username/password is created with access to the VO database.
     """
-    if use_voms_admin:
-        command = ('voms-admin-configure', 'install',
-                   '--vo', vo,
-                   '--dbtype', 'mysql', '--createdb', '--deploy-database',
-                   '--dbauser', 'root', '--dbapwd', '', '--dbport', '3306',
-                   '--dbusername', dbusername, '--dbpassword', dbpassword,
-                   '--port', '15151', '--sqlloc', _get_sqlloc(),
-                   '--mail-from', 'root@localhost', '--smtp-host', 'localhost',
-                   '--cert', vomscert,
-                   '--key', vomskey,
-                   '--read-access-for-authenticated-clients')
+    mysql.execute("CREATE USER '%(dbusername)s'@'localhost';" % locals())
 
-        stdout, _, fail = core.check_system(command, 'Configure VOMS Admin')
-        good_message = 'VO %s installation finished' % vo
-        assert good_message in stdout, fail
+    command = ['/usr/share/voms/voms_install_db',
+               '--voms-vo=' + vo,
+               '--port=15151',
+               '--db-type=mysql',
+               '--db-admin=root',
+               '--voms-name=' + dbusername,
+               '--voms-pwd=' + dbpassword,
+               '--sqlloc=' + _get_sqlloc(),
+               '--vomscert=' + vomscert,
+               '--vomskey=' + vomskey,
+               ]
 
-    else:
-
-        mysql.execute("CREATE USER '%(dbusername)s'@'localhost';" % locals())
-
-        command = ['/usr/share/voms/voms_install_db',
-                   '--voms-vo=' + vo,
-                   '--port=15151',
-                   '--db-type=mysql',
-                   '--db-admin=root',
-                   '--voms-name=' + dbusername,
-                   '--voms-pwd=' + dbpassword,
-                   '--sqlloc=' + _get_sqlloc(),
-                   '--vomscert=' + vomscert,
-                   '--vomskey=' + vomskey,
-                   ]
-
-        core.check_system(command, 'Create VO')
+    core.check_system(command, 'Create VO')
 
 
 def advertise_lsc(vo, hostcert='/etc/grid-security/hostcert.pem'):
@@ -89,33 +71,25 @@ def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
     files.write(vomses_path, contents, backup=False, chmod=0o644)
 
 
-def add_user(vo, usercert, use_voms_admin=False):
-    """Add the user identified by the given cert to the specified VO. May use voms-admin or direct MySQL statements.
+def add_user(vo, usercert):
+    """Add the user identified by the given cert to the specified VO. Uses direct MySQL statements instead of voms-admin.
     The CA cert that issued the user cert must already be in the database's 'ca' table - this happens automatically if
     the CA cert is in /etc/grid-security/certificates when the VOMS database is created.
     """
     usercert_dn, usercert_issuer = cagen.certificate_info(usercert)
-    if use_voms_admin:
-        hostname = socket.getfqdn()
+    dbname = 'voms_' + vo
 
-        command = ('voms-admin', '--vo', core.config['voms.vo'], '--host', hostname, '--nousercert', 'create-user',
-               usercert_dn, usercert_issuer, 'OSG Test User', 'root@localhost')
-        core.check_system(command, 'Add VO user')
+    # Find the index in the "ca" table ("cid") for the OSG Test CA that gets created by voms_install_db.
+    output, _, _, = mysql.check_execute(r'''SELECT cid FROM ca WHERE ca='%(usercert_issuer)s';''' % locals(),
+                                        'Get ID of user cert issuer from database', dbname)
+    output = output.strip()
+    assert output, "User cert issuer not found in database"
+    ca = int(output)
 
-    else:
-        dbname = 'voms_' + vo
-
-        # Find the index in the "ca" table ("cid") for the OSG Test CA that gets created by voms_install_db.
-        output, _, _, = mysql.check_execute(r'''SELECT cid FROM ca WHERE ca='%(usercert_issuer)s';''' % locals(),
-                                            'Get ID of user cert issuer from database', dbname)
-        output = output.strip()
-        assert output, "User cert issuer not found in database"
-        ca = int(output)
-
-        mysql.check_execute(r'''
-            INSERT INTO `usr` VALUES (1,'%(usercert_dn)s',%(ca)d,NULL,'root@localhost',NULL);
-            INSERT INTO `m` VALUES (1,1,1,NULL,NULL);''' % locals(),
-            'Add VO user', dbname)
+    mysql.check_execute(r'''
+        INSERT INTO `usr` VALUES (1,'%(usercert_dn)s',%(ca)d,NULL,'root@localhost',NULL);
+        INSERT INTO `m` VALUES (1,1,1,NULL,NULL);''' % locals(),
+        'Add VO user', dbname)
 
 
 def destroy_lsc(vo):
@@ -146,12 +120,6 @@ def is_installed():
     """
     for dep in 'voms-server', 'voms-clients', 'voms-mysql-plugin', mysql.client_rpm(), mysql.server_rpm():
         if not core.dependency_is_installed(dep):
-            return False
-
-    # TODO: drop this check when 3.3 is completely EOL
-    if core.el_release() >= 7:
-        if core.PackageVersion('voms-server') < '2.0.12-3.2':
-            core.log_message("voms-server installed but too old (missing SOFTWARE-2357 fix)")
             return False
 
     return True
