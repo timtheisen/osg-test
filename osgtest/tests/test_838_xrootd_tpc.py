@@ -14,8 +14,7 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
             files.restore(core.config['xrootd.tpc.config-1'], "xrootd")
             files.restore(core.config['xrootd.tpc.config-2'], "xrootd")
 
-        core.skip_ok_unless_installed('xrootd-scitokens', by_dependency=True)
-        self.skip_ok_if(not core.state['xrootd.started-http-server-1'] and 
+        self.skip_ok_if(not core.state['xrootd.started-http-server-1'] and
                         not core.state['xrootd.started-http-server-2'], 
                         'did not start any of the http servers')
         service.check_stop(core.config['xrootd_tpc_service_1'])
