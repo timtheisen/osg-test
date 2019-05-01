@@ -51,6 +51,10 @@ all.sitename VDTTESTSITE
 
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
+    def setUp(self):
+        core.skip_ok_unless_installed("xrootd",
+                                      by_dependency=True)
+
     def test_01_configure_xrootd(self):
         core.config['xrootd.tpc.config-1'] = '/etc/xrootd/xrootd-third-party-copy-1.cfg'
         core.config['xrootd.tpc.config-2'] = '/etc/xrootd/xrootd-third-party-copy-2.cfg'
@@ -61,7 +65,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.state['xrootd.tpc.backups-exist'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        core.skip_ok_unless_installed('globus-proxy-utils', 'xrootd', by_dependency=True)
+        core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
 
         user = pwd.getpwnam("xrootd")
 
@@ -83,7 +87,6 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.state['xrootd.tpc.backups-exist'] = True
  
     def test_02_create_secrets(self):
-        core.skip_ok_unless_installed('xrootd', by_dependency=True)
         core.config['xrootd.tpc.macaroon-secret-1'] = '/etc/xrootd/macaroon-secret-1'
         core.config['xrootd.tpc.macaroon-secret-2'] = '/etc/xrootd/macaroon-secret-2'
         core.check_system(["openssl", "rand", "-base64", "-out",
@@ -97,13 +100,10 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                          "macaroons.secretkey %s"%(core.config['xrootd.tpc.macaroon-secret-2']),
                       owner='xrootd', backup=False)
 
-
     def test_03_start_xrootd(self):
-        core.skip_ok_unless_installed('xrootd', by_dependency=True)
         core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
         core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
         service.check_start(core.config['xrootd_tpc_service_1'], log_to_check = '/var/log/xrootd/third-party-copy-1/xrootd.log')
         service.check_start(core.config['xrootd_tpc_service_2'], log_to_check = '/var/log/xrootd/third-party-copy-2/xrootd.log')
         core.state['xrootd.started-http-server-1'] = True
         core.state['xrootd.started-http-server-2'] = True
-
