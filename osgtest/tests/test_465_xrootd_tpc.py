@@ -12,6 +12,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed("xrootd",
                                       by_dependency=True)
+        if core.rpm_is_installed("xcache"):
+            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_create_macaroons(self):
         core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
