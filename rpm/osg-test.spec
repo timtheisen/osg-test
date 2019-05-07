@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   2.3.1
+Version:   3.0.0
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -44,6 +44,12 @@ rm -rf $RPM_BUILD_ROOT%{python_sitelib}/osgtest/vendor
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Tue May 07 2019 Brian Lin <blin@cs.wisc.edu> - 3.0.0-1
+- Remove tests for OSG 3.3-only components
+- Update StashCache and XRootD tests for XCache 1.0+
+- Add XRootD third-party copy tests (SOFTWARE-3362, SOFTWARE-3670)
+- Install x509-scitokens-issuer-client for scitokens tests (SOFTWARE-3649)
+
 * Wed Jan 23 2019 Carl Edquist <edquist@cs.wisc.edu> - 2.3.1-1
 - Require globus-proxy-utils for xrootd-multiuser tests (SOFTWARE-3359, #154)
 - Update test requirements for singularity-3.0.2 (SOFTWARE-3532, #157)
