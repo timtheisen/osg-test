@@ -108,7 +108,7 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
             core.state['condor-ce.schedd-ready'] = True
             self.skip_ok('already running')
 
-        service.check_start('condor-ce')
+        service.check_start('condor-ce', timeout=20)
 
         stat = core.get_stat(core.config['condor-ce.collectorlog'])
         if condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0):
