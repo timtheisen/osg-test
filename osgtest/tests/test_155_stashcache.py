@@ -97,10 +97,13 @@ CACHES_JSON_CONTENTS = """\
 
 XROOTD_ORIGIN_CFG_PATH = "/etc/xrootd/xrootd-stash-origin.cfg"
 HTTP_CFG_PATH = "/etc/xrootd/config.d/40-osg-http.cfg"
-if core.PackageVersion('stash-cache') >= '1.1.0':
-    CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
-else:
-    CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
+try:
+    if core.PackageVersion('stash-cache') >= '1.1.0':
+        CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
+    else:
+        CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
+except OSError:
+    pass  # stash-cache isn't installed
 
 NAMESPACE = "stashcache"
 
