@@ -6,7 +6,7 @@
 # We use `--privileged` for cgroup compatability, which seems to be enabled by default in HTCondor 8.6.x
 
 ENV_FILE=/tmp/travis.env
-for vars in {OSG_RELEASE,OS_VERSION,PACKAGES}; do
+for vars in {OSG_RELEASE,OS_VERSION,PKG_SET}; do
     echo "$vars=${!vars}" >> $ENV_FILE
 done
 

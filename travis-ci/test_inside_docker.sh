@@ -63,7 +63,12 @@ cp /etc/condor/config.d/99-local.conf /etc/condor-ce/config.d/99-local.conf
 export _condor_CONDOR_CE_TRACE_ATTEMPTS=60
 
 # Ok, do actual testing
-INSTALL_STR="--install ${PACKAGES//,/ --install }"
+
+install_str=''
+while read package; do
+    install_str="$install_str --install $package"
+done < /osg-test/travis-ci/"$PKG_SET".packages
+
 echo "------------ OSG Test --------------"
 
 osg-test --verbose \
@@ -72,4 +77,4 @@ osg-test --verbose \
          --hostcert \
          --no-cleanup \
          ${extra_repos} \
-         ${INSTALL_STR}
+         ${install_str}

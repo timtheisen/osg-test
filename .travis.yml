@@ -5,14 +5,18 @@ git:
   quiet: true
 
 env:
-  - OSG_RELEASE=3.4 OS_VERSION=6 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun
-  - OSG_RELEASE=3.4 OS_VERSION=6 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
-  - OSG_RELEASE=3.4 OS_VERSION=7 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun,singularity,osg-oasis
-  - OSG_RELEASE=3.4 OS_VERSION=7 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,singularity,osg-oasis
-  - OSG_RELEASE=3.4 OS_VERSION=7 PACKAGES=xrootd,xrootd-client,xrootd-multiuser,globus-proxy-utils
-  - OSG_RELEASE=3.5 OS_VERSION=7 PACKAGES=osg-ce-condor,vo-client-lcmaps-voms,llrun,singularity,osg-oasis
-  - OSG_RELEASE=3.5 OS_VERSION=7 PACKAGES=osg-gridftp,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun,singularity,osg-oasis
-  - OSG_RELEASE=3.5 OS_VERSION=7 PACKAGES=xrootd,xrootd-client,xrootd-multiuser,globus-proxy-utils
+  - OSG_RELEASE=3.4 OS_VERSION=6 PKG_SET=htcondor-ce
+  - OSG_RELEASE=3.4 OS_VERSION=6 PKG_SET=gridftp
+  - OSG_RELEASE=3.4 OS_VERSION=7 PKG_SET=htcondor-ce
+  - OSG_RELEASE=3.4 OS_VERSION=7 PKG_SET=gridftp
+  - OSG_RELEASE=3.4 OS_VERSION=7 PKG_SET=singularity
+  - OSG_RELEASE=3.4 OS_VERSION=7 PKG_SET=stashcache
+  - OSG_RELEASE=3.4 OS_VERSION=7 PKG_SET=xrootd
+  - OSG_RELEASE=3.5 OS_VERSION=7 PKG_SET=htcondor-ce
+  - OSG_RELEASE=3.5 OS_VERSION=7 PKG_SET=gridftp
+  - OSG_RELEASE=3.5 OS_VERSION=7 PKG_SET=singularity
+  - OSG_RELEASE=3.5 OS_VERSION=7 PKG_SET=stashcache
+  - OSG_RELEASE=3.5 OS_VERSION=7 PKG_SET=xrootd
 
 services:
   - docker
