@@ -32,7 +32,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
         # HACK: Install Slurm and osg-tested-internal out of development-like repos.
         # SOFTWARE-1733 may one day give us a generalized solution.
-        if float(core.osg_release()) > 3.4:
+        if core.osg_release() > '3.4':
             devops_repo = 'devops-itb'
         else:
             devops_repo = 'osg-development'
