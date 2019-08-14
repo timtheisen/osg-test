@@ -1,4 +1,9 @@
 sudo: required
+
+git:
+  depth: false
+  quiet: true
+
 env:
   - OSG_RELEASE=3.4 OS_VERSION=6 PACKAGES=osg-ce-condor,rsv,vo-client-lcmaps-voms,llrun
   - OSG_RELEASE=3.4 OS_VERSION=6 PACKAGES=osg-gridftp,rsv,lcmaps,lcmaps-db-templates,vo-client-lcmaps-voms,rsv,llrun
