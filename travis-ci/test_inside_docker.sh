@@ -1,7 +1,12 @@
 #!/bin/sh -xe
 
-OS_VERSION=$1
-PACKAGES=$2
+if [[ "$OSG_RELEASE" == "3.5" ]]; then
+    devops_repo='--enablerepo=devops-itb'
+    extra_repos='--extra-repo=osg-development'
+else
+    devops_repo=''
+    extra_repos=''
+fi
 
 ls -l /home
 
@@ -10,10 +15,11 @@ yum -y clean all
 yum -y clean expire-cache
 
 # First, install all the needed packages.
-rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.noarch.rpm
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"$OS_VERSION".noarch.rpm
 
 yum -y install yum-plugin-priorities
-rpm -Uvh https://repo.opensciencegrid.org/osg/3.4/osg-3.4-el${OS_VERSION}-release-latest.rpm
+
+rpm -Uvh https://repo.opensciencegrid.org/osg/"$OSG_RELEASE"/osg-"$OSG_RELEASE"-el"$OS_VERSION"-release-latest.rpm
 yum -y install make git openssl rpm-build
 
 # Prepare the RPM environment
@@ -34,7 +40,9 @@ popd
 rpmbuild --define '_topdir /tmp/rpmbuild' -ba /tmp/rpmbuild/SPECS/osg-test.spec
 
 # After building the RPM, try to install it
-yum localinstall -y /tmp/rpmbuild/RPMS/noarch/osg-test*
+yum localinstall -y \
+    $devops_repo \
+    /tmp/rpmbuild/RPMS/noarch/osg-test*
 
 # HTCondor really, really wants a domain name.  Fake one.
 sed /etc/hosts -e "s/`hostname`/`hostname`.unl.edu `hostname`/" > /etc/hosts.new
@@ -55,6 +63,18 @@ cp /etc/condor/config.d/99-local.conf /etc/condor-ce/config.d/99-local.conf
 export _condor_CONDOR_CE_TRACE_ATTEMPTS=60
 
 # Ok, do actual testing
-INSTALL_STR="--install ${PACKAGES//,/ --install }"
+
+install_str=''
+while read package; do
+    install_str="$install_str --install $package"
+done < /osg-test/travis-ci/"$PKG_SET".packages
+
 echo "------------ OSG Test --------------"
-osg-test -vad --hostcert --no-cleanup ${INSTALL_STR}
+
+osg-test --verbose \
+         --add-user \
+         --dump-output \
+         --hostcert \
+         --no-cleanup \
+         ${extra_repos} \
+         ${install_str}

@@ -91,6 +91,7 @@ class PackageVersion:
     def __init__(self, pkgname):
         e,n,v,r,a = get_package_envra(pkgname)
         self.evr = e,v,r
+        self.version = v
 
     def __repr__(self):
         return "%s:%s-%s" % self.evr
@@ -629,16 +630,16 @@ def el_release():
 
 def osg_release(update_state=False):
     """
-    Return the version of osg-release. If the query fails, the test module fails.
+    Return a PackageVersion instance of osg-release. If the query fails, the test module fails.
     """
     if not update_state and 'general.osg_release_ver' in state:
         return state['general.osg_release_ver']
     try:
-        _, _, osg_release_ver, _, _ = get_package_envra('osg-release')
+        release = PackageVersion('osg-release')
     except OSError:
-        _, _, osg_release_ver, _, _ = get_package_envra('osg-release-itb')
-    state['general.osg_release_ver'] = osg_release_ver
-    return osg_release_ver
+        release = PackageVersion('osg-release-itb')
+    state['general.osg_release_ver'] = release
+    return release
 
 
 def get_hostname():
@@ -750,10 +751,10 @@ def osgrelease(*releases):
     releases = map(str, releases)  # convert float args to str
     def osg_release_decorator(fn):
         def run_fn_if_osg_release_ok(*args, **kwargs):
-            if osg_release() in releases:
+            if osg_release().version in releases:
                 return fn(*args, **kwargs)
             else:
-                msg = "excluding for OSG %s" % osg_release()
+                msg = "excluding for OSG %s" % osg_release().version
                 raise osgunittest.ExcludedException(msg)
         return run_fn_if_osg_release_ok
     return osg_release_decorator
