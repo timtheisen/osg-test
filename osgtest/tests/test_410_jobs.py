@@ -58,6 +58,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
         self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
         self.skip_bad_unless(service.is_running('condor'), 'condor not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
+        self.skip_bad_unless(core.state['proxy.created'])
 
         command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')
         self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')
