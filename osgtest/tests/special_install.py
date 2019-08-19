@@ -32,13 +32,13 @@ class TestInstall(osgunittest.OSGTestCase):
 
         # HACK: Install Slurm and osg-tested-internal out of development-like repos.
         # SOFTWARE-1733 may one day give us a generalized solution.
+        devops_repos = ['osg-development']
+        # FIXME: Upon release of OSG 3.5.0, this list does not need to contain osg-development
         if core.osg_release() > '3.4':
-            devops_repo = 'devops-itb'
-        else:
-            devops_repo = 'osg-development'
+            devops_repos += ['devops-itb']
 
         if 'osg-tested-internal' in pkg_repo_dict or 'slurm' in pkg_repo_dict:
-            pkg_repo_dict.update(dict((x, [devops_repo]) for x in core.SLURM_PACKAGES + ['osg-tested-internal']))
+            pkg_repo_dict.update(dict((x, devops_repos) for x in core.SLURM_PACKAGES + ['osg-tested-internal']))
 
         # HACK: Install x509-scitokens-issuer-client out of development (SOFTWARE-3649)
         if 'xrootd-scitokens' in pkg_repo_dict:
