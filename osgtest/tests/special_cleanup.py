@@ -69,8 +69,13 @@ class TestCleanup(osgunittest.OSGTestCase):
         command = ['rpm', '-e', 'osg-release']
         core.check_system(command, 'Erase osg-release')
 
-        rpm_url = 'https://repo.opensciencegrid.org/osg/' + core.config['install.original-release-ver']+ '/osg-' + \
-            core.config['install.original-release-ver'] + '-el' + str(core.el_release()) + '-release-latest.rpm'
+        rpm_url = 'https://repo.opensciencegrid.org/osg/' \
+            + core.config['install.original-release-ver'] \
+            + '/osg-' \
+            + core.config['install.original-release-ver'] \
+            + '-el' \
+            + str(core.el_release()) \
+            + '-release-latest.rpm'
         command = ['rpm', '-Uvh', rpm_url]
         core.check_system(command, 'Downgrade osg-release')
 
