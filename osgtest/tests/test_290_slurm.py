@@ -65,7 +65,10 @@ class TestStartSlurm(osgunittest.OSGTestCase):
 
     def test_01_slurm_config(self):
         self.slurm_reqs()
-        core.config['slurm.config'] = '/etc/slurm/slurm.conf'
+        if core.PackageVersion('slurm') >= '19.05.2':
+            core.config['slurm.config'] = '/etc/slurm.conf'
+        else:
+            core.config['slurm.config'] = '/etc/slurm/slurm.conf'
         files.write(core.config['slurm.config'],
                     SLURM_CONFIG % {'short_hostname': SHORT_HOSTNAME, 'cluster': CLUSTER_NAME, 'ctld_log': CTLD_LOG},
                     owner='slurm',
