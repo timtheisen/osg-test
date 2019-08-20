@@ -77,12 +77,12 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                             chown=(user.pw_uid, user.pw_gid))
             xrootd_config = XROOTD_CFG_TEXT % sec_protocol
 
-        files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True)
+        files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True, chmod=0o644)
 
         if core.el_release() < 7:
             files.write(core.config['xrootd.service-defaults'],
                         'XROOTD_DEFAULT_OPTIONS="-l /var/log/xrootd/xrootd.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"',
-                        owner="xrootd", chown=(user.pw_uid, user.pw_gid))
+                        owner="xrootd", chown=(user.pw_uid, user.pw_gid), chmod=0o644)
 
         authfile = '/etc/xrootd/auth_file'
         files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
