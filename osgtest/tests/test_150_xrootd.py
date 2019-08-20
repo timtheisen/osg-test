@@ -1,4 +1,3 @@
-import os
 import pwd
 import osgtest.library.core as core
 import osgtest.library.files as files
