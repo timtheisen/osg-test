@@ -16,7 +16,8 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     def setUp(self):
         if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
+            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
+                            "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_xrdcp_local_to_server(self):
         core.state['xrootd.copied-to-server'] = False
@@ -43,11 +44,12 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.assert_(file_copied, 'Copied file missing')
 
     def test_02_xrootd_multiuser(self):
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser',
+                                      by_dependency=True)
         self.skip_bad_unless(core.config['xrootd.multiuser'], 'Xrootd not configured for multiuser')
         self.skip_bad_unless(core.state['xrootd.copied-to-server'], 'File to check ownership does not exist')
         file_path = os.path.join(core.config['xrootd.tmp-dir'], 'copied_file.txt')
-        self.assertEqual(core.check_file_ownership(file_path, core.options.username), True) 
+        self.assertEqual(core.check_file_ownership(file_path, core.options.username), True)
 
     def test_03_xrdcp_server_to_local(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)

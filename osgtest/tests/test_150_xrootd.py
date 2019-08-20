@@ -26,11 +26,13 @@ u = /tmp/@=/ a
 u xrootd /tmp a
 """
 
+
 class TestStartXrootd(osgunittest.OSGTestCase):
 
     def setUp(self):
         if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
+            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
+                            "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_start_xrootd(self):
         core.config['xrootd.pid-file'] = '/var/run/xrootd/xrootd-default.pid'
@@ -86,7 +88,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             files.append(core.config['xrootd.config-extra'], hdfs_config, backup=False)
 
     def test_03_configure_multiuser(self):
-        core.skip_ok_unless_installed('xrootd-multiuser','globus-proxy-utils', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd-multiuser', 'globus-proxy-utils', by_dependency=True)
         xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
         if core.PackageVersion('xrootd') < '1:4.9.0':
             files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
