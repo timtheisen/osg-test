@@ -29,7 +29,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         os.chown(temp_dir, user[2], user[3])
         hostname = socket.getfqdn()
         os.chmod(temp_dir, 0o777)
-        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_dir)
+        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
         command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
 
         status, stdout, stderr = core.system(command, user=True)
@@ -62,7 +62,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         f = open(temp_source_dir + "/copied_file.txt", "w")
         f.write("This is some test data for an xrootd test.")
         f.close()
-        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], temp_source_dir)
+        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_source_dir)
         local_path = temp_target_dir + '/copied_file.txt'
         command = ('xrdcp', '--debug', '3', xrootd_url, local_path)
 
@@ -86,12 +86,12 @@ class TestXrootd(osgunittest.OSGTestCase):
             os.mkdir(TestXrootd.__fuse_path)
         hostname = socket.getfqdn()
 
-        #For some reason, sub process hangs on fuse processes, use os.system
-        os.system("mount -t fuse -o rdr=root://localhost:%d//tmp,uid=xrootd xrootdfs %s" %
-                  (core.config['xrootd.port'], TestXrootd.__fuse_path))
+        # For some reason, sub process hangs on fuse processes, use os.system
+        os.system("mount -t fuse -o rdr=root://localhost//tmp,uid=xrootd xrootdfs %s" %
+                  TestXrootd.__fuse_path)
 
         # Copy a file in and see if it made it into the fuse mount
-        xrootd_url = 'root://%s:%d/%s/copied_file.txt' % (hostname, core.config['xrootd.port'], "/tmp")
+        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, "/tmp")
         core.system(['xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url], user=True)
 
         self.assert_(os.path.isfile("/tmp/copied_file.txt"), "Test file not uploaded to FUSE mount")
