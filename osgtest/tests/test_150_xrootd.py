@@ -48,6 +48,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             core.config['xrootd.config'] = '/etc/xrootd/config.d/10-osg-test.cfg'
         else:
             core.config['xrootd.config'] = '/etc/xrootd/config.d/99-osg-test.cfg'
+        core.config['xrootd.service-defaults'] = '/etc/sysconfig/xrootd'
         core.config['xrootd.multiuser'] = False
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
@@ -77,6 +78,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             xrootd_config = XROOTD_CFG_TEXT % sec_protocol
 
         files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True)
+
+        if core.el_release() < 7:
+            files.write(core.config['xrootd.service-defaults'],
+                        'XROOTD_DEFAULT_OPTIONS="-l /var/log/xrootd/xrootd.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"',
+                        owner="xrootd", chown=(user.pw_uid, user.pw_gid))
 
         authfile = '/etc/xrootd/auth_file'
         files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
