@@ -76,5 +76,6 @@ osg-test --verbose \
          --dump-output \
          --hostcert \
          --no-cleanup \
+         --manual-run \
          ${extra_repos} \
          ${install_str}
