@@ -31,6 +31,21 @@ u = /tmp/@=/ a
 u xrootd /tmp a
 """
 
+SYSCONFIG_TEXT = """\
+XROOTD_USER=xrootd
+XROOTD_GROUP=xrootd
+
+XROOTD_DEFAULT_OPTIONS="-l /var/log/xrootd/xrootd.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"
+CMSD_DEFAULT_OPTIONS="-l /var/log/xrootd/cmsd.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"
+PURD_DEFAULT_OPTIONS="-l /var/log/xrootd/purged.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"
+XFRD_DEFAULT_OPTIONS="-l /var/log/xrootd/xfrd.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"
+
+XROOTD_INSTANCES="default"
+CMSD_INSTANCES="default"
+PURD_INSTANCES="default"
+XFRD_INSTANCES="default"
+"""
+
 
 class TestStartXrootd(osgunittest.OSGTestCase):
 
@@ -80,8 +95,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True, chmod=0o644)
 
         if core.el_release() < 7:
-            files.write(core.config['xrootd.service-defaults'],
-                        'XROOTD_DEFAULT_OPTIONS="-l /var/log/xrootd/xrootd.log -c /etc/xrootd/xrootd-standalone.cfg -k fifo"',
+            files.write(core.config['xrootd.service-defaults'], SYSCONFIG_TEXT,
                         owner="xrootd", chown=(user.pw_uid, user.pw_gid), chmod=0o644)
 
         authfile = '/etc/xrootd/auth_file'
