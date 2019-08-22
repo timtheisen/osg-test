@@ -3,20 +3,21 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
+
 class TestStopXrootd(osgunittest.OSGTestCase):
     def setUp(self):
         if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
+            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
+                            "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_stop_xrootd(self):
         if core.state['xrootd.backups-exist']:
-            if core.PackageVersion('xrootd') < '1:4.9.0':
-                files.restore(core.config['xrootd.config'], "xrootd")
-            else:
-                files.restore(core.config['xrootd.config-extra'], "xrootd")
+            files.restore(core.config['xrootd.config'], "xrootd")
             files.restore('/etc/xrootd/auth_file', "xrootd")
             if not core.rpm_is_installed('xrootd-lcmaps'):
                 files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")
+            if core.el_release() < 7:
+                files.restore(core.config['xrootd.service-defaults'], "xrootd")
         core.skip_ok_unless_installed('xrootd', by_dependency=True)
         self.skip_ok_if(core.state['xrootd.started-server'], 'did not start server')
         service.check_stop(core.config['xrootd_service'])

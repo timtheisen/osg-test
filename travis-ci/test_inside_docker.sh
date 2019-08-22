@@ -1,11 +1,11 @@
 #!/bin/sh -xe
 
+extra_repos='--extra-repo=osg-minefield'
+
 if [[ "$OSG_RELEASE" == "3.5" ]]; then
     devops_repo='--enablerepo=devops-itb'
-    extra_repos='--extra-repo=osg-development'
 else
     devops_repo=''
-    extra_repos=''
 fi
 
 ls -l /home
@@ -76,5 +76,6 @@ osg-test --verbose \
          --dump-output \
          --hostcert \
          --no-cleanup \
+         --manual-run \
          ${extra_repos} \
          ${install_str}
