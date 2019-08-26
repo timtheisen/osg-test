@@ -96,7 +96,6 @@ CACHES_JSON_CONTENTS = """\
 """
 
 XROOTD_ORIGIN_CFG_PATH = "/etc/xrootd/xrootd-stash-origin.cfg"
-HTTP_CFG_PATH = "/etc/xrootd/config.d/40-osg-http.cfg"
 
 NAMESPACE = "stashcache"
 
@@ -124,8 +123,10 @@ class TestStartStashCache(OSGTestCase):
     def test_01_configure(self):
         if core.PackageVersion('stash-cache') >= '1.1.0':
             CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
+            http_cfg_path = "/etc/xrootd/config.d/50-osg-http.cfg"
         else:
             CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
+            http_cfg_path = "/etc/xrootd/config.d/40-osg-http.cfg"
 
         for key, val in PARAMS.items():
             setcfg(key, val)
@@ -148,7 +149,7 @@ class TestStartStashCache(OSGTestCase):
         # Delete the lines we can't override
         for path, regexp in [
             (XROOTD_ORIGIN_CFG_PATH, "^\s*all.manager.+$"),
-            (HTTP_CFG_PATH, "^\s*xrd.protocol.+$"),
+            (http_cfg_path, "^\s*xrd.protocol.+$"),
             (CACHING_PLUGIN_CFG_PATH, "^\s*(ofs.osslib|pss.cachelib|pss.origin).+$"),
         ]:
             files.replace_regexpr(path, regexp, "", owner=NAMESPACE)
