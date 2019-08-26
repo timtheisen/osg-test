@@ -122,10 +122,10 @@ class TestStartStashCache(OSGTestCase):
 
     def test_01_configure(self):
         if core.PackageVersion('stash-cache') >= '1.1.0':
-            CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
+            caching_plugin_cfg_path = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
             http_cfg_path = "/etc/xrootd/config.d/50-osg-http.cfg"
         else:
-            CACHING_PLUGIN_CFG_PATH = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
+            caching_plugin_cfg_path = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
             http_cfg_path = "/etc/xrootd/config.d/40-osg-http.cfg"
 
         for key, val in PARAMS.items():
@@ -150,7 +150,7 @@ class TestStartStashCache(OSGTestCase):
         for path, regexp in [
             (XROOTD_ORIGIN_CFG_PATH, "^\s*all.manager.+$"),
             (http_cfg_path, "^\s*xrd.protocol.+$"),
-            (CACHING_PLUGIN_CFG_PATH, "^\s*(ofs.osslib|pss.cachelib|pss.origin).+$"),
+            (caching_plugin_cfg_path, "^\s*(ofs.osslib|pss.cachelib|pss.origin).+$"),
         ]:
             files.replace_regexpr(path, regexp, "", owner=NAMESPACE)
             filelist.append(path)
