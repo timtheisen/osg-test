@@ -4,8 +4,11 @@ import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
 
-@core.osgrelease(3.4)
 class TestStopRSV(osgunittest.OSGTestCase):
+
+    def setUp(self):
+        if core.osg_release() != '3.4':
+            raise osgunittest.ExcludedException("excluding for OSG %s" % core.osg_release().version)
 
     def test_01_stop_rsv(self):
         core.skip_ok_unless_installed('rsv')

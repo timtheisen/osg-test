@@ -22,10 +22,13 @@ Testing number conventions:
 """
 
 
-@core.osgrelease(3.4)
 class TestRSV(osgunittest.OSGTestCase):
 
     host = socket.getfqdn()
+
+    def setUp(self):
+        if core.osg_release() != '3.4':
+            raise osgunittest.ExcludedException("excluding for OSG %s" % core.osg_release().version)
 
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')

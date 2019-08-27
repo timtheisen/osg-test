@@ -2,8 +2,12 @@ import os
 
 from osgtest.library import core, service, osgunittest
 
-@core.osgrelease(3.4)
+
 class TestStartRSV(osgunittest.OSGTestCase):
+
+    def setUp(self):
+        if core.osg_release() != '3.4':
+            raise osgunittest.ExcludedException("excluding for OSG %s" % core.osg_release().version)
 
     def test_01_config(self):
         pass
