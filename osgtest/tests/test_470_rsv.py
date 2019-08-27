@@ -22,6 +22,7 @@ Testing number conventions:
 """
 
 
+@core.osgrelease(3.4)
 class TestRSV(osgunittest.OSGTestCase):
 
     host = socket.getfqdn()
@@ -203,16 +204,12 @@ class TestRSV(osgunittest.OSGTestCase):
 
         self.run_metric('org.osg.local.hostcert-expiry')
 
-    # OSG 3.3 tries to download from IU and causes a failure
-    @core.osgrelease(3.4)
     def test_032_cacert_expiry(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 
         self.run_metric('org.osg.certificates.cacert-expiry',
                         accept_status=['OK', 'WARNING'])
 
-    # OSG 3.3 tries to download from IU and causes a failure
-    @core.osgrelease(3.4)
     def test_033_crlcert_expiry(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 

@@ -3,6 +3,8 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
+
+@core.osgrelease(3.4)
 class TestStopRSV(osgunittest.OSGTestCase):
 
     def test_01_stop_rsv(self):
