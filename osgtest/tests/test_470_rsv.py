@@ -26,6 +26,10 @@ class TestRSV(osgunittest.OSGTestCase):
 
     host = socket.getfqdn()
 
+    @core.osgrelease(3.4)
+    def setUp(self):
+        pass
+
     def start_rsv(self):
         core.check_system(('rsv-control', '--on'), 'rsv-control --on')
 
@@ -203,16 +207,12 @@ class TestRSV(osgunittest.OSGTestCase):
 
         self.run_metric('org.osg.local.hostcert-expiry')
 
-    # OSG 3.3 tries to download from IU and causes a failure
-    @core.osgrelease(3.4)
     def test_032_cacert_expiry(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 
         self.run_metric('org.osg.certificates.cacert-expiry',
                         accept_status=['OK', 'WARNING'])
 
-    # OSG 3.3 tries to download from IU and causes a failure
-    @core.osgrelease(3.4)
     def test_033_crlcert_expiry(self):
         core.skip_ok_unless_installed('rsv', 'htcondor-ce')
 

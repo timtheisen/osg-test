@@ -2,7 +2,12 @@ import os
 
 from osgtest.library import core, service, osgunittest
 
+
 class TestStartRSV(osgunittest.OSGTestCase):
+
+    @core.osgrelease(3.4)
+    def setUp(self):
+        pass
 
     def test_01_config(self):
         pass

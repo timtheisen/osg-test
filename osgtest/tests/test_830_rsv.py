@@ -3,7 +3,12 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
+
 class TestStopRSV(osgunittest.OSGTestCase):
+
+    @core.osgrelease(3.4)
+    def setUp(self):
+        pass
 
     def test_01_stop_rsv(self):
         core.skip_ok_unless_installed('rsv')
