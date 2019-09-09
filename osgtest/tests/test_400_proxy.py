@@ -35,6 +35,7 @@ class TestGridProxyInit(osgunittest.OSGTestCase):
     def test_04_grid_proxy_info(self):
         core.state['proxy.valid'] = False
         core.skip_ok_unless_installed('globus-proxy-utils')
+        self.skip_bad_unless(core.state['proxy.created'], 'Proxy creation failed')
         command = ('grid-proxy-info', '-debug')
         core.check_system(command, 'Normal grid-proxy-info', user=True)
         core.state['proxy.valid'] = True
