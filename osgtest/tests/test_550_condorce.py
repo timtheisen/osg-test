@@ -83,7 +83,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_03_ping(self):
         self.general_requirements()
-        self.skip_bad_unless(core.state['proxy.created'])
+        self.skip_bad_unless(core.state['proxy.created'], 'requires a proxy cert')
 
         command = ('condor_ce_ping', 'WRITE', '-verbose')
         stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
@@ -92,7 +92,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_04_trace(self):
         self.general_requirements()
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
-        self.skip_bad_unless(core.state['proxy.created'])
+        self.skip_bad_unless(core.state['proxy.created'], 'requires a proxy cert')
 
         cwd = os.getcwd()
         os.chdir('/tmp')
@@ -108,7 +108,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge',
                                       by_dependency=True)
         self.skip_ok_unless(service.is_running('pbs_server'), 'pbs service not running')
-        self.skip_bad_unless(core.state['proxy.created'])
+        self.skip_bad_unless(core.state['proxy.created'], 'requires a proxy cert')
         self.run_blahp_trace('pbs')
 
     def test_06_slurm_trace(self):
@@ -117,7 +117,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         self.skip_ok_unless(service.is_running(core.config['slurm.service-name']), 'slurm service not running')
-        self.skip_bad_unless(core.state['proxy.created'])
+        self.skip_bad_unless(core.state['proxy.created'], 'requires a proxy cert')
         self.run_blahp_trace('slurm')
 
     def test_07_ceview(self):
