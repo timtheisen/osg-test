@@ -17,7 +17,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
 
     def test_01_create_macaroons(self):
         core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
-        self.skip_bad_unless(core.state['proxy.created'], 'Proxy creation failed')
+        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
         core.config['xrootd.tpc.macaroon-1'] = None
         core.config['xrootd.tpc.macaroon-2'] = None
         
