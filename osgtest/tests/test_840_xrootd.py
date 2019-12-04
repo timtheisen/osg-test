@@ -18,7 +18,7 @@ class TestStopXrootd(osgunittest.OSGTestCase):
                 files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")
             if core.el_release() < 7:
                 files.restore(core.config['xrootd.service-defaults'], "xrootd")
-        core.skip_ok_unless_installed('xrootd', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
         self.skip_ok_if(core.state['xrootd.started-server'], 'did not start server')
         service.check_stop(core.config['xrootd_service'])
         files.remove(core.config['xrootd.tmp-dir'], force=True)

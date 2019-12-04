@@ -69,10 +69,9 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.backups-exist'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        core.skip_ok_unless_installed('xrootd', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
 
         user = pwd.getpwnam("xrootd")
-        core.skip_ok_unless_installed('globus-proxy-utils')
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
         core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
 
@@ -115,7 +114,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.multiuser'] = True
 
     def test_04_start_xrootd(self):
-        core.skip_ok_unless_installed('xrootd', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
         if core.el_release() < 7:
             core.config['xrootd_service'] = "xrootd"
         elif core.config['xrootd.multiuser']:
