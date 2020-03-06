@@ -10,49 +10,50 @@ HTTP_PORT1 = 9001  # chosen so it doesn't conflict w/ the stashcache instances
 HTTP_PORT2 = 9002
 
 XROOTD_CFG_TEXT = """\
-cms.space min 2g 5g
-xrootd.seclib /usr/lib64/libXrdSec.so
-http.secxtractor /usr/lib64/libXrdLcmaps.so
+all.adminpath /var/spool/xrootd
+all.pidpath /var/run/xrootd
+set resourcename = VDTTEST
+continue /etc/xrootd/config.d/
+"""
 
-sec.protocol /usr/lib64 gsi -d 2 -certdir:/etc/grid-security/certificates \
-    -cert:/etc/grid-security/xrd/xrdcert.pem \
-    -key:/etc/grid-security/xrd/xrdkey.pem \
-    -crl:1 \
-    -ca:0 \
-    --gmapopt:10 \
-    --gmapto:0 \
-    %s
 
-acc.authdb /etc/xrootd/auth_file
-ofs.authorize
-all.export    /
-
-if exec xrootd
-  http.cadir /etc/grid-security/certificates
-  http.cert /etc/grid-security/xrd/xrdcert.pem
-  http.key /etc/grid-security/xrd/xrdkey.pem
-  http.listingdeny yes
-  http.desthttps yes
-  http.trace all debug
-  # Enable third-party-copy
-  http.exthandler xrdtpc libXrdHttpTPC.so
-  # Pass the bearer token to the Xrootd authorization framework.
-  http.header2cgi Authorization authz
-
-  # Enable Macaroons
-  ofs.authlib libXrdMacaroons.so
-  xrd.port %d
-  xrd.protocol http:%d /usr/lib64/libXrdHttp-4.so
+XROOTD_MACAROON_TXT = """\
+if named third-party-copy-1
+set HttpPort = 9001
+macaroons.secretkey /etc/xrootd/macaroon-secret-1
 fi
-http.exthandler xrdmacaroons libXrdMacaroons.so
-all.sitename VDTTESTSITE
+if named third-party-copy-2
+set HttpPort = 9002
+macaroons.secretkey /etc/xrootd/macaroon-secret-2
+fi
+"""
 
+XROOTD_STANDALONE_TXT = """\
+set EnableHttp = 1
+set EnableLcmaps = 1
+
+if named standalone
+set HttpPort = 1094
+xrd.port $(HttpPort)
+fi
+
+all.role server
+cms.allow host *
+
+# Logging verbosity                                                                                                                                         
+xrootd.trace emsg login stall redirect
+ofs.trace -all
+xrd.trace conn
+cms.trace all
+
+xrd.network keepalive kaparms 10m,1m,5
+xrd.timeout idle 60m
 """
 
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("xrootd",
+        core.skip_ok_unless_installed("osg-xrootd-standalone",
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
@@ -60,8 +61,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
     def test_01_configure_xrootd(self):
         core.config['xrootd.tpc.config-1'] = '/etc/xrootd/xrootd-third-party-copy-1.cfg'
         core.config['xrootd.tpc.config-2'] = '/etc/xrootd/xrootd-third-party-copy-2.cfg'
-        core.config['xrootd.tpc.http-port1'] = HTTP_PORT1
-        core.config['xrootd.tpc.http-port2'] = HTTP_PORT2
+        core.config['xrootd.tpc.basic-config'] = '/etc/xrootd/config.d/36-osg-test-tpc.cfg'
         core.state['xrootd.started-http-server-1'] = False
         core.state['xrootd.started-http-server-2'] = False
         core.state['xrootd.tpc.backups-exist'] = False
@@ -71,21 +71,18 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
 
         user = pwd.getpwnam("xrootd")
 
-        lcmaps_packages = ('lcmaps', 'lcmaps-db-templates', 'xrootd-lcmaps', 'vo-client', 'vo-client-lcmaps-voms')
-        if all([core.rpm_is_installed(x) for x in lcmaps_packages]):
-            core.log_message("Using xrootd-lcmaps authentication")
-            sec_protocol = '-authzfun:libXrdLcmaps.so -authzfunparms:--loglevel,5'
-            sec_protocol += ',--policy,authorize_only'
-        else:
-            core.log_message("Using XRootD mapfile authentication")
-            sec_protocol = '-gridmap:/etc/grid-security/xrd/xrdmapfile'
-
         files.write(core.config['xrootd.tpc.config-1'],
-                     XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.tpc.http-port1'], core.config['xrootd.tpc.http-port1']),
+                     XROOTD_CFG_TEXT,
                      owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
         files.write(core.config['xrootd.tpc.config-2'],
-                     XROOTD_CFG_TEXT % (sec_protocol, core.config['xrootd.tpc.http-port2'], core.config['xrootd.tpc.http-port2']),
+                     XROOTD_CFG_TEXT,
                      owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+        files.write('/etc/xrootd/config.d/40-osg-standalone.cfg', XROOTD_STANDALONE_TXT,
+                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+        files.write(core.config['xrootd.tpc.basic-config'],
+                     XROOTD_MACAROON_TXT,
+                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+
         core.state['xrootd.tpc.backups-exist'] = True
  
     def test_02_create_secrets(self):
@@ -95,12 +92,6 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                                core.config['xrootd.tpc.macaroon-secret-1'], "64"], "Creating symmetric key")
         core.check_system(["openssl", "rand", "-base64", "-out",
                                core.config['xrootd.tpc.macaroon-secret-2'], "64"], "Creating symmetric key")
-        files.append(core.config['xrootd.tpc.config-1'], 
-                         "macaroons.secretkey %s"%(core.config['xrootd.tpc.macaroon-secret-1']),
-                         owner='xrootd', backup=False)
-        files.append(core.config['xrootd.tpc.config-2'],
-                         "macaroons.secretkey %s"%(core.config['xrootd.tpc.macaroon-secret-2']),
-                      owner='xrootd', backup=False)
 
     def test_03_start_xrootd(self):
         core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
