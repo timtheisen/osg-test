@@ -10,7 +10,7 @@ import osgtest.library.osgunittest as osgunittest
 class TestXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("xrootd",
+        core.skip_ok_unless_installed("osg-xrootd-standalone",
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")

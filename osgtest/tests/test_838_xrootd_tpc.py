@@ -6,7 +6,7 @@ import osgtest.library.osgunittest as osgunittest
 class TestStopXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
     def setUp(self):
-        core.skip_ok_unless_installed("xrootd",
+        core.skip_ok_unless_installed("osg-xrootd-standalone",
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
@@ -15,6 +15,8 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
         if core.state['xrootd.tpc.backups-exist']:
             files.restore(core.config['xrootd.tpc.config-1'], "xrootd")
             files.restore(core.config['xrootd.tpc.config-2'], "xrootd")
+            files.restore(core.config['xrootd.tpc.basic-config'], "xrootd")
+            files.restore('/etc/xrootd/config.d/40-osg-standalone.cfg', "xrootd")
 
         self.skip_ok_if(not core.state['xrootd.started-http-server-1'] and
                         not core.state['xrootd.started-http-server-2'], 
