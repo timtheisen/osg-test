@@ -137,3 +137,23 @@ class TestStashCache(OSGTestCase):
         origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
         chechskum_match = files.checksum_files_match(origin_file, dest_file)
         self.assert_(chechskum_match, 'Cache and download file have same contents')
+
+    def test_08_https_fetch_from_auth_cache(self):
+        core.skip_ok_unless_installed('globus-proxy-utils', 'gfal2-plugin-http', 'gfal2-util', 
+                                      'gfal2-plugin-file', by_dependency=True)
+        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        name, contents = self.testfiles[3]
+        path = os.path.join(getcfg("OriginAuthExport"), name)
+        dest_file = '/tmp/testfileHTTPsFromAuthCache'
+        uid = pwd.getpwnam(core.options.username)[2]
+        usercert = '/tmp/x509up_u%d' % uid
+        userkey = '/tmp/x509up_u%d' % uid
+        result, _, _ = \
+            core.check_system(["gfal-copy", "-vf",
+                               "--cert", usercert, "--key", userkey,
+                               "https://%s:%d%s" % (core.get_hostname(),getcfg("CacheHTTPSPort"), path),
+                               "file://%s"%dest_file],
+                              "Checking xrootd copy from Authenticated cache", user=True)
+        origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
+        chechskum_match = files.checksum_files_match(origin_file, dest_file)
+        self.assert_(chechskum_match, 'Cache and download file have same contents')
