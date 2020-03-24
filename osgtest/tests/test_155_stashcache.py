@@ -37,6 +37,7 @@ PARAMS_CFG_PATH = "/etc/xrootd/config.d/01-params.cfg"
 PARAMS_CFG_CONTENTS = "\n".join("setenv {0} = {1}\nset {0} = {1}".format(k, v)
                                 for k, v in PARAMS.items()) + "\n"
 
+
 PRE_CFG_PATH = "/etc/xrootd/config.d/11-pre.cfg"
 PRE_CFG_CONTENTS = """
 set DisableOsgMonitoring = 1
@@ -52,6 +53,7 @@ if named stash-cache-auth
 
     pss.origin localhost:$(OriginAuthXrootPort)
     xrd.protocol http:$(CacheHTTPSPort) libXrdHttp.so
+    setenv XrdSecGSISRVNAMES=*
 else if named stash-cache
     xrd.port $(CacheXrootPort)
     set rootdir = $(CacheRootdir)
@@ -77,10 +79,15 @@ fi
 """
 
 CACHE_AUTHFILE_PATH = PARAMS["StashCacheAuthfile"]
-CACHE_AUTHFILE_CONTENTS = "u * / rl\n"
+CACHE_AUTHFILE_CONTENTS = "u b64f6609.0 /osgtest/PROTECTED rl\n"
+
 
 CACHE_PUBLIC_AUTHFILE_PATH = PARAMS["StashCachePublicAuthfile"]
-CACHE_PUBLIC_AUTHFILE_CONTENTS = "u * / rl\n"
+CACHE_PUBLIC_AUTHFILE_CONTENTS = """
+u * /osgtest/PROTECTED -rl \
+/ rl
+"""
+
 
 ORIGIN_AUTHFILE_PATH = PARAMS["StashOriginAuthfile"]
 ORIGIN_AUTHFILE_CONTENTS = "u * /osgtest/PROTECTED rl\n"

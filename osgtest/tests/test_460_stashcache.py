@@ -27,7 +27,10 @@ class TestStashCache(OSGTestCase):
         for x in range(4)
     ]
 
-    def assertCached(self, name, contents):
+    def assertCached(self, name, contents, auth=False):
+        OriginExport = getcfg("OriginExport")
+        if auth:
+            OriginExport = getcfg("OriginAuthExport")
         fpath = os.path.join(getcfg("CacheRootdir"), getcfg("OriginExport").lstrip("/"), name)
         self.assertTrue(os.path.exists(fpath),
                         name + " not cached")
@@ -47,7 +50,8 @@ class TestStashCache(OSGTestCase):
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") < "1.0.2", "needs xcache 1.0.2+")
-        self.skip_bad_unless_running("xrootd@stash-origin", "xrootd@stash-cache")
+        self.skip_bad_unless_running("xrootd@stash-origin", "xrootd@stash-cache", "xrootd@stash-origin-auth",
+                                     "xrootd@stash-cache-auth")
 
     def test_01_create_files(self):
         xrootd_user = pwd.getpwnam("xrootd")
@@ -55,8 +59,11 @@ class TestStashCache(OSGTestCase):
             files.write(os.path.join(getcfg("OriginRootdir"), getcfg("OriginExport").lstrip("/"), name),
                         contents, backup=False, chmod=0o644,
                         chown=(xrootd_user.pw_uid, xrootd_user.pw_gid))
+            files.write(os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name),
+                        contents, backup=False, chmod=0o644,
+                        chown=(xrootd_user.pw_uid, xrootd_user.pw_gid))
 
-    def test_02_xroot_fetch_from_origin(self):
+    def test_02_xrootd_fetch_from_origin(self):
         name, contents = self.testfiles[0]
         path = os.path.join(getcfg("OriginExport"), name)
         result, _, _ = \
@@ -100,3 +107,33 @@ class TestStashCache(OSGTestCase):
             result = tf.read()
         self.assertEqualVerbose(result, contents, "stashcp'ed file mismatch")
         self.assertCached(name, contents)
+
+    def test_06_xrootd_fetch_from_origin_auth(self):
+        core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
+        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        name, contents = self.testfiles[0]
+        path = os.path.join(getcfg("OriginAuthExport"), name)
+        dest_file = '/tmp/testfileFromOriginAuth'
+        os.environ["XrdSecGSISRVNAMES"] = "*"
+        result, _, _ = core.check_system(["xrdcp", "-d1", '-f', 
+                                          "root://localhost:%d/%s" % (getcfg("OriginAuthXrootPort"), path),
+                                          dest_file],
+                                         "Checking xrootd copy from authenticated origin", user=True)
+        origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
+        chechskum_match = files.checksum_files_match(origin_file, dest_file)
+        self.assert_(chechskum_match, 'Origin and download file have same contents')
+
+    def test_07_xrootd_fetch_from_auth_cache(self):
+        core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
+        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        name, contents = self.testfiles[2]
+        path = os.path.join(getcfg("OriginAuthExport"), name)
+        os.environ["XrdSecGSISRVNAMES"] = "*"
+        dest_file = '/tmp/testfileXrootdFromAuthCache'
+        result, _, _ = \
+            core.check_system(["xrdcp", "-d1","-f",
+                               "root://%s:%d/%s" % (core.get_hostname(),getcfg("CacheHTTPSPort"), path),
+                               dest_file], "Checking xrootd copy from Authenticated cache", user=True)
+        origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
+        chechskum_match = files.checksum_files_match(origin_file, dest_file)
+        self.assert_(chechskum_match, 'Cache and download file have same contents')
