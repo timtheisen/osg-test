@@ -1,6 +1,5 @@
 stashcache-client
 stash-cache
 stash-origin
-stash-cache-auth
-stash-origin-auth
 gfal2-all
+globus-proxy-utils
