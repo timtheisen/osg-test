@@ -155,5 +155,5 @@ class TestStashCache(OSGTestCase):
                                "file://%s"%dest_file],
                               "Checking xrootd copy from Authenticated cache", user=True)
         origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
-        chechskum_match = files.checksum_files_match(origin_file, dest_file)
-        self.assert_(chechskum_match, 'Cache and download file have same contents')
+        checksum_match = files.checksum_files_match(origin_file, dest_file)
+        self.assert_(checksum_match, 'Origin and file downloaded via cache have the same contents')
