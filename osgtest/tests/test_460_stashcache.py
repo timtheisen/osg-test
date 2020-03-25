@@ -135,8 +135,8 @@ class TestStashCache(OSGTestCase):
                                "root://%s:%d/%s" % (core.get_hostname(),getcfg("CacheHTTPSPort"), path),
                                dest_file], "Checking xrootd copy from Authenticated cache", user=True)
         origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
-        chechskum_match = files.checksum_files_match(origin_file, dest_file)
-        self.assert_(chechskum_match, 'Cache and download file have same contents')
+        checksum_match = files.checksum_files_match(origin_file, dest_file)
+        self.assert_(checksum_match, 'Origin and file downloaded via cache have the same contents')
 
     def test_08_https_fetch_from_auth_cache(self):
         core.skip_ok_unless_installed('globus-proxy-utils', 'gfal2-plugin-http', 'gfal2-util', 
