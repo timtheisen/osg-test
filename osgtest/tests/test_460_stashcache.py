@@ -120,8 +120,8 @@ class TestStashCache(OSGTestCase):
                                           dest_file],
                                          "Checking xrootd copy from authenticated origin", user=True)
         origin_file = os.path.join(getcfg("OriginRootdir"), getcfg("OriginAuthExport").lstrip("/"), name)
-        chechskum_match = files.checksum_files_match(origin_file, dest_file)
-        self.assert_(chechskum_match, 'Origin and download file have same contents')
+        checksum_match = files.checksum_files_match(origin_file, dest_file)
+        self.assert_(checksum_match, 'Origin and directly downloaded file have the same contents')
 
     def test_07_xrootd_fetch_from_auth_cache(self):
         core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
