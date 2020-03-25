@@ -79,7 +79,11 @@ fi
 """
 
 CACHE_AUTHFILE_PATH = PARAMS["StashCacheAuthfile"]
-CACHE_AUTHFILE_CONTENTS = "u b64f6609.0 /osgtest/PROTECTED rl\n"
+# The hash of the vdttest user DN
+# "/DC=org/DC=opensciencegrid/C=US/O=OSG Software/OU=People/CN=vdttest"
+# is b64f6609.0
+user_DN_hash = "b64f6609.0"
+CACHE_AUTHFILE_CONTENTS = "u %s /osgtest/PROTECTED rl\n" % user_DN_hash
 
 
 CACHE_PUBLIC_AUTHFILE_PATH = PARAMS["StashCachePublicAuthfile"]
