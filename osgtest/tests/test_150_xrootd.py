@@ -7,7 +7,7 @@ import osgtest.library.osgunittest as osgunittest
 
 XROOTD_CFG_TEXT = """\
 cms.space min 2g 5g
-xrootd.seclib /usr/lib64/libXrdSec-4.so
+xrootd.seclib libXrdSec.so
 sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates \
     -cert:/etc/grid-security/xrd/xrdcert.pem \
     -key:/etc/grid-security/xrd/xrdkey.pem \
