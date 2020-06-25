@@ -421,7 +421,7 @@ def skip_bad_if_more_than_one_installed(*packages):
         if rpm_is_installed(package):
             installed.append(package)
     if len(installed) > 1:
-        raise osgunittest.BadSkipException('More than one installed of the ce: %s' % ' '.join(installed))
+        raise osgunittest.BadSkipException('More than one installed of: %s' % ' '.join(installed))
 
 
 def skip_ok_unless_one_installed(*packages):
