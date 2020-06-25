@@ -20,6 +20,10 @@ import time
 import traceback
 import socket
 import signal
+try:
+    from shlex import quote as shell_quote
+except ImportError:
+    from pipes import quote as shell_quote
 
 from osgtest.library import osgunittest
 
@@ -496,11 +500,6 @@ def __format_command(command):
     return result
 
 
-def __prepare_shell_argument(argument):
-    if re.search(r'\W', argument) or argument == '':
-        return "'" + re.sub(r"'", r"'\''", argument) + "'"
-    return argument
-
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False, timeout=None, timeout_signal='TERM'):
     global _last_log_had_output
 
@@ -514,7 +513,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         except TypeError:
             print('Need list or tuple, got %s' % type(command))
     if use_test_user:
-        command = ['runuser', options.username, '-c', ' '.join(map(__prepare_shell_argument, command))]
+        command = ['runuser', options.username, '-c', ' '.join(map(shell_quote, command))]
 
     # Figure out stdin
     stdin = None
