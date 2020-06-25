@@ -555,7 +555,8 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
             os.killpg(p.pid, timeout_signal)
             os._exit(0)
 
-    (stdout, stderr) = p.communicate(a_input)
+    stdout, stderr = p.communicate(to_bytes(a_input))
+    stdout, stderr = to_str(stdout), to_str(stderr)
 
     if timeout is not None:
         if p.returncode >= 0:
@@ -783,11 +784,23 @@ def elrelease(*releases):
     return el_release_decorator
 
 
-try:
-    unicode
-except NameError:  # python 3
-    unicode = str
+def to_str(strlike, encoding="latin-1", errors="backslashreplace"):
+    """Turns a bytes into a str (Python 3) or a unicode to a str (Python 2)"""
+    if strlike is None:
+        return
+    if not isinstance(strlike, str):
+        if str is bytes:
+            return strlike.encode(encoding, errors)
+        else:
+            return strlike.decode(encoding, errors)
+    else:
+        return strlike
 
 
-def is_string(var):
-    return isinstance(var, (str, unicode))
+def to_bytes(strlike, encoding="latin-1", errors="backslashreplace"):
+    """Turns a str into bytes (Python 3) or a unicode to a str (Python 2)"""
+    if strlike is None:
+        return
+    if not isinstance(strlike, bytes):
+        return strlike.encode(encoding, errors)
+    return strlike

@@ -79,7 +79,7 @@ class TestStashCache(OSGTestCase):
             f = urlopen(
                 "http://localhost:%d/%s" % (getcfg("CacheHTTPPort"), path)
             )
-            result = f.read()
+            result = core.to_str(f.read())
         except IOError as e:
             self.fail("Unable to download from cache via http: %s" % e)
         self.assertEqualVerbose(result, contents, "downloaded file mismatch")
