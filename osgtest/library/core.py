@@ -500,6 +500,9 @@ def __format_command(command):
     return result
 
 
+_devnull = open(os.devnull, "r+b")
+
+
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False, timeout=None, timeout_signal='TERM'):
     global _last_log_had_output
 
@@ -516,7 +519,7 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         command = ['runuser', options.username, '-c', ' '.join(map(shell_quote, command))]
 
     # Figure out stdin
-    stdin = None
+    stdin = _devnull
     if a_input is not None:
         stdin = subprocess.PIPE
 
