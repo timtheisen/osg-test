@@ -36,12 +36,13 @@ def start(service_name):
     core.check_system(command, 'Start ' + service_name + ' service')
     core.state[service_name + '.started-service'] = True
 
-def check_start(service_name, timeout=10, log_to_check = None):
+def check_start(service_name, timeout=10, log_to_check = None, min_up_time=0):
     """
     Start a service, 'service_name' via init script or systemd and ensure that
     it starts running within a 'timeout' second window (default=10s)
     """
     start(service_name)
+    time.sleep(min_up_time)
     assert is_running(service_name, timeout=10, log_to_check = log_to_check), "%s is not running" % service_name
 
 def stop(service_name):
