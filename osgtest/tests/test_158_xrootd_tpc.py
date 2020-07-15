@@ -21,12 +21,12 @@ XROOTD_MACAROON_TXT = """\
 if named third-party-copy-1
 set HttpPort = 9001
 macaroons.secretkey /etc/xrootd/macaroon-secret-1
-xrd.port $(HttpPort)
+xrd.port 9001
 fi
 if named third-party-copy-2
 set HttpPort = 9002
 macaroons.secretkey /etc/xrootd/macaroon-secret-2
-xrd.port $(HttpPort)
+xrd.port 9002
 fi
 """
 
