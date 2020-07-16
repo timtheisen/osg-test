@@ -39,7 +39,9 @@ def start(service_name):
 def check_start(service_name, timeout=10, log_to_check = None, min_up_time=0):
     """
     Start a service, 'service_name' via init script or systemd and ensure that
-    it starts running within a 'timeout' second window (default=10s)
+    it starts running within a 'timeout' second window (default=10s).
+    Will wait 'min_up_time' seconds before checking; the timeout window starts
+    after min_up_time has been reached.
     """
     start(service_name)
     time.sleep(min_up_time)
