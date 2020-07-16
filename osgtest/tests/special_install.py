@@ -57,7 +57,7 @@ class TestInstall(osgunittest.OSGTestCase):
             command += ['install', pkg]
 
             retry_fail, _, stdout, _ = yum.retry_command(command)
-            if retry_fail == '' and 'Nothing to do.' not in stdout:   # the command succeeded
+            if retry_fail == '':   # the command succeeded
                 id = yum.get_transaction_id()
                 if id not in core.state['install.transaction_ids']:
                     core.state['install.transaction_ids'].append(id)
