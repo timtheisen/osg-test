@@ -57,8 +57,10 @@ class TestInstall(osgunittest.OSGTestCase):
             command += ['install', pkg]
 
             retry_fail, _, stdout, _ = yum.retry_command(command)
-            if retry_fail == '':   # the command succeeded
-                core.state['install.transaction_ids'].append(yum.get_transaction_id())
+            if retry_fail == '' and 'Nothing to do.' not in stdout:   # the command succeeded
+                id = yum.get_transaction_id()
+                if id not in core.state['install.transaction_ids']:
+                    core.state['install.transaction_ids'].append(id)
                 if not pkg.startswith("/"):
                     # ^^ rpm --verify doesn't work if you asked for a file instead of a package
                     command = ('rpm', '--verify', pkg)
