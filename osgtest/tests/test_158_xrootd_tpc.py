@@ -21,10 +21,12 @@ XROOTD_MACAROON_TXT = """\
 if named third-party-copy-1
 set HttpPort = 9001
 macaroons.secretkey /etc/xrootd/macaroon-secret-1
+xrd.port 9001
 fi
 if named third-party-copy-2
 set HttpPort = 9002
 macaroons.secretkey /etc/xrootd/macaroon-secret-2
+xrd.port 9002
 fi
 """
 
@@ -94,9 +96,13 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                                core.config['xrootd.tpc.macaroon-secret-2'], "64"], "Creating symmetric key")
 
     def test_03_start_xrootd(self):
-        core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
-        core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
-        service.check_start(core.config['xrootd_tpc_service_1'], log_to_check = '/var/log/xrootd/third-party-copy-1/xrootd.log')
-        service.check_start(core.config['xrootd_tpc_service_2'], log_to_check = '/var/log/xrootd/third-party-copy-2/xrootd.log')
+        if core.rpm_is_installed("xrootd-multiuser"):
+            core.config['xrootd_tpc_service_1'] = "xrootd-privileged@third-party-copy-1"
+            core.config['xrootd_tpc_service_2'] = "xrootd-privileged@third-party-copy-2"
+        else:
+            core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
+            core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
+        service.check_start(core.config['xrootd_tpc_service_1'], log_to_check = '/var/log/xrootd/third-party-copy-1/xrootd.log', min_up_time = 5)
+        service.check_start(core.config['xrootd_tpc_service_2'], log_to_check = '/var/log/xrootd/third-party-copy-2/xrootd.log', min_up_time = 5)
         core.state['xrootd.started-http-server-1'] = True
         core.state['xrootd.started-http-server-2'] = True
