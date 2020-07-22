@@ -80,6 +80,8 @@ class TestVOMS(osgunittest.OSGTestCase):
 
         pwd_entry = pwd.getpwnam(core.options.username)
         cert_path = os.path.join(pwd_entry.pw_dir, '.globus', 'usercert.pem')
+        # Note: We're only looking for the "Signature Algorithm" line which has the same output format
+        # regardless of openssl version.
         command = ['openssl', 'x509', '-in', cert_path, '-text']
         signature_re = re.compile(r'Signature Algorithm:\s+(\w+)\s')
         stdout = core.check_system(command, 'Check X.509 certificate algorithm', user=True)[0]

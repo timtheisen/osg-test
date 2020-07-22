@@ -20,17 +20,33 @@ installation.
 %package log-viewer
 Summary:   Views the output of %{name}
 Group:     Applications/Grid
+%if 0%{?rhel} >= 8 || 0%{?fedora} >= 31
+Requires: python3-tkinter
+Requires: python3-six
+%else
 Requires:  tkinter
 Requires:  python-six
+%endif
 
 %description log-viewer
 A GUI for viewing the output of %{name} in a structured manner.
+
+%if 0%{?rhel} >= 8
+  %define __python /usr/libexec/platform-python
+%else
+  %if 0%{?fedora} >= 31
+    %define __python /usr/bin/python3
+  %else
+    %define __python /usr/bin/python2
+  %endif
+%endif
 
 %prep
 %setup -q
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+find . -type f -exec sed -ri '1s,^#!/usr/bin/env python,#!%{__python},' '{}' +
+make install DESTDIR=$RPM_BUILD_ROOT PYTHON=%{__python}
 %if 0%{?fedora} < 25 && 0%{?rhel} < 8
 rm -rf $RPM_BUILD_ROOT%{python_sitelib}/osgtest/vendor
 %endif

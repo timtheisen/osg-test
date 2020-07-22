@@ -13,6 +13,8 @@ VERSION := 3.0.0
 # Other configuration: May need to change for a release
 # ------------------------------------------------------------------------------
 
+PYTHON = python
+
 SBIN_FILES := osg-test osg-test-log-viewer
 INSTALL_SBIN_DIR := usr/sbin
 
@@ -50,7 +52,7 @@ TARBALL_DIR := $(PACKAGE)-$(VERSION)
 TARBALL_NAME := $(PACKAGE)-$(VERSION).tar.gz
 UPSTREAM := /p/vdt/public/html/upstream
 UPSTREAM_DIR := $(UPSTREAM)/$(PACKAGE)/$(VERSION)
-INSTALL_PYTHON_DIR := $(shell python -c 'from distutils.sysconfig import get_python_lib; print get_python_lib()')
+INSTALL_PYTHON_DIR := $(shell $(PYTHON) -c 'from distutils.sysconfig import get_python_lib; print(get_python_lib())')
 
 
 # ------------------------------------------------------------------------------

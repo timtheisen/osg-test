@@ -20,6 +20,10 @@ import time
 import traceback
 import socket
 import signal
+try:
+    from shlex import quote as shell_quote
+except ImportError:
+    from pipes import quote as shell_quote
 
 from osgtest.library import osgunittest
 
@@ -496,10 +500,8 @@ def __format_command(command):
     return result
 
 
-def __prepare_shell_argument(argument):
-    if re.search(r'\W', argument) or argument == '':
-        return "'" + re.sub(r"'", r"'\''", argument) + "'"
-    return argument
+_devnull = open(os.devnull, "r+b")
+
 
 def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False, timeout=None, timeout_signal='TERM'):
     global _last_log_had_output
@@ -514,10 +516,10 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         except TypeError:
             print('Need list or tuple, got %s' % type(command))
     if use_test_user:
-        command = ['runuser', options.username, '-c', ' '.join(map(__prepare_shell_argument, command))]
+        command = ['runuser', options.username, '-c', ' '.join(map(shell_quote, command))]
 
     # Figure out stdin
-    stdin = None
+    stdin = _devnull
     if a_input is not None:
         stdin = subprocess.PIPE
 
@@ -555,7 +557,8 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
             os.killpg(p.pid, timeout_signal)
             os._exit(0)
 
-    (stdout, stderr) = p.communicate(a_input)
+    stdout, stderr = p.communicate(to_bytes(a_input))
+    stdout, stderr = to_str(stdout), to_str(stderr)
 
     if timeout is not None:
         if p.returncode >= 0:
@@ -783,11 +786,23 @@ def elrelease(*releases):
     return el_release_decorator
 
 
-try:
-    unicode
-except NameError:  # python 3
-    unicode = str
+def to_str(strlike, encoding="latin-1", errors="backslashreplace"):
+    """Turns a bytes into a str (Python 3) or a unicode to a str (Python 2)"""
+    if strlike is None:
+        return
+    if not isinstance(strlike, str):
+        if str is bytes:
+            return strlike.encode(encoding, errors)
+        else:
+            return strlike.decode(encoding, errors)
+    else:
+        return strlike
 
 
-def is_string(var):
-    return isinstance(var, (str, unicode))
+def to_bytes(strlike, encoding="latin-1", errors="backslashreplace"):
+    """Turns a str into bytes (Python 3) or a unicode to a str (Python 2)"""
+    if strlike is None:
+        return
+    if not isinstance(strlike, bytes):
+        return strlike.encode(encoding, errors)
+    return strlike

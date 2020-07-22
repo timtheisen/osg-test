@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """View the output from osg-test in a structured way"""
 from __future__ import print_function
 

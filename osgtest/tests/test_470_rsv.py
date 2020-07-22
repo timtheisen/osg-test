@@ -8,7 +8,10 @@ import os
 import pwd
 import shutil
 import socket
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 """
 Testing number conventions:
