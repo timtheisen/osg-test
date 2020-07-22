@@ -47,7 +47,7 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
     def test_02_setup_selinux_port(self):
         if not core.state['selinux.mode']:
             self.skip_ok('SELinux disabled')
-        core.skip_ok_unless_installed("/usr/sbin/semanage", by_depenency=True)
+        core.skip_ok_unless_installed("/usr/sbin/semanage", by_dependency=True)
         port = core.config['gsisshd.port']
         core.check_system(['semanage', 'port', '--add', '-t', 'ssh_port_t', '--proto', 'tcp', port],
                           message="Allow [gsi]sshd to use port %s" % port)

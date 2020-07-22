@@ -129,7 +129,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('htcondor-ce-view')
         view_url = 'http://%s:%s' % (core.get_hostname(), int(core.config['condor-ce.view-port']))
         try:
-            src = to_str(urlopen(view_url).read())
+            src = core.to_str(urlopen(view_url).read())
         except EnvironmentError as err:
             self.fail('Could not reach HTCondor-CE View at %s: %s' % (view_url, err))
         self.assert_(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
