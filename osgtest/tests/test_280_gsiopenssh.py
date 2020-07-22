@@ -34,9 +34,9 @@ class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
         core.state['gsisshd.can-run'] = (not (
             core.el_release() >= 7 and
             core.state['selinux.mode'] and
-            not core.dependency_is_installed("/usr/sbin/sestatus")))
+            not core.dependency_is_installed("/usr/sbin/semanage")))
         self.skip_ok_unless(core.state['gsisshd.can-run'],
-                            "Can't run with SELinux on EL >= 7 without %s" % TestStartGSIOpenSSH.policycoreutils_rpm)
+                            "Can't run with SELinux on EL >= 7 without semanage")
 
         files.write(
             SSHD_CONFIG,
