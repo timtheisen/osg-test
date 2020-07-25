@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   3.0.0
+Version:   3.1.0
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -60,6 +60,9 @@ rm -rf $RPM_BUILD_ROOT%{python_sitelib}/osgtest/vendor
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Fri Jul 24 2020 Mátyás Selmeci <matyas@cs.wisc.edu> - 3.1.0-1
+- Python 3/EL8 support for osg-test (SOFTWARE-4073)
+
 * Tue May 07 2019 Brian Lin <blin@cs.wisc.edu> - 3.0.0-1
 - Remove tests for OSG 3.3-only components
 - Update StashCache and XRootD tests for XCache 1.0+
