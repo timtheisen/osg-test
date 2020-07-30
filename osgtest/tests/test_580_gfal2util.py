@@ -33,7 +33,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
          file_copied = os.path.exists(TestGFAL2Util.__local_path)
          self.assert_(file_copied, 'Copied file missing')
 
-    @core.elrelease(7)
+    @core.elrelease(7,8)
     def test_02_copy_local_to_server_gfal2_util(self):
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'gfal2-plugin-gridftp')
         self.skip_ok_unless(core.state['gridftp.running-server'], 'gridftp server not running')
@@ -44,7 +44,7 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
         file_copied = os.path.exists(TestGFAL2Util.__remote_path)
         self.assert_(file_copied, 'Copied file missing')
 
-    @core.elrelease(7)
+    @core.elrelease(7,8)
     def test_03_remove_server_file_gfal2_util_gftp(self):
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'gfal2-plugin-gridftp')
         self.skip_ok_unless(core.state['gridftp.running-server'], 'gridftp server not running')
