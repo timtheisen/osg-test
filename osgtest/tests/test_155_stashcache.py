@@ -118,7 +118,11 @@ def setcfg(key, val):
 def start_xrootd(instance):
     svc = "xrootd@%s" % instance
     if not service.is_running(svc):
-        service.check_start(svc)
+        try:
+            service.check_start(svc, min_up_time=3)
+        except Exception:
+            core.system("tail -n 75 /var/log/xrootd/%s/xrootd.log" % instance, shell=True)
+            raise
 
 
 class TestStartStashCache(OSGTestCase):
