@@ -106,10 +106,11 @@ CACHES_JSON_CONTENTS = """\
 ]
 """
 
-SCITOKENS_CONF_PATH = "/var/run/stash-cache-auth/scitokens.conf"
+ORIGIN_SCITOKENS_CONF_PATH = "/run/stash-origin-auth/scitokens.conf"
+CACHE_SCITOKENS_CONF_PATH = "/run/stash-cache-auth/scitokens.conf"
 SCITOKENS_CONF_CONTENTS = """\
 [Global]
-audience = unregistered_cache
+audience = unregistered
 
 [Issuer /unregistered]
 issuer = https://scitokens.org/unregistered
@@ -163,7 +164,9 @@ class TestStartStashCache(OSGTestCase):
                   os.path.join(PARAMS["OriginRootdir"], PARAMS["OriginAuthExport"].lstrip("/")),
                   os.path.join(PARAMS["CacheRootdir"], PARAMS["OriginDummyExport"].lstrip("/")),
                   os.path.dirname(CACHES_JSON_PATH),
-                  os.path.dirname(SCITOKENS_CONF_PATH)]:
+                  os.path.dirname(CACHE_SCITOKENS_CONF_PATH),
+                  os.path.dirname(ORIGIN_SCITOKENS_CONF_PATH),
+                  ]:
             files.safe_makedirs(d)
 
         core.system(["chown", "-R", "xrootd:xrootd", PARAMS["OriginRootdir"], PARAMS["CacheRootdir"]])
@@ -190,7 +193,8 @@ class TestStartStashCache(OSGTestCase):
             (CACHE_AUTHFILE_PATH, CACHE_AUTHFILE_CONTENTS),
             (CACHE_PUBLIC_AUTHFILE_PATH, CACHE_PUBLIC_AUTHFILE_CONTENTS),
             (CACHES_JSON_PATH, CACHES_JSON_CONTENTS),
-            (SCITOKENS_CONF_PATH, SCITOKENS_CONF_CONTENTS)
+            (CACHE_SCITOKENS_CONF_PATH, SCITOKENS_CONF_CONTENTS),
+            (ORIGIN_SCITOKENS_CONF_PATH, SCITOKENS_CONF_CONTENTS),
         ]:
             files.write(path, contents, owner=NAMESPACE, chmod=0o644)
             filelist.append(path)
