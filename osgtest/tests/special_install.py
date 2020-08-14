@@ -26,7 +26,7 @@ class TestInstall(osgunittest.OSGTestCase):
         core.state['install.os_updates'] = []
 
         # Install packages
-        core.state['install.transaction_ids'] = []
+        core.state['install.transaction_ids'] = set()
         fail_msg = ''
         pkg_repo_dict = OrderedDict((x, core.options.extrarepos) for x in core.options.packages)
 
@@ -58,9 +58,7 @@ class TestInstall(osgunittest.OSGTestCase):
 
             retry_fail, _, stdout, _ = yum.retry_command(command)
             if retry_fail == '':   # the command succeeded
-                id = yum.get_transaction_id()
-                if id not in core.state['install.transaction_ids']:
-                    core.state['install.transaction_ids'].append(id)
+                core.state['install.transaction_ids'].add(yum.get_transaction_id())
                 if not pkg.startswith("/"):
                     # ^^ rpm --verify doesn't work if you asked for a file instead of a package
                     command = ('rpm', '--verify', pkg)
@@ -126,4 +124,4 @@ class TestInstall(osgunittest.OSGTestCase):
         if fail_msg:
             self.fail(fail_msg)
         else:
-            core.state['install.transaction_ids'].append(yum.get_transaction_id())
+            core.state['install.transaction_ids'].add(yum.get_transaction_id())
