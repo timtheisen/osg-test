@@ -91,8 +91,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             core.log_message('No packages installed')
             return
 
-        core.state['install.transaction_ids'].reverse()
-        for transaction in core.state['install.transaction_ids']:
+        for transaction in reversed(sorted(core.state['install.transaction_ids'])):
             command = ['yum', 'history', 'undo', '-y', transaction]
             for repo in core.options.extrarepos:
                 command.append('--enablerepo=%s' % repo)
