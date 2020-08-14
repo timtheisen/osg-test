@@ -109,9 +109,6 @@ CACHES_JSON_CONTENTS = """\
 ORIGIN_SCITOKENS_CONF_PATH = "/run/stash-origin-auth/scitokens.conf"
 CACHE_SCITOKENS_CONF_PATH = "/run/stash-cache-auth/scitokens.conf"
 SCITOKENS_CONF_CONTENTS = """\
-[Global]
-audience = unregistered
-
 [Issuer /unregistered]
 issuer = https://scitokens.org/unregistered
 base_path = /unregistered
