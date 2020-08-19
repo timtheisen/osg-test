@@ -34,7 +34,7 @@ class TestStashCache(OSGTestCase):
         fpath = os.path.join(getcfg("CacheRootdir"), getcfg("OriginExport").lstrip("/"), name)
         self.assertTrue(os.path.exists(fpath),
                         name + " not cached")
-        self.assertEqualVerbose(actual=files.read(fpath, as_single_string=True),
+        self.assertEqualVerbose(actual=core.to_str(files.read(fpath, as_single_string=True)),
                                 expected=contents,
                                 message="cached file %s mismatch" % name)
 
@@ -70,7 +70,7 @@ class TestStashCache(OSGTestCase):
             core.check_system(["xrdcp", "-d1", "-N", "-f",
                                "root://localhost:%d/%s" % (getcfg("OriginXrootPort"), path),
                                "-"], "Checking xroot copy from origin")
-        self.assertEqualVerbose(result, contents, "downloaded file mismatch")
+        self.assertEqualVerbose(core.to_str(result), contents, "downloaded file mismatch")
 
     def test_03_http_fetch_from_cache(self):
         name, contents = self.testfiles[1]
@@ -92,7 +92,7 @@ class TestStashCache(OSGTestCase):
             core.check_system(["xrdcp", "-d1", "-N", "-f",
                                "root://localhost:%d/%s" % (getcfg("CacheXrootPort"), path),
                                "-"], "Checking xroot copy from cache")
-        self.assertEqualVerbose(result, contents, "downloaded file mismatch")
+        self.assertEqualVerbose(core.to_str(result), contents, "downloaded file mismatch")
         self.assertCached(name, contents)
 
     def test_05_stashcp(self):
@@ -105,7 +105,7 @@ class TestStashCache(OSGTestCase):
             core.check_system(command + [path, tf.name],
                               "Checking stashcp")
             result = tf.read()
-        self.assertEqualVerbose(result, contents, "stashcp'ed file mismatch")
+        self.assertEqualVerbose(core.to_str(result), contents, "stashcp'ed file mismatch")
         self.assertCached(name, contents)
 
     def test_06_xrootd_fetch_from_origin_auth(self):
