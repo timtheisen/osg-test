@@ -17,6 +17,8 @@ sec.protocol /usr/lib64 gsi -certdir:/etc/grid-security/certificates \
     %s
 acc.authdb /etc/xrootd/auth_file
 ofs.authorize
+xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
+xrd.tlsca noverify
 """
 
 # XRootD configuration necessaryfor osg-xrootd-standalone
