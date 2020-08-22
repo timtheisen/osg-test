@@ -25,6 +25,8 @@ xrd.tlsca noverify
 META_XROOTD_CFG_TEXT = """\
 set rootdir = /
 set resourcename = OSG_TEST_XROOTD_STANDALONE
+xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
+xrd.tlsca noverify
 """
 
 AUTHFILE_TEXT = """\
