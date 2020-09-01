@@ -4,6 +4,7 @@ import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 import tempfile
 
+
 class TestCvmfs(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
@@ -29,7 +30,6 @@ class TestCvmfs(osgunittest.OSGTestCase):
         # removed as part of SOFTWARE-1108.
         core.skip_ok_unless_installed('cvmfs')
         core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)
-
 
         command = ('cat', default_local)
         status, stdout, stderr = core.system(command, False)
@@ -84,7 +84,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
     def test_03_oasis_config(self):
         core.skip_ok_unless_installed('cvmfs')
-        core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)        
+        core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)
         self.skip_bad_unless(core.state['cvmfs.mounted'], 'Cvmfs mount point missing')
 
         oasis_repo = 'oasis.opensciencegrid.org'
@@ -103,10 +103,9 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
         command = ('ls', '/cvmfs/' + singularity_repo)
         core.check_system(command, "testing cvmfs access to singularity repo")
-        
+
         command = ('ls', self.__cvmfs_image)
         core.check_system(command, "testing cvmfs access to singularity image")
 
-        command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
+        command = ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
         core.check_system(command, "singularity checking a file")
-
