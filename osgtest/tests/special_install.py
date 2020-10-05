@@ -43,8 +43,11 @@ class TestInstall(osgunittest.OSGTestCase):
             pkg_repo_dict.update(dict((x, core.options.extrarepos + dev_repo) for x in core.SLURM_PACKAGES))
 
         # HACK: Install x509-scitokens-issuer-client out of development (SOFTWARE-3649)
-        if 'xrootd-scitokens' in pkg_repo_dict:
-            pkg_repo_dict["x509-scitokens-issuer-client"] = ["osg-development"]
+        x509_scitokens_issuer_packages = ['xrootd-scitokens', 'osg-tested-internal']
+        for pkg in x509_scitokens_issuer_packages:
+            if pkg in pkg_repo_dict:
+                pkg_repo_dict["x509-scitokens-issuer-client"] = ["osg-development"]
+                break
 
         for pkg, repos in pkg_repo_dict.items():
             # Do not try to re-install packages
