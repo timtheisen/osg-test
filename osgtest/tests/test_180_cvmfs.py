@@ -42,6 +42,12 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         status, stdout, stderr = core.system(command, False)
         files.write("/etc/cvmfs/default.local", CVMFS_CONFIG, owner='cvmfs', chmod=0o644)
 
+        # Write verbose debug log for the OASIS repo
+        oasis_repo = "oasis.opensciencegrid.org"
+        files.write("/etc/cvmfs/config.d/%s.local" % oasis_repo,
+                    "CVMFS_DEBUGLOG=/tmp/cvmfs/%s.log" % oasis_repo,
+                    owner='cvmfs', chmod=0o644)
+
     def test_01_setup_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')
 
