@@ -2,6 +2,11 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
+CVMFS_CONFIG = """CVMFS_REPOSITORIES="`echo $((echo oasis.opensciencegrid.org;echo cms.cern.ch;ls /cvmfs)|sort -u)|tr ' ' ,`"
+CVMFS_QUOTA_LIMIT=10000
+CVMFS_HTTP_PROXY="http://cache01.hep.wisc.edu:8001|http://cache02.hep.wisc.edu:8001;DIRECT"
+"""
+
 class TestStartCvmfs(osgunittest.OSGTestCase):
 
     def setup_fuse(self):
@@ -35,11 +40,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
     def setup_cvmfs(self):
         command = ('mkdir','-p', '/tmp/cvmfs')
         status, stdout, stderr = core.system(command, False)
-        contents=[]
-        contents.append("CVMFS_REPOSITORIES=\"`echo $((echo oasis.opensciencegrid.org;echo cms.cern.ch;ls /cvmfs)|sort -u)|tr ' ' ,`\"\n")
-        contents.append("CVMFS_QUOTA_LIMIT=10000\n")
-        contents.append("CVMFS_HTTP_PROXY=\"http://cache01.hep.wisc.edu:8001|http://cache02.hep.wisc.edu:8001;DIRECT\"\n")
-        files.write("/etc/cvmfs/default.local", contents, owner='cvmfs', chmod=0o644)
+        files.write("/etc/cvmfs/default.local", CVMFS_CONFIG, owner='cvmfs', chmod=0o644)
 
     def test_01_setup_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')
