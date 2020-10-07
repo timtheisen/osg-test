@@ -4,7 +4,7 @@ import osgtest.library.osgunittest as osgunittest
 
 CVMFS_CONFIG = """CVMFS_REPOSITORIES="`echo $((echo oasis.opensciencegrid.org;echo cms.cern.ch;ls /cvmfs)|sort -u)|tr ' ' ,`"
 CVMFS_QUOTA_LIMIT=10000
-CVMFS_HTTP_PROXY="http://cache01.hep.wisc.edu:8001|http://cache02.hep.wisc.edu:8001;DIRECT"
+CVMFS_HTTP_PROXY="http://squid-cs-b240.chtc.wisc.edu:3128|http://squid-cs-2360.chtc.wisc.edu:3128|http://squid-wid.chtc.wisc.edu:3128;DIRECT"
 """
 
 class TestStartCvmfs(osgunittest.OSGTestCase):
