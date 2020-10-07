@@ -40,10 +40,6 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
         contents.append("CVMFS_QUOTA_LIMIT=10000\n")
         contents.append("CVMFS_HTTP_PROXY=\"http://cache01.hep.wisc.edu:8001|http://cache02.hep.wisc.edu:8001;DIRECT\"\n")
         files.write("/etc/cvmfs/default.local", contents, owner='cvmfs', chmod=0o644)
-        contents=[]
-        contents.append("CVMFS_SERVER_URL=\"http://cvmfs.fnal.gov:8000/opt/@org@;http://cvmfs.racf.bnl.gov:8000/opt/@org@;http://cvmfs-stratum-one.cern.ch:8000/opt/@org@;http://cernvmfs.gridpp.rl.ac.uk:8000/opt/@org@\"\n")
-        files.write("/etc/cvmfs/domain.d/cern.ch.local", contents, owner='cvmfs', chmod=0o644)
-
 
     def test_01_setup_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')

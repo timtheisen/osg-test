@@ -22,4 +22,3 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
         files.restore("/etc/fuse.conf","cvmfs")
         files.restore("/etc/auto.master","cvmfs")
         files.restore("/etc/cvmfs/default.local","cvmfs")
-        files.restore("/etc/cvmfs/domain.d/cern.ch.local","cvmfs")
