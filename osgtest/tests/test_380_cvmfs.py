@@ -1,8 +1,10 @@
 import os
+import tempfile
+
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import tempfile
+
 
 
 class TestCvmfs(osgunittest.OSGTestCase):

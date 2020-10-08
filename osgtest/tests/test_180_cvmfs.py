@@ -40,7 +40,7 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
 
     def setup_cvmfs(self):
         command = ('mkdir', '-p', '/tmp/cvmfs')
-        status, stdout, stderr = core.system(command, False)
+        core.system(command, False)
         files.write("/etc/cvmfs/default.local", CVMFS_CONFIG, owner='cvmfs', chmod=0o644)
 
         # Write verbose debug log for the OASIS repo
@@ -61,6 +61,6 @@ class TestStartCvmfs(osgunittest.OSGTestCase):
 
         core.skip_ok_unless_installed('cvmfs')
 
-        stdout, stderr, fail = core.check_system(('service', 'autofs', 'restart'), 'Start cvmfs server')
+        stdout, _, fail = core.check_system(('service', 'autofs', 'restart'), 'Start cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
         core.state['cvmfs.started-server'] = True
