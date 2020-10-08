@@ -19,17 +19,20 @@ class TestCvmfs(osgunittest.OSGTestCase):
         command = ('mount', '-t', 'cvmfs', repo, temp_dir)
         status, _, _ = core.system(command)
 
-        if status:
-            core.log_message("Successful manual mount of %s" % repo)
-            return
-
         # If manual mount works, autofs is likely the culprit
-        try:
-            debug_contents = files.read('/tmp/cvmfs/%s.log' % repo)
-        except OSError:
-            debug_contents = ''
+        if status:
+            debug_contents = "Failed to manually mount %s\n" % repo
+        else:
+            debug_contents = "Successful manual mount of %s" % repo
 
-        self.fail("Failed to manually mount %s\n" % repo + '=' * 20 + '\n' + debug_contents)
+        debug_file = "/tmp/cvmfs/%s.log" % repo
+        debug_contents += '='*20
+        try:
+            debug_contents += files.read(debug_file)
+        except OSError:
+            debug_contents += 'Failed to read %s' % debug_file
+
+        self.fail(debug_contents)
 
     def test_01_cvmfs_probe(self):
         default_local = '/etc/cvmfs/default.local'
