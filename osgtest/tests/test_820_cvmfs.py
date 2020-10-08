@@ -2,6 +2,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
 
+
 class TestStopCvmfs(osgunittest.OSGTestCase):
 
     def test_01_stop_cvmfs(self):
@@ -14,11 +15,11 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
                 core.check_system(command, 'Manual cvmfs unmount failed')
                 files.remove(temp_dir, force=True)
         except KeyError:
-            pass # tempdir was never created
+            pass  # tempdir was never created
 
         stdout, _, fail = core.check_system(('cvmfs_config', 'umount'), 'Stop Cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
 
-        files.restore("/etc/fuse.conf","cvmfs")
-        files.restore("/etc/auto.master","cvmfs")
-        files.restore("/etc/cvmfs/default.local","cvmfs")
+        files.restore("/etc/fuse.conf", "cvmfs")
+        files.restore("/etc/auto.master", "cvmfs")
+        files.restore("/etc/cvmfs/default.local", "cvmfs")
