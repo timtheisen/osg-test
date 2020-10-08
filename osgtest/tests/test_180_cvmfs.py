@@ -46,7 +46,7 @@ def setup_cvmfs():
     # Write verbose debug log for the OASIS repo
     oasis_repo = "oasis.opensciencegrid.org"
     files.write("/etc/cvmfs/config.d/%s.local" % oasis_repo,
-                "CVMFS_DEBUGLOG=/tmp/cvmfs/%s.log" % oasis_repo,
+                "CVMFS_DEBUGLOG=/tmp/cvmfs/%s.log\n" % oasis_repo,
                 owner='cvmfs', chmod=0o644)
 
 
