@@ -52,17 +52,13 @@ def setup_cvmfs():
 
 class TestStartCvmfs(osgunittest.OSGTestCase):
 
-    def test_01_setup_cvmfs(self):
+    def test_01_start_cvmfs(self):
+        core.state['cvmfs.started-server'] = False
         core.skip_ok_unless_installed('cvmfs')
 
         setup_fuse()
         setup_automount()
         setup_cvmfs()
-
-    def test_02_start_cvmfs(self):
-        core.state['cvmfs.started-server'] = False
-
-        core.skip_ok_unless_installed('cvmfs')
 
         stdout, _, fail = core.check_system(('service', 'autofs', 'restart'), 'Start cvmfs server')
         self.assert_(stdout.find('FAILED') == -1, fail)
