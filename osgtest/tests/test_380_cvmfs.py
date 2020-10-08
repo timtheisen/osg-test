@@ -29,7 +29,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         debug_contents += '='*20
         try:
             debug_contents += files.read(debug_file)
-        except OSError:
+        except IOError:
             debug_contents += 'Failed to read %s' % debug_file
 
         self.fail(debug_contents)
