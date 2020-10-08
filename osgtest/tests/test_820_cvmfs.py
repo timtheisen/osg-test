@@ -7,7 +7,7 @@ class TestStopCvmfs(osgunittest.OSGTestCase):
 
     def test_01_stop_cvmfs(self):
         core.skip_ok_unless_installed('cvmfs')
-        self.skip_ok_if(['cvmfs.started-server'] == False, 'did not start server')
+        self.skip_ok_unless(core.state['cvmfs.started-server'], 'did not start server')
 
         try:
             for temp_dir in core.config['cvmfs.debug-dirs']:
