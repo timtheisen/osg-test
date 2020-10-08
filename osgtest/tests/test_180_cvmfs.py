@@ -5,6 +5,7 @@ import osgtest.library.osgunittest as osgunittest
 CVMFS_CONFIG = """CVMFS_REPOSITORIES="`echo $((echo oasis.opensciencegrid.org;echo cms.cern.ch;ls /cvmfs)|sort -u)|tr ' ' ,`"
 CVMFS_QUOTA_LIMIT=10000
 CVMFS_HTTP_PROXY="http://squid-cs-b240.chtc.wisc.edu:3128|http://squid-cs-2360.chtc.wisc.edu:3128|http://squid-wid.chtc.wisc.edu:3128;DIRECT"
+CVMFS_DEBUGLOG=/tmp/cvmfs_debug.log
 """
 
 
@@ -42,12 +43,6 @@ def setup_cvmfs():
     command = ('mkdir', '-p', '/tmp/cvmfs')
     core.system(command, False)
     files.write("/etc/cvmfs/default.local", CVMFS_CONFIG, owner='cvmfs', chmod=0o644)
-
-    # Write verbose debug log for the OASIS repo
-    oasis_repo = "oasis.opensciencegrid.org"
-    files.write("/etc/cvmfs/config.d/%s.local" % oasis_repo,
-                "CVMFS_DEBUGLOG=/tmp/cvmfs/%s.log\n" % oasis_repo,
-                owner='cvmfs', chmod=0o644)
 
 
 class TestStartCvmfs(osgunittest.OSGTestCase):

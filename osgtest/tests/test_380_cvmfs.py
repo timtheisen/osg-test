@@ -25,7 +25,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
         else:
             debug_contents = "Successful manual mount of %s" % repo
 
-        debug_file = "/tmp/cvmfs/%s.log" % repo
+        debug_file = "/tmp/cvmfs_debug.log"
         debug_contents += '='*20
         try:
             debug_contents += files.read(debug_file)
