@@ -44,6 +44,8 @@ def setup_cvmfs():
     core.system(command, False)
     files.write("/etc/cvmfs/default.local", CVMFS_CONFIG, owner='cvmfs', chmod=0o644)
 
+    # Dump autofs debug output to /var/log/messages or journalctl
+    files.append("/etc/sysconfig/autofs", 'OPTIONS="-d"\n', owner='cvmfs')
 
 class TestStartCvmfs(osgunittest.OSGTestCase):
 
