@@ -39,7 +39,7 @@ case $release in
         osg_name="osg-$version-el7-release-latest.rpm"
         ;;
     *8.* )
-	rpm_name='epel-release-latest-8.noarch.rpm'
+        rpm_name='epel-release-latest-8.noarch.rpm'
         osg_name="osg-$version-el8-release-latest.rpm"
 	;;
     * )
