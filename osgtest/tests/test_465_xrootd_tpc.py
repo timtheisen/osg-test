@@ -26,7 +26,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         userkey = '/tmp/x509up_u%d' % uid
         
         core.config['xrootd.tpc.url-1'] = "https://" + core.get_hostname() + ":9001" + "/usr/share/osg-test/test_gridftp_data.txt".strip()
-        command = ('macaroon-init', core.config['xrootd.tpc.url-1'], '20', 'DOWNLOAD')
+        command = ('macaroon-init', core.config['xrootd.tpc.url-1'], '20', 'ALL')
 
         status, stdout, stderr = core.system(command, user=True)
         fail = core.diagnose('Obtain Macaroon one',
@@ -35,7 +35,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         core.config['xrootd.tpc.macaroon-1'] = stdout.strip()
 
         core.config['xrootd.tpc.url-2'] = "https://" + core.get_hostname() + ":9002" + "/tmp/test_gridftp_data_tpc.txt".strip()
-        command = ('macaroon-init', core.config['xrootd.tpc.url-2'], '20', 'UPLOAD')
+        command = ('macaroon-init', core.config['xrootd.tpc.url-2'], '20', 'ALL')
         status, stdout, stderr = core.system(command, user=True)
         fail = core.diagnose('Obtain Macaroon number two',
                              command, status, stdout, stderr)

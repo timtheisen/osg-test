@@ -13,6 +13,7 @@ XROOTD_CFG_TEXT = """\
 all.adminpath /var/spool/xrootd
 all.pidpath /var/run/xrootd
 set resourcename = VDTTEST
+set rootdir = /
 continue /etc/xrootd/config.d/
 """
 
@@ -102,7 +103,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         else:
             core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
             core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
-        service.check_start(core.config['xrootd_tpc_service_1'], log_to_check = '/var/log/xrootd/third-party-copy-1/xrootd.log', min_up_time = 5)
-        service.check_start(core.config['xrootd_tpc_service_2'], log_to_check = '/var/log/xrootd/third-party-copy-2/xrootd.log', min_up_time = 5)
+        service.check_start(core.config['xrootd_tpc_service_1'], min_up_time = 5)
+        service.check_start(core.config['xrootd_tpc_service_2'], min_up_time = 5)
         core.state['xrootd.started-http-server-1'] = True
         core.state['xrootd.started-http-server-2'] = True
