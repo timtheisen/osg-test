@@ -103,7 +103,10 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         else:
             core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
             core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
-        service.check_start(core.config['xrootd_tpc_service_1'], timeout=30, min_up_time = 5)
-        service.check_start(core.config['xrootd_tpc_service_2'], timeout=30, min_up_time = 5)
+
+        #core.system("systemctl start %s" % core.config['xrootd_tpc_service_1'], shell=True)
+        #core.system("systemctl is-active %s" % core.config['xrootd_tpc_service_1'], shell=True)
+        service.check_start(core.config['xrootd_tpc_service_1'], min_up_time = 5)
+        service.check_start(core.config['xrootd_tpc_service_2'], min_up_time = 5)
         core.state['xrootd.started-http-server-1'] = True
         core.state['xrootd.started-http-server-2'] = True
