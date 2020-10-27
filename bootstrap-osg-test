@@ -89,8 +89,8 @@ on_error_die 'Could not update osg-release'
 
 case $release in
     *[6|7].* )
-	echo -n "Install yum-plugin-priorities... (For EL6, EL7 only)"
-	yum -y --quiet install yum-plugin-priorities
+        echo -n "Install yum-plugin-priorities... (For EL6, EL7 only)"
+        yum -y --quiet install yum-plugin-priorities
         on_error_die "Could not install yum-plugin-priorities"
         echo -n 'Verify yum-plugin-priorities... '
         rpm --verify yum-plugin-priorities
