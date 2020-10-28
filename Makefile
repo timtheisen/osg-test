@@ -13,7 +13,7 @@ VERSION := 3.1.0
 # Other configuration: May need to change for a release
 # ------------------------------------------------------------------------------
 
-PYTHON = python
+PYTHON = /usr/bin/python3
 
 SBIN_FILES := osg-test osg-test-log-viewer
 INSTALL_SBIN_DIR := usr/sbin
@@ -86,6 +86,7 @@ install:
 	install -p -m 0644 $(PYTHON_VENDOR_FILES) $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_VENDOR_DIR)
 	mkdir -p $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_TEST_DIR)
 	install -p -m 0644 $(PYTHON_TEST_FILES) $(DESTDIR)/$(INSTALL_PYTHON_DIR)/$(PYTHON_TEST_DIR)
+	sed -ri '1s,^#!/usr/bin/env python.*,#!$(PYTHON),' $(DESTDIR)/$(INSTALL_SBIN_DIR)/osg-test
 
 $(TARBALL_NAME): $(DIST_FILES)
 	$(eval TEMP_DIR := $(shell mktemp -d -p . $(DIST_DIR_PREFIX)XXXXXXXXXX))
