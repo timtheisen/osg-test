@@ -104,11 +104,11 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
         core.config['condor-ce.collectorlog'] = condor.ce_config_val('COLLECTOR_LOG')
 
-        stat = core.get_stat(core.config['condor-ce.collectorlog'])
-
         if service.is_running('condor-ce'):
             core.state['condor-ce.schedd-ready'] = True
             self.skip_ok('already running')
+
+        stat = core.get_stat(core.config['condor-ce.collectorlog'])
 
         service.check_start('condor-ce', timeout=20)
 
