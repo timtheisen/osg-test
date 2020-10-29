@@ -132,13 +132,14 @@ class TestCondorCE(osgunittest.OSGTestCase):
         try:
             src = core.to_str(urlopen(view_url).read())
         except EnvironmentError as err:
-            debug_contents = 'Could not reach HTCondor-CE View at %s: %s\n%s\n' % (view_url, err, '=' * 20)
             debug_file = '/var/log/condor-ce/CEViewLog'
+            debug_contents = 'Contents of %s\n%s\n' % (debug_file, '=' * 20)
             try:
                 debug_contents += files.read(debug_file, True)
             except EnvironmentError:
                 debug_contents += 'Failed to read %s\n' % debug_file
-            self.fail(debug_contents)
+            core.log_message(debug_contents)
+            self.fail('Could not reach HTCondor-CE View at %s: %s' % (view_url, err))
         self.assert_(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
         core.config['condor-ce.view-listening'] = True
 
