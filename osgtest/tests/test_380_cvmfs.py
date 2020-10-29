@@ -23,10 +23,10 @@ class TestCvmfs(osgunittest.OSGTestCase):
         if status:
             debug_contents = "Failed to manually mount %s\n" % repo
         else:
-            debug_contents = "Successful manual mount of %s" % repo
+            debug_contents = "Successful manual mount of %s\n" % repo
 
         debug_file = "/tmp/cvmfs_debug.log"
-        debug_contents += '='*20
+        debug_contents += ('='*20) + "\n"
         try:
             debug_contents += files.read(debug_file, True)
         except IOError:
