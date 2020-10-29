@@ -14,12 +14,6 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
-# For Python 2 compat
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError
-
 
 class TestCondorCE(osgunittest.OSGTestCase):
 
@@ -142,7 +136,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
             debug_file = '/var/log/condor-ce/CEViewLog'
             try:
                 debug_contents += files.read(debug_file, True)
-            except FileNotFoundError:
+            except EnvironmentError:
                 debug_contents += 'Failed to read %s\n' % debug_file
             self.fail(debug_contents)
         self.assert_(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
