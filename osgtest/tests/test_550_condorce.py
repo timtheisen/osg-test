@@ -131,6 +131,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         view_url = 'http://%s:%s' % (core.get_hostname(), int(core.config['condor-ce.view-port']))
         try:
             src = core.to_str(urlopen(view_url).read())
+            core.log_message(src)
         except EnvironmentError as err:
             debug_file = '/var/log/condor-ce/CEViewLog'
             debug_contents = 'Contents of %s\n%s\n' % (debug_file, '=' * 20)
