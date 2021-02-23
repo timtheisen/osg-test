@@ -36,6 +36,28 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         core.check_system(command, 'Reconfigure Condor')
         self.assert_(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
 
+    def test_02_scitoken_mapping(self):
+        core.skip_ok_unless_installed('condor', 'htcondor-ce')
+        self.skip_ok_if(core.PackageVersion('condor') >= '8.9.4',
+                        'HTCondor version does not support SciToken submission')
+
+        condorce_version = core.PackageVersion('condor')
+        scitoken_mapping = f'SCITOKENS "https://demo.scitokens.org/" f{core.options.username}\n'
+
+        # Write the mapfile to the admin mapfile directory
+        # https://github.com/htcondor/htcondor-ce/pull/425
+        if condorce_version >= '5.1.0':
+            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/mapfiles.d/01-osg-test.conf'
+        else:
+            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
+            mapfile_contents = files.read(core.config['condor-ce.condorce_mapfile'])
+            scitoken_mapping += mapfile_contents
+
+        files.write(core.config['condor-ce.condorce_mapfile'],
+                    scitoken_mapping,
+                    owner='condor-ce',
+                    chmod=0o644)
+
     def test_03_configure_ce(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
