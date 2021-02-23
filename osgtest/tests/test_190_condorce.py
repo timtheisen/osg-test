@@ -1,5 +1,4 @@
 import cagen
-import re
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -7,8 +6,8 @@ import osgtest.library.osgunittest as osgunittest
 import osgtest.library.condor as condor
 import osgtest.library.service as service
 
+
 class TestStartCondorCE(osgunittest.OSGTestCase):
-    # Tests 01-02 are needed to reconfigure condor to work with HTCondor-CE
     def test_01_configure_condor(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
@@ -34,7 +33,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
 
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
+        self.assertTrue(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
 
     def test_02_scitoken_mapping(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce')
