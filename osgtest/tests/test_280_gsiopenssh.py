@@ -26,6 +26,7 @@ Subsystem       sftp    /usr/libexec/gsissh/sftp-server
 
 
 class TestStartGSIOpenSSH(osgunittest.OSGTestCase):
+    @core.osgrelease('3.5')
     def setUp(self):
         core.skip_ok_unless_installed('gsi-openssh-server', 'gsi-openssh-clients')
 
