@@ -24,7 +24,7 @@ def request_demo_scitoken(scope, audience='ANY'):
                     'scope': scope,
                     'exp': int(time.time() + 3600),
                     'sub': 'osg-test'}
-    payload = json.dumps({'payload': json.dumps({'payload': payload_dict}),
+    payload = json.dumps({'payload': json.dumps(payload_dict),
                           'algorithm': 'ES256'}).encode()
 
     req = request.Request('https://demo.scitokens.org/issue',
@@ -41,7 +41,7 @@ class TestTokens(osgunittest.OSGTestCase):
         core.config['token.condor_write'] = '/tmp/condor_write.scitoken'
 
         core.skip_ok_unless_installed('htcondor-ce', 'condor')
-        self.skip_ok_if(core.PackageVersion('condor') >= '8.9.4',
+        self.skip_ok_if(core.PackageVersion('condor') <= '8.9.4',
                         'HTCondor version does not support SciToken submission')
         self.skip_ok_if(os.path.exists(core.config['token.condor_write']),
                         'SciToken with HTCondor WRITE already exists')
