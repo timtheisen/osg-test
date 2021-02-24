@@ -751,7 +751,7 @@ def osgrelease(*releases):
             def test_bar_34_only(self):
                 ...
     """
-    releases = map(str, releases)  # convert float args to str
+    releases = [str(x) for x in releases]  # convert float args to str
     def osg_release_decorator(fn):
         def run_fn_if_osg_release_ok(*args, **kwargs):
             if osg_release().version in releases:
