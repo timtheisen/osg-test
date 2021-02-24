@@ -9,6 +9,10 @@ class TestGridFTP(osgunittest.OSGTestCase):
 
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_copy_local_to_server(self):
         core.skip_ok_unless_installed('globus-gridftp-server-progs', 'globus-ftp-client',
                                       'globus-proxy-utils', 'globus-gass-copy-progs')

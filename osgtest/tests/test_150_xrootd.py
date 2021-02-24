@@ -102,6 +102,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         core.state['xrootd.backups-exist'] = True
 
+    @core.osgrelease(3.5)
     def test_02_configure_hdfs(self):
         core.skip_ok_unless_installed('xrootd-hdfs')
         hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"

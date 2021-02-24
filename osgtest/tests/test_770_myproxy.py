@@ -5,6 +5,9 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStopMyProxy(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
 
     def test_01_stop_myproxy(self):
         core.skip_ok_unless_installed('myproxy-server')

@@ -12,6 +12,10 @@ class TestUberFTP(osgunittest.OSGTestCase):
                      'globus-proxy-utils', 'globus-gass-copy-progs',
                      'uberftp']
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_copy_local_to_server_uberftp(self):
         core.skip_ok_unless_installed(*self.required_rpms)
         self.skip_bad_unless(core.state['gridftp.running-server'] is True, 'GridFTP not running')

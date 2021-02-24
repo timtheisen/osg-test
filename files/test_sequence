@@ -10,7 +10,6 @@ test_140_lcmaps
 test_150_xrootd
 test_155_stashcache
 test_158_xrootd_tpc
-test_160_rsv
 test_170_pbs
 test_180_cvmfs
 test_190_condorce
@@ -28,7 +27,6 @@ test_430_uberftp
 test_450_xrootd
 test_460_stashcache
 test_465_xrootd_tpc
-test_470_rsv
 test_490_jobs
 test_550_condorce
 test_580_gfal2util
@@ -38,7 +36,6 @@ test_770_myproxy
 test_780_voms
 test_790_condorce
 test_820_cvmfs
-test_830_rsv
 test_835_stashcache
 test_838_xrootd_tpc
 test_840_xrootd

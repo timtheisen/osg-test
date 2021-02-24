@@ -5,6 +5,10 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestMyProxy(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_remove_proxy(self):
         core.skip_ok_unless_installed('myproxy', 'myproxy-server')
         self.skip_ok_unless(core.state['myproxy.started-server'], 'MyProxy server failed to start')
