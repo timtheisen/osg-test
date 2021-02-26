@@ -91,6 +91,15 @@ JOB_ROUTER_ENTRIES = \\
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
 JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
 JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
+
+AUTH_SSL_SERVER_CERTFILE = /etc/grid-security/hostcert.pem
+AUTH_SSL_SERVER_KEYFILE = /etc/grid-security/hostkey.pem
+AUTH_SSL_SERVER_CADIR = /etc/grid-security/certificates
+AUTH_SSL_SERVER_CAFILE =
+AUTH_SSL_CLIENT_CERTFILE = /etc/grid-security/hostcert.pem
+AUTH_SSL_CLIENT_KEYFILE = /etc/grid-security/hostkey.pem
+AUTH_SSL_CLIENT_CADIR = /etc/grid-security/certificates
+AUTH_SSL_CLIENT_CAFILE =
 """
 
         if core.rpm_is_installed('htcondor-ce-view'):
