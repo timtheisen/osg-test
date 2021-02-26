@@ -47,13 +47,13 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         # Write the mapfile to the admin mapfile directory
         # https://github.com/htcondor/htcondor-ce/pull/425
         if condorce_version >= '5.1.0':
-            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/mapfiles.d/01-osg-test.conf'
+            core.config['condor-ce.mapfile'] = '/etc/condor-ce/mapfiles.d/01-osg-test.conf'
         else:
-            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
-            mapfile_contents = files.read(core.config['condor-ce.condorce_mapfile'], as_single_string=True)
+            core.config['condor-ce.mapfile'] = '/etc/condor-ce/condor_mapfile'
+            mapfile_contents = files.read(core.config['condor-ce.mapfile'], as_single_string=True)
             scitoken_mapping += mapfile_contents
 
-        files.write(core.config['condor-ce.condorce_mapfile'],
+        files.write(core.config['condor-ce.mapfile'],
                     scitoken_mapping,
                     owner='condor-ce',
                     chmod=0o644)

@@ -15,4 +15,4 @@ class TestStopCondorCE(osgunittest.OSGTestCase):
         files.restore(core.config['condor-ce.condor-cfg'], 'condor-ce')
         files.restore(core.config['condor-ce.condor-ce-cfg'], 'condor-ce')
         if core.state['condor-ce.wrote-mapfile']:
-            files.restore(core.config['condor-ce.condorce_mapfile'], 'condor-ce')
+            files.restore(core.config['condor-ce.mapfile'], 'condor-ce')
