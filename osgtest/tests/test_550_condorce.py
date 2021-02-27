@@ -148,3 +148,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
             self.fail('Could not reach HTCondor-CE View at %s: %s' % (view_url, err))
         self.assertTrue(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
         core.config['condor-ce.view-listening'] = True
+
+    def test_08_config_val(self):
+        command = ('condor_ce_config_val', '-dump')
+        core.check_system(command, 'condor_ce_config_val as non-root', user=True)
