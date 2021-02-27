@@ -42,7 +42,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
                         'HTCondor version does not support SciToken submission')
 
         condorce_version = core.PackageVersion('htcondor-ce')
-        scitoken_mapping = f'SCITOKENS "https://demo.scitokens.org/" {core.options.username}\n'
+        scitoken_mapping = f'SCITOKENS "https://demo.scitokens.org" {core.options.username}\n'
 
         # Write the mapfile to the admin mapfile directory
         # https://github.com/htcondor/htcondor-ce/pull/425
