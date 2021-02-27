@@ -48,7 +48,7 @@ class TestTokens(osgunittest.OSGTestCase):
 
         hostname = core.get_hostname()
         try:
-            token = request_demo_scitoken('condor:/READ,condor:/WRITE', audience=f'{hostname}:9619')
+            token = request_demo_scitoken('condor:/READ condor:/WRITE', audience=f'{hostname}:9619')
         except error.URLError as exc:
             self.fail(f"Failed to request token from demo.scitokens.org:\n{exc}")
 
