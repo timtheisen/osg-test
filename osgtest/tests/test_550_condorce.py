@@ -99,8 +99,8 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_03_ping(self):
         self.check_write_creds()
         self.command += ['condor_ce_ping', 'WRITE', '-verbose']
-        stdout, _, _ = core.check_system(self.command, 'ping using GSI and gridmap', user=True)
-        self.assertTrue(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+        stdout, _, _ = core.check_system(self.command, 'ping using SCITOKENS or GSI', user=True)
+        self.assertTrue(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with SCITOKENS or GSI')
 
     def test_04_trace(self):
         self.check_schedd_ready()
