@@ -107,9 +107,9 @@ class TestStartSlurm(osgunittest.OSGTestCase):
                             'slurmdb user permissions')
         mysql.check_execute("flush privileges;", 'reload privileges')
 
-        db_config_vals = {'name':core.config['slurmdbd.name'],
-                          'user':core.config['slurmdbd.user'].split('\'')[1],
-                          'pass':core.options.password}
+        db_config_vals = {'name': core.config['slurmdbd.name'],
+                          'user': core.config['slurmdbd.user'].split('\'')[1],
+                          'pass': core.options.password}
         files.write(core.config['slurmdbd.config'],
                     SLURMDBD_CONFIG % db_config_vals,
                     owner='slurm',
@@ -151,4 +151,3 @@ class TestStartSlurm(osgunittest.OSGTestCase):
                           60.0)
         command = ['scontrol', 'update', 'nodename=%s' % SHORT_HOSTNAME, 'state=idle']
         core.check_system(command, 'enable slurm node')
-
