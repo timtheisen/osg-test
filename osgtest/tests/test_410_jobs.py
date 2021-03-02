@@ -58,7 +58,10 @@ class TestRunJobs(osgunittest.OSGTestCase):
         self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
         self.skip_bad_unless(service.is_running('condor'), 'condor not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
-        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        self.skip_bad_unless(core.state['proxy.valid'] or core.state['token.condor_write_created'],
+                             'requires a scitoken or a proxy')
 
-        command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')
+        command = ['condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env']
+        if core.state['token.condor_write_created']:
+            command.insert(0, f"_condor_SCITOKENS_FILE={core.config['token.condor_write']}")
         self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')

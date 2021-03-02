@@ -19,6 +19,7 @@ test_280_gsiopenssh
 test_290_slurm
 test_380_cvmfs
 test_400_proxy
+test_401_scitokens
 test_403_myproxy
 test_407_voms
 test_410_jobs
