@@ -18,6 +18,7 @@ StorageType=accounting_storage/mysql
 StorageLoc={name}
 StorageUser={user}
 StoragePass={password}
+StoragePort={port}
 """
 
 SLURM_CONFIG = """AccountingStorageHost=localhost
@@ -106,7 +107,8 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         files.write(core.config['slurmdbd.config'],
                     SLURMDBD_CONFIG.format(name=core.config['slurmdbd.name'],
                                            user=core.config['slurmdbd.user'].split('\'')[1],
-                                           password=core.options.password,),
+                                           password=core.options.password,
+                                           port=mysql.PORT),
                     owner='slurm',
                     chmod=0o644)
         service.check_start('slurmdbd')
