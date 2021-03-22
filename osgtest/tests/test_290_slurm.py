@@ -89,7 +89,6 @@ class TestStartSlurm(osgunittest.OSGTestCase):
     def test_02_start_slurmdbd(self):
         core.state['slurmdbd.started-service'] = False
         self.slurm_reqs()
-        core.skip_ok_unless_installed('slurm-slurmdbd')
         self.skip_bad_unless(mysql.is_running(), 'slurmdbd requires mysql')
         core.config['slurmdbd.config'] = os.path.join(core.config['slurm.config-dir'], 'slurmdbd.conf')
         core.config['slurmdbd.user'] = "'osg-test-slurm'@'localhost'"
