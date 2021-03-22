@@ -15,25 +15,25 @@ DbdHost=localhost
 DebugLevel=debug5
 LogFile=/var/log/slurm/slurmdbd.log
 StorageType=accounting_storage/mysql
-StorageLoc=%(name)s
-StorageUser=%(user)s
-StoragePass=%(pass)s
+StorageLoc={name}
+StorageUser={user}
+StoragePass={password}
 """
 
 SLURM_CONFIG = """AccountingStorageHost=localhost
 AccountingStorageLoc=/tmp/slurm_job_accounting.txt
 AccountingStorageType=accounting_storage/slurmdbd
 AuthType=auth/munge
-ClusterName=%(cluster)s
-ControlMachine=%(short_hostname)s
+ClusterName={cluster}
+ControlMachine={short_hostname}
 JobAcctGatherType=jobacct_gather/linux
 KillWait=30
-NodeName=%(short_hostname)s Procs=1 RealMemory=128 State=UNKNOWN
-PartitionName=debug Nodes=%(short_hostname)s Default=YES MaxTime=INFINITE State=UP
+NodeName={short_hostname} Procs=1 RealMemory=128 State=UNKNOWN
+PartitionName=debug Nodes={short_hostname} Default=YES MaxTime=INFINITE State=UP
 ReturnToService=2
 SlurmctldDebug=debug5
 SlurmctldTimeout=300
-SlurmctldLogFile=%(ctld_log)s
+SlurmctldLogFile={ctld_log}
 SlurmdLogFile=/var/log/slurm/slurm.log
 SlurmdDebug=debug5
 StateSaveLocation=/var/spool/slurmd
@@ -65,7 +65,9 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         core.config['slurm.config-dir'] = '/etc/slurm'
         core.config['slurm.config'] = os.path.join(core.config['slurm.config-dir'], 'slurm.conf')
         files.write(core.config['slurm.config'],
-                    SLURM_CONFIG % {'short_hostname': SHORT_HOSTNAME, 'cluster': CLUSTER_NAME, 'ctld_log': CTLD_LOG},
+                    SLURM_CONFIG.format(short_hostname=SHORT_HOSTNAME,
+                                        cluster=CLUSTER_NAME,
+                                        ctld_log=CTLD_LOG),
                     owner='slurm',
                     chmod=0o644)
         core.config['cgroup.config'] = os.path.join(core.config['slurm.config-dir'], 'cgroup.conf')
@@ -102,11 +104,10 @@ class TestStartSlurm(osgunittest.OSGTestCase):
                             'slurmdb user permissions')
         mysql.check_execute("flush privileges;", 'reload privileges')
 
-        db_config_vals = {'name': core.config['slurmdbd.name'],
-                          'user': core.config['slurmdbd.user'].split('\'')[1],
-                          'pass': core.options.password}
         files.write(core.config['slurmdbd.config'],
-                    SLURMDBD_CONFIG % db_config_vals,
+                    SLURMDBD_CONFIG.format(name=core.config['slurmdbd.name'],
+                                           user=core.config['slurmdbd.user'].split('\'')[1],
+                                           password=core.options.password,),
                     owner='slurm',
                     chmod=0o644)
         service.check_start('slurmdbd')
