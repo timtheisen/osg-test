@@ -12,7 +12,6 @@ SHORT_HOSTNAME = core.get_hostname().split('.')[0]
 
 SLURMDBD_CONFIG = """AuthType=auth/munge
 DbdHost=localhost
-SlurmUser=slurm
 DebugLevel=debug5
 LogFile=/var/log/slurm/slurmdbd.log
 StorageType=accounting_storage/mysql
@@ -32,7 +31,6 @@ KillWait=30
 NodeName=%(short_hostname)s Procs=1 RealMemory=128 State=UNKNOWN
 PartitionName=debug Nodes=%(short_hostname)s Default=YES MaxTime=INFINITE State=UP
 ReturnToService=2
-SlurmUser=slurm
 SlurmctldDebug=debug5
 SlurmctldTimeout=300
 SlurmctldLogFile=%(ctld_log)s
