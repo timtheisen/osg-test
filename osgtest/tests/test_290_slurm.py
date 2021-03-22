@@ -116,24 +116,18 @@ class TestStartSlurm(osgunittest.OSGTestCase):
         core.check_system(command, 'add slurm cluster')
 
     def test_03_start_slurm(self):
-        core.config['slurm.service-name'] = 'slurm'
-        if core.el_release() >= 7:
-            core.config['slurm.service-name'] += 'd'
-            core.config['slurm.ctld-service-name'] = 'slurmctld'
+        core.config['slurm.service-name'] = 'slurmd'
+        core.config['slurm.ctld-service-name'] = 'slurmctld'
         core.state['%s.started-service' % core.config['slurm.service-name']] = False
         self.slurm_reqs()
         self.skip_ok_if(service.is_running(core.config['slurm.service-name']), 'slurm already running')
 
         stat = core.get_stat(CTLD_LOG)
 
-        if core.el_release() >= 7:
-            # slurmctld is handled by /etc/init.d/slurm on EL6
-            command = ['slurmctld']
-            core.check_system(command, 'enable slurmctld')
-            service.check_start(core.config['slurm.service-name'])
-            service.check_start(core.config['slurm.ctld-service-name'])
-        else:
-            service.check_start(core.config['slurm.service-name'])
+        command = ['slurmctld']
+        core.check_system(command, 'enable slurmctld')
+        service.check_start(core.config['slurm.service-name'])
+        service.check_start(core.config['slurm.ctld-service-name'])
 
         core.monitor_file(CTLD_LOG,
                           stat,
