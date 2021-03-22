@@ -64,10 +64,7 @@ class TestStartSlurm(osgunittest.OSGTestCase):
 
     def test_01_slurm_config(self):
         self.slurm_reqs()
-        if core.PackageVersion('slurm') >= '19.05.2':
-            core.config['slurm.config-dir'] = '/etc'
-        else:
-            core.config['slurm.config-dir'] = '/etc/slurm'
+        core.config['slurm.config-dir'] = '/etc/slurm'
         core.config['slurm.config'] = os.path.join(core.config['slurm.config-dir'], 'slurm.conf')
         files.write(core.config['slurm.config'],
                     SLURM_CONFIG % {'short_hostname': SHORT_HOSTNAME, 'cluster': CLUSTER_NAME, 'ctld_log': CTLD_LOG},
