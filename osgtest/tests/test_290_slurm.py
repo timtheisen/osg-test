@@ -22,7 +22,6 @@ StoragePort={port}
 """
 
 SLURM_CONFIG = """AccountingStorageHost=localhost
-AccountingStorageLoc=/tmp/slurm_job_accounting.txt
 AccountingStorageType=accounting_storage/slurmdbd
 AuthType=auth/munge
 ClusterName={cluster}
