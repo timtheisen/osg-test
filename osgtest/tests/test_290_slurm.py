@@ -6,8 +6,10 @@ import osgtest.library.osgunittest as osgunittest
 import osgtest.library.service as service
 
 CLUSTER_NAME = 'osg_test'
-CTLD_LOG = '/var/log/slurm/slurmctld.log'
-SLURM_LOG = '/var/log/slurm/slurm.log'
+SLURM_LOG_DIR = '/var/log/slurm/'
+CTLD_LOG = SLURM_LOG_DIR + 'slurmctld.log'
+SLURM_LOG = SLURM_LOG_DIR + 'slurm.log'
+SLURMDBD_LOG = SLURM_LOG_DIR + 'slurmdbd.log'
 SHORT_HOSTNAME = core.get_hostname().split('.')[0]
 
 SLURMDBD_CONFIG = """AuthType=auth/munge
@@ -88,6 +90,7 @@ class TestStartSlurm(osgunittest.OSGTestCase):
 
     def test_02_start_slurmdbd(self):
         core.state['slurmdbd.started-service'] = False
+        core.state['slurmdbd.ready'] = False
         self.slurm_reqs()
         self.skip_bad_unless(mysql.is_running(), 'slurmdbd requires mysql')
         core.config['slurmdbd.config'] = os.path.join(core.config['slurm.config-dir'], 'slurmdbd.conf')
@@ -110,7 +113,12 @@ class TestStartSlurm(osgunittest.OSGTestCase):
                                            port=mysql.PORT),
                     owner='slurm',
                     chmod=0o644)
+
+        stat = core.get_stat(SLURMDBD_LOG)
         service.check_start('slurmdbd')
+        sentinel = core.monitor_file(SLURMDBD_LOG, stat, 'slurmdbd version.+started', 30.0)
+        if sentinel:
+            core.state['slurmdbd.ready'] = True
 
         # Adding the cluster to the database
         command = ('sacctmgr', '-i', 'add', 'cluster', CLUSTER_NAME)
