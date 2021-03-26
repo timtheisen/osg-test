@@ -4,35 +4,26 @@ import re
 from osgtest.library import core
 from osgtest.library import service
 
-def name():
-    if core.el_release() < 7:
-        return 'mysql'
-    else:
-        return 'mariadb'
-
-def daemon_name():
-    if core.el_release() < 7:
-        return 'mysqld'
-    else:
-        return 'mariadb'
+PACKAGE_NAME = 'mariadb'
+PORT = 3306
 
 def pidfile():
-    return os.path.join('/var/run', daemon_name(), daemon_name() + '.pid')
+    return os.path.join('/var/run', PACKAGE_NAME, PACKAGE_NAME + '.pid')
 
 def server_rpm():
-    return name() + '-server'
+    return PACKAGE_NAME + '-server'
 
 def client_rpm():
-    return name()
+    return PACKAGE_NAME
 
 def start():
-    service.check_start(daemon_name())
+    service.check_start(PACKAGE_NAME)
 
 def stop():
-    service.check_stop(daemon_name())
+    service.check_stop(PACKAGE_NAME)
 
 def is_running():
-    return service.is_running(daemon_name())
+    return service.is_running(PACKAGE_NAME)
 
 def _get_command(user='root', database=None):
     command = ['mysql', '-N', '-B', '--user=' + str(user)]
