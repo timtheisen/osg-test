@@ -42,19 +42,22 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
                         'HTCondor version does not support SciToken submission')
 
         condorce_version = core.PackageVersion('htcondor-ce')
-        scitoken_mapping = f'SCITOKENS "https://demo.scitokens.org" {core.options.username}\n'
+        scitoken_mapping = 'SCITOKENS {issuer} {local_user}\n'
 
-        # Write the mapfile to the admin mapfile directory
+        # Write the mapfile to the admin mapfile directory with the regex format for the issuer
+        # required by 'CERTIFICATE_MAPFILE_ASSUME_HASH_KEYS = True'
         # https://github.com/htcondor/htcondor-ce/pull/425
         if condorce_version >= '5.1.0':
+            match_str = r'/https:\/\/demo.scitokens.org,.*/'
             core.config['condor-ce.mapfile'] = '/etc/condor-ce/mapfiles.d/01-osg-test.conf'
         else:
+            match_str = '"https://demo.scitokens.org"'
             core.config['condor-ce.mapfile'] = '/etc/condor-ce/condor_mapfile'
             mapfile_contents = files.read(core.config['condor-ce.mapfile'], as_single_string=True)
             scitoken_mapping += mapfile_contents
 
         files.write(core.config['condor-ce.mapfile'],
-                    scitoken_mapping,
+                    scitoken_mapping.format(issuer=match_str, local_user=core.options.username),
                     owner='condor-ce',
                     chmod=0o644)
         core.state['condor-ce.wrote-mapfile'] = True
