@@ -33,7 +33,6 @@ class TestUser(osgunittest.OSGTestCase):
 
     def test_01_add_user(self):
         core.state['general.user_added'] = False
-        core.state['general.user_cert_created'] = False
 
         # Bail out if this step is not needed
         if not core.options.adduser:
@@ -61,36 +60,55 @@ class TestUser(osgunittest.OSGTestCase):
         core.state['general.user_added'] = True
 
         # Set up directories
-        user = pwd.getpwnam(core.options.username)
-        os.chown(user.pw_dir, user.pw_uid, user.pw_gid)
-        os.chmod(user.pw_dir, 0o755)
+        core.state['user.pwd'] = pwd.getpwnam(core.options.username)
+        os.chown(core.state['user.pwd'].pw_dir, core.state['user.pwd'].pw_uid, core.state['user.pwd'].pw_gid)
+        os.chmod(core.state['user.pwd'].pw_dir, 0o755)
 
-        # Set up certificate
-        globus_dir = os.path.join(user.pw_dir, '.globus')
-        user_cert = os.path.join(globus_dir, 'usercert.pem')
-        test_ca = CA.load(core.config['certs.test-ca'])
-        if not os.path.exists(user_cert):
-            test_ca.usercert(core.options.username, core.options.password)
-            core.state['general.user_cert_created'] = True
+    def test_02_verify_user(self):
+        core.state['user.verified'] = False
 
-    def test_02_user(self):
-        core.state['system.wrote_mapfile'] = False
         if core.options.skiptests:
             core.skip('no user needed')
             return
+
         try:
-            password_entry = pwd.getpwnam(core.options.username)
-        except KeyError as e:
-            self.fail("User '%s' should exist but does not" % core.options.username)
-        self.assert_(password_entry.pw_dir != '/', "User '%s' has home directory at '/'" % (core.options.username))
-        self.assert_(os.path.isdir(password_entry.pw_dir),
-                     "User '%s' missing a home directory at '%s'" % (core.options.username, password_entry.pw_dir))
-        cert_path = os.path.join(password_entry.pw_dir, '.globus', 'usercert.pem')
-        core.config['user.cert_subject'], core.config['user.cert_issuer'] = certificate_info(cert_path)
+            user = core.state['user.pwd']
+        except KeyError:
+            try:
+                core.state['user.pwd'] = user = pwd.getpwnam(core.options.username)
+            except KeyError:
+                self.fail("User '%s' should exist but does not" % core.options.username)
+
+        self.assert_(user.pw_dir != '/', "User '%s' has home directory at '/'" % (core.options.username))
+        self.assert_(os.path.isdir(user.pw_dir),
+                     "User '%s' missing a home directory at '%s'" % (core.options.username, user.pw_dir))
+
+        core.state['user.verified'] = True
+
+    def test_03_generate_user_cert(self):
+        core.state['general.user_cert_created'] = False
+        core.state['system.wrote_mapfile'] = False
+
+        if core.options.skiptests:
+            core.skip('no user needed')
+            return
+
+        self.skip_bad_unless(core.state['user.verified'], "User doesn't exist, has HOME=/, or is missing HOME")
+
+        # Set up certificate
+        globus_dir = os.path.join(core.state['user.pwd'].pw_dir, '.globus')
+        core.state['user.cert_path'] = os.path.join(globus_dir, 'usercert.pem')
+        test_ca = CA.load(core.config['certs.test-ca'])
+        if not os.path.exists(core.state['user.cert_path']):
+            test_ca.usercert(core.options.username, core.options.password)
+            core.state['general.user_cert_created'] = True
+
+        (core.config['user.cert_subject'],
+         core.config['user.cert_issuer']) = certificate_info(core.state['user.cert_path'])
 
         # Add user to mapfile
         files.append(core.config['system.mapfile'], '"%s" %s\n' %
-                     (core.config['user.cert_subject'], password_entry.pw_name),
+                     (core.config['user.cert_subject'], core.state['user.pwd'].pw_name),
                      owner='user')
         core.state['system.wrote_mapfile'] = True
         os.chmod(core.config['system.mapfile'], 0o644)
