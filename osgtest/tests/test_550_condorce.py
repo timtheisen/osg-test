@@ -48,19 +48,21 @@ class TestCondorCE(osgunittest.OSGTestCase):
         cwd = os.getcwd()
         os.chdir('/tmp')
         self.command += ['condor_ce_trace', '--debug'] + list(args) + [core.get_hostname()]
-        trace_rc, stdout, stderr = core.system(self.command, user=True)
+        trace_rc, trace_out, trace_err = core.system(self.command, user=True)
         os.chdir(cwd)
 
         if trace_rc:
             msg = 'condor_ce_trace failed'
-            if stdout.find(', was held'):
+            if trace_out.find(', was held'):
                 msg = 'condor_ce_trace job held'
                 _, hold_out, hold_err = core.system(('condor_ce_q', '-held'))
-                stdout += hold_out
-                stderr += hold_err
-            self.fail(core.diagnose(msg, self.command, trace_rc, stdout, stderr))
+            self.fail(core.diagnose(msg,
+                                    self.command,
+                                    trace_rc,
+                                    str(trace_out) + str(hold_out),
+                                    str(trace_err) + str(hold_err)))
 
-        return stdout, stderr
+        return trace_out, trace_err
 
     def run_blahp_trace(self, lrms):
         """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
