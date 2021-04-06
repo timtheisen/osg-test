@@ -40,17 +40,35 @@ class TestCondorCE(osgunittest.OSGTestCase):
         """
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
 
+    def run_trace(self, *args):
+        """Run condor_ce_trace along with any additional *args. If trace completes with a held job, also return output
+        from 'condor_ce_q -held'.
+        """
+
+        cwd = os.getcwd()
+        os.chdir('/tmp')
+        self.command += ['condor_ce_trace', '--debug'] + list(args) + [core.get_hostname()]
+        trace_rc, trace_out, trace_err = core.system(self.command, user=True)
+        os.chdir(cwd)
+
+        if trace_rc:
+            msg = 'condor_ce_trace failed'
+            if trace_out.find(', was held'):
+                msg = 'condor_ce_trace job held'
+                _, hold_out, hold_err = core.system(('condor_ce_q', '-held'))
+            self.fail(core.diagnose(msg,
+                                    self.command,
+                                    trace_rc,
+                                    str(trace_out) + str(hold_out),
+                                    str(trace_err) + str(hold_err)))
+
+        return trace_out, trace_err
+
     def run_blahp_trace(self, lrms):
         """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
         lrms_cache_prefix = {'pbs': 'qstat', 'slurm': 'slurm'}
 
-        cwd = os.getcwd()
-        os.chdir('/tmp')
-        self.command += ['condor_ce_trace',
-                         '-a osgTestBatchSystem = %s' % lrms.lower(),
-                         '--debug',
-                         core.get_hostname()]
-        trace_out, _, _ = core.check_system(self.command, 'ce trace against %s' % lrms.lower(), user=True)
+        trace_out, _ = self.run_trace(f'-a osgTestBatchSystem = {lrms.lower()}')
 
         try:
             backend_jobid = re.search(r'%s_JOBID=(\d+)' % lrms.upper(), trace_out).group(1)
@@ -86,8 +104,6 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.assertTrue(re.search(r'BatchJobId[=\s"\'p1S]+%s' % backend_jobid, cache),
                         'Job %s not found in %s blahp cache:\n%s' % (backend_jobid, lrms.upper(), cache))
 
-        os.chdir(cwd)
-
     def test_01_status(self):
         command = ('condor_ce_status', '-any')
         core.check_system(command, 'ce status', user=True)
@@ -105,14 +121,8 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def test_04_trace(self):
         self.check_schedd_ready()
         self.check_write_creds()
+        self.run_trace()
 
-        cwd = os.getcwd()
-        os.chdir('/tmp')
-
-        self.command += ['condor_ce_trace', '--debug', core.get_hostname()]
-        core.check_system(self.command, 'ce trace', user=True)
-
-        os.chdir(cwd)
 
     def test_05_pbs_trace(self):
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge',
