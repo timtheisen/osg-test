@@ -53,7 +53,7 @@ class TestTokens(osgunittest.OSGTestCase):
             self.fail(f"Failed to request token from demo.scitokens.org:\n{exc}")
 
         ids = (0, 0)
-        if core.state['general.user_added']:
+        if core.state['user.verified']:
             user = pwd.getpwnam(core.options.username)
             ids = (user.pw_uid, user.pw_gid)
 
