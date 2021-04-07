@@ -47,9 +47,7 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         # Write the mapfile to the admin mapfile directory with the regex format for the issuer
         # required by 'CERTIFICATE_MAPFILE_ASSUME_HASH_KEYS = True'
         # https://github.com/htcondor/htcondor-ce/pull/425
-        # We apply this to HTCondor-CE 5 as a whole for the benefit of the HTCondor-CE CI tests
-        # This is ok even though these changes will only make it into 5.1.0 because 5.0.0 will not be released
-        if condorce_version >= '5.0.0':
+        if condorce_version >= '5.1.0':
             match_str = r'/https:\/\/demo.scitokens.org,.*/'
             core.config['condor-ce.mapfile'] = '/etc/condor-ce/mapfiles.d/01-osg-test.conf'
         else:
