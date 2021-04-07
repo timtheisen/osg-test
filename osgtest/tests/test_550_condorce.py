@@ -66,43 +66,13 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def run_blahp_trace(self, lrms):
         """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
-        lrms_cache_prefix = {'pbs': 'qstat', 'slurm': 'slurm'}
-
         trace_out, _ = self.run_trace(f'-a osgTestBatchSystem = {lrms.lower()}')
 
         try:
-            backend_jobid = re.search(r'%s_JOBID=(\d+)' % lrms.upper(), trace_out).group(1)
+            re.search(r'%s_JOBID=(\d+)' % lrms.upper(), trace_out).group(1)
         except AttributeError:
             # failed to find backend job ID
             self.fail('did not run against %s' % lrms.upper())
-        cache_file = '/var/tmp/%s_cache_%s/blahp_results_cache' % (lrms_cache_prefix[lrms.lower()],
-                                                                   core.options.username)
-        with open(cache_file, 'r') as handle:
-            cache = handle.read()
-
-        # Verify backend job ID in cache for multiple formats between the different
-        # versions of the blahp. For blahp-1.18.16.bosco-1.osg32:
-        #
-        # 2: [BatchJobId="2"; WorkerNode="fermicloud171.fnal.gov-0"; JobStatus=4; ExitCode= 0; ]\n
-        #
-        # For blahp-1.18.25.bosco-1.osg33:
-        #
-        # 5347907	"(dp0
-        # S'BatchJobId'
-        # p1
-        # S'""5347907""'
-        # p2
-        # sS'WorkerNode'
-        # p3
-        # S'""node1358""'
-        # p4
-        # sS'JobStatus'
-        # p5
-        # S'2'
-        # p6
-        # s."
-        self.assertTrue(re.search(r'BatchJobId[=\s"\'p1S]+%s' % backend_jobid, cache),
-                        'Job %s not found in %s blahp cache:\n%s' % (backend_jobid, lrms.upper(), cache))
 
     def test_01_status(self):
         command = ('condor_ce_status', '-any')
