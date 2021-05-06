@@ -110,7 +110,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_03_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', 'globus-proxy-utils', by_dependency=True)
-        xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
+        if core.PackageVersion("xrootd-multiuser") < "1.0.0-0":
+            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
+        else:
+            xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
+                                    "ofs.ckslib ++ libXrdMultiuser.so"
         files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
         core.config['xrootd.multiuser'] = True
 
