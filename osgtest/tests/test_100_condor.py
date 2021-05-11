@@ -1,3 +1,4 @@
+import re
 from os.path import join
 
 import osgtest.library.core as core
@@ -24,7 +25,8 @@ class TestStartCondor(osgunittest.OSGTestCase):
             core.state['condor.running-service'] = True
             return
 
-        core.config['condor.personal_condor'] = join(condor.config_val('LOCAL_CONFIG_DIR'), '99-personal-condor.conf')
+        config_dirs = re.split(r'[, ]+', condor.config_val('LOCAL_CONFIG_DIR'))
+        core.config['condor.personal_condor'] = join(config_dirs[-1], '99-personal-condor.conf')
         files.write(core.config['condor.personal_condor'], personal_condor_config, owner='condor', chmod=0o644)
 
         core.config['condor.collectorlog_stat'] = core.get_stat(core.config['condor.collectorlog'])
