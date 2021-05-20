@@ -50,8 +50,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         command = ('curl', '-A', 'Test', "-vk", "-X", "COPY",
                    '-H', "Authorization: Bearer %s" % core.config['xrootd.tpc.macaroon-1'],
                    '-H', "Source: %s" % core.config['xrootd.tpc.url-1'], 
-                   '-H', 'Overwrite: T',
-                   '-H', 'X-Number-Of-Streams: 2',
+                   '-H', 'Overwrite: T', 
                    '-H', 'Copy-Header:  Authorization: Bearer %s'% core.config['xrootd.tpc.macaroon-2'],
                    core.config['xrootd.tpc.url-2'])
         status, stdout, stderr = core.system(command, user=True)
