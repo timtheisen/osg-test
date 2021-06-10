@@ -33,9 +33,8 @@ Installation
 To install `osg-test`, run the following commands as `root`:
 
 ```
-git clone git@github.com:opensciencegrid/osg-test.git
+git clone --recursive git@github.com:opensciencegrid/osg-test.git
 cd osg-test
-git submodule update --init --recursive
 make install
 cd osg-ca-generator
 make install
