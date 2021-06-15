@@ -27,25 +27,34 @@ Other testing frameworks often support fixtures, which bracket a set of tests wi
 -   All operations are expressed as tests, including installation, configuration, service start/stop, etc.
 -   Tests should express requirements clearly and simply, so that distributed team of developers can work independently and with minimal confusion.
 
+Installation
+------------
+
+To install `osg-test`, run the following commands as `root`:
+
+```
+git clone --recursive git@github.com:opensciencegrid/osg-test.git
+cd osg-test
+make install
+cd osg-ca-generator
+make install
+```
+
 Running the OSG Automated Tests
 -------------------------------
 
-**WARNING!** The tests and associated test framework run as `root` and may destroy your system! It is **strongly** recommended that `osg-test` be run only on “disposable” systems — ones that can be reimaged or reinstalled from scratch with little effort. Virtual machines are ideal for this kind of test.
+**WARNING!** The tests and associated test framework run as `root` and may destroy your system!
+It is **strongly** recommended that `osg-test` be run only on “disposable” systems — ones that can be reimaged or
+reinstalled from scratch with little effort.
+Virtual machines are ideal for this kind of test.
 
-All steps are performed as `root`:
+Run the tests (see below for options).
+Be sure to direct the stdout/stderr to a file to get all the information from the test run (the dump-file option only
+outputs some of the output to a file):
 
-1.  Clone the git repository and `cd` into it:
-
-        [root@client ~ ] $ git clone https://github.com/opensciencegrid/osg-test.git
-        [root@client ~ ] $ cd osg-test
-
-2.  Bootstrap the test system using the `osg-testing` yum repository. The `osg release` is required as the first argument and takes the form of `<major version>.<minor version>` e.g. `3.2`. To get `osg-test` from the `osg-development` Yum repository, replace the second argument with `development`; to get `osg-test` from the production repository, omit the second argument. This step makes sure that both the EPEL and OSG repositories are available, then installs and verifies the `osg-test` package itself.
-
-        [root@client ~] $ ./bootstrap-osg-test <osg release> testing
-
-3.  Run the tests (see below for options). Be sure to direct the stdout/stderr to a file to get all the information from the test run (the dump-file option only outputs some of the output to a file):
-
-        [root@client ~] $ osg-test -vadi <PACKAGE> -r osg-testing > <output file> 2>&1
+```
+osg-test -vadi <PACKAGE> -r osg-testing > <output file> 2>&1
+```
 
 osg-test Script Usage
 ---------------------
