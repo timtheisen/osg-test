@@ -417,8 +417,8 @@ def skip_ok_unless_installed(*packages_or_dependencies, **kwargs):
 def skip_bad_if_more_than_one_installed(*packages):
     """
      Raise osgunittest.BadException if more than one of the packages
-     are installed which are mutually exclusive,                                                                   
-     otherwise return None.                                                                                                                    
+     are installed which are mutually exclusive,
+     otherwise return None.
     """
     installed = []
     for package in packages:
@@ -429,9 +429,9 @@ def skip_bad_if_more_than_one_installed(*packages):
 
 
 def skip_ok_unless_one_installed(*packages):
-    """                                                                                                                                        
-     Raise osgunittest.SkipOkException if at least one of the packages are installed                                                           
-     otherwise return None.                                                                                                                    
+    """
+     Raise osgunittest.SkipOkException if at least one of the packages are installed
+     otherwise return None.
     """
     if isinstance(packages[0], (list, tuple)):
         packages = packages[0]
