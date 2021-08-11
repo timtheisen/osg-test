@@ -71,7 +71,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
         self.skip_bad_unless(core.state['proxy.valid'] or core.state['token.condor_write_created'],
                              'requires a scitoken or a proxy')
 
-        command = ['condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env']
+        command = ['condor_ce_run', '--debug', '-r', '%s:9619' % core.get_hostname(), '/bin/env']
 
         if core.state['token.condor_write_created']:
             # FIXME: After HTCONDOR-636 is released (targeted for HTCondor-CE 5.1.2),
