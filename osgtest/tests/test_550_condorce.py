@@ -24,10 +24,21 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
         self.command = []
         if core.state['token.condor_write_created']:
-            self.command = [f"_condor_SCITOKENS_FILE={core.config['token.condor_write']}"]
+            # FIXME: After HTCONDOR-636 is released (targeted for HTCondor-CE 5.1.2),
+            # we can stop setting _condor_SCITOKENS_FILE
+            for token_var in ('_condor_SCITOKENS_FILE',
+                              'BEARER_TOKEN_FILE'):
+                os.environ[token_var] = core.config['token.condor_write']
+        else:
+            core.log_message('condor WRITE token not found; skipping SCITOKENS auth')
 
     def tearDown(self):
-        os.environ.pop('_condor_SEC_CLIENT_AUTHENTICATION_METHODS')
+        env_vars = ('_condor_SEC_CLIENT_AUTHENTICATION_METHODS',
+                    '_condor_SCITOKENS_FILE',
+                    'BEARER_TOKEN_FILE')
+
+        for env_var in env_vars:
+            os.environ.pop(env_var, None)
 
     def check_write_creds(self):
         """Check for credentials necessary for HTCondor-CE WRITE
