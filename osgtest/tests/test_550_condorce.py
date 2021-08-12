@@ -38,10 +38,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
                     'BEARER_TOKEN_FILE')
 
         for env_var in env_vars:
-            try:
-                os.environ.pop(env_var)
-            except KeyError:
-                pass
+            os.environ.pop(env_var, None)
 
     def check_write_creds(self):
         """Check for credentials necessary for HTCondor-CE WRITE

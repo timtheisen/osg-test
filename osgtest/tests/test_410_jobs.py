@@ -17,10 +17,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
                     'BEARER_TOKEN_FILE')
 
         for env_var in env_vars:
-            try:
-                os.environ.pop(env_var)
-            except KeyError:
-                pass
+            os.environ.pop(env_var, None)
 
     def verify_job_environment(self, output):
         expected_env = {'JOB_ENV': 'vdt',
