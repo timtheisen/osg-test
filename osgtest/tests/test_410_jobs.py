@@ -16,8 +16,7 @@ class TestRunJobs(osgunittest.OSGTestCase):
         env_vars = ('_condor_SCITOKENS_FILE',
                     'BEARER_TOKEN_FILE')
 
-        for env_var in env_vars:
-            os.environ.pop(env_var, None)
+        [ os.environ.pop(env_var, None) for env_var in env_vars ]
 
     def verify_job_environment(self, output):
         expected_env = {'JOB_ENV': 'vdt',
