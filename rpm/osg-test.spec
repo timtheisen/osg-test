@@ -10,6 +10,8 @@ AutoReq:   yes
 AutoProv:  yes
 BuildArch: noarch
 
+Requires: python3-rpm
+
 # 1.1.0 introduced CILogon-like CA/cert generation
 Requires: osg-ca-generator >= 1.1.0
 
