@@ -31,7 +31,7 @@ A GUI for viewing the output of %{name} in a structured manner.
 %setup -q
 
 %install
-find . -type f -exec sed -ri '1s,^#!/usr/bin/env python,#!%{__python},' '{}' +
+find . -type f -exec sed -ri '1s,^#!/usr/bin/env python.*,#!%{__python},' '{}' +
 make install DESTDIR=$RPM_BUILD_ROOT PYTHON=%{__python}
 
 %files
