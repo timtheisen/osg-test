@@ -1,12 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser as ConfigParser
 import os
 import re
 import signal
