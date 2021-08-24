@@ -83,6 +83,10 @@ else
     echo 'Already installed: osg-release'
 fi
 
+echo -n "Installing python3 if needed... "
+yum -y --quiet install python3
+on_error_die "Could not install python3"
+
 echo -n 'Updating osg-release... '
 yum -y --quiet update osg-release
 on_error_die 'Could not update osg-release'
