@@ -45,7 +45,7 @@ def check_start(service_name, timeout=10, log_to_check = None, min_up_time=0):
     """
     start(service_name)
     time.sleep(min_up_time)
-    assert is_running(service_name, timeout=10, log_to_check = log_to_check), "%s is not running" % service_name
+    assert is_running(service_name, timeout=timeout, log_to_check=log_to_check), "%s is not running" % service_name
 
 def stop(service_name):
     """
