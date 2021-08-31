@@ -79,7 +79,7 @@ def check_stop(service_name, timeout=10):
     stops running within a 'timeout' second window (default=10s)
     """
     stop(service_name)
-    assert is_stopped(service_name, timeout=10), "%s is still running" % service_name
+    assert is_stopped(service_name, timeout=timeout), "%s is still running" % service_name
 
 def status(service_name):
     """

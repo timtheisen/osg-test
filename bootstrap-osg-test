@@ -38,6 +38,10 @@ case $release in
         rpm_name='epel-release-latest-7.noarch.rpm'
         osg_name="osg-$version-el7-release-latest.rpm"
         ;;
+    *8.* )
+        rpm_name='epel-release-latest-8.noarch.rpm'
+        osg_name="osg-$version-el8-release-latest.rpm"
+	;;
     * )
         echo 'Could not determine OS release'
         exit 1
@@ -79,17 +83,32 @@ else
     echo 'Already installed: osg-release'
 fi
 
+echo -n "Installing python3 if needed... "
+yum -y --quiet install python3
+on_error_die "Could not install python3"
+
 echo -n 'Updating osg-release... '
 yum -y --quiet update osg-release
 on_error_die 'Could not update osg-release'
 
-echo -n "Install yum-plugin-priorities... "
-yum -y --quiet install yum-plugin-priorities
-on_error_die "Could not install yum-plugin-priorities"
-echo -n 'Verify yum-plugin-priorities... '
-rpm --verify yum-plugin-priorities
-on_error_die "Could not verify yum-plugin-priorities"
-
+case $release in
+    *[67].* )
+        echo -n "Install yum-plugin-priorities... (For EL6, EL7 only)"
+        yum -y --quiet install yum-plugin-priorities
+        on_error_die "Could not install yum-plugin-priorities"
+        echo -n 'Verify yum-plugin-priorities... '
+        rpm --verify yum-plugin-priorities
+        on_error_die "Could not verify yum-plugin-priorities"
+        ;;
+    *8.* )
+        echo -n "Not installing plugin priorities in EL8"
+        ;;
+    * )
+        echo 'Could not determine OS release'
+        exit 1
+        ;;
+esac
+    
 cd /tmp
 for repo in osg-test osg-ca-generator; do
     git clone --depth 1 $UPSTREAM/$repo

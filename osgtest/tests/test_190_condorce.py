@@ -1,5 +1,4 @@
 import cagen
-import re
 
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -7,8 +6,8 @@ import osgtest.library.osgunittest as osgunittest
 import osgtest.library.condor as condor
 import osgtest.library.service as service
 
+
 class TestStartCondorCE(osgunittest.OSGTestCase):
-    # Tests 01-02 are needed to reconfigure condor to work with HTCondor-CE
     def test_01_configure_condor(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
 
@@ -34,7 +33,34 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
 
         command = ('condor_reconfig', '-debug')
         core.check_system(command, 'Reconfigure Condor')
-        self.assert_(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
+        self.assertTrue(service.is_running('condor', timeout=10), 'Condor not running after reconfig')
+
+    def test_02_scitoken_mapping(self):
+        core.state['condor-ce.wrote-mapfile'] = False
+        core.skip_ok_unless_installed('condor', 'htcondor-ce')
+        self.skip_ok_if(core.PackageVersion('condor') <= '8.9.4',
+                        'HTCondor version does not support SciToken submission')
+
+        condorce_version = core.PackageVersion('htcondor-ce')
+        scitoken_mapping = 'SCITOKENS {issuer} {local_user}\n'
+
+        # Write the mapfile to the admin mapfile directory with the regex format for the issuer
+        # required by 'CERTIFICATE_MAPFILE_ASSUME_HASH_KEYS = True'
+        # https://github.com/htcondor/htcondor-ce/pull/425
+        if condorce_version >= '5.1.0':
+            match_str = r'/https:\/\/demo.scitokens.org,.*/'
+            core.config['condor-ce.mapfile'] = '/etc/condor-ce/mapfiles.d/01-osg-test.conf'
+        else:
+            match_str = '"https://demo.scitokens.org"'
+            core.config['condor-ce.mapfile'] = '/etc/condor-ce/condor_mapfile'
+            mapfile_contents = files.read(core.config['condor-ce.mapfile'], as_single_string=True)
+            scitoken_mapping += mapfile_contents
+
+        files.write(core.config['condor-ce.mapfile'],
+                    scitoken_mapping.format(issuer=match_str, local_user=core.options.username),
+                    owner='condor-ce',
+                    chmod=0o644)
+        core.state['condor-ce.wrote-mapfile'] = True
 
     def test_03_configure_ce(self):
         core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
@@ -42,23 +68,9 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
         # Set up Condor, PBS, and Slurm routes
         # Leave the GRIDMAP knob in tact to verify that it works with the LCMAPS VOMS plugin
         core.config['condor-ce.condor-ce-cfg'] = '/etc/condor-ce/config.d/99-osgtest.condor-ce.conf'
-        # Add host DN to condor_mapfile
-        if core.options.hostcert:
-            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile.osg-test'
-            hostcert_dn, _ = cagen.certificate_info(core.config['certs.hostcert'])
-            mapfile_contents = files.read('/etc/condor-ce/condor_mapfile')
-            mapfile_contents.insert(0, re.sub(r'([/=\.])', r'\\\1', "GSI \"^%s$\" " % hostcert_dn) + \
-                                              "%s@daemon.opensciencegrid.org\n" % core.get_hostname())
-            files.write(core.config['condor-ce.condorce_mapfile'],
-                        mapfile_contents,
-                        owner='condor-ce',
-                        chmod=0o644)
-        else:
-            core.config['condor-ce.condorce_mapfile'] = '/etc/condor-ce/condor_mapfile'
 
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
-CERTIFICATE_MAPFILE = %s
-ALL_DEBUG=D_FULLDEBUG
+ALL_DEBUG=D_CAT D_ALWAYS:2
 JOB_ROUTER_DEFAULTS = $(JOB_ROUTER_DEFAULTS) [set_default_maxMemory = 128;]
 JOB_ROUTER_ENTRIES = \\
    [ \\
@@ -82,7 +94,16 @@ JOB_ROUTER_ENTRIES = \\
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
 JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
 JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
-""" % core.config['condor-ce.condorce_mapfile']
+
+AUTH_SSL_SERVER_CERTFILE = /etc/grid-security/hostcert.pem
+AUTH_SSL_SERVER_KEYFILE = /etc/grid-security/hostkey.pem
+AUTH_SSL_SERVER_CADIR = /etc/grid-security/certificates
+AUTH_SSL_SERVER_CAFILE =
+AUTH_SSL_CLIENT_CERTFILE = /etc/grid-security/hostcert.pem
+AUTH_SSL_CLIENT_KEYFILE = /etc/grid-security/hostkey.pem
+AUTH_SSL_CLIENT_CADIR = /etc/grid-security/certificates
+AUTH_SSL_CLIENT_CAFILE =
+"""
 
         if core.rpm_is_installed('htcondor-ce-view'):
             condor_contents += "\nDAEMON_LIST = $(DAEMON_LIST), CEVIEW, GANGLIAD, SCHEDD"
@@ -108,8 +129,9 @@ JOB_ROUTER_SCHEDD2_POOL=$(FULL_HOSTNAME):9618
             core.state['condor-ce.schedd-ready'] = True
             self.skip_ok('already running')
 
+        stat = core.get_stat(core.config['condor-ce.collectorlog'])
+
         service.check_start('condor-ce', timeout=20)
 
-        stat = core.get_stat(core.config['condor-ce.collectorlog'])
         if condor.wait_for_daemon(core.config['condor-ce.collectorlog'], stat, 'Schedd', 300.0):
             core.state['condor-ce.schedd-ready'] = True

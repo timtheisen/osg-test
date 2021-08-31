@@ -106,6 +106,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         core.state['xrootd.backups-exist'] = True
 
+    @core.osgrelease(3.5)
     def test_02_configure_hdfs(self):
         core.skip_ok_unless_installed('xrootd-hdfs')
         hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"
@@ -113,7 +114,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_03_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', 'globus-proxy-utils', by_dependency=True)
-        xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
+        if core.PackageVersion("xrootd-multiuser") < "1.0.0-0":
+            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
+        else:
+            xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
+                                    "ofs.ckslib ++ libXrdMultiuser.so"
         files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
         core.config['xrootd.multiuser'] = True
 

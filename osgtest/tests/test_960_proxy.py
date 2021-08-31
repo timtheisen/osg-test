@@ -3,6 +3,7 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestGridProxyDestroy(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.5)
     def test_01_check_proxy(self):
         core.skip_ok_unless_installed('globus-proxy-utils')
         self.skip_ok_unless(core.state['proxy.created'], "didn't create proxy")

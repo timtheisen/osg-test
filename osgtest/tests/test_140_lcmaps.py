@@ -6,6 +6,10 @@ class TestLcMaps(osgunittest.OSGTestCase):
 
     required_rpms = ['lcmaps', 'lcmaps-db-templates', 'vo-client', 'vo-client-lcmaps-voms']
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_configure(self):
         core.config['lcmaps.db'] = '/etc/lcmaps.db'
         core.config['lcmaps.gsi-authz'] = '/etc/grid-security/gsi-authz.conf'

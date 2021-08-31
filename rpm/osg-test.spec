@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   3.1.0
+Version:   3.2.0
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -9,6 +9,8 @@ Source0:   %{name}-%{version}.tar.gz
 AutoReq:   yes
 AutoProv:  yes
 BuildArch: noarch
+
+Requires: python3-rpm
 
 # 1.1.0 introduced CILogon-like CA/cert generation
 Requires: osg-ca-generator >= 1.1.0
@@ -20,36 +22,19 @@ installation.
 %package log-viewer
 Summary:   Views the output of %{name}
 Group:     Applications/Grid
-%if 0%{?rhel} >= 8 || 0%{?fedora} >= 31
 Requires: python3-tkinter
-Requires: python3-six
-%else
-Requires:  tkinter
-Requires:  python-six
-%endif
 
 %description log-viewer
 A GUI for viewing the output of %{name} in a structured manner.
 
-%if 0%{?rhel} >= 8
-  %define __python /usr/libexec/platform-python
-%else
-  %if 0%{?fedora} >= 31
-    %define __python /usr/bin/python3
-  %else
-    %define __python /usr/bin/python2
-  %endif
-%endif
+%global __python /usr/bin/python3
 
 %prep
 %setup -q
 
 %install
-find . -type f -exec sed -ri '1s,^#!/usr/bin/env python,#!%{__python},' '{}' +
+find . -type f -exec sed -ri '1s,^#!/usr/bin/env python.*,#!%{__python},' '{}' +
 make install DESTDIR=$RPM_BUILD_ROOT PYTHON=%{__python}
-%if 0%{?fedora} < 25 && 0%{?rhel} < 8
-rm -rf $RPM_BUILD_ROOT%{python_sitelib}/osgtest/vendor
-%endif
 
 %files
 %{_datadir}/osg-test
@@ -60,6 +45,9 @@ rm -rf $RPM_BUILD_ROOT%{python_sitelib}/osgtest/vendor
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Mon Aug 23 2021 Matyas Selmeci <matyas@cs.wisc.edu> - 3.2.0-1
+- Use Python 3 on EL7 too
+
 * Fri Jul 24 2020 Mátyás Selmeci <matyas@cs.wisc.edu> - 3.1.0-1
 - Python 3/EL8 support for osg-test (SOFTWARE-4073)
 

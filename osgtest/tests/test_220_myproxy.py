@@ -7,6 +7,10 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestStartMyProxy(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_config_certs(self):
         core.config['certs.myproxycert'] = '/etc/grid-security/myproxy/hostcert.pem'
         core.config['certs.myproxykey'] = '/etc/grid-security/myproxy/hostkey.pem'

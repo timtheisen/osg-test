@@ -30,21 +30,17 @@ class TestInstall(osgunittest.OSGTestCase):
         fail_msg = ''
         pkg_repo_dict = OrderedDict((x, core.options.extrarepos) for x in core.options.packages)
 
-        # HACK: Install Slurm and osg-tested-internal out of development-like repos.
-        # SOFTWARE-1733 may one day give us a generalized solution.
-        if core.osg_release() > '3.4':
-            dev_repo = ['devops-itb']
-            if 'osg-tested-internal' in pkg_repo_dict:
-                pkg_repo_dict['osg-tested-internal'] += dev_repo
-        else:
-            dev_repo = ['osg-development']
-
-        if 'osg-tested-internal' in pkg_repo_dict or 'slurm' in pkg_repo_dict:
-            pkg_repo_dict.update(dict((x, core.options.extrarepos + dev_repo) for x in core.SLURM_PACKAGES))
-
         # HACK: Install x509-scitokens-issuer-client out of development (SOFTWARE-3649)
-        if 'xrootd-scitokens' in pkg_repo_dict:
-            pkg_repo_dict["x509-scitokens-issuer-client"] = ["osg-development"]
+        x509_scitokens_issuer_packages = ['xrootd-scitokens', 'osg-tested-internal']
+        for pkg in x509_scitokens_issuer_packages:
+            if pkg in pkg_repo_dict:
+                pkg_repo_dict["x509-scitokens-issuer-client"] = ["osg-development"]
+                break
+
+        # Special case: htcondor-ce-collector on EL8 needs mod_auth_oidc, only avaiable in a module
+        if "htcondor-ce-collector" in pkg_repo_dict:
+            if core.el_release() > 7:
+                core.check_system(["dnf", "-y", "module", "enable", "mod_auth_openidc"], "Enable mod_auth_openidc module")
 
         for pkg, repos in pkg_repo_dict.items():
             # Do not try to re-install packages
@@ -96,17 +92,6 @@ class TestInstall(osgunittest.OSGTestCase):
 
         core.state['install.release-updated'] = True
         core.osg_release(update_state=True)
-
-    # TODO: Drop this once we stop doing 3.3->3.4 upgrade tests
-    def test_04_remove_bestman2_server_dep_libs(self):
-        if core.options.updaterelease != "3.4":
-            return
-
-        # bestman2 and jetty have been dropped from OSG 3.4. bestman2-server-dep-libs requires a version of jetty-http
-        # less than what's available in EPEL, which causes `yum update` fails. We no longer care about bestman2 so we
-        # can just remove the offending package
-        command = ['yum', '-y', 'remove', 'bestman2-server-dep-libs']
-        core.check_system(command, "Failed to remove bestman2-server-dep-libs")
 
     def test_04_update_packages(self):
         if not (core.options.updaterepos and core.state['install.installed']):

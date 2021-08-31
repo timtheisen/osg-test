@@ -1,0 +1,3 @@
+[submodule "osg-ca-generator"]
+	path = osg-ca-generator
+	url = https://github.com/opensciencegrid/osg-ca-generator.git

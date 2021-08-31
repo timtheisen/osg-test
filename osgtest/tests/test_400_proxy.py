@@ -5,6 +5,10 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestGridProxyInit(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_remove_proxy(self):
         core.skip_ok_unless_installed('globus-proxy-utils')
         # If there is no pre-existing proxy file, the following command will

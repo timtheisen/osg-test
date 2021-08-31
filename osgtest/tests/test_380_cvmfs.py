@@ -1,8 +1,12 @@
 import os
+import tempfile
+
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
-import tempfile
+
+
+
 
 class TestCvmfs(osgunittest.OSGTestCase):
 
@@ -14,9 +18,22 @@ class TestCvmfs(osgunittest.OSGTestCase):
         temp_dir = tempfile.mkdtemp()
         core.config['cvmfs.debug-dirs'].append(temp_dir)
         command = ('mount', '-t', 'cvmfs', repo, temp_dir)
-        core.check_system(command, 'Manual cvmfs mount failed')
-        # If manual mount works, autofs is broken
-        self.fail("Autofs failed to mount /cvmfs/%s" % repo)
+        status, _, _ = core.system(command)
+
+        # If manual mount works, autofs is likely the culprit
+        if status:
+            debug_contents = "Failed to manually mount %s\n" % repo
+        else:
+            debug_contents = "Successful manual mount of %s\n" % repo
+
+        debug_file = "/tmp/cvmfs_debug.log"
+        debug_contents += ('='*20) + "\n"
+        try:
+            debug_contents += files.read(debug_file, True)
+        except IOError:
+            debug_contents += 'Failed to read %s' % debug_file
+
+        self.fail(debug_contents)
 
     def test_01_cvmfs_probe(self):
         default_local = '/etc/cvmfs/default.local'
@@ -29,7 +46,6 @@ class TestCvmfs(osgunittest.OSGTestCase):
         # removed as part of SOFTWARE-1108.
         core.skip_ok_unless_installed('cvmfs')
         core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)
-
 
         command = ('cat', default_local)
         status, stdout, stderr = core.system(command, False)
@@ -84,7 +100,7 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
     def test_03_oasis_config(self):
         core.skip_ok_unless_installed('cvmfs')
-        core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)        
+        core.skip_ok_unless_installed('cvmfs-keys', 'oasis-config', by_dependency=True)
         self.skip_bad_unless(core.state['cvmfs.mounted'], 'Cvmfs mount point missing')
 
         oasis_repo = 'oasis.opensciencegrid.org'
@@ -103,10 +119,9 @@ class TestCvmfs(osgunittest.OSGTestCase):
 
         command = ('ls', '/cvmfs/' + singularity_repo)
         core.check_system(command, "testing cvmfs access to singularity repo")
-        
+
         command = ('ls', self.__cvmfs_image)
         core.check_system(command, "testing cvmfs access to singularity image")
 
-        command= ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
-        core.check_system(command, "singularity checking a file")
-
+        command = ('singularity', 'exec', '--bind', '/cvmfs', self.__cvmfs_image, 'echo', 'working singularity image')
+        core.check_system(command, "singularity checking a file", user=True)

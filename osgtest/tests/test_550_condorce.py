@@ -8,130 +8,138 @@ try:
 except ImportError:
     from urllib.request import urlopen
 
-import osgtest.library.condor as condor
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 
+
 class TestCondorCE(osgunittest.OSGTestCase):
 
     def setUp(self):
-        # Enforce GSI auth for testing
-        os.environ['_condor_SEC_CLIENT_AUTHENTICATION_METHODS'] = 'GSI'
+        # Enforce SciToken or GSI auth for testing
+        os.environ['_condor_SEC_CLIENT_AUTHENTICATION_METHODS'] = 'SCITOKENS, GSI'
+        core.skip_ok_unless_installed('condor', 'htcondor-ce')
+        self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
+
+        self.command = []
+        if core.state['token.condor_write_created']:
+            # FIXME: After HTCONDOR-636 is released (targeted for HTCondor-CE 5.1.2),
+            # we can stop setting _condor_SCITOKENS_FILE
+            for token_var in ('_condor_SCITOKENS_FILE',
+                              'BEARER_TOKEN_FILE'):
+                os.environ[token_var] = core.config['token.condor_write']
+        else:
+            core.log_message('condor WRITE token not found; skipping SCITOKENS auth')
 
     def tearDown(self):
-        os.environ.pop('_condor_SEC_CLIENT_AUTHENTICATION_METHODS')
+        env_vars = ('_condor_SEC_CLIENT_AUTHENTICATION_METHODS',
+                    '_condor_SCITOKENS_FILE',
+                    'BEARER_TOKEN_FILE')
 
-    def run_blahp_trace(self, lrms):
-        """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
-        lrms_cache_prefix = {'pbs': 'qstat', 'slurm': 'slurm'}
+        for env_var in env_vars:
+            os.environ.pop(env_var, None)
+
+    def check_write_creds(self):
+        """Check for credentials necessary for HTCondor-CE WRITE
+        """
+        self.skip_bad_unless(core.state['proxy.valid'] or core.state['token.condor_write_created'],
+                             'requires a scitoken or a proxy')
+
+    def check_schedd_ready(self):
+        """Check if the HTCondor-CE schedd is up as expected
+        """
+        self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
+
+    def run_trace(self, *args):
+        """Run condor_ce_trace along with any additional *args. If trace completes with a held job, also return output
+        from 'condor_ce_q -held'.
+        """
 
         cwd = os.getcwd()
         os.chdir('/tmp')
-        command = ('condor_ce_trace', '-a osgTestBatchSystem = %s' % lrms.lower(), '--debug', core.get_hostname())
-        trace_out, _, _ = core.check_system(command, 'ce trace against %s' % lrms.lower(), user=True)
+        self.command += ['condor_ce_trace', '--debug'] + list(args) + [core.get_hostname()]
+        trace_rc, trace_out, trace_err = core.system(self.command, user=True)
+        os.chdir(cwd)
+
+        if trace_rc:
+            msg = 'condor_ce_trace failed'
+            if trace_out.find(', was held'):
+                msg = 'condor_ce_trace job held'
+                _, hold_out, hold_err = core.system(('condor_ce_q', '-held'))
+            self.fail(core.diagnose(msg,
+                                    self.command,
+                                    trace_rc,
+                                    str(trace_out) + str(hold_out),
+                                    str(trace_err) + str(hold_err)))
+
+        return trace_out, trace_err
+
+    def run_blahp_trace(self, lrms):
+        """Run condor_ce_trace() against a non-HTCondor backend and verify the cache"""
+        trace_out, _ = self.run_trace(f'-a osgTestBatchSystem = {lrms.lower()}')
 
         try:
-            backend_jobid = re.search(r'%s_JOBID=(\d+)' % lrms.upper(), trace_out).group(1)
+            re.search(r'%s_JOBID=(\d+)' % lrms.upper(), trace_out).group(1)
         except AttributeError:
             # failed to find backend job ID
             self.fail('did not run against %s' % lrms.upper())
-        cache_file = '/var/tmp/%s_cache_%s/blahp_results_cache' % (lrms_cache_prefix[lrms.lower()],
-                                                                   core.options.username)
-        with open(cache_file, 'r') as handle:
-            cache = handle.read()
-
-        # Verify backend job ID in cache for multiple formats between the different
-        # versions of the blahp. For blahp-1.18.16.bosco-1.osg32:
-        #
-        # 2: [BatchJobId="2"; WorkerNode="fermicloud171.fnal.gov-0"; JobStatus=4; ExitCode= 0; ]\n
-        #
-        # For blahp-1.18.25.bosco-1.osg33:
-        #
-        # 5347907	"(dp0
-        # S'BatchJobId'
-        # p1
-        # S'""5347907""'
-        # p2
-        # sS'WorkerNode'
-        # p3
-        # S'""node1358""'
-        # p4
-        # sS'JobStatus'
-        # p5
-        # S'2'
-        # p6
-        # s."
-        self.assert_(re.search(r'BatchJobId[=\s"\'p1S]+%s' % backend_jobid, cache),
-                     'Job %s not found in %s blahp cache:\n%s' % (backend_jobid, lrms.upper(), cache))
-
-        os.chdir(cwd)
-
-    def general_requirements(self):
-        core.skip_ok_unless_installed('condor', 'htcondor-ce', 'htcondor-ce-client')
-        self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
 
     def test_01_status(self):
-        self.general_requirements()
-
         command = ('condor_ce_status', '-any')
         core.check_system(command, 'ce status', user=True)
 
     def test_02_queue(self):
-        self.general_requirements()
-
         command = ('condor_ce_q', '-verbose')
         core.check_system(command, 'ce queue', user=True)
 
     def test_03_ping(self):
-        self.general_requirements()
-        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
-
-        command = ('condor_ce_ping', 'WRITE', '-verbose')
-        stdout, _, _ = core.check_system(command, 'ping using GSI and gridmap', user=True)
-        self.assert_(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with GSI')
+        self.check_write_creds()
+        self.command += ['condor_ce_ping', 'WRITE', '-verbose']
+        stdout, _, _ = core.check_system(self.command, 'ping using SCITOKENS or GSI', user=True)
+        self.assertTrue(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with SCITOKENS or GSI')
 
     def test_04_trace(self):
-        self.general_requirements()
-        self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
-        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        self.check_schedd_ready()
+        self.check_write_creds()
+        self.run_trace()
 
-        cwd = os.getcwd()
-        os.chdir('/tmp')
-
-        command = ('condor_ce_trace', '--debug', core.get_hostname())
-        core.check_system(command, 'ce trace', user=True)
-
-        os.chdir(cwd)
 
     def test_05_pbs_trace(self):
-        self.general_requirements()
-        self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', 'torque-client', 'munge',
                                       by_dependency=True)
         self.skip_ok_unless(service.is_running('pbs_server'), 'pbs service not running')
-        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        self.check_schedd_ready()
+        self.check_write_creds()
         self.run_blahp_trace('pbs')
 
     def test_06_slurm_trace(self):
-        self.general_requirements()
         core.skip_ok_unless_installed(core.SLURM_PACKAGES)
-        self.skip_bad_unless(service.is_running('munge'), 'slurm requires munge')
         self.skip_bad_unless(core.state['condor-ce.schedd-ready'], 'CE schedd not ready to accept jobs')
         self.skip_ok_unless(service.is_running(core.config['slurm.service-name']), 'slurm service not running')
-        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        self.check_schedd_ready()
+        self.check_write_creds()
         self.run_blahp_trace('slurm')
 
     def test_07_ceview(self):
         core.config['condor-ce.view-listening'] = False
-        self.general_requirements()
         core.skip_ok_unless_installed('htcondor-ce-view')
         view_url = 'http://%s:%s' % (core.get_hostname(), int(core.config['condor-ce.view-port']))
         try:
             src = core.to_str(urlopen(view_url).read())
+            core.log_message(src)
         except EnvironmentError as err:
+            debug_file = '/var/log/condor-ce/CEViewLog'
+            debug_contents = 'Contents of %s\n%s\n' % (debug_file, '=' * 20)
+            try:
+                debug_contents += files.read(debug_file, True)
+            except EnvironmentError:
+                debug_contents += 'Failed to read %s\n' % debug_file
+            core.log_message(debug_contents)
             self.fail('Could not reach HTCondor-CE View at %s: %s' % (view_url, err))
-        self.assert_(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
+        self.assertTrue(re.search(r'HTCondor-CE Overview', src), 'Failed to find expected CE View contents')
         core.config['condor-ce.view-listening'] = True
 
+    def test_08_config_val(self):
+        command = ('condor_ce_config_val', '-dump')
+        core.check_system(command, 'condor_ce_config_val as non-root', user=True)

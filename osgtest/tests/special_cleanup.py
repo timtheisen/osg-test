@@ -92,7 +92,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             return
 
         for transaction in reversed(sorted(core.state['install.transaction_ids'])):
-            command = ['yum', 'history', 'undo', '-y', transaction]
+            command = ['yum', 'history', 'undo', '-y', str(transaction)]
             for repo in core.options.extrarepos:
                 command.append('--enablerepo=%s' % repo)
             fail_msg, _, _, _ = yum.retry_command(command)

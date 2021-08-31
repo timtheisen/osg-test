@@ -12,6 +12,12 @@ import osgtest.library.osgunittest as osgunittest
 
 class TestRunJobs(osgunittest.OSGTestCase):
 
+    def tearDown(self):
+        env_vars = ('_condor_SCITOKENS_FILE',
+                    'BEARER_TOKEN_FILE')
+
+        [ os.environ.pop(env_var, None) for env_var in env_vars ]
+
     def verify_job_environment(self, output):
         expected_env = {'JOB_ENV': 'vdt',
                         'LOCAL_JOB_ENV': 'osg'}
@@ -58,7 +64,18 @@ class TestRunJobs(osgunittest.OSGTestCase):
         self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
         self.skip_bad_unless(service.is_running('condor'), 'condor not running')
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
-        self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
+        self.skip_bad_unless(core.state['proxy.valid'] or core.state['token.condor_write_created'],
+                             'requires a scitoken or a proxy')
 
-        command = ('condor_ce_run', '-r', '%s:9619' % core.get_hostname(), '/bin/env')
+        command = ['condor_ce_run', '--debug', '-r', '%s:9619' % core.get_hostname(), '/bin/env']
+
+        if core.state['token.condor_write_created']:
+            # FIXME: After HTCONDOR-636 is released (targeted for HTCondor-CE 5.1.2),
+            # we can stop setting _condor_SCITOKENS_FILE
+            for token_var in ('_condor_SCITOKENS_FILE',
+                              'BEARER_TOKEN_FILE'):
+                os.environ[token_var] = core.config['token.condor_write']
+        else:
+            core.log_message('condor WRITE token not found; skipping SCITOKENS auth')
+
         self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')

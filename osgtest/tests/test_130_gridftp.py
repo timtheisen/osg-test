@@ -4,6 +4,10 @@ import osgtest.library.service as service
 
 class TestStartGridFTP(osgunittest.OSGTestCase):
 
+    @core.osgrelease(3.5)
+    def setUp(self):
+        pass
+
     def test_01_start_gridftp(self):
         core.state['gridftp.started-server'] = False
         core.state['gridftp.running-server'] = False
