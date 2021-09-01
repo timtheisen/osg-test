@@ -4,7 +4,6 @@ test_060_fetch_crl
 test_070_munge
 test_090_jobs
 test_100_condor
-test_110_condor_cron
 test_130_gridftp
 test_140_lcmaps
 test_150_xrootd
@@ -42,7 +41,6 @@ test_838_xrootd_tpc
 test_840_xrootd
 test_850_lcmaps
 test_860_gridftp
-test_880_condor_cron
 test_890_condor
 test_910_pbs
 test_920_gsiopenssh
