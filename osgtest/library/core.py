@@ -270,7 +270,7 @@ def monitor_file(filename, old_stat, sentinel, timeout):
     return (None, None)
 
 
-def system(command, user=None, stdin=None, log_output=True, shell=False, timeout=None, timeout_signal='TERM'):
+def system(command, user=None, stdin=None, log_output=True, shell=False, timeout=None, timeout_signal='TERM', quiet=False):
     """Runs a command and returns its exit status, stdout, and stderr.
 
     The command is provided as a list or tuple, unless the 'shell' argument is
@@ -299,7 +299,8 @@ def system(command, user=None, stdin=None, log_output=True, shell=False, timeout
     """
     return __run_command(command, user, stdin, subprocess.PIPE,
                          subprocess.PIPE, log_output, shell=shell,
-                         timeout=timeout, timeout_signal=timeout_signal)
+                         timeout=timeout, timeout_signal=timeout_signal,
+                         quiet=quiet)
 
 
 def check_system(command, message, exit=0, user=None, stdin=None, shell=False, timeout=None, timeout_signal='TERM'):
@@ -314,7 +315,8 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False, t
     about the command-line options.
     """
     status, stdout, stderr = system(command, user, stdin, shell=shell,
-                                    timeout=timeout, timeout_signal=timeout_signal)
+                                    timeout=timeout, timeout_signal=timeout_signal,
+                                    quiet=False)
     fail = diagnose(message, command, status, stdout, stderr)
     if timeout and status == -1:
         raise osgunittest.TimeoutException(fail)
@@ -326,7 +328,7 @@ def check_system(command, message, exit=0, user=None, stdin=None, shell=False, t
 def rpm_is_installed(a_package):
     """Returns whether the RPM package is installed."""
     status, stdout, stderr = system(('rpm', '--query', a_package),
-                                    log_output=False)
+                                    log_output=False, quiet=True)
     return (status == 0) and stdout.startswith(a_package)
 
 
@@ -337,14 +339,14 @@ def dependency_is_installed(a_dependency):
     such as 'grid-certificates'.
     """
     status, stdout, stderr = system(('rpm', '--query', '--whatprovides', a_dependency),
-                                    log_output=False)
+                                    log_output=False, quiet=True)
     return (status == 0) and not stdout.startswith('no package provides')
 
 
 def installed_rpms():
     """Returns the list of all installed packages."""
     command = ('rpm', '--query', '--all', '--queryformat', r'%{NAME}\n')
-    status, stdout, stderr = system(command, log_output=False)
+    status, stdout, stderr = system(command, log_output=False, quiet=True)
     return set(re.split('\s+', stdout.strip()))
 
 def rpm_regexp_is_installed(a_regexp):
@@ -449,7 +451,7 @@ def get_package_envra(package_name):
 
     """
     command = ('rpm', '--query', package_name, "--queryformat=%{EPOCH} %{NAME} %{VERSION} %{RELEASE} %{ARCH} ")
-    status, stdout, stderr = system(command)
+    status, stdout, stderr = system(command, quiet=True)
     # Not checking stderr because signature warnings get written there and
     # we do not care about those.
     if (status != 0) or (stdout is None):
@@ -503,7 +505,7 @@ def __format_command(command):
 _devnull = open(os.devnull, "r+b")
 
 
-def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False, timeout=None, timeout_signal='TERM'):
+def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_output=True, shell=False, timeout=None, timeout_signal='TERM', quiet=False):
     global _last_log_had_output
 
     # Preprocess command
@@ -523,20 +525,21 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
     if a_input is not None:
         stdin = subprocess.PIPE
 
-    # Log
-    if _last_log_had_output:
-        _log.write('\n')
-    _log.write('osgtest: ')
-    _log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
-    # HACK: print test name
-    # Get the current test function name, the .py file it's in, and the line number from the call stack
-    if options.printtest:
-        stack = traceback.extract_stack()
-        for stackentry in reversed(stack):
-            filename, lineno, funcname, text = stackentry
-            if re.search(r'(test_\d+|special).+\.py', filename):
-                _log.write("%s:%s:%d: " % (os.path.basename(filename), funcname, lineno))
-    _log.write(' '.join(__format_command(command)))
+    if not quiet:
+        # Log
+        if _last_log_had_output:
+            _log.write('\n')
+        _log.write('osgtest: ')
+        _log.write(time.strftime('%Y-%m-%d %H:%M:%S: '))
+        # HACK: print test name
+        # Get the current test function name, the .py file it's in, and the line number from the call stack
+        if options.printtest:
+            stack = traceback.extract_stack()
+            for stackentry in reversed(stack):
+                filename, lineno, funcname, text = stackentry
+                if re.search(r'(test_\d+|special).+\.py', filename):
+                    _log.write("%s:%s:%d: " % (os.path.basename(filename), funcname, lineno))
+        _log.write(' '.join(__format_command(command)))
 
     # Run and return command, with timeout if applicable
     preexec_fn = None
@@ -570,27 +573,28 @@ def __run_command(command, use_test_user, a_input, a_stdout, a_stderr, log_outpu
         # always reap zombie watcher
         os.waitpid(watcher_pid, 0)
 
-    # Log
-    stdout_length = 0
-    if stdout is not None:
-        stdout_length = len(stdout)
-    stderr_length = 0
-    if stderr is not None:
-        stderr_length = len(stderr)
-    _log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
-    _last_log_had_output = False
-    if log_output:
-        if (stdout is not None) and (len(stdout.rstrip('\n')) > 0):
-            _log.write('STDOUT:{\n')
-            _log.write(stdout.rstrip('\n') + '\n')
-            _log.write('STDOUT:}\n')
-            _last_log_had_output = True
-        if (stderr is not None) and (len(stderr.rstrip('\n')) > 0):
-            _log.write('STDERR:{\n')
-            _log.write(stderr.rstrip('\n') + '\n')
-            _log.write('STDERR:}\n')
-            _last_log_had_output = True
-    _log.flush()
+        # Log
+    if not quiet:
+        stdout_length = 0
+        if stdout is not None:
+            stdout_length = len(stdout)
+        stderr_length = 0
+        if stderr is not None:
+            stderr_length = len(stderr)
+        _log.write(' >>> %d %d %d\n' % (p.returncode, stdout_length, stderr_length))
+        _last_log_had_output = False
+        if log_output:
+            if (stdout is not None) and (len(stdout.rstrip('\n')) > 0):
+                _log.write('STDOUT:{\n')
+                _log.write(stdout.rstrip('\n') + '\n')
+                _log.write('STDOUT:}\n')
+                _last_log_had_output = True
+            if (stderr is not None) and (len(stderr.rstrip('\n')) > 0):
+                _log.write('STDERR:{\n')
+                _log.write(stderr.rstrip('\n') + '\n')
+                _log.write('STDERR:}\n')
+                _last_log_had_output = True
+        _log.flush()
 
     return (p.returncode, stdout, stderr)
 

@@ -90,7 +90,7 @@ def status(service_name):
     else:
         command = ('service', service_name, 'status')
 
-    status_rc, _, _ = core.system(command)
+    status_rc, _, _ = core.system(command, quiet=True)
     return status_rc
 
 def check_status(service_name, expected_status, timeout=10, log_to_check = None):
