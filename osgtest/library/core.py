@@ -663,10 +663,10 @@ def check_file_ownership(file_path, owner_name):
     """Return True if at 'file_path' exists, is owned by
     'owner_name' and is a file
     """
-    owner_uid = pwd.getpwnam(owner_name)
+    owner_pwentry = pwd.getpwnam(owner_name)
     try:
         file_stat = os.stat(file_path)
-        return (file_stat.st_uid == owner_uid.pw_uid and
+        return (file_stat.st_uid == owner_pwentry.pw_uid and
                 stat.S_ISREG(file_stat.st_mode))
     except OSError:  # file does not exist
         return False
