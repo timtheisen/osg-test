@@ -139,8 +139,9 @@ class TestStashCache(OSGTestCase):
         self.assert_(checksum_match, 'Origin and file downloaded via cache have the same contents')
 
     def test_08_https_fetch_from_auth_cache(self):
-        core.skip_ok_unless_installed('globus-proxy-utils', 'gfal2-plugin-http', 'gfal2-util', 
+        core.skip_ok_unless_installed('globus-proxy-utils', 'gfal2-plugin-http', 'gfal2-util-scripts',
                                       'gfal2-plugin-file', by_dependency=True)
+        core.skip_ok_unless_one_installed('python2-gfal2-util', 'python3-gfal2-util')
         self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
         name, contents = self.testfiles[3]
         path = os.path.join(getcfg("OriginAuthExport"), name)
