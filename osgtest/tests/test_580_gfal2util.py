@@ -13,7 +13,8 @@ class TestGFAL2Util(osgunittest.OSGTestCase):
 
     def setUp(self):
         self.skip_ok_unless(core.state['proxy.valid'] or core.state['voms.got-proxy'], "No proxy")
-        core.skip_ok_unless_installed('gfal2-util', 'gfal2-plugin-file')
+        core.skip_ok_unless_installed('gfal2-util-scripts', 'gfal2-plugin-file')
+        core.skip_ok_unless_one_installed('python2-gfal2-util', 'python3-gfal2-util')
 
     def get_gftp_url_base(self):
         return 'gsiftp://%s/' % (TestGFAL2Util.__hostname)
