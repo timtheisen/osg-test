@@ -12,6 +12,7 @@ import sys
 import unittest
 import time
 
+from osgtest.library import service
 
 # Copied from unittest.util, Python 3.6
 _MAX_LENGTH = 80
@@ -113,6 +114,11 @@ class OSGTestCase(unittest.TestCase):
         "Skip (bad) if the expression is false"
         if not expr:
             raise BadSkipException(message)
+
+    def skip_bad_unless_running(self, *services):
+        "Skip (bad) if one of the listed services is not running"
+        for svc in services:
+            self.skip_bad_unless(service.is_running(svc), "%s is not running" % svc)
 
     def assertSubsetOf(self, a, b, message=None):
         "Ensure that a is a subset of b "
