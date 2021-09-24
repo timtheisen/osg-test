@@ -1,6 +1,6 @@
 import os
 
-import osgtest.library.core as core
+from osgtest.library import core
 
 def wait_for_daemon(collector_log_path, stat, daemon, timeout):
     """Wait until the requested 'daemon' is available and accepting commands by

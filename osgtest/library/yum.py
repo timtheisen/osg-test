@@ -8,7 +8,7 @@ the tests in VM universe at the CHTC.
 import re
 import time
 
-import osgtest.library.core as core
+from osgtest.library import core
 
 def clean(*repos):
     """Perform 'yum clean' commands that we recommend to our users"""
