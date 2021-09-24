@@ -26,7 +26,7 @@ import re
 import shutil
 import tempfile
 import hashlib
-import osgtest.library.core as core
+from osgtest.library import core
 
 
 _backup_directory = '/usr/share/osg-test/backups'

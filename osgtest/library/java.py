@@ -5,7 +5,7 @@ JAVA_RPM = 'java-' + EXPECTED_VERSION + '-openjdk'
 JAVAC_RPM = 'java-' + EXPECTED_VERSION + '-openjdk-devel'
 
 import re
-import osgtest.library.core as core
+from osgtest.library import core
 
 def _run_alternatives(java_type, a_input, message):
     command = ('alternatives', '--config', java_type)

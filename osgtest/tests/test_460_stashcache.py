@@ -38,10 +38,6 @@ class TestStashCache(OSGTestCase):
                                 expected=contents,
                                 message="cached file %s mismatch" % name)
 
-    def skip_bad_unless_running(self, *services):
-        for svc in services:
-            self.skip_bad_unless(service.is_running(svc), "%s not running" % svc)
-
     @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("stash-origin",

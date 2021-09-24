@@ -1,7 +1,7 @@
 """Utilities for starting and stopping init-based services."""
 import time
 
-import osgtest.library.core as core
+from osgtest.library import core
 from osgtest.library import files
 
 STATUS_RUNNING = 0 # LSB: program is running or service is OK
