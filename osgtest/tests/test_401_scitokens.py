@@ -24,7 +24,7 @@ def request_demo_scitoken(scope, audience='ANY'):
                     'scope': scope,
                     'exp': int(time.time() + 3600),
                     'sub': 'osg-test'}
-    payload = json.dumps({'payload': json.dumps(payload_dict),
+    payload = json.dumps({'payload': payload_dict,
                           'algorithm': 'ES256'}).encode()
 
     req = request.Request('https://demo.scitokens.org/issue',
