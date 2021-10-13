@@ -1,6 +1,7 @@
 """Support and convenience functions for tests."""
 from __future__ import print_function
 
+import contextlib
 import errno
 import os
 import os.path
@@ -810,3 +811,21 @@ def to_bytes(strlike, encoding="latin-1", errors="backslashreplace"):
     if not isinstance(strlike, bytes):
         return strlike.encode(encoding, errors)
     return strlike
+
+
+@contextlib.contextmanager
+def environ_context(key, value):
+    """A context manager for running a block with an environment variable set,
+    restoring the original afterward.
+
+    """
+    old_value = os.environ.pop(key, None)
+    if value is not None:
+        os.environ[key] = value
+    try:
+        yield
+    finally:
+        if old_value is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = old_value

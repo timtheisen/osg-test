@@ -43,6 +43,22 @@ def read(path, as_single_string=False):
     the_file.close()
     return contents
 
+def get_backup_path(path, owner):
+    """Returns the file system path where the backup for 'path' for 'owner' is/will be kept"""
+    return os.path.join(_backup_directory, os.path.basename(path) + '#' + owner)
+
+def remove_stale_backup(path, owner):
+    """Delete a backup file that we lost track of.
+
+    Returns True if the file was removed, False otherwise.
+    """
+    if filesBackedup(path, owner):
+        raise ValueError(f"Backup of '{path}' for '{owner}' is not stale")
+
+    try:
+        remove(get_backup_path(path, owner))
+    except FileNotFoundError:
+        pass
 
 def preserve(path, owner):
     """Backup the file at path and remember it with the given owner.
@@ -59,7 +75,7 @@ def preserve(path, owner):
     if backup_id in _backups:
         raise ValueError("Already have a backup of '%s' for '%s'" % (path, owner))
 
-    backup_path = os.path.join(_backup_directory, os.path.basename(path) + '#' + owner)
+    backup_path = get_backup_path(path, owner)
     if os.path.exists(backup_path):
         raise ValueError("Backup already exists at '%s'" % (backup_path))
 
@@ -264,3 +280,11 @@ def checksum_files_match(file1, file2):
         return checksum1==checksum2
     else:
         return False
+
+def preserve_and_remove(path, owner):
+    remove_stale_backup(path, owner)
+    preserve(path, owner)
+    try:
+        remove(path)
+    except FileNotFoundError:
+        pass
