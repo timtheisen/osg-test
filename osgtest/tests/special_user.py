@@ -83,6 +83,10 @@ class TestUser(osgunittest.OSGTestCase):
         self.assert_(os.path.isdir(user.pw_dir),
                      "User '%s' missing a home directory at '%s'" % (core.options.username, user.pw_dir))
 
+        core.state['user.uid'] = user.pw_uid
+        core.state['user.gid'] = user.pw_gid
+        core.state['user.home'] = user.pw_dir
+
         core.state['user.verified'] = True
 
     def test_03_generate_user_cert(self):
