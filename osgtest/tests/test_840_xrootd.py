@@ -15,6 +15,7 @@ class TestStopXrootd(osgunittest.OSGTestCase):
     def test_01_stop_xrootd(self):
         if core.state['xrootd.backups-exist']:
             files.restore(core.config['xrootd.config'], "xrootd")
+            files.restore(core.config['xrootd.logging-config'], "xrootd")
             files.restore('/etc/xrootd/auth_file', "xrootd")
             if not core.rpm_is_installed('xrootd-lcmaps'):
                 files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")

@@ -23,6 +23,12 @@ u = /tmp/@=/ a
 u xrootd /tmp a
 """
 
+XROOTD_LOGGING_CFG_TEXT = """\
+xrootd.trace all
+xrd.trace all -sched
+ofs.trace all
+http.trace all
+"""
 
 
 
@@ -42,6 +48,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         # rootdir and resourcename needs to be set early for the default osg-xrootd config
         core.config['xrootd.config'] = '/etc/xrootd/config.d/10-osg-test.cfg'
+        core.config['xrootd.logging-config'] = '/etc/xrootd/config.d/99-logging.cfg'
         core.config['xrootd.service-defaults'] = '/etc/sysconfig/xrootd'
         core.config['xrootd.multiuser'] = False
         core.state['xrootd.started-server'] = False
@@ -62,6 +69,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
         core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
 
+        files.write(core.config['xrootd.logging-config'], XROOTD_LOGGING_CFG_TEXT, owner='xrootd', backup=True, chmod=0o644)
         files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True, chmod=0o644)
 
         authfile = '/etc/xrootd/auth_file'
