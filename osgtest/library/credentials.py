@@ -66,7 +66,11 @@ def parse_scitoken(token_string: str):
 
 
 def reserve_scitoken(token_name: str, token_file: str = None):
-    """Create the global dictionary entries used for storing/referencing scitokens"""
+    """Create the global dictionary entries used for storing/referencing scitokens
+
+    Calling this is optional but it avoids potential KeyErrors.
+
+    """
     if token_file is None:
         token_file = f"/tmp/{token_name}.scitoken"
     core.state[f'token.{token_name}_created'] = False
@@ -86,6 +90,8 @@ def request_scitoken(token_name: str, scope: str, subject='osg-test', audience="
 
     """
     token_file = core.config[f'token.{token_name}']
+    if not token_file:
+        token_file = f"/tmp/{token_name}.scitoken"
     if os.path.exists(token_file):
         if overwrite:
             files.remove(token_file, force=True)
