@@ -29,6 +29,18 @@ class TestXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed("xrootd", "xrootd-client", by_dependency=True)
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
 
+    def xrootd_url(self, path, auth=True):
+        if path.startswith(xrootd.ROOTDIR):
+            path = path[len(xrootd.ROOTDIR):]
+        url = f"root://{socket.getfqdn()}/{path}"
+        if (
+                auth and
+                core.config['xrootd.security'] == "SCITOKENS" and
+                not core.config['xrootd.ztn']
+        ):
+            url += f"?authz=Bearer%20{core.state['token.xrootd_contents']}"
+        return url
+
     def test_00_setup(self):
         public_subdir = core.config['xrootd.public_subdir']
         user_subdir = core.config['xrootd.user_subdir']

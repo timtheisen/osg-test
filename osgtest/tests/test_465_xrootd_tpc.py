@@ -15,6 +15,29 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
     public_copied_file = f"{xrootd.ROOTDIR}/{{public_subdir}}/tpc_public_copied_file.txt"
     public_copied_file2 = f"{xrootd.ROOTDIR}/{{public_subdir}}/tpc_public_copied_file2.txt"
     user_copied_file = f"{xrootd.ROOTDIR}/{{user_subdir}}/tpc_user_copied_file.txt"
+
+    def tpc1_url_from_path(self, path):
+        if path.startswith(xrootd.ROOTDIR):
+            path = path[len(xrootd.ROOTDIR):]
+        return f"https://{core.get_hostname()}:9001/{path}"
+
+    def tpc2_url_from_path(self, path):
+        if path.startswith(xrootd.ROOTDIR):
+            path = path[len(xrootd.ROOTDIR):]
+        return f"https://{core.get_hostname()}:9002/{path}"
+
+    def copy_command(self, source_url, dest_url, source_token=None, dest_token=None):
+        command = ["curl", "-A", "Test", "-vk", "-X", "COPY",
+                   "-H", f"Source: {source_url}",
+                   "-H", "Overwrite: T",
+        ]
+        if dest_token:
+            command.extend(["-H", f"Authorization: Bearer {dest_token}"])
+        if source_token:
+            command.extend(["-H", f"Copy-Header:  Authorization: Bearer {source_token}"])
+        command.append(dest_url)
+        return command
+
     @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("osg-xrootd-standalone",
