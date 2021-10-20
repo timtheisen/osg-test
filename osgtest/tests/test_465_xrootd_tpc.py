@@ -1,13 +1,20 @@
 import os
-import json
 import pwd
+import time
 
-import osgtest.library.core as core
-import osgtest.library.files as files
-import osgtest.library.osgunittest as osgunittest
+from ..library import core, files, osgunittest, xrootd
 
 
 class TestXrootdTPC(osgunittest.OSGTestCase):
+    rootdir_copied_file = f"{xrootd.ROOTDIR}/tpc_rootdir_copied_file.txt"
+
+    # these will be set in test_00_setup:
+    source_path = f"{xrootd.ROOTDIR}/{{public_subdir}}/test_tpc_source.txt"
+    tpc1_source_url = f""
+    dest_path = f"{xrootd.ROOTDIR}/{{public_subdir}}/test_gridftp_data_tpc.txt"
+    public_copied_file = f"{xrootd.ROOTDIR}/{{public_subdir}}/tpc_public_copied_file.txt"
+    public_copied_file2 = f"{xrootd.ROOTDIR}/{{public_subdir}}/tpc_public_copied_file2.txt"
+    user_copied_file = f"{xrootd.ROOTDIR}/{{user_subdir}}/tpc_user_copied_file.txt"
     @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("osg-xrootd-standalone",
@@ -15,6 +22,21 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
+
+    def test_00_setup(self):
+        public_subdir = core.config['xrootd.public_subdir']
+        user_subdir = core.config['xrootd.user_subdir']
+        for var in [
+            "source_path",
+            "public_copied_file",
+            "public_copied_file2",
+            "user_copied_file",
+            "rootdir_copied_file",
+        ]:
+            setattr(TestXrootdTPC, var, getattr(TestXrootdTPC, var).format(**locals()))
+        TestXrootdTPC.tpc1_source_url = self.tpc1_url_from_path(TestXrootdTPC.source_path)
+        core.check_system(["cp", "/usr/share/osg-test/test_gridftp_data.txt", TestXrootdTPC.source_path],
+                          "failed to prepare source file")
 
     def test_01_create_macaroons(self):
         core.config['xrootd.tpc.macaroon-1'] = None

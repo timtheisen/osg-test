@@ -10,11 +10,11 @@ import osgtest.library.xrootd as xrootd
 HTTP_PORT1 = 9001  # chosen so it doesn't conflict w/ the stashcache instances
 HTTP_PORT2 = 9002
 
-XROOTD_CFG_TEXT = """\
+XROOTD_CFG_TEXT = f"""\
 all.adminpath /var/spool/xrootd
 all.pidpath /var/run/xrootd
 set resourcename = VDTTEST
-set rootdir = /
+set rootdir = {xrootd.ROOTDIR}
 continue /etc/xrootd/config.d/
 """
 

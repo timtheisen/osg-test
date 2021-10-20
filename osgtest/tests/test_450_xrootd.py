@@ -7,6 +7,8 @@ import pwd
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.service as service
+import osgtest.library.xrootd as xrootd
 
 
 class TestXrootd(osgunittest.OSGTestCase):
@@ -14,12 +16,30 @@ class TestXrootd(osgunittest.OSGTestCase):
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
     __fuse_path = '/mnt/xrootd_fuse_test'
 
+    public_copied_file = f"{xrootd.ROOTDIR}/{{public_subdir}}/public_copied_file.txt"
+    public_copied_file2 = f"{xrootd.ROOTDIR}/{{public_subdir}}/public_copied_file2.txt"
+    user_copied_file = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file.txt"
+    file_to_download = f"{xrootd.ROOTDIR}/{{public_subdir}}/file_to_download.txt"
+    rootdir_copied_file = f"{xrootd.ROOTDIR}/rootdir_copied_file.txt"
+
     def setUp(self):
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
                             "xcache 1.0.2+ configs conflict with xrootd tests")
         core.skip_ok_unless_installed("xrootd", "xrootd-client", by_dependency=True)
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
+
+    def test_00_setup(self):
+        public_subdir = core.config['xrootd.public_subdir']
+        user_subdir = core.config['xrootd.user_subdir']
+        for var in [
+            "public_copied_file",
+            "public_copied_file2",
+            "user_copied_file",
+            "file_to_download",
+            "rootdir_copied_file",
+        ]:
+            setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
     def test_01_xrdcp_local_to_server(self):
         core.state['xrootd.copied-to-server'] = False
