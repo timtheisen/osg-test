@@ -5,6 +5,8 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.xrootd as xrootd
+import shlex
+import shutil
 import time
 
 
@@ -27,9 +29,9 @@ ofs.authorize
 """
 
 AUTHFILE_TEXT = """\
-u * /tmp a /usr/share/ r
-u = /tmp/@=/ a
-u xrootd /tmp a
+u =      /@=/ a
+u xrootd / a
+u *      /public/ a / rl
 """
 
 XROOTD_LOGGING_CFG_TEXT = """\
@@ -71,10 +73,14 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.ztn'] = False
         core.state['xrootd.backups-exist'] = False
         core.state['xrootd.had-failures'] = False
+        core.config['xrootd.public_subdir'] = "public"
+        core.config['xrootd.user_subdir'] = core.options.username
+        self.skip_ok_unless(core.state['user.verified'], "Test user not available")
+
+        xrootd_user = pwd.getpwnam("xrootd")
 
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
-        self.skip_ok_unless(core.options.adduser, 'user not created')
         if core.osg_release().version < '3.6':
             core.skip_ok_unless_installed("globus-proxy-utils")
             core.config['xrootd.security'] = "GSI"
@@ -83,7 +89,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             core.skip_ok_unless_installed("xrootd-scitokens")
             core.config['xrootd.security'] = "SCITOKENS"
 
-        user = pwd.getpwnam("xrootd")
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
         core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
 
@@ -91,10 +96,81 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True, chmod=0o644)
 
         authfile = '/etc/xrootd/auth_file'
-        files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
+        files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(xrootd_user.pw_uid, xrootd_user.pw_gid), chmod=0o644)
+        try:
+            shutil.rmtree(xrootd.ROOTDIR)
+        except FileNotFoundError:
+            pass
+        public_dir = f"{xrootd.ROOTDIR}/{core.config['xrootd.public_subdir']}"
+        files.safe_makedirs(xrootd.ROOTDIR)
+        os.chmod(xrootd.ROOTDIR, 0o755)
+        files.safe_makedirs(public_dir)
+        os.chmod(public_dir, 0o1777)
+        user_dir = f"{xrootd.ROOTDIR}/{core.config['xrootd.user_subdir']}"
+        files.safe_makedirs(user_dir)
+        os.chmod(user_dir, 0o770)
+        core.system(["chown", "-R", "xrootd:xrootd", xrootd.ROOTDIR])
+        os.chown(user_dir, core.state["user.uid"], xrootd_user.pw_gid)
+
+        core.check_system(["find", xrootd.ROOTDIR, "-ls"], f"Couldn't dump contents of {xrootd.ROOTDIR}")
 
         core.state['xrootd.backups-exist'] = True
         core.state['xrootd.is-configured'] = True
+
+    def test_02_xrootd_user_file_access(self):
+        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
+        public_subdir = core.config['xrootd.public_subdir']
+        xrootd_user = pwd.getpwnam("xrootd")
+        # Verify xrootd user permissions
+        testfile1 = os.path.join(xrootd.ROOTDIR, "plain_copy_xrootd_rootdir")
+        testfile2 = os.path.join(xrootd.ROOTDIR, public_subdir, "plain_copy_xrootd_public")
+        # Set GID first: if I set UID first I won't have permissions to set GID
+        os.setegid(xrootd_user.pw_gid)
+        try:
+            os.seteuid(xrootd_user.pw_uid)
+            try:
+                try:
+                    with open(testfile1, "w") as fh:
+                        fh.write("hello")
+                except OSError as err:
+                    self.fail(f"xrootd user cannot access {testfile1}: {err}")
+                try:
+                    with open(testfile2, "w") as fh:
+                        fh.write("world")
+                except OSError as err:
+                    self.fail(f"xrootd user cannot access {testfile2}: {err}")
+            finally:
+                os.seteuid(os.getuid())
+        finally:
+            os.setegid(os.getgid())
+
+    def test_03_test_user_file_access(self):
+        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
+        username = core.options.username
+        public_subdir = core.config['xrootd.public_subdir']
+        user_subdir = core.config['xrootd.user_subdir']
+        # Verify unpriv user permissions
+        testfile3 = os.path.join(xrootd.ROOTDIR, user_subdir, "plain_copy_testuser_user")
+        testfile4 = os.path.join(xrootd.ROOTDIR, public_subdir, "plain_copy_testuser_public")
+        # Set GID first: if I set UID first I won't have permissions to set GID
+        os.setegid(core.state['user.gid'])
+        try:
+            os.seteuid(core.state['user.uid'])
+            try:
+                try:
+                    with open(testfile3, "w") as fh:
+                        fh.write("hello")
+                except OSError as err:
+                    self.fail(f"{username} user cannot access {testfile3}: {err}")
+                try:
+                    with open(testfile4, "w") as fh:
+                        fh.write("world")
+                except OSError as err:
+                    self.fail(f"{username} user cannot access {testfile4}: {err}")
+            finally:
+                os.seteuid(os.getuid())
+        finally:
+            os.setegid(os.getgid())
 
     @core.osgrelease(3.5)
     def test_04_configure_hdfs(self):

@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
@@ -28,6 +31,8 @@ class TestStopXrootd(osgunittest.OSGTestCase):
             if core.config['xrootd.security'] == "SCITOKENS":
                 files.restore('/etc/xrootd/scitokens.conf', "xrootd")
                 files.remove("/etc/xrootd/config.d/99-osgtest-ztn.cfg", force=True)
+            if os.path.exists(xrootd.ROOTDIR):
+                shutil.rmtree(xrootd.ROOTDIR)
 
         # Get xrootd service back to its original state
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
