@@ -99,17 +99,20 @@ class TestStartXrootd(osgunittest.OSGTestCase):
     @core.osgrelease(3.5)
     def test_04_configure_hdfs(self):
         core.skip_ok_unless_installed('xrootd-hdfs')
-        hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"
+        hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so\n"
         files.append(core.config['xrootd.config'], hdfs_config, backup=False)
 
     def test_05_configure_multiuser(self):
-        core.skip_ok_unless_installed('xrootd-multiuser', 'globus-proxy-utils', by_dependency=True)
+        core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
         if core.PackageVersion("xrootd-multiuser") < "1.0.0-0":
-            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
+            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default\n"
         else:
             xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
-                                    "ofs.ckslib ++ libXrdMultiuser.so"
-        files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
+                                    "ofs.ckslib ++ libXrdMultiuser.so\n"
+        if os.path.exists("/etc/xrootd/config.d/60-osg-multiuser.cfg"):
+            core.log_message("Not adding XRootD multiuser config, already exists")
+        else:
+            files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
         core.config['xrootd.multiuser'] = True
 
     def test_06_configure_scitokens(self):
