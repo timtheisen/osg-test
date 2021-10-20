@@ -17,8 +17,11 @@ class TestStopXrootd(osgunittest.OSGTestCase):
             files.restore(core.config['xrootd.config'], "xrootd")
             files.restore(core.config['xrootd.logging-config'], "xrootd")
             files.restore('/etc/xrootd/auth_file', "xrootd")
-            if not core.rpm_is_installed('xrootd-lcmaps'):
+            if not core.rpm_is_installed('xrootd-lcmaps') and core.config['xrootd.security'] == "GSI":
                 files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")
+            if core.config['xrootd.security'] == "SCITOKENS":
+                files.restore('/etc/xrootd/scitokens.conf', "xrootd")
+                files.remove("/etc/xrootd/config.d/99-osgtest-ztn.cfg", force=True)
         core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
         self.skip_ok_if(core.state['xrootd.started-server'], 'did not start server')
         service.check_stop(core.config['xrootd_service'])

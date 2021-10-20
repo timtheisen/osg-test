@@ -1,3 +1,4 @@
+import os
 import pwd
 import osgtest.library.core as core
 import osgtest.library.files as files
@@ -6,6 +7,13 @@ import osgtest.library.osgunittest as osgunittest
 import osgtest.library.xrootd as xrootd
 
 
+XROOTD5_SCITOKENS_CFG_TXT = """
+# Allow scitokens on all ports, all protocols
+ofs.authlib ++ libXrdAccSciTokens.so config=%s
+
+# Pass the bearer token to the Xrootd authorization framework.
+http.header2cgi Authorization authz
+"""
 
 # XRootD configuration necessary for osg-xrootd-standalone
 STANDALONE_XROOTD_CFG_TEXT = """\
@@ -30,7 +38,15 @@ ofs.trace all
 http.trace all
 """
 
+SCITOKENS_CONF_TEXT = f"""\
+[Global]
+audience = OSG_TEST
 
+[Issuer https://demo.scitokens.org]
+issuer = https://demo.scitokens.org
+base_path = /
+map_subject = true
+"""
 
 
 class TestStartXrootd(osgunittest.OSGTestCase):
@@ -51,6 +67,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.logging-config'] = '/etc/xrootd/config.d/99-logging.cfg'
         core.config['xrootd.service-defaults'] = '/etc/sysconfig/xrootd'
         core.config['xrootd.multiuser'] = False
+        core.config['xrootd.ztn'] = False
         core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
 
@@ -79,12 +96,12 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.is-configured'] = True
 
     @core.osgrelease(3.5)
-    def test_02_configure_hdfs(self):
+    def test_04_configure_hdfs(self):
         core.skip_ok_unless_installed('xrootd-hdfs')
         hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so"
         files.append(core.config['xrootd.config'], hdfs_config, backup=False)
 
-    def test_03_configure_multiuser(self):
+    def test_05_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', 'globus-proxy-utils', by_dependency=True)
         if core.PackageVersion("xrootd-multiuser") < "1.0.0-0":
             xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default"
@@ -94,7 +111,29 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.append(core.config['xrootd.config'], xrootd_multiuser_conf, owner='xrootd', backup=False)
         core.config['xrootd.multiuser'] = True
 
-    def test_04_start_xrootd(self):
+    def test_06_configure_scitokens(self):
+        self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "Not using SciTokens for XRootD")
+        scitokens_conf_path = "/etc/xrootd/scitokens.conf"
+        files.write(scitokens_conf_path, SCITOKENS_CONF_TEXT, owner='xrootd', chmod=0o644)
+
+        if os.path.exists("/etc/xrootd/config.d/50-osg-scitokens.cfg"):
+            core.log_message("Not adding XRootD SciTokens config, already exists")
+        else:
+            files.append(core.config['xrootd.config'],
+                         XROOTD5_SCITOKENS_CFG_TXT % scitokens_conf_path,
+                         backup=False)
+
+        ### ztn tests don't work right now.
+        #
+        # # Enable ztn which requires that the token be sent over an encrypted connection
+        # # and allows getting the token from the environment.
+        # core.config['xrootd.ztn'] = True
+        # files.write("/etc/xrootd/config.d/99-osgtest-ztn.cfg",
+        #             "sec.protocol ztn\n",
+        #             chmod=0o644,
+        #             owner='xrootd')
+
+    def test_08_start_xrootd(self):
         core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
         if core.el_release() < 7:
             core.config['xrootd_service'] = "xrootd"
