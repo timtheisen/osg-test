@@ -4,6 +4,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.xrootd as xrootd
 
 
 HTTP_PORT1 = 9001  # chosen so it doesn't conflict w/ the stashcache instances
@@ -69,6 +70,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.state['xrootd.started-http-server-1'] = False
         core.state['xrootd.started-http-server-2'] = False
         core.state['xrootd.tpc.backups-exist'] = False
+        core.state['xrootd.tpc.had-failures'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
         core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
@@ -97,13 +99,16 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.check_system(["openssl", "rand", "-base64", "-out",
                                core.config['xrootd.tpc.macaroon-secret-2'], "64"], "Creating symmetric key")
 
-    def test_03_start_xrootd(self):
+    def test_03_start_xrootd_tpc(self):
         if core.rpm_is_installed("xrootd-multiuser"):
             core.config['xrootd_tpc_service_1'] = "xrootd-privileged@third-party-copy-1"
             core.config['xrootd_tpc_service_2'] = "xrootd-privileged@third-party-copy-2"
         else:
             core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
             core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
+        if core.options.manualrun:
+            files.preserve_and_remove(xrootd.logfile("third-party-copy-1"), owner="xrootd")
+            files.preserve_and_remove(xrootd.logfile("third-party-copy-2"), owner="xrootd")
         service.check_start(core.config['xrootd_tpc_service_1'], min_up_time = 5)
         service.check_start(core.config['xrootd_tpc_service_2'], min_up_time = 5)
         core.state['xrootd.started-http-server-1'] = True

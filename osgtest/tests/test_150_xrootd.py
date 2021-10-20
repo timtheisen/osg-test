@@ -5,6 +5,7 @@ import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
 import osgtest.library.xrootd as xrootd
+import time
 
 
 XROOTD5_SCITOKENS_CFG_TXT = """
@@ -68,8 +69,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.service-defaults'] = '/etc/sysconfig/xrootd'
         core.config['xrootd.multiuser'] = False
         core.config['xrootd.ztn'] = False
-        core.state['xrootd.started-server'] = False
         core.state['xrootd.backups-exist'] = False
+        core.state['xrootd.had-failures'] = False
 
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
@@ -133,14 +134,41 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         #             chmod=0o644,
         #             owner='xrootd')
 
+    def test_07_check_cconfig(self):
+        xrootd_config = xrootd.cconfig("standalone", raw=False, quiet=False)
+        self.assertRegexInList(xrootd_config,
+                               rf"^[ ]*oss\.localroot[ ]+{xrootd.ROOTDIR}[ ]*$",
+                               "oss.localroot not being set correctly")
+        self.assertRegexInList(xrootd_config,
+                               r"^[ ]*acc\.authdb[ ]+/etc/xrootd/auth_file[ ]*$",
+                               "authfile not being set correctly")
+        self.assertRegexInList(xrootd_config,
+                               r"^[ ]*ofs\.authorize[ ]*$",
+                               "ofs.authorize missing")
+        if core.config['xrootd.security'] == "SCITOKENS":
+            self.assertRegexInList(xrootd_config,
+                                   r"^[ ]*ofs\.authlib[ ]+[+][+][ ]+libXrdAccSciTokens\.so[ ]+config=/etc/xrootd/scitokens\.conf[ ]*$",
+                                   "scitokens config not getting loaded")
+
     def test_08_start_xrootd(self):
-        core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
-        if core.el_release() < 7:
-            core.config['xrootd_service'] = "xrootd"
-        elif core.config['xrootd.multiuser']:
+        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
+        if core.config['xrootd.multiuser']:
             core.config['xrootd_service'] = "xrootd-privileged@standalone"
         else:
             core.config['xrootd_service'] = "xrootd@standalone"
 
-        service.check_start(core.config['xrootd_service'])
-        core.state['xrootd.started-server'] = True
+        core.state['xrootd.service-was-running'] = False
+        # Stop the service so it gets our new config
+        if service.is_running(core.config['xrootd_service']):
+            core.state['xrootd.service-was-running'] = True
+            service.stop(core.config['xrootd_service'], force=True)
+            time.sleep(5)
+
+        # clear the logfile so it only contains our run
+        if core.options.manualrun:
+            files.preserve_and_remove(xrootd.logfile("standalone"), "xrootd")
+        try:
+            service.check_start(core.config['xrootd_service'], min_up_time=5)
+        except Exception:
+            xrootd.dump_log(125, "standalone")
+            raise

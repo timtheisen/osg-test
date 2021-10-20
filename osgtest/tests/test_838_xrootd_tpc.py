@@ -2,6 +2,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.xrootd as xrootd
 
 class TestStopXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
@@ -12,12 +13,20 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
         self.skip_ok_unless(core.config['xrootd.security'], "no xrootd security available")
 
-    def test_01_stop_xrootd(self):
+    def test_01_dump_logs_if_failures(self):
+        self.skip_ok_unless(core.state['xrootd.tpc.had-failures'], "no failures")
+        self.skip_ok_unless(core.options.manualrun, "only dumping logs on a manual run (osg-test -m)")
+        xrootd.dump_log(500, "third-party-copy-1")
+        xrootd.dump_log(500, "third-party-copy-2")
+
+    def test_02_stop_xrootd_tpc(self):
         if core.state['xrootd.tpc.backups-exist']:
             files.restore(core.config['xrootd.tpc.config-1'], "xrootd")
             files.restore(core.config['xrootd.tpc.config-2'], "xrootd")
             files.restore(core.config['xrootd.tpc.basic-config'], "xrootd")
             files.restore('/etc/xrootd/config.d/40-osg-standalone.cfg', "xrootd")
+            files.restore(xrootd.logfile("third-party-copy-1"), "xrootd", ignore_missing=True)
+            files.restore(xrootd.logfile("third-party-copy-2"), "xrootd", ignore_missing=True)
 
         self.skip_ok_if(not core.state['xrootd.started-http-server-1'] and
                         not core.state['xrootd.started-http-server-2'], 
@@ -25,5 +34,3 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
         service.check_stop(core.config['xrootd_tpc_service_1'])
         service.check_stop(core.config['xrootd_tpc_service_2'])
 
-    def test_02_clean_test_files(self):
-        files.remove("/tmp/test_gridftp_data_tpc.txt", force=True)
