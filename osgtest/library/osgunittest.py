@@ -8,6 +8,7 @@ standard Python unittest library have been made:
 # quiet all the 'Method could be a function' or 'Invalid name' warnings;
 # I'm following the conventions unittest set.
 # pylint: disable=R0201,C0103
+import re
 import sys
 import unittest
 import time
@@ -137,6 +138,14 @@ class OSGTestCase(unittest.TestCase):
         else:
             fullmessage = aftermessage
         self.assertEqual(actual, expected, fullmessage)
+
+    def assertRegexInList(self, test_list, regex, message=None):
+        """Assert that a member of the list matches the regex (using re.search())"""
+        self.assertTrue(any(re.search(regex, line) for line in test_list), message)
+
+    def assertRegexNotInList(self, test_list, regex, message=None):
+        """Assert that no member of the list matches the regex (using re.search())"""
+        self.assertFalse(any(re.search(regex, line) for line in test_list), message)
 
     # This is mostly a copy of the method from unittest in python 2.4.
     # There is some code here to test if the 'result' object accepts 'skips',
