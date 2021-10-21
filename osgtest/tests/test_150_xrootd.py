@@ -128,6 +128,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     # Make sure the directories are set up correctly and that the xrootd user
     # can access everything it's supposed to be able to.
+    # TODO: Remove before merging into master
     def test_02_xrootd_user_file_access(self):
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
         public_subdir = core.config['xrootd.public_subdir']
@@ -157,6 +158,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     # Make sure the directories are set up correctly and that the test user
     # can access everything it's supposed to be able to.
+    # TODO: Remove before merging into master
     def test_03_test_user_file_access(self):
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
         username = core.options.username
