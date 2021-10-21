@@ -112,6 +112,23 @@ class TestXrootd(osgunittest.OSGTestCase):
             core.state['xrootd.had-failures'] = True
             raise
 
+    def test_04a_xrdcp_upload_gsi_authenticated_denied(self):
+        self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file, add_token=False)
+            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+            core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=54, user=True)
+            self.assertFalse(os.path.exists(TestXrootd.rootdir_copied_file), "Uploaded file wrongly present")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
+        finally:
+            try:
+                files.remove(TestXrootd.rootdir_copied_file)
+            except FileNotFoundError:
+                pass
+
     def test_04b_xrdcp_upload_scitoken_authenticated_denied(self):
         self.skip_ok_unless("SCITOKENS" in core.config['xrootd.security'], "not using scitokens")
         token_contents = core.state['token.xrootd_contents']
