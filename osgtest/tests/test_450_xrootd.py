@@ -127,41 +127,55 @@ class TestXrootd(osgunittest.OSGTestCase):
         except AssertionError:
             core.state['xrootd.had-failures'] = True
             raise
-    def test_02_xrootd_multiuser(self):
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser',
-                                      by_dependency=True)
+
+    def test_05_xrootd_multiuser(self):
+        core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
         self.skip_bad_unless(core.config['xrootd.multiuser'], 'Xrootd not configured for multiuser')
-        self.skip_bad_unless(core.state['xrootd.copied-to-server'], 'File to check ownership does not exist')
-        file_path = os.path.join(core.config['xrootd.tmp-dir'], 'copied_file.txt')
-        self.assertEqual(core.check_file_ownership(file_path, core.options.username), True)
+        try:
+            file_path = TestXrootd.user_copied_file
+            self.skip_bad_unless(os.path.exists(file_path), "uploaded file does not exist")
+            self.skip_bad_unless(os.path.isfile(file_path), "uploaded file exists but is not a regular file")
 
-    def test_03_xrdcp_server_to_local(self):
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
-        core.skip_ok_unless_installed('globus-proxy-utils')
-        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
+            # Ownership check; copied from core.check_file_ownership() because I want more detailed info
+            try:
+                file_stat = os.stat(file_path)
+            except OSError as err:
+                self.fail(f"Unexpected error while statting uploaded file: {err}")
+            file_owner_uid = file_stat.st_uid
+            username = core.options.username
+            file_owner_name = pwd.getpwuid(file_owner_uid).pw_name
+            self.assertEqual(file_owner_name, username,
+                             f"file owner {file_owner_name} does not match expected user {username}")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
 
-        hostname = socket.getfqdn()
-        temp_source_dir = tempfile.mkdtemp()
-        temp_target_dir = tempfile.mkdtemp()
-        os.chmod(temp_source_dir, 0o777)
-        os.chmod(temp_target_dir, 0o777)
-        f = open(temp_source_dir + "/copied_file.txt", "w")
-        f.write("This is some test data for an xrootd test.")
-        f.close()
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_source_dir)
-        local_path = temp_target_dir + '/copied_file.txt'
-        command = ('xrdcp', '--debug', '3', xrootd_url, local_path)
-
-        status, stdout, stderr = core.system(command, user=True)
-
-        fail = core.diagnose('Xrootd xrdcp copy, URL to local',
-                             command, status, stdout, stderr)
-        file_copied = os.path.exists(local_path)
-        shutil.rmtree(temp_source_dir)
-        shutil.rmtree(temp_target_dir)
-
-        self.assertEqual(status, 0, fail)
-        self.assert_(file_copied, 'Copied file missing')
+    def test_06_xrdcp_download_public(self):
+        if core.config['xrootd.security'] == "GSI":
+            # We need a proxy if we're configured for GSI, even if we're reading from a public location
+            self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
+        file_text = "This is some test data for an xrootd test."
+        download_path = f"/tmp/osgtest-download.{os.getpid()}.txt"
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            with open(TestXrootd.file_to_download, "w") as f:
+                f.write(file_text)
+            os.chown(TestXrootd.file_to_download, core.state['user.uid'], core.state['user.gid'])
+            os.chmod(TestXrootd.file_to_download, 0o644)
+            xrootd_url = self.xrootd_url(TestXrootd.file_to_download)
+            command = ('xrdcp', '--debug', '3', xrootd_url, download_path)
+            core.check_system(command, "xrdcp download from public dir", user=True)
+            self.assertTrue(os.path.exists(download_path), "Downloaded file missing")
+            self.assertEqual(files.read(download_path, as_single_string=True), file_text,
+                             "Downloaded contents differ from expected")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
+        finally:
+            try:
+                os.unlink(download_path)
+            except FileNotFoundError:
+                pass
 
     # Test dir reorg broke the FUSE test.  We can drop it for now due to low demand -mat 2021-10-14
     # def test_07_xrootd_fuse(self):
