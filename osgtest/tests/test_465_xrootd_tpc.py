@@ -14,6 +14,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
+        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
 
     def test_01_create_macaroons(self):
         core.config['xrootd.tpc.macaroon-1'] = None

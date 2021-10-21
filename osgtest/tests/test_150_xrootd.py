@@ -36,6 +36,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                             "xcache 1.0.2+ configs conflict with xrootd tests")
 
     def test_01_configure_xrootd(self):
+        core.state['xrootd.is-configured'] = False
+        core.config['xrootd.security'] = None
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         # rootdir and resourcename needs to be set early for the default osg-xrootd config
@@ -48,7 +50,13 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        core.skip_ok_unless_installed('xrootd', 'globus-proxy-utils', by_dependency=True)
+        if core.osg_release().version < '3.6':
+            core.skip_ok_unless_installed("globus-proxy-utils")
+            core.config['xrootd.security'] = "GSI"
+
+        else:  # 3.6+
+            core.skip_ok_unless_installed("xrootd-scitokens")
+            core.config['xrootd.security'] = "SCITOKENS"
 
         user = pwd.getpwnam("xrootd")
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
@@ -60,6 +68,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(user.pw_uid, user.pw_gid))
 
         core.state['xrootd.backups-exist'] = True
+        core.state['xrootd.is-configured'] = True
 
     @core.osgrelease(3.5)
     def test_02_configure_hdfs(self):

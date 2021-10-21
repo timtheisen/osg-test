@@ -18,6 +18,8 @@ class TestXrootd(osgunittest.OSGTestCase):
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
                             "xcache 1.0.2+ configs conflict with xrootd tests")
+        core.skip_ok_unless_installed("xrootd", "xrootd-client", by_dependency=True)
+        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
 
     def test_01_xrdcp_local_to_server(self):
         core.state['xrootd.copied-to-server'] = False

@@ -10,6 +10,7 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
+        self.skip_ok_unless(core.config['xrootd.security'], "no xrootd security available")
 
     def test_01_stop_xrootd(self):
         if core.state['xrootd.tpc.backups-exist']:
