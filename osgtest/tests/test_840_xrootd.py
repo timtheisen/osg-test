@@ -26,9 +26,9 @@ class TestStopXrootd(osgunittest.OSGTestCase):
             files.restore(core.config['xrootd.logging-config'], "xrootd")
             files.restore('/etc/xrootd/auth_file', "xrootd")
             files.restore(xrootd.logfile("standalone"), "xrootd", ignore_missing=True)
-            if not core.rpm_is_installed('xrootd-lcmaps') and core.config['xrootd.security'] == "GSI":
+            if not core.rpm_is_installed('xrootd-lcmaps') and "GSI" in core.config['xrootd.security']:
                 files.restore('/etc/grid-security/xrd/xrdmapfile', "xrootd")
-            if core.config['xrootd.security'] == "SCITOKENS":
+            if "SCITOKENS" in core.config['xrootd.security']:
                 files.restore('/etc/xrootd/scitokens.conf', "xrootd")
                 files.remove("/etc/xrootd/config.d/99-osgtest-ztn.cfg", force=True)
             if os.path.exists(xrootd.ROOTDIR):

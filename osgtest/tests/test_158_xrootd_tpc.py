@@ -97,15 +97,15 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                     chmod=0o644)
         files.write(core.config['xrootd.tpc.basic-config'],
                     XROOTD_TPC_TXT +
-                    (XROOTD_MACAROON_TXT if core.config['xrootd.security'] == "GSI" else ""),
+                    (XROOTD_MACAROON_TXT if "GSI" in core.config['xrootd.security'] else ""),
                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
                     chmod=0o644)
 
         core.state['xrootd.tpc.backups-exist'] = True
  
     def test_02_create_macaroons(self):
-        self.skip_ok_if(core.config['xrootd.security'] != "GSI",
-                        "Macaroons use GSI")
+        self.skip_ok_unless("GSI" in core.config['xrootd.security'],
+                            "Our macaroons tests use GSI")
         core.config['xrootd.tpc.macaroon-secret-1'] = '/etc/xrootd/macaroon-secret-1'
         core.config['xrootd.tpc.macaroon-secret-2'] = '/etc/xrootd/macaroon-secret-2'
         core.check_system(["openssl", "rand", "-base64", "-out",

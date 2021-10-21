@@ -21,7 +21,7 @@ class TestTokens(osgunittest.OSGTestCase):
         )
 
     def test_02_request_xrootd_scitokens(self):
-        self.skip_ok_unless(core.config.get('xrootd.security') == "SCITOKENS",
+        self.skip_ok_unless("SCITOKENS" in core.config.get('xrootd.security', []),
                             "Not using SciTokens for XRootD")
         try:
             credentials.request_scitoken(

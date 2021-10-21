@@ -62,8 +62,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
                           "failed to prepare source file")
 
     def test_01_create_macaroons(self):
-        self.skip_ok_unless(core.config['xrootd.security'] == "GSI",
-                            "macaroons uses GSI")
+        self.skip_ok_unless("GSI" in core.config['xrootd.security'],
+                            "Our macaroons tests use GSI")
         core.config['xrootd.tpc.macaroon-1'] = None
         core.config['xrootd.tpc.macaroon-2'] = None
         core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
@@ -123,13 +123,14 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
 
     def test_04_initiate_tpc_authenticated(self):
         token1 = token2 = ""
-        if core.config['xrootd.security'] == "GSI":
+        # TODO Make these not be mutually exclusive
+        if "GSI" in core.config['xrootd.security']:
             core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
             token1 = core.config['xrootd.tpc.macaroon-1']
             token2 = core.config['xrootd.tpc.macaroon-2']
             self.skip_bad_unless(token1 and token2, "TPC macaroons not created")
             security_type = "macaroons"
-        elif core.config['xrootd.security'] == "SCITOKENS":
+        elif "SCITOKENS" in core.config['xrootd.security']:
             core.skip_ok_unless_installed('xrootd-scitokens', by_dependency=True)
             token1 = core.state['token.xrootd_tpc_1_contents']
             token2 = core.state['token.xrootd_tpc_2_contents']

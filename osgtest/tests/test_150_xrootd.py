@@ -70,7 +70,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_01_configure_xrootd(self):
         core.state['xrootd.is-configured'] = False
-        core.config['xrootd.security'] = None
+        core.config['xrootd.security'] = []
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         # rootdir and resourcename needs to be set early for the default osg-xrootd config
@@ -91,12 +91,12 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         if core.osg_release().version < '3.6':
             core.skip_ok_unless_installed("globus-proxy-utils")
-            core.config['xrootd.security'] = "GSI"
+            core.config['xrootd.security'].append("GSI")
 
         else:  # 3.6+
         # FIXME: remove else after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
             core.skip_ok_unless_installed("xrootd-scitokens")
-            core.config['xrootd.security'] = "SCITOKENS"
+            core.config['xrootd.security'].append("SCITOKENS")
 
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
         core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
@@ -207,8 +207,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.multiuser'] = True
 
     def test_06_configure_scitokens(self):
-        # FIXME: drop this test after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
-        self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "Not using SciTokens for XRootD")
+        self.skip_ok_unless("SCITOKENS" in core.config['xrootd.security'], "Not using SciTokens for XRootD")
         scitokens_conf_path = "/etc/xrootd/scitokens.conf"
         files.write(scitokens_conf_path, SCITOKENS_CONF_TEXT, owner='xrootd', chmod=0o644)
 
@@ -240,7 +239,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*ofs\.authorize[ ]*$",
                                "ofs.authorize missing")
-        if core.config['xrootd.security'] == "SCITOKENS":
+        if "SCITOKENS" in core.config['xrootd.security']:
             self.assertRegexInList(xrootd_config,
                                    r"^[ ]*ofs\.authlib[ ]+[+][+][ ]+libXrdAccSciTokens\.so[ ]+config=/etc/xrootd/scitokens\.conf[ ]*$",
                                    "scitokens config not getting loaded")

@@ -29,13 +29,13 @@ class TestXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed("xrootd", "xrootd-client", by_dependency=True)
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
 
-    def xrootd_url(self, path, auth=True):
+    def xrootd_url(self, path, add_token=True):
         if path.startswith(xrootd.ROOTDIR):
             path = path[len(xrootd.ROOTDIR):]
         url = f"root://{socket.getfqdn()}/{path}"
         if (
-                auth and
-                core.config['xrootd.security'] == "SCITOKENS" and
+                add_token and
+                "SCITOKENS" in core.config['xrootd.security'] and
                 not core.config['xrootd.ztn']
         ):
             url += f"?authz=Bearer%20{core.state['token.xrootd_contents']}"
@@ -54,7 +54,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
     def test_01_xrdcp_upload_public(self):
-        if core.config['xrootd.security'] == "GSI":
+        if "GSI" in core.config['xrootd.security']:
             # We need a proxy if we're configured for GSI, even if we're writing to a public location
             self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
         try:
@@ -63,7 +63,7 @@ class TestXrootd(osgunittest.OSGTestCase):
                 os.unlink(self.public_copied_file)
             except FileNotFoundError:
                 pass
-            xrootd_url = self.xrootd_url(TestXrootd.public_copied_file, auth=False)
+            xrootd_url = self.xrootd_url(TestXrootd.public_copied_file, add_token=False)
             command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
             core.check_system(command, "xrdcp upload to public dir", user=True)
             self.assert_(os.path.exists(TestXrootd.public_copied_file), "Uploaded file missing")
@@ -72,10 +72,10 @@ class TestXrootd(osgunittest.OSGTestCase):
             raise
 
     def test_02_xrdcp_upload_denied(self):
-        self.skip_ok_if(core.config['xrootd.security'] == "GSI", "Auth required when using GSI")
+        self.skip_ok_if("GSI" in core.config['xrootd.security'], "Auth required when using GSI")
         try:
             self.skip_bad_unless_running(core.config['xrootd_service'])
-            xrootd_url = self.xrootd_url(TestXrootd.user_copied_file, auth=False)
+            xrootd_url = self.xrootd_url(TestXrootd.user_copied_file, add_token=False)
             command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
             core.check_system(command, "Unauthenticated xrdcp upload to private dir (should be denied)", exit=54, user=True)
             self.assertFalse(os.path.exists(TestXrootd.user_copied_file), "Uploaded file wrongly present")
@@ -84,7 +84,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             raise
 
     def test_03a_xrdcp_upload_gsi_authenticated(self):
-        self.skip_ok_unless(core.config['xrootd.security'] == "GSI", "not using GSI")
+        self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
         self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
         try:
             self.skip_bad_unless_running(core.config['xrootd_service'])
@@ -97,7 +97,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             raise
 
     def test_03b_xrdcp_upload_scitoken_authenticated(self):
-        self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "not using scitokens")
+        self.skip_ok_unless("SCITOKENS" in core.config['xrootd.security'], "not using scitokens")
         token_contents = core.state['token.xrootd_contents']
         self.skip_bad_unless(token_contents, "xrootd scitoken not found")
         try:
@@ -112,8 +112,8 @@ class TestXrootd(osgunittest.OSGTestCase):
             core.state['xrootd.had-failures'] = True
             raise
 
-    def test_04_xrdcp_upload_scitoken_authenticated_denied(self):
-        self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "not using scitokens")
+    def test_04b_xrdcp_upload_scitoken_authenticated_denied(self):
+        self.skip_ok_unless("SCITOKENS" in core.config['xrootd.security'], "not using scitokens")
         token_contents = core.state['token.xrootd_contents']
         self.skip_bad_unless(token_contents, "xrootd scitoken not found")
         try:
@@ -151,7 +151,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             raise
 
     def test_06_xrdcp_download_public(self):
-        if core.config['xrootd.security'] == "GSI":
+        if "GSI" in core.config['xrootd.security']:
             # We need a proxy if we're configured for GSI, even if we're reading from a public location
             self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
         file_text = "This is some test data for an xrootd test."
@@ -177,6 +177,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             except FileNotFoundError:
                 pass
 
+    # TODO Drop after we EOL OSG 3.5
     # Test dir reorg broke the FUSE test.  We can drop it for now due to low demand -mat 2021-10-14
     # def test_07_xrootd_fuse(self):
     #     # This tests xrootd-fuse using a mount in /mnt
