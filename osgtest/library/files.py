@@ -195,10 +195,12 @@ def append(path, contents, force=False, owner=None, backup=True):
     write(path, new_contents, backup=False)
 
 
-def restore(path, owner):
+def restore(path, owner, ignore_missing=False):
     """Restores the path to its state prior to being written by its owner."""
     backup_id = (path, owner)
     if backup_id not in _backups:
+        if ignore_missing:
+            return
         raise ValueError("No backup of '%s' for '%s'" % (path, owner))
 
     if os.path.exists(path):
