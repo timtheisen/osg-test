@@ -188,9 +188,21 @@ class TestCleanup(osgunittest.OSGTestCase):
         files.remove(os.path.join('/var/spool/mail', username))
         shutil.rmtree(password_entry.pw_dir)
 
+    def test_08_remove_scitokens(self):
+        for key in core.config:
+            if not key.startswith("token."):
+                continue
+            # token.foo is in core.config, but token.foo_created is in core.state
+            if not core.state.get(key + "_created", None):
+                # Skipping this token - we may not have created it
+                continue
+            token_file = core.config[key]
+            if os.path.exists(token_file):
+                files.remove(token_file)
+
     # The backups test should always be last, in case any prior tests restore
     # files from backup.
-    def test_08_backups(self):
+    def test_99_backups(self):
         record_is_clear = True
         if len(files._backups) > 0:
             details = ''

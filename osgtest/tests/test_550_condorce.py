@@ -23,12 +23,13 @@ class TestCondorCE(osgunittest.OSGTestCase):
         self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
 
         self.command = []
-        if core.state['token.condor_write_created']:
+        token_file = core.config['token.condor_write']
+        if os.path.exists(token_file):
             # FIXME: After HTCONDOR-636 is released (targeted for HTCondor-CE 5.1.2),
             # we can stop setting _condor_SCITOKENS_FILE
             for token_var in ('_condor_SCITOKENS_FILE',
                               'BEARER_TOKEN_FILE'):
-                os.environ[token_var] = core.config['token.condor_write']
+                os.environ[token_var] = token_file
         else:
             core.log_message('condor WRITE token not found; skipping SCITOKENS auth')
 
@@ -43,7 +44,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def check_write_creds(self):
         """Check for credentials necessary for HTCondor-CE WRITE
         """
-        self.skip_bad_unless(core.state['proxy.valid'] or core.state['token.condor_write_created'],
+        self.skip_bad_unless(core.state['proxy.valid'] or os.path.exists(core.config['token.condor_write']),
                              'requires a scitoken or a proxy')
 
     def check_schedd_ready(self):
