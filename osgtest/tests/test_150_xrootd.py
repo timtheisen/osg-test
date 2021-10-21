@@ -86,6 +86,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             core.config['xrootd.security'] = "GSI"
 
         else:  # 3.6+
+        # FIXME: remove else after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
             core.skip_ok_unless_installed("xrootd-scitokens")
             core.config['xrootd.security'] = "SCITOKENS"
 
