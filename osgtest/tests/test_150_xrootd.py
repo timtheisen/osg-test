@@ -17,8 +17,8 @@ http.header2cgi Authorization authz
 """
 
 # XRootD configuration necessary for osg-xrootd-standalone
-STANDALONE_XROOTD_CFG_TEXT = """\
-set rootdir = /
+STANDALONE_XROOTD_CFG_TEXT = f"""\
+set rootdir = {xrootd.ROOTDIR}
 set resourcename = OSG_TEST_XROOTD_STANDALONE
 xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
 xrd.tlsca noverify
