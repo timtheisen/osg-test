@@ -62,6 +62,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
                           "failed to prepare source file")
 
     def test_01_create_macaroons(self):
+        self.skip_ok_unless(core.config['xrootd.security'] == "GSI",
+                            "macaroons uses GSI")
         core.config['xrootd.tpc.macaroon-1'] = None
         core.config['xrootd.tpc.macaroon-2'] = None
         core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)

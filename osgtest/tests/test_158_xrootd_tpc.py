@@ -19,16 +19,23 @@ continue /etc/xrootd/config.d/
 """
 
 
-XROOTD_MACAROON_TXT = """\
+XROOTD_TPC_TXT = f"""
 if named third-party-copy-1
-set HttpPort = 9001
-macaroons.secretkey /etc/xrootd/macaroon-secret-1
-xrd.port 9001
+  set HttpPort = {HTTP_PORT1}
+  xrd.port {HTTP_PORT1}
 fi
 if named third-party-copy-2
-set HttpPort = 9002
-macaroons.secretkey /etc/xrootd/macaroon-secret-2
-xrd.port 9002
+  set HttpPort = {HTTP_PORT2}
+  xrd.port {HTTP_PORT2}
+fi
+"""
+
+XROOTD_MACAROON_TXT = """
+if named third-party-copy-1
+  macaroons.secretkey /etc/xrootd/macaroon-secret-1
+fi
+if named third-party-copy-2
+  macaroons.secretkey /etc/xrootd/macaroon-secret-2
 fi
 """
 
@@ -54,6 +61,7 @@ xrd.network keepalive kaparms 10m,1m,5
 xrd.timeout idle 60m
 """
 
+
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
     def setUp(self):
@@ -73,25 +81,31 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.state['xrootd.tpc.had-failures'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
 
         user = pwd.getpwnam("xrootd")
 
         files.write(core.config['xrootd.tpc.config-1'],
-                     XROOTD_CFG_TEXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    XROOTD_CFG_TEXT,
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
         files.write(core.config['xrootd.tpc.config-2'],
-                     XROOTD_CFG_TEXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    XROOTD_CFG_TEXT,
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
         files.write('/etc/xrootd/config.d/40-osg-standalone.cfg', XROOTD_STANDALONE_TXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
         files.write(core.config['xrootd.tpc.basic-config'],
-                     XROOTD_MACAROON_TXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    XROOTD_TPC_TXT +
+                    (XROOTD_MACAROON_TXT if core.config['xrootd.security'] == "GSI" else ""),
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
 
         core.state['xrootd.tpc.backups-exist'] = True
  
-    def test_02_create_secrets(self):
+    def test_02_create_macaroons(self):
+        self.skip_ok_if(core.config['xrootd.security'] != "GSI",
+                        "Macaroons use GSI")
         core.config['xrootd.tpc.macaroon-secret-1'] = '/etc/xrootd/macaroon-secret-1'
         core.config['xrootd.tpc.macaroon-secret-2'] = '/etc/xrootd/macaroon-secret-2'
         core.check_system(["openssl", "rand", "-base64", "-out",

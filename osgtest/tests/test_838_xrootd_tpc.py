@@ -34,3 +34,7 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
         service.check_stop(core.config['xrootd_tpc_service_1'])
         service.check_stop(core.config['xrootd_tpc_service_2'])
 
+    def test_03_remove_macaroons(self):
+        self.skip_ok_unless(core.config['xrootd.security'] == "GSI", "macaroons uses GSI")
+        files.remove(core.config['xrootd.tpc.macaroon-secret-1'], force=True)
+        files.remove(core.config['xrootd.tpc.macaroon-secret-2'], force=True)
