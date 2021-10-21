@@ -193,6 +193,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.multiuser'] = True
 
     def test_06_configure_scitokens(self):
+        # FIXME: drop this test after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
         self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "Not using SciTokens for XRootD")
         scitokens_conf_path = "/etc/xrootd/scitokens.conf"
         files.write(scitokens_conf_path, SCITOKENS_CONF_TEXT, owner='xrootd', chmod=0o644)
