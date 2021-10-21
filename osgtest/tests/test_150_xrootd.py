@@ -28,9 +28,17 @@ acc.authdb /etc/xrootd/auth_file
 ofs.authorize
 """
 
+# Authfile syntax is described in https://xrootd.slac.stanford.edu/doc/dev50/sec_config.htm#_Toc64492263
+# Privileges used are "a" (all) and "rl" (read only).
+# All paths are relative to the rootdir defined above
 AUTHFILE_TEXT = """\
+# A user has full privileges to a directory named after them (e.g. matyas has /matyas/, vdttest has /vdttest/)
 u =      /@=/ a
+
+# The xrootd user has full privileges to the top-level directory
 u xrootd / a
+
+# All users (including unauth users) have full privileges to /public/, and read-only ("rl") privileges to the top-level directory
 u *      /public/ a / rl
 """
 
@@ -118,6 +126,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.backups-exist'] = True
         core.state['xrootd.is-configured'] = True
 
+    # Make sure the directories are set up correctly and that the xrootd user
+    # can access everything it's supposed to be able to.
     def test_02_xrootd_user_file_access(self):
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
         public_subdir = core.config['xrootd.public_subdir']
@@ -145,6 +155,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         finally:
             os.setegid(os.getgid())
 
+    # Make sure the directories are set up correctly and that the test user
+    # can access everything it's supposed to be able to.
     def test_03_test_user_file_access(self):
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
         username = core.options.username
