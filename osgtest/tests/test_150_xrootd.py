@@ -24,7 +24,7 @@ set rootdir = {xrootd.ROOTDIR}
 set resourcename = OSG_TEST_XROOTD_STANDALONE
 xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
 xrd.tlsca noverify
-acc.authdb /etc/xrootd/auth_file
+acc.authdb /etc/xrootd/Authfile
 ofs.authorize
 """
 
@@ -104,7 +104,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.write(core.config['xrootd.logging-config'], XROOTD_LOGGING_CFG_TEXT, owner='xrootd', backup=True, chmod=0o644)
         files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True, chmod=0o644)
 
-        authfile = '/etc/xrootd/auth_file'
+        authfile = '/etc/xrootd/Authfile'
         files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(xrootd_user.pw_uid, xrootd_user.pw_gid), chmod=0o644)
         try:
             shutil.rmtree(xrootd.ROOTDIR)
