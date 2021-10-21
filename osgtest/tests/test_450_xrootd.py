@@ -53,30 +53,80 @@ class TestXrootd(osgunittest.OSGTestCase):
         ]:
             setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
-    def test_01_xrdcp_local_to_server(self):
-        core.state['xrootd.copied-to-server'] = False
-        core.skip_ok_unless_installed('xrootd', 'xrootd-client', by_dependency=True)
-        core.skip_ok_unless_installed('globus-proxy-utils')
-        self.skip_bad_unless(core.state['xrootd.started-server'] is True, 'Server not running')
-        temp_dir = tempfile.mkdtemp()
-        core.config['xrootd.tmp-dir'] = temp_dir
-        user = pwd.getpwnam(core.options.username)
-        os.chown(temp_dir, user[2], user[3])
-        hostname = socket.getfqdn()
-        os.chmod(temp_dir, 0o777)
-        xrootd_url = 'root://%s/%s/copied_file.txt' % (hostname, temp_dir)
-        command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+    def test_01_xrdcp_upload_public(self):
+        if core.config['xrootd.security'] == "GSI":
+            # We need a proxy if we're configured for GSI, even if we're writing to a public location
+            self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            try:
+                os.unlink(self.public_copied_file)
+            except FileNotFoundError:
+                pass
+            xrootd_url = self.xrootd_url(TestXrootd.public_copied_file, auth=False)
+            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+            core.check_system(command, "xrdcp upload to public dir", user=True)
+            self.assert_(os.path.exists(TestXrootd.public_copied_file), "Uploaded file missing")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
 
-        status, stdout, stderr = core.system(command, user=True)
+    def test_02_xrdcp_upload_denied(self):
+        self.skip_ok_if(core.config['xrootd.security'] == "GSI", "Auth required when using GSI")
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            xrootd_url = self.xrootd_url(TestXrootd.user_copied_file, auth=False)
+            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+            core.check_system(command, "Unauthenticated xrdcp upload to private dir (should be denied)", exit=54, user=True)
+            self.assertFalse(os.path.exists(TestXrootd.user_copied_file), "Uploaded file wrongly present")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
 
-        fail = core.diagnose('xrdcp copy, local to URL',
-                             command, status, stdout, stderr)
-        file_copied = os.path.exists(os.path.join(temp_dir, 'copied_file.txt'))
-        if file_copied:
-            core.state['xrootd.copied-to-server'] = True
-        self.assertEqual(status, 0, fail)
-        self.assert_(file_copied, 'Copied file missing')
+    def test_03a_xrdcp_upload_gsi_authenticated(self):
+        self.skip_ok_unless(core.config['xrootd.security'] == "GSI", "not using GSI")
+        self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
+            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+            core.check_system(command, "Authenticated xrdcp upload to private dir", user=True)
+            self.assert_(os.path.exists(TestXrootd.user_copied_file), "Uploaded file missing")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
 
+    def test_03b_xrdcp_upload_scitoken_authenticated(self):
+        self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "not using scitokens")
+        token_contents = core.state['token.xrootd_contents']
+        self.skip_bad_unless(token_contents, "xrootd scitoken not found")
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            bearer_token = token_contents if core.config['xrootd.ztn'] else None
+            with core.environ_context("BEARER_TOKEN", bearer_token):
+                    xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
+                    command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+                    core.check_system(command, "Authenticated xrdcp upload to private dir", user=True)
+                    self.assert_(os.path.exists(TestXrootd.user_copied_file), "Uploaded file missing")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
+
+    def test_04_xrdcp_upload_scitoken_authenticated_denied(self):
+        self.skip_ok_unless(core.config['xrootd.security'] == "SCITOKENS", "not using scitokens")
+        token_contents = core.state['token.xrootd_contents']
+        self.skip_bad_unless(token_contents, "xrootd scitoken not found")
+        try:
+            self.skip_bad_unless_running(core.config['xrootd_service'])
+            bearer_token = token_contents if core.config['xrootd.ztn'] else None
+            with core.environ_context("BEARER_TOKEN", bearer_token):
+                xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file)
+                command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+                core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=54, user=True)
+                self.assertFalse(os.path.exists(TestXrootd.rootdir_copied_file), "Uploaded file wrongly present")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
     def test_02_xrootd_multiuser(self):
         core.skip_ok_unless_installed('xrootd', 'xrootd-client', 'globus-proxy-utils', 'xrootd-multiuser',
                                       by_dependency=True)
