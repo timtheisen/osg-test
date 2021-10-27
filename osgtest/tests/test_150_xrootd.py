@@ -234,7 +234,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                                rf"^[ ]*oss\.localroot[ ]+{xrootd.ROOTDIR}[ ]*$",
                                "oss.localroot not being set correctly")
         self.assertRegexInList(xrootd_config,
-                               r"^[ ]*acc\.authdb[ ]+/etc/xrootd/auth_file[ ]*$",
+                               r"^[ ]*acc\.authdb[ ]+/etc/xrootd/Authfile[ ]*$",
                                "authfile not being set correctly")
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*ofs\.authorize[ ]*$",
