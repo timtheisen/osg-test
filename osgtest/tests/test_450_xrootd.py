@@ -26,7 +26,7 @@ class TestXrootd(osgunittest.OSGTestCase):
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
                             "xcache 1.0.2+ configs conflict with xrootd tests")
-        core.skip_ok_unless_installed("xrootd", "xrootd-client", by_dependency=True)
+        core.skip_ok_unless_installed("xrootd", "xrootd-client", "osg-xrootd-standalone", by_dependency=True)
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
 
     def xrootd_url(self, path, add_token=True):
