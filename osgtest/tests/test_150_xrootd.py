@@ -22,6 +22,8 @@ http.header2cgi Authorization authz
 STANDALONE_XROOTD_CFG_TEXT = f"""\
 set rootdir = {xrootd.ROOTDIR}
 set resourcename = OSG_TEST_XROOTD_STANDALONE
+"""
+STANDALONE_XROOTD_FOR_3_5_CFG_TEXT = """
 xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
 xrd.tlsca noverify
 acc.authdb /etc/xrootd/Authfile
@@ -89,9 +91,10 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
-        if core.osg_release().version < '3.6':
+        if core.osg_release() < '3.6':
             core.skip_ok_unless_installed("globus-proxy-utils")
             core.config['xrootd.security'].append("GSI")
+            xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
 
         else:  # 3.6+
         # FIXME: remove else after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
