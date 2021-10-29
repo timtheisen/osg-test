@@ -27,7 +27,7 @@ class TestTokens(osgunittest.OSGTestCase):
             credentials.request_scitoken(
                 "xrootd",
                 subject=core.options.username,
-                scope="write:/",
+                scope=f"read:/ write:/{core.config['xrootd.user_subdir']}",
                 audience="OSG_TEST",
                 overwrite=True,
                 log=True,
@@ -43,7 +43,7 @@ class TestTokens(osgunittest.OSGTestCase):
             credentials.request_scitoken(
                 "xrootd_tpc_2",
                 subject=core.options.username,
-                scope="write:/",
+                scope=f"write:/{core.config['xrootd.user_subdir']}",
                 audience="OSG_TEST",
                 overwrite=True,
                 log=True,
