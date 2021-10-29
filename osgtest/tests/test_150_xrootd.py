@@ -4,6 +4,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.voms as voms
 import osgtest.library.xrootd as xrootd
 import shlex
 import shutil
@@ -37,15 +38,15 @@ xrootd.seclib /usr/lib64/libXrdSec.so
 # Authfile syntax is described in https://xrootd.slac.stanford.edu/doc/dev50/sec_config.htm#_Toc64492263
 # Privileges used are "a" (all) and "rl" (read only).
 # All paths are relative to the rootdir defined above
-AUTHFILE_TEXT = """\
+AUTHFILE_TEXT = f"""\
 # A user has full privileges to a directory named after them (e.g. matyas has /matyas/, vdttest has /vdttest/)
 u =      /@=/ a
 
-# The xrootd user has full privileges to the top-level directory
-u xrootd / a
+# Our test VO has full privileges to /osgtestvo
+g /{voms.VONAME} /osgtestvo/ a
 
-# All users (including unauth users) have full privileges to /public/, and read-only ("rl") privileges to the top-level directory
-u *      /public/ a / rl
+# All users (including unauth users) have full privileges to /public/
+u *      /public/ a
 """
 
 XROOTD_LOGGING_CFG_TEXT = """\
@@ -76,7 +77,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_01_configure_xrootd(self):
         core.state['xrootd.is-configured'] = False
-        core.config['xrootd.security'] = []
+        core.config['xrootd.security'] = set()
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         # rootdir and resourcename needs to be set early for the default osg-xrootd config
@@ -88,6 +89,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.had-failures'] = False
         core.config['xrootd.public_subdir'] = "public"
         core.config['xrootd.user_subdir'] = core.options.username
+        core.config['xrootd.vo_subdir'] = "osgtestvo"
         self.skip_ok_unless(core.state['user.verified'], "Test user not available")
 
         xrootd_user = pwd.getpwnam("xrootd")
@@ -98,9 +100,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
 
         if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
-            core.config['xrootd.security'].append("GSI")
+            core.config['xrootd.security'].add("GSI")
         if core.dependency_is_installed("xrootd-scitokens"):
-            core.config['xrootd.security'].append("SCITOKENS")
+            core.config['xrootd.security'].add("SCITOKENS")
+        if voms.is_installed():
+            core.config['xrootd.security'].add("VOMS")
 
         self.skip_ok_unless(core.config['xrootd.security'], "No xrootd security available")
 
@@ -124,6 +128,9 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         user_dir = f"{xrootd.ROOTDIR}/{core.config['xrootd.user_subdir']}"
         files.safe_makedirs(user_dir)
         os.chmod(user_dir, 0o770)
+        vo_dir = f"{xrootd.ROOTDIR}/{core.config['xrootd.vo_subdir']}"
+        files.safe_makedirs(vo_dir)
+        os.chmod(vo_dir, 0o1777)
         core.system(["chown", "-R", "xrootd:xrootd", xrootd.ROOTDIR])
         os.chown(user_dir, core.state["user.uid"], xrootd_user.pw_gid)
 
