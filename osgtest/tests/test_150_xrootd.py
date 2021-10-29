@@ -16,6 +16,9 @@ ofs.authlib ++ libXrdAccSciTokens.so config=%s
 
 # Pass the bearer token to the Xrootd authorization framework.
 http.header2cgi Authorization authz
+
+# Allow using tokens with strong auth
+sec.protocol ztn
 """
 
 # XRootD configuration necessary for osg-xrootd-standalone
@@ -28,6 +31,7 @@ xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
 xrd.tlsca noverify
 acc.authdb /etc/xrootd/Authfile
 ofs.authorize
+xrootd.seclib /usr/lib64/libXrdSec.so
 """
 
 # Authfile syntax is described in https://xrootd.slac.stanford.edu/doc/dev50/sec_config.htm#_Toc64492263
@@ -80,7 +84,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.logging-config'] = '/etc/xrootd/config.d/99-logging.cfg'
         core.config['xrootd.service-defaults'] = '/etc/sysconfig/xrootd'
         core.config['xrootd.multiuser'] = False
-        core.config['xrootd.ztn'] = False
         core.state['xrootd.backups-exist'] = False
         core.state['xrootd.had-failures'] = False
         core.config['xrootd.public_subdir'] = "public"
@@ -221,31 +224,24 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                          XROOTD5_SCITOKENS_CFG_TXT % scitokens_conf_path,
                          backup=False)
 
-        ### ztn tests don't work right now.
-        #
-        # # Enable ztn which requires that the token be sent over an encrypted connection
-        # # and allows getting the token from the environment.
-        # core.config['xrootd.ztn'] = True
-        # files.write("/etc/xrootd/config.d/99-osgtest-ztn.cfg",
-        #             "sec.protocol ztn\n",
-        #             chmod=0o644,
-        #             owner='xrootd')
-
     def test_07_check_cconfig(self):
         xrootd_config = xrootd.cconfig("standalone", raw=False, quiet=False)
         self.assertRegexInList(xrootd_config,
                                rf"^[ ]*oss\.localroot[ ]+{xrootd.ROOTDIR}[ ]*$",
-                               "oss.localroot not being set correctly")
+                               f"'oss.localroot {xrootd.ROOTDIR}' not found")
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*acc\.authdb[ ]+/etc/xrootd/Authfile[ ]*$",
-                               "authfile not being set correctly")
+                               "'acc.authdb /etc/xrootd/Authfile' not found")
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*ofs\.authorize[ ]*$",
-                               "ofs.authorize missing")
+                               "'ofs.authorize' not found")
+        self.assertRegexInList(xrootd_config,
+                               r"^[ ]*xrootd\.seclib[ ]+/usr/lib64/libXrdSec\.so[ ]*$",
+                               "'xrootd.seclib /usr/lib64/libXrdSec.so' not found")
         if "SCITOKENS" in core.config['xrootd.security']:
             self.assertRegexInList(xrootd_config,
                                    r"^[ ]*ofs\.authlib[ ]+[+][+][ ]+libXrdAccSciTokens\.so[ ]+config=/etc/xrootd/scitokens\.conf[ ]*$",
-                                   "scitokens config not getting loaded")
+                                   "'ofs.authlib ++ libXrdAccSciTokens.so config=/etc/xrootd/scitokens.conf' not found")
 
     def test_08_start_xrootd(self):
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
