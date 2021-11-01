@@ -141,41 +141,38 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
             core.state['xrootd.tpc.had-failures'] = True
             raise
 
-    def test_04_initiate_tpc_authenticated(self):
-        token1 = token2 = ""
-        # TODO Make these not be mutually exclusive
-        if "GSI" in core.config['xrootd.security']:
-            core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
-            token1 = core.config['xrootd.tpc.macaroon-1']
-            token2 = core.config['xrootd.tpc.macaroon-2']
-            self.skip_bad_unless(token1 and token2, "TPC macaroons not created")
-            security_type = "macaroons"
-        elif "SCITOKENS" in core.config['xrootd.security']:
-            core.skip_ok_unless_installed('xrootd-scitokens', by_dependency=True)
-            token1 = core.state['token.xrootd_tpc_1_contents']
-            token2 = core.state['token.xrootd_tpc_2_contents']
-            self.skip_bad_unless(token1 and token2, "TPC SciTokens not created")
-            security_type = "SciTokens"
-        else:
-            raise RuntimeError(f"Unexpected xrootd.security {core.config['xrootd.security']}")
-            # ^^ should never get here - should be an ERROR instead of a FAIL
-
-        dest_path = TestXrootdTPC.user_copied_file
-        try:
-            os.unlink(dest_path)
-        except FileNotFoundError:
-            pass
-
-        try:
-            command = self.copy_command(TestXrootdTPC.tpc1_source_url,
-                                        self.tpc2_url_from_path(dest_path),
-                                        source_token=token1,
-                                        dest_token=token2)
-            core.log_message(f"{security_type} auth TPC to private dir")
+    def _test_upload(self, dest_path, token1, token2, message):
+        files.remove(dest_path)
+        command = self.copy_command(TestXrootdTPC.tpc1_source_url,
+                                    self.tpc2_url_from_path(dest_path),
+                                    source_token=token1,
+                                    dest_token=token2)
+        core.log_message(message)
+        with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
             core.system(command, user=True)
-            time.sleep(1)
-            self.assertTrue(os.path.exists(dest_path), "Copied file missing")
-            self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path), "Copied file contents do not match original")
-        except AssertionError:
-            core.state['xrootd.tpc.had-failures'] = True
-            raise
+        time.sleep(1)
+
+        self.assertTrue(os.path.exists(dest_path), "Copied file missing")
+        self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path,
+                                                   dest_path),
+                        "Copied file contents do not match original")
+
+    @xrootd_tpc_record_failure
+    def test_04a_tpc_macaroons(self):
+        self.skip_ok_unless("GSI" in core.config['xrootd.security'], "Not testing with GSI")  # TODO Get macaroons from SciTokens
+        core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
+        token1 = core.config['xrootd.tpc.macaroon-1']
+        token2 = core.config['xrootd.tpc.macaroon-2']
+        self.skip_bad_unless(token1 and token2, "TPC macaroons not created")
+        message = "TPC with macaroons to private dir"
+        self._test_upload(TestXrootdTPC.user_copied_file, token1, token2, message)
+
+    @xrootd_tpc_record_failure
+    def test_04b_tpc_scitokens(self):
+        self.skip_ok_unless("SCITOKENS" in core.config['xrootd.security'], "Not testing with SciTokens")
+        core.skip_ok_unless_installed('xrootd-scitokens', by_dependency=True)
+        token1 = core.state['token.xrootd_tpc_1_contents']
+        token2 = core.state['token.xrootd_tpc_2_contents']
+        self.skip_bad_unless(token1 and token2, "TPC SciTokens not created")
+        message = "TPC with SciTokens to private dir"
+        self._test_upload(TestXrootdTPC.user_copied_file, token1, token2, message)
