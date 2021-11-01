@@ -24,7 +24,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0o400)
 
     def test_04_config_voms(self):
-        core.config['voms.vo'] = 'osgtestvo'
+        core.config['voms.vo'] = voms.VONAME
         core.config['voms.lock-file'] = '/var/lock/subsys/voms.osgtestvo'
         # The DB created by voms-admin would have the user 'admin-osgtestvo',
         # but the voms_install_db script provided by voms-server does not
