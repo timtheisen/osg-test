@@ -11,6 +11,22 @@ import osgtest.library.service as service
 import osgtest.library.xrootd as xrootd
 
 
+def xrootd_record_failure(fn):
+    """Decorator for xrootd tests that sets the core.state['xrootd.had-failures'] flag
+    if there were any test failures.
+
+    """
+    def inner(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except (osgunittest.OkSkipException, osgunittest.BadSkipException, osgunittest.ExcludedException):
+            raise
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
+    return inner
+
+
 class TestXrootd(osgunittest.OSGTestCase):
 
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
