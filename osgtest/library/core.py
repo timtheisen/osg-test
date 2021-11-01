@@ -835,3 +835,37 @@ def environ_context(items):
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = old_value
+
+
+@contextlib.contextmanager
+def no_x509(user):
+    """A context manager for hiding and restoring a user's X.509 credentials
+    so they won't conflict with other forms of auth.
+
+    """
+    baksuffix = f".osgtest{os.getpid()}-bak"
+    uid = pwd.getpwnam(user).pw_uid
+    globus_dir = os.path.expanduser(f"~{user}/.globus")
+    proxy = f"/tmp/x509up_u{uid}"
+    moved_globus = False
+    moved_proxy = False
+    try:
+        if os.path.exists(globus_dir):
+            shutil.move(globus_dir, globus_dir + baksuffix)
+            moved_globus = True
+        if os.path.exists(proxy):
+            shutil.move(proxy, proxy + baksuffix)
+            moved_proxy = True
+        with environ_context({"X509_USER_PROXY": None, "X509_USER_CERT": None, "X509_USER_KEY": None}):
+            yield
+    finally:
+        try:
+            if moved_globus:
+                shutil.move(globus_dir + baksuffix, globus_dir)
+        except EnvironmentError as err:
+            log_message(f"Couldn't restore {globus_dir}: {err}")
+        try:
+            if moved_proxy:
+                shutil.move(proxy + baksuffix, proxy)
+        except EnvironmentError as err:
+            log_message(f"Couldn't restore {proxy}: {err}")
