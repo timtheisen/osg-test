@@ -104,30 +104,27 @@ class TestXrootd(osgunittest.OSGTestCase):
             core.check_system(command, "xrdcp upload to user dir with GSI auth", user=True)
         self.assert_(os.path.exists(TestXrootd.user_copied_file_gsi), "Uploaded file missing")
 
+    @xrootd_record_failure
     def test_03b_xrdcp_upload_scitoken_authenticated(self):
         self.skip_unless_security("SCITOKENS")
-        try:
-            xrootd_url = xroot_url(TestXrootd.user_copied_file_scitoken)
-            command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
-            with core.no_x509(core.options.username):
-                with core.environ_context({"BEARER_TOKEN": core.state['token.xrootd_contents'], "BEARER_TOKEN_FILE": None}):
-                    message = "xrdcp upload to user dir with scitoken in BEARER_TOKEN"
-                    expected_exit = 0
-                    if core.PackageVersion("xrootd-libs") <= "5.3.2":
-                        message += " (expected failure)"
-                        expected_exit = ERR_AUTH_FAIL
-                    core.check_system(command, message, exit=expected_exit, user=True)
+        xrootd_url = xroot_url(TestXrootd.user_copied_file_scitoken)
+        command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
+        with core.no_x509(core.options.username):
+            with core.environ_context({"BEARER_TOKEN": core.state['token.xrootd_contents'], "BEARER_TOKEN_FILE": None}):
+                message = "xrdcp upload to user dir with scitoken in BEARER_TOKEN"
+                expected_exit = 0
+                if core.PackageVersion("xrootd-libs") <= "5.3.2":
+                    message += " (expected failure)"
+                    expected_exit = ERR_AUTH_FAIL
+                core.check_system(command, message, exit=expected_exit, user=True)
 
-                with core.environ_context({"BEARER_TOKEN_FILE": core.state['token.xrootd'], "BEARER_TOKEN": None}):
-                    message = "xrdcp upload to user dir with scitoken file in BEARER_TOKEN_FILE"
-                    expected_exit = 0
-                    core.check_system(command, message, exit=expected_exit, user=True)
+            with core.environ_context({"BEARER_TOKEN_FILE": core.config['token.xrootd'], "BEARER_TOKEN": None}):
+                message = "xrdcp upload to user dir with scitoken file in BEARER_TOKEN_FILE"
+                expected_exit = 0
+                core.check_system(command, message, exit=expected_exit, user=True)
 
-                # TODO: Test token discovery at $X509_RUNTIME_DIR/bt_u$UID and /tmp/bt_u$UID
-            self.assert_(os.path.exists(TestXrootd.user_copied_file_scitoken), "Uploaded file missing")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
+            # TODO: Test token discovery at $X509_RUNTIME_DIR/bt_u$UID and /tmp/bt_u$UID
+        self.assert_(os.path.exists(TestXrootd.user_copied_file_scitoken), "Uploaded file missing")
 
     def test_03c_xrdcp_upload_voms_authenticated(self):
         self.skip_unless_security("VOMS")
