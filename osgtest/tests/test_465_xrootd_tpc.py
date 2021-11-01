@@ -77,6 +77,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         core.check_system(["cp", "/usr/share/osg-test/test_gridftp_data.txt", TestXrootdTPC.source_path],
                           "failed to prepare source file")
 
+    @xrootd_tpc_record_failure
     def test_01_create_macaroons(self):
         self.skip_ok_unless("GSI" in core.config['xrootd.security'],
                             "Our macaroons tests use GSI")
