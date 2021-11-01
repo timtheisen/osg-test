@@ -103,25 +103,19 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         self.assertEqual(status, 0, fail)
         core.config['xrootd.tpc.macaroon-2'] = stdout.strip()
 
+    @xrootd_tpc_record_failure
     def test_02_initate_tpc_public(self):
         dest_path = TestXrootdTPC.public_copied_file
-        try:
-            os.unlink(dest_path)
-        except FileNotFoundError:
-            pass
-        try:
-            command = self.copy_command(TestXrootdTPC.tpc1_source_url,
-                                        self.tpc2_url_from_path(dest_path))
-            core.log_message("Unauth TPC to public dir")
-            with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
-                core.system(command, user=True)
-            time.sleep(1)
-            self.assertTrue(os.path.exists(dest_path), "Copied file missing")
-            self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path),
-                            "Copied file contents do not match original")
-        except AssertionError:
-            core.state['xrootd.tpc.had-failures'] = True
-            raise
+        files.remove(dest_path)
+        command = self.copy_command(TestXrootdTPC.tpc1_source_url,
+                                    self.tpc2_url_from_path(dest_path))
+        core.log_message("Unauth TPC to public dir")
+        with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
+            core.system(command, user=True)
+        time.sleep(1)
+        self.assertTrue(os.path.exists(dest_path), "Copied file missing")
+        self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path),
+                        "Copied file contents do not match original")
 
     def test_03_initiate_tpc_denied(self):
         dest_path = TestXrootdTPC.user_copied_file
