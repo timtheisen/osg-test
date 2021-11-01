@@ -92,9 +92,9 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                     XROOTD_CFG_TEXT,
                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
                     chmod=0o644)
-        files.write('/etc/xrootd/config.d/40-osg-standalone.cfg', XROOTD_STANDALONE_TXT,
-                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
-                    chmod=0o644)
+        # files.write('/etc/xrootd/config.d/40-osg-standalone.cfg', XROOTD_STANDALONE_TXT,
+        #             owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+        #             chmod=0o644)
         files.write(core.config['xrootd.tpc.basic-config'],
                     XROOTD_TPC_TXT +
                     (XROOTD_MACAROON_TXT if "GSI" in core.config['xrootd.security'] else ""),
