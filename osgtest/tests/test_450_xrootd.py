@@ -11,6 +11,12 @@ import osgtest.library.service as service
 import osgtest.library.xrootd as xrootd
 
 
+ERR_AUTH_FAIL = 52
+ERR_PERMISSION_DENIED = 54
+
+HOSTNAME = core.get_hostname() or "localhost"
+
+
 def xrootd_record_failure(fn):
     """Decorator for xrootd tests that sets the core.state['xrootd.had-failures'] flag
     if there were any test failures.
