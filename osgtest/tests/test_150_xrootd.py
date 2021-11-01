@@ -92,14 +92,14 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
         if core.osg_release() < '3.6':
-            core.skip_ok_unless_installed("globus-proxy-utils")
-            core.config['xrootd.security'].append("GSI")
             xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
 
-        else:  # 3.6+
-        # FIXME: remove else after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
-            core.skip_ok_unless_installed("xrootd-scitokens")
+        if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
+            core.config['xrootd.security'].append("GSI")
+        if core.dependency_is_installed("xrootd-scitokens"):
             core.config['xrootd.security'].append("SCITOKENS")
+
+        self.skip_ok_unless(core.config['xrootd.security'], "No xrootd security available")
 
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
         core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
