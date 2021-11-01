@@ -869,3 +869,27 @@ def no_x509(user):
                 shutil.move(proxy + baksuffix, proxy)
         except EnvironmentError as err:
             log_message(f"Couldn't restore {proxy}: {err}")
+
+
+@contextlib.contextmanager
+def no_bearer_token(user):
+    """A context manager for hiding and restoring a user's bearer token
+    so it won't conflict with other forms of auth.
+
+    """
+    baksuffix = f".osgtest{os.getpid()}-bak"
+    uid = pwd.getpwnam(user).pw_uid
+    token_file = f"/tmp/bt_u{uid}"
+    moved_token_file = False
+    try:
+        if os.path.exists(token_file):
+            shutil.move(token_file, token_file + baksuffix)
+            moved_token_file = True
+        with environ_context({"BEARER_TOKEN": None, "BEARER_TOKEN_FILE": None, "XDG_RUNTIME_DIR": None}):
+            yield
+    finally:
+        try:
+            if moved_token_file:
+                shutil.move(token_file + baksuffix, token_file)
+        except EnvironmentError as err:
+            log_message(f"Couldn't restore {token_file}: {err}")
