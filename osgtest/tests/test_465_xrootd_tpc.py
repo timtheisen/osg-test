@@ -5,6 +5,22 @@ import time
 from ..library import core, files, osgunittest, xrootd
 
 
+def xrootd_tpc_record_failure(fn):
+    """Decorator for xrootd-tpc tests that sets the core.state['xrootd.tpc.had-failures'] flag
+    if there were any test failures.
+
+    """
+    def inner(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except (osgunittest.OkSkipException, osgunittest.BadSkipException, osgunittest.ExcludedException):
+            raise
+        except AssertionError:
+            core.state['xrootd.tpc.had-failures'] = True
+            raise
+    return inner
+
+
 class TestXrootdTPC(osgunittest.OSGTestCase):
     rootdir_copied_file = f"{xrootd.ROOTDIR}/tpc_rootdir_copied_file.txt"
 
