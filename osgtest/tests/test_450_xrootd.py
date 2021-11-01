@@ -63,6 +63,17 @@ class TestXrootd(osgunittest.OSGTestCase):
             url += f"?authz=Bearer%20{core.state['token.xrootd_contents']}"
         return url
 
+    def skip_unless_security(self, security):
+        if security not in core.config['xrootd.security']:
+            self.skip_ok("Not testing xrootd with %s" % security)
+        if security == "GSI":
+            self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
+        elif security == "SCITOKENS":
+            self.skip_bad_unless(core.state['token.xrootd_contents'], "xrootd scitoken is missing or empty")
+            self.skip_bad_unless(os.path.isfile(core.config['token.xrootd']), "xrootd scitoken file is missing")
+        elif security == "VOMS":
+            self.skip_bad_unless(core.state['voms.got-proxy'], "no valid proxy with voms attributes")
+
     def test_00_setup(self):
         public_subdir = core.config['xrootd.public_subdir']
         user_subdir = core.config['xrootd.user_subdir']
