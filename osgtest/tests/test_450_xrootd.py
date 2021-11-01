@@ -89,13 +89,13 @@ class TestXrootd(osgunittest.OSGTestCase):
 
 
     def test_03a_xrdcp_upload_gsi_authenticated(self):
-        self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
-        self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
+        self.skip_unless_security("GSI")
         try:
-            xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
-            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-            core.check_system(command, "Authenticated xrdcp upload to private dir", user=True)
-            self.assert_(os.path.exists(TestXrootd.user_copied_file), "Uploaded file missing")
+            xrootd_url = f"xroot://{HOSTNAME}/{TestXrootd.user_copied_file_gsi}"
+            command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xrootd_url)
+            with core.no_bearer_token(core.options.username):
+                core.check_system(command, "xrdcp upload to user dir with GSI auth", user=True)
+            self.assert_(os.path.exists(TestXrootd.user_copied_file_gsi), "Uploaded file missing")
         except AssertionError:
             core.state['xrootd.had-failures'] = True
             raise
