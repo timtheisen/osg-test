@@ -96,16 +96,13 @@ class TestXrootd(osgunittest.OSGTestCase):
             setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
 
+    @xrootd_record_failure
     def test_03a_xrdcp_upload_gsi_authenticated(self):
         self.skip_unless_security("GSI")
-        try:
-            command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xroot_url(TestXrootd.user_copied_file_gsi))
-            with core.no_bearer_token(core.options.username):
-                core.check_system(command, "xrdcp upload to user dir with GSI auth", user=True)
-            self.assert_(os.path.exists(TestXrootd.user_copied_file_gsi), "Uploaded file missing")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
+        command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xroot_url(TestXrootd.user_copied_file_gsi))
+        with core.no_bearer_token(core.options.username):
+            core.check_system(command, "xrdcp upload to user dir with GSI auth", user=True)
+        self.assert_(os.path.exists(TestXrootd.user_copied_file_gsi), "Uploaded file missing")
 
     def test_03b_xrdcp_upload_scitoken_authenticated(self):
         self.skip_unless_security("SCITOKENS")
