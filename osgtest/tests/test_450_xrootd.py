@@ -122,7 +122,7 @@ class TestXrootd(osgunittest.OSGTestCase):
             self.skip_bad_unless_running(core.config['xrootd_service'])
             xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file, add_token=False)
             command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-            core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=54, user=True)
+            core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=ERR_PERMISSION_DENIED, user=True)
             self.assertFalse(os.path.exists(TestXrootd.rootdir_copied_file), "Uploaded file wrongly present")
         except AssertionError:
             core.state['xrootd.had-failures'] = True
@@ -140,10 +140,10 @@ class TestXrootd(osgunittest.OSGTestCase):
         try:
             self.skip_bad_unless_running(core.config['xrootd_service'])
             bearer_token = token_contents if core.config['xrootd.ztn'] else None
-            with core.environ_context("BEARER_TOKEN", bearer_token):
+            with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN": bearer_token}):
                 xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file)
                 command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-                core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=54, user=True)
+                core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=ERR_PERMISSION_DENIED, user=True)
                 self.assertFalse(os.path.exists(TestXrootd.rootdir_copied_file), "Uploaded file wrongly present")
         except AssertionError:
             core.state['xrootd.had-failures'] = True
