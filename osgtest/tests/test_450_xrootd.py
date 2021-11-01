@@ -136,11 +136,11 @@ class TestXrootd(osgunittest.OSGTestCase):
         try:
             self.skip_bad_unless_running(core.config['xrootd_service'])
             bearer_token = token_contents if core.config['xrootd.ztn'] else None
-            with core.environ_context("BEARER_TOKEN", bearer_token):
-                    xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
-                    command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-                    core.check_system(command, "Authenticated xrdcp upload to private dir", user=True)
-                    self.assert_(os.path.exists(TestXrootd.user_copied_file), "Uploaded file missing")
+            with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN": bearer_token}):
+                xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
+                command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+                core.check_system(command, "Authenticated xrdcp upload to private dir", user=True)
+                self.assert_(os.path.exists(TestXrootd.user_copied_file), "Uploaded file missing")
         except AssertionError:
             core.state['xrootd.had-failures'] = True
             raise
