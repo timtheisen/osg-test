@@ -126,17 +126,14 @@ class TestXrootd(osgunittest.OSGTestCase):
             # TODO: Test token discovery at $X509_RUNTIME_DIR/bt_u$UID and /tmp/bt_u$UID
         self.assert_(os.path.exists(TestXrootd.user_copied_file_scitoken), "Uploaded file missing")
 
+    @xrootd_record_failure
     def test_03c_xrdcp_upload_voms_authenticated(self):
         self.skip_unless_security("VOMS")
-        try:
-            xrootd_url = xroot_url(TestXrootd.vo_copied_file)
-            command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
-            with core.no_bearer_token(core.options.username):
-                core.check_system(command, "xrdcp upload to vo dir with VOMS auth", user=True)
-            self.assert_(os.path.exists(TestXrootd.vo_copied_file), "Uploaded file missing")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
+        xrootd_url = xroot_url(TestXrootd.vo_copied_file)
+        command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
+        with core.no_bearer_token(core.options.username):
+            core.check_system(command, "xrdcp upload to vo dir with VOMS auth", user=True)
+        self.assert_(os.path.exists(TestXrootd.vo_copied_file), "Uploaded file missing")
 
     @xrootd_record_failure
     def test_04a_xrdcp_upload_gsi_authenticated_denied(self):
