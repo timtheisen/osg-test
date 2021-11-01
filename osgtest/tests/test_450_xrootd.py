@@ -50,6 +50,7 @@ class TestXrootd(osgunittest.OSGTestCase):
                             "xcache 1.0.2+ configs conflict with xrootd tests")
         core.skip_ok_unless_installed("xrootd", "xrootd-client", "osg-xrootd-standalone", by_dependency=True)
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
+        self.skip_bad_unless_running(core.config['xrootd_service'])
 
     def xrootd_url(self, path, add_token=True):
         if path.startswith(xrootd.ROOTDIR):
@@ -91,7 +92,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
         self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
         try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
             xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
             command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
             core.check_system(command, "Authenticated xrdcp upload to private dir", user=True)
@@ -105,7 +105,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         token_contents = core.state['token.xrootd_contents']
         self.skip_bad_unless(token_contents, "xrootd scitoken not found")
         try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
             bearer_token = token_contents if core.config['xrootd.ztn'] else None
             with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN": bearer_token}):
                 xrootd_url = self.xrootd_url(TestXrootd.user_copied_file)
@@ -119,7 +118,6 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_04a_xrdcp_upload_gsi_authenticated_denied(self):
         self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
         try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
             xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file, add_token=False)
             command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
             core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=ERR_PERMISSION_DENIED, user=True)
@@ -138,7 +136,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         token_contents = core.state['token.xrootd_contents']
         self.skip_bad_unless(token_contents, "xrootd scitoken not found")
         try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
             bearer_token = token_contents if core.config['xrootd.ztn'] else None
             with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN": bearer_token}):
                 xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file)
@@ -178,7 +175,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         file_text = "This is some test data for an xrootd test."
         download_path = f"/tmp/osgtest-download.{os.getpid()}.txt"
         try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
             with open(TestXrootd.file_to_download, "w") as f:
                 f.write(file_text)
             os.chown(TestXrootd.file_to_download, core.state['user.uid'], core.state['user.gid'])
