@@ -86,35 +86,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         ]:
             setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
-    def test_01_xrdcp_upload_public(self):
-        if "GSI" in core.config['xrootd.security']:
-            # We need a proxy if we're configured for GSI, even if we're writing to a public location
-            self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
-        try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
-            try:
-                os.unlink(self.public_copied_file)
-            except FileNotFoundError:
-                pass
-            xrootd_url = self.xrootd_url(TestXrootd.public_copied_file, add_token=False)
-            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-            core.check_system(command, "xrdcp upload to public dir", user=True)
-            self.assert_(os.path.exists(TestXrootd.public_copied_file), "Uploaded file missing")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
-
-    def test_02_xrdcp_upload_denied(self):
-        self.skip_ok_if("GSI" in core.config['xrootd.security'], "Auth required when using GSI")
-        try:
-            self.skip_bad_unless_running(core.config['xrootd_service'])
-            xrootd_url = self.xrootd_url(TestXrootd.user_copied_file, add_token=False)
-            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-            core.check_system(command, "Unauthenticated xrdcp upload to private dir (should be denied)", exit=54, user=True)
-            self.assertFalse(os.path.exists(TestXrootd.user_copied_file), "Uploaded file wrongly present")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
 
     def test_03a_xrdcp_upload_gsi_authenticated(self):
         self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
