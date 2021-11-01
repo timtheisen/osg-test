@@ -814,18 +814,24 @@ def to_bytes(strlike, encoding="latin-1", errors="backslashreplace"):
 
 
 @contextlib.contextmanager
-def environ_context(key, value):
-    """A context manager for running a block with an environment variable set,
-    restoring the original afterward.
+def environ_context(items):
+    """A context manager for running a block with environment variables set,
+    restoring the originals afterward.  `items` is either a dict or list of key,value
+    pairs; if a value is None, that variable is unset.
 
     """
-    old_value = os.environ.pop(key, None)
-    if value is not None:
-        os.environ[key] = value
+    old_values = {}
+    if isinstance(items, dict):
+        items = list(items.items())
+    for key, value in items:
+        old_values[key] = os.environ.pop(key, None)
+        if value is not None:
+            os.environ[key] = value
     try:
         yield
     finally:
-        if old_value is None:
-            os.environ.pop(key, None)
-        else:
-            os.environ[key] = old_value
+        for key, old_value in old_values.items():
+            if old_value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = old_value
