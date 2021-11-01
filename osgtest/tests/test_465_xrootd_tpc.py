@@ -85,6 +85,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed('x509-scitokens-issuer-client', by_dependency=True)
         self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
 
+        # TODO This requires some way of authenticating to each TPC server -- use scitokens with the ?authz=Bearer%20... URL
+
         command = ('macaroon-init', self.tpc1_source_url, '20', 'READ_MATADATA,DOWNLOAD,LIST')
 
         status, stdout, stderr = core.system(command, user=True)
