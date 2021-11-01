@@ -31,7 +31,7 @@ class TestStashCache(OSGTestCase):
         OriginExport = getcfg("OriginExport")
         if auth:
             OriginExport = getcfg("OriginAuthExport")
-        fpath = os.path.join(getcfg("CacheRootdir"), getcfg("OriginExport").lstrip("/"), name)
+        fpath = os.path.join(getcfg("CacheRootdir"), OriginExport.lstrip("/"), name)
         self.assertTrue(os.path.exists(fpath),
                         name + " not cached")
         self.assertEqualVerbose(actual=core.to_str(files.read(fpath, as_single_string=True)),
