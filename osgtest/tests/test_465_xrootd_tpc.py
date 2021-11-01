@@ -112,7 +112,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
             command = self.copy_command(TestXrootdTPC.tpc1_source_url,
                                         self.tpc2_url_from_path(dest_path))
             core.log_message("Unauth TPC to public dir")
-            core.system(command, user=True)
+            with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
+                core.system(command, user=True)
             time.sleep(1)
             self.assertTrue(os.path.exists(dest_path), "Copied file missing")
             self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path),
@@ -132,7 +133,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
             command = self.copy_command(TestXrootdTPC.tpc1_source_url,
                                         self.tpc2_url_from_path(dest_path))
             core.log_message("Unauth TPC to private dir (should fail)")
-            core.system(command, user=True)
+            with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
+                core.system(command, user=True)
             time.sleep(1)
             self.assertFalse(os.path.exists(dest_path), "Copied file wrongly exists")
         except AssertionError:
