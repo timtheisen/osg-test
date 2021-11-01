@@ -158,27 +158,33 @@ class TestXrootd(osgunittest.OSGTestCase):
         finally:
             files.remove(TestXrootd.rootdir_copied_file)
 
-    def test_05_xrootd_multiuser(self):
+    def _check_ownership(self, uploaded_file):
+        # Ownership check; copied from core.check_file_ownership() because I want more detailed info
+        self.skip_bad_unless(os.path.exists(uploaded_file), f"{uploaded_file} does not exist")
+        self.skip_bad_unless(os.path.isfile(uploaded_file), f"{uploaded_file} exists but is not a regular file")
+        try:
+            file_stat = os.stat(uploaded_file)
+        except OSError as err:
+            self.fail(f"Unexpected error while statting {uploaded_file}: {err}")
+        file_owner_uid = file_stat.st_uid
+        username = core.options.username
+        file_owner_name = pwd.getpwuid(file_owner_uid).pw_name
+        self.assertEqual(file_owner_name, username,
+                         f"{uploaded_file} owner {file_owner_name} does not match expected user {username}")
+
+    @xrootd_record_failure
+    def test_05a_xrootd_multiuser_gsi(self):
         core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
         self.skip_bad_unless(core.config['xrootd.multiuser'], 'Xrootd not configured for multiuser')
-        try:
-            file_path = TestXrootd.user_copied_file
-            self.skip_bad_unless(os.path.exists(file_path), "uploaded file does not exist")
-            self.skip_bad_unless(os.path.isfile(file_path), "uploaded file exists but is not a regular file")
+        self.skip_unless_security("GSI")
+        self._check_ownership(TestXrootd.user_copied_file_gsi)
 
-            # Ownership check; copied from core.check_file_ownership() because I want more detailed info
-            try:
-                file_stat = os.stat(file_path)
-            except OSError as err:
-                self.fail(f"Unexpected error while statting uploaded file: {err}")
-            file_owner_uid = file_stat.st_uid
-            username = core.options.username
-            file_owner_name = pwd.getpwuid(file_owner_uid).pw_name
-            self.assertEqual(file_owner_name, username,
-                             f"file owner {file_owner_name} does not match expected user {username}")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
+    @xrootd_record_failure
+    def test_05b_xrootd_multiuser_scitoken(self):
+        core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
+        self.skip_bad_unless(core.config['xrootd.multiuser'], 'Xrootd not configured for multiuser')
+        self.skip_unless_security("SCITOKENS")
+        self._check_ownership(TestXrootd.user_copied_file_scitoken)
 
     def test_06_xrdcp_download_public(self):
         if "GSI" in core.config['xrootd.security']:
