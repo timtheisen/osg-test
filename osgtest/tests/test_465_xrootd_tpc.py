@@ -117,24 +117,18 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path),
                         "Copied file contents do not match original")
 
+    @xrootd_tpc_record_failure
     def test_03_initiate_tpc_denied(self):
         dest_path = TestXrootdTPC.user_copied_file
-        try:
-            os.unlink(dest_path)
-        except FileNotFoundError:
-            pass
+        files.remove(dest_path)
 
-        try:
-            command = self.copy_command(TestXrootdTPC.tpc1_source_url,
-                                        self.tpc2_url_from_path(dest_path))
-            core.log_message("Unauth TPC to private dir (should fail)")
-            with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
-                core.system(command, user=True)
-            time.sleep(1)
-            self.assertFalse(os.path.exists(dest_path), "Copied file wrongly exists")
-        except AssertionError:
-            core.state['xrootd.tpc.had-failures'] = True
-            raise
+        command = self.copy_command(TestXrootdTPC.tpc1_source_url,
+                                    self.tpc2_url_from_path(dest_path))
+        core.log_message("Unauth TPC to private dir (should fail)")
+        with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
+            core.system(command, user=True)
+        time.sleep(1)
+        self.assertFalse(os.path.exists(dest_path), "Copied file wrongly exists")
 
     def _test_upload(self, dest_path, token1, token2, message):
         files.remove(dest_path)
