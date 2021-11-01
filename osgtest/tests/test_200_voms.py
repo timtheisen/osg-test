@@ -34,6 +34,13 @@ class TestStartVOMS(osgunittest.OSGTestCase):
     def test_05_create_vo(self):
         voms.skip_ok_unless_installed()
 
+        # Destroy the DB if it already exists
+        try:
+            voms.destroy_db(core.config['voms.vo'], core.config['voms.dbusername'])
+            voms.destroy_voms_conf(core.config['voms.vo'])
+        except (EnvironmentError, AssertionError):
+            pass
+
         voms.create_vo(vo=core.config['voms.vo'],
                        dbusername=core.config['voms.dbusername'],
                        dbpassword='secret',
