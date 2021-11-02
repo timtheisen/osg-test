@@ -17,6 +17,10 @@ class TestVOMS(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'Run voms-proxy-info', user=True)[0]
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, msg)
 
+    def test_00_setup(self):
+        core.state.setdefault('voms.got-proxy', False)
+        core.state.setdefault('proxy.valid', False)
+
     def test_01_add_user(self):
         core.state['voms.added-user'] = False
         voms.skip_ok_unless_installed()
@@ -29,8 +33,6 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.state['voms.added-user'] = True
 
     def test_02_good_voms_proxy_init(self):
-        core.state['voms.got-proxy'] = False
-
         voms.skip_ok_unless_installed()
         self.skip_bad_unless(core.state['voms.added-user'])
 
@@ -57,8 +59,6 @@ class TestVOMS(osgunittest.OSGTestCase):
         self.proxy_info('second voms-proxy-info output is ok')
 
     def test_06_rfc_voms_proxy_init(self):
-        core.state['voms.got-proxy'] = False
-
         voms.skip_ok_unless_installed()
         self.skip_bad_unless(core.state['voms.added-user'])
 
@@ -96,3 +96,19 @@ class TestVOMS(osgunittest.OSGTestCase):
             self.fail("Can't find proxy's signing algorithm")
         proxy_algorithm = match.group(1)
         self.assertEqual(cert_algorithm, proxy_algorithm)
+
+        core.state['proxy.valid'] = True
+
+    def test_09_basic_grid_proxy(self):
+        """
+        Use voms-proxy-init to create a basic grid proxy (without VOMS attributes)
+        if we don't already have one.  We may need this for tests in other modules.
+        """
+        core.skip_ok_unless_installed("voms-clients", by_dependency=True)
+        self.skip_ok_if(core.state['proxy.valid'], "Already have a proxy")
+        self.skip_bad_unless(core.state['voms.added-user'])
+
+        password = core.options.password + '\n'
+        core.check_system(['voms-proxy-init', '-rfc'], 'Run voms-proxy-init w/o VO', user=True, stdin=password)
+        core.check_system(['voms-proxy-info'], "Check resulting proxy", user=True)
+        core.state['proxy.valid'] = True
