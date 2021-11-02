@@ -33,6 +33,21 @@ def xrootd_record_failure(fn):
     return inner
 
 
+def xroot_url(path):
+    if path.startswith(xrootd.ROOTDIR):
+        path = path[len(xrootd.ROOTDIR):]
+    return f"xroot://{HOSTNAME}/{path}"
+
+
+def https_url(path, token=""):
+    if path.startswith(xrootd.ROOTDIR):
+        path = path[len(xrootd.ROOTDIR):]
+    url = f"https://{HOSTNAME}:1094/{path}"
+    if token:
+        url += f"?authz=Bearer%20{token}"
+    return url
+
+
 class TestXrootd(osgunittest.OSGTestCase):
 
     __data_path = '/usr/share/osg-test/test_gridftp_data.txt'
@@ -40,7 +55,8 @@ class TestXrootd(osgunittest.OSGTestCase):
 
     public_copied_file = f"{xrootd.ROOTDIR}/{{public_subdir}}/public_copied_file.txt"
     public_copied_file2 = f"{xrootd.ROOTDIR}/{{public_subdir}}/public_copied_file2.txt"
-    user_copied_file = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file.txt"
+    user_copied_file_gsi = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file_gsi.txt"
+    user_copied_file_scitoken = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file_scitoken.txt"
     file_to_download = f"{xrootd.ROOTDIR}/{{public_subdir}}/file_to_download.txt"
     rootdir_copied_file = f"{xrootd.ROOTDIR}/rootdir_copied_file.txt"
     vo_copied_file = f"{xrootd.ROOTDIR}/{{vo_subdir}}/vo_copied_file.txt"
@@ -52,18 +68,6 @@ class TestXrootd(osgunittest.OSGTestCase):
         core.skip_ok_unless_installed("xrootd", "xrootd-client", "osg-xrootd-standalone", by_dependency=True)
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
         self.skip_bad_unless_running(core.config['xrootd_service'])
-
-    def xrootd_url(self, path, add_token=True):
-        if path.startswith(xrootd.ROOTDIR):
-            path = path[len(xrootd.ROOTDIR):]
-        url = f"root://{socket.getfqdn()}/{path}"
-        if (
-                add_token and
-                "SCITOKENS" in core.config['xrootd.security'] and
-                not core.config['xrootd.ztn']
-        ):
-            url += f"?authz=Bearer%20{core.state['token.xrootd_contents']}"
-        return url
 
     def skip_unless_security(self, security):
         if security not in core.config['xrootd.security']:
@@ -83,7 +87,8 @@ class TestXrootd(osgunittest.OSGTestCase):
         for var in [
             "public_copied_file",
             "public_copied_file2",
-            "user_copied_file",
+            "user_copied_file_gsi",
+            "user_copied_file_scitoken",
             "file_to_download",
             "rootdir_copied_file",
             "vo_copied_file",
@@ -94,8 +99,7 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_03a_xrdcp_upload_gsi_authenticated(self):
         self.skip_unless_security("GSI")
         try:
-            xrootd_url = f"xroot://{HOSTNAME}/{TestXrootd.user_copied_file_gsi}"
-            command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xrootd_url)
+            command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xroot_url(TestXrootd.user_copied_file_gsi))
             with core.no_bearer_token(core.options.username):
                 core.check_system(command, "xrdcp upload to user dir with GSI auth", user=True)
             self.assert_(os.path.exists(TestXrootd.user_copied_file_gsi), "Uploaded file missing")
@@ -106,7 +110,7 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_03b_xrdcp_upload_scitoken_authenticated(self):
         self.skip_unless_security("SCITOKENS")
         try:
-            xrootd_url = f"xrootd://{HOSTNAME}/{TestXrootd.user_copied_file_scitoken}"
+            xrootd_url = xroot_url(TestXrootd.user_copied_file_scitoken)
             command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
             with core.no_x509(core.options.username):
                 with core.environ_context({"BEARER_TOKEN": core.state['token.xrootd_contents'], "BEARER_TOKEN_FILE": None}):
@@ -131,7 +135,7 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_03c_xrdcp_upload_voms_authenticated(self):
         self.skip_unless_security("VOMS")
         try:
-            xrootd_url = f"xrootd://{HOSTNAME}/{TestXrootd.vo_copied_file}"
+            xrootd_url = xroot_url(TestXrootd.vo_copied_file)
             command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
             with core.no_bearer_token(core.options.username):
                 core.check_system(command, "xrdcp upload to vo dir with VOMS auth", user=True)
