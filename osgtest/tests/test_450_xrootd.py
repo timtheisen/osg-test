@@ -43,6 +43,7 @@ class TestXrootd(osgunittest.OSGTestCase):
     user_copied_file = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file.txt"
     file_to_download = f"{xrootd.ROOTDIR}/{{public_subdir}}/file_to_download.txt"
     rootdir_copied_file = f"{xrootd.ROOTDIR}/rootdir_copied_file.txt"
+    vo_copied_file = f"{xrootd.ROOTDIR}/{{vo_subdir}}/vo_copied_file.txt"
 
     def setUp(self):
         if core.rpm_is_installed("xcache"):
@@ -78,12 +79,14 @@ class TestXrootd(osgunittest.OSGTestCase):
     def test_00_setup(self):
         public_subdir = core.config['xrootd.public_subdir']
         user_subdir = core.config['xrootd.user_subdir']
+        vo_subdir = core.config['xrootd.vo_subdir']
         for var in [
             "public_copied_file",
             "public_copied_file2",
             "user_copied_file",
             "file_to_download",
             "rootdir_copied_file",
+            "vo_copied_file",
         ]:
             setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
@@ -121,6 +124,18 @@ class TestXrootd(osgunittest.OSGTestCase):
 
                 # TODO: Test token discovery at $X509_RUNTIME_DIR/bt_u$UID and /tmp/bt_u$UID
             self.assert_(os.path.exists(TestXrootd.user_copied_file_scitoken), "Uploaded file missing")
+        except AssertionError:
+            core.state['xrootd.had-failures'] = True
+            raise
+
+    def test_03c_xrdcp_upload_voms_authenticated(self):
+        self.skip_unless_security("VOMS")
+        try:
+            xrootd_url = f"xrootd://{HOSTNAME}/{TestXrootd.vo_copied_file}"
+            command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
+            with core.no_bearer_token(core.options.username):
+                core.check_system(command, "xrdcp upload to vo dir with VOMS auth", user=True)
+            self.assert_(os.path.exists(TestXrootd.vo_copied_file), "Uploaded file missing")
         except AssertionError:
             core.state['xrootd.had-failures'] = True
             raise
