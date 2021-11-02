@@ -106,7 +106,10 @@ class TestVOMS(osgunittest.OSGTestCase):
         """
         core.skip_ok_unless_installed("voms-clients", by_dependency=True)
         self.skip_ok_if(core.state['proxy.valid'], "Already have a proxy")
-        self.skip_bad_unless(core.state['voms.added-user'])
+        self.skip_ok_unless(core.state.get('user.verified', False), "No user")
+        self.skip_ok_unless(os.path.isfile(core.state['user.cert_path']) and
+                            os.path.isfile(core.state['user.key_path']),
+                            "No user cert/key")
 
         password = core.options.password + '\n'
         core.check_system(['voms-proxy-init', '-rfc'], 'Run voms-proxy-init w/o VO', user=True, stdin=password)
