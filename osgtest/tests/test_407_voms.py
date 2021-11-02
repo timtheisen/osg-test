@@ -17,10 +17,6 @@ class TestVOMS(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'Run voms-proxy-info', user=True)[0]
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, msg)
 
-    def test_00_setup(self):
-        core.state.setdefault('voms.got-proxy', False)
-        core.state.setdefault('proxy.valid', False)
-
     def test_01_add_user(self):
         core.state['voms.added-user'] = False
         voms.skip_ok_unless_installed()
@@ -33,6 +29,8 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.state['voms.added-user'] = True
 
     def test_02_good_voms_proxy_init(self):
+        core.state['voms.got-proxy'] = False
+
         voms.skip_ok_unless_installed()
         self.skip_bad_unless(core.state['voms.added-user'])
 
@@ -59,6 +57,8 @@ class TestVOMS(osgunittest.OSGTestCase):
         self.proxy_info('second voms-proxy-info output is ok')
 
     def test_06_rfc_voms_proxy_init(self):
+        core.state['voms.got-proxy'] = False
+
         voms.skip_ok_unless_installed()
         self.skip_bad_unless(core.state['voms.added-user'])
 

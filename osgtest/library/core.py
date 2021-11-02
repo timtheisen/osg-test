@@ -46,7 +46,7 @@ config['system.mapfile'] = '/etc/grid-security/grid-mapfile'
 # prefix each key with "COMP.", where "COMP" is a short lowercase string that
 # indicates which component the test belongs to, or "general." for truly cross-
 # cutting objects.
-state = {'proxy.valid': False}
+state = {'proxy.valid': False}  # TODO: Drop 'proxy.valid' after we drop support for OSG 3.5
 
 class DummyClass(object):
     """A class that ignores all function calls; useful for testing"""
@@ -814,18 +814,82 @@ def to_bytes(strlike, encoding="latin-1", errors="backslashreplace"):
 
 
 @contextlib.contextmanager
-def environ_context(key, value):
-    """A context manager for running a block with an environment variable set,
-    restoring the original afterward.
+def environ_context(items):
+    """A context manager for running a block with environment variables set,
+    restoring the originals afterward.  `items` is either a dict or list of key,value
+    pairs; if a value is None, that variable is unset.
 
     """
-    old_value = os.environ.pop(key, None)
-    if value is not None:
-        os.environ[key] = value
+    old_values = {}
+    if isinstance(items, dict):
+        items = list(items.items())
+    for key, value in items:
+        old_values[key] = os.environ.pop(key, None)
+        if value is not None:
+            os.environ[key] = value
     try:
         yield
     finally:
-        if old_value is None:
-            os.environ.pop(key, None)
-        else:
-            os.environ[key] = old_value
+        for key, old_value in old_values.items():
+            if old_value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = old_value
+
+
+@contextlib.contextmanager
+def no_x509(user):
+    """A context manager for hiding and restoring a user's X.509 credentials
+    so they won't conflict with other forms of auth.
+
+    """
+    baksuffix = f".osgtest{os.getpid()}-bak"
+    uid = pwd.getpwnam(user).pw_uid
+    globus_dir = os.path.expanduser(f"~{user}/.globus")
+    proxy = f"/tmp/x509up_u{uid}"
+    moved_globus = False
+    moved_proxy = False
+    try:
+        if os.path.exists(globus_dir):
+            shutil.move(globus_dir, globus_dir + baksuffix)
+            moved_globus = True
+        if os.path.exists(proxy):
+            shutil.move(proxy, proxy + baksuffix)
+            moved_proxy = True
+        with environ_context({"X509_USER_PROXY": None, "X509_USER_CERT": None, "X509_USER_KEY": None}):
+            yield
+    finally:
+        try:
+            if moved_globus:
+                shutil.move(globus_dir + baksuffix, globus_dir)
+        except EnvironmentError as err:
+            log_message(f"Couldn't restore {globus_dir}: {err}")
+        try:
+            if moved_proxy:
+                shutil.move(proxy + baksuffix, proxy)
+        except EnvironmentError as err:
+            log_message(f"Couldn't restore {proxy}: {err}")
+
+
+@contextlib.contextmanager
+def no_bearer_token(user):
+    """A context manager for hiding and restoring a user's bearer token
+    so it won't conflict with other forms of auth.
+
+    """
+    baksuffix = f".osgtest{os.getpid()}-bak"
+    uid = pwd.getpwnam(user).pw_uid
+    token_file = f"/tmp/bt_u{uid}"
+    moved_token_file = False
+    try:
+        if os.path.exists(token_file):
+            shutil.move(token_file, token_file + baksuffix)
+            moved_token_file = True
+        with environ_context({"BEARER_TOKEN": None, "BEARER_TOKEN_FILE": None, "XDG_RUNTIME_DIR": None}):
+            yield
+    finally:
+        try:
+            if moved_token_file:
+                shutil.move(token_file + baksuffix, token_file)
+        except EnvironmentError as err:
+            log_message(f"Couldn't restore {token_file}: {err}")
