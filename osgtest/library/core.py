@@ -46,7 +46,7 @@ config['system.mapfile'] = '/etc/grid-security/grid-mapfile'
 # prefix each key with "COMP.", where "COMP" is a short lowercase string that
 # indicates which component the test belongs to, or "general." for truly cross-
 # cutting objects.
-state = {'proxy.valid': False}
+state = {'proxy.valid': False}  # TODO: Drop 'proxy.valid' after we drop support for OSG 3.5
 
 class DummyClass(object):
     """A class that ignores all function calls; useful for testing"""

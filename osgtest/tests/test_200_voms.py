@@ -24,7 +24,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.install_cert('certs.vomskey', 'certs.hostkey', 'voms', 0o400)
 
     def test_04_config_voms(self):
-        core.config['voms.vo'] = voms.VONAME
+        core.config['voms.vo'] = 'osgtestvo'
         core.config['voms.lock-file'] = '/var/lock/subsys/voms.osgtestvo'
         # The DB created by voms-admin would have the user 'admin-osgtestvo',
         # but the voms_install_db script provided by voms-server does not
@@ -33,13 +33,6 @@ class TestStartVOMS(osgunittest.OSGTestCase):
 
     def test_05_create_vo(self):
         voms.skip_ok_unless_installed()
-
-        # Destroy the DB if it already exists
-        try:
-            voms.destroy_db(core.config['voms.vo'], core.config['voms.dbusername'])
-            voms.destroy_voms_conf(core.config['voms.vo'])
-        except (EnvironmentError, AssertionError):
-            pass
 
         voms.create_vo(vo=core.config['voms.vo'],
                        dbusername=core.config['voms.dbusername'],

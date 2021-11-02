@@ -9,8 +9,6 @@ from osgtest.library import mysql
 from osgtest.library import osgunittest
 
 
-VONAME = "osgtestvo"
-
 
 def _get_sqlloc():
     # Find full path to libvomsmysql.so
