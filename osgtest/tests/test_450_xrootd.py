@@ -144,36 +144,28 @@ class TestXrootd(osgunittest.OSGTestCase):
             core.state['xrootd.had-failures'] = True
             raise
 
+    @xrootd_record_failure
     def test_04a_xrdcp_upload_gsi_authenticated_denied(self):
-        self.skip_ok_unless("GSI" in core.config['xrootd.security'], "not using GSI")
+        self.skip_unless_security("GSI")
         try:
-            xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file, add_token=False)
-            command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
-            core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=ERR_PERMISSION_DENIED, user=True)
+            command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xroot_url(TestXrootd.rootdir_copied_file))
+            with core.no_bearer_token(core.options.username):
+                core.check_system(command, "xrdcp upload to dir w/o write access (should be denied)", exit=ERR_PERMISSION_DENIED, user=True)
             self.assertFalse(os.path.exists(TestXrootd.rootdir_copied_file), "Uploaded file wrongly present")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
         finally:
-            try:
-                files.remove(TestXrootd.rootdir_copied_file)
-            except FileNotFoundError:
-                pass
+            files.remove(TestXrootd.rootdir_copied_file)
 
+    @xrootd_record_failure
     def test_04b_xrdcp_upload_scitoken_authenticated_denied(self):
-        self.skip_ok_unless("SCITOKENS" in core.config['xrootd.security'], "not using scitokens")
-        token_contents = core.state['token.xrootd_contents']
-        self.skip_bad_unless(token_contents, "xrootd scitoken not found")
+        self.skip_unless_security("SCITOKENS")
         try:
-            bearer_token = token_contents if core.config['xrootd.ztn'] else None
-            with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN": bearer_token}):
-                xrootd_url = self.xrootd_url(TestXrootd.rootdir_copied_file)
-                command = ('xrdcp', '--debug', '3', TestXrootd.__data_path, xrootd_url)
+            with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN_FILE": core.config['token.xrootd']}):
+                xrootd_url = xroot_url(TestXrootd.rootdir_copied_file)
+                command = ('xrdcp', '--debug', '2', TestXrootd.__data_path, xrootd_url)
                 core.check_system(command, "Authenticated xrdcp upload to dir w/o write access (should be denied)", exit=ERR_PERMISSION_DENIED, user=True)
                 self.assertFalse(os.path.exists(TestXrootd.rootdir_copied_file), "Uploaded file wrongly present")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
+        finally:
+            files.remove(TestXrootd.rootdir_copied_file)
 
     def test_05_xrootd_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
