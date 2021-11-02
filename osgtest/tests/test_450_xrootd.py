@@ -57,9 +57,13 @@ class TestXrootd(osgunittest.OSGTestCase):
     public_copied_file2 = f"{xrootd.ROOTDIR}/{{public_subdir}}/public_copied_file2.txt"
     user_copied_file_gsi = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file_gsi.txt"
     user_copied_file_scitoken = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_copied_file_scitoken.txt"
-    file_to_download = f"{xrootd.ROOTDIR}/{{public_subdir}}/file_to_download.txt"
     rootdir_copied_file = f"{xrootd.ROOTDIR}/rootdir_copied_file.txt"
     vo_copied_file = f"{xrootd.ROOTDIR}/{{vo_subdir}}/vo_copied_file.txt"
+    public_file_to_download = f"{xrootd.ROOTDIR}/{{public_subdir}}/public_file_to_download.txt"
+    user_file_to_download = f"{xrootd.ROOTDIR}/{{user_subdir}}/user_file_to_download.txt"
+    vo_file_to_download = f"{xrootd.ROOTDIR}/{{vo_subdir}}/vo_file_to_download.txt"
+
+    download_temp = f"/tmp/osgtest-download-{os.getpid()}"
 
     def setUp(self):
         if core.rpm_is_installed("xcache"):
@@ -89,12 +93,22 @@ class TestXrootd(osgunittest.OSGTestCase):
             "public_copied_file2",
             "user_copied_file_gsi",
             "user_copied_file_scitoken",
-            "file_to_download",
             "rootdir_copied_file",
             "vo_copied_file",
+            "public_file_to_download",
+            "user_file_to_download",
+            "vo_file_to_download",
         ]:
             setattr(TestXrootd, var, getattr(TestXrootd, var).format(**locals()))
 
+        for file_to_download in [TestXrootd.public_file_to_download,
+                                 TestXrootd.user_file_to_download,
+                                 TestXrootd.vo_file_to_download]:
+            file_text = f"This is some test data for an xrootd test in {file_to_download}."
+            with open(file_to_download, "w") as f:
+                f.write(file_text)
+            os.chown(file_to_download, core.state['user.uid'], core.state['user.gid'])
+            os.chmod(file_to_download, 0o644)
 
     @xrootd_record_failure
     def test_03a_xrdcp_upload_gsi_authenticated(self):
@@ -186,31 +200,76 @@ class TestXrootd(osgunittest.OSGTestCase):
         self.skip_unless_security("SCITOKENS")
         self._check_ownership(TestXrootd.user_copied_file_scitoken)
 
-    def test_06_xrdcp_download_public(self):
-        if "GSI" in core.config['xrootd.security']:
-            # We need a proxy if we're configured for GSI, even if we're reading from a public location
-            self.skip_bad_unless(core.state['proxy.valid'], "no valid proxy")
-        file_text = "This is some test data for an xrootd test."
-        download_path = f"/tmp/osgtest-download.{os.getpid()}.txt"
+    def _test_download(self, remote_file, command, message):
+        files.remove(TestXrootd.download_temp)
         try:
-            with open(TestXrootd.file_to_download, "w") as f:
-                f.write(file_text)
-            os.chown(TestXrootd.file_to_download, core.state['user.uid'], core.state['user.gid'])
-            os.chmod(TestXrootd.file_to_download, 0o644)
-            xrootd_url = self.xrootd_url(TestXrootd.file_to_download)
-            command = ('xrdcp', '--debug', '3', xrootd_url, download_path)
-            core.check_system(command, "xrdcp download from public dir", user=True)
-            self.assertTrue(os.path.exists(download_path), "Downloaded file missing")
-            self.assertEqual(files.read(download_path, as_single_string=True), file_text,
-                             "Downloaded contents differ from expected")
-        except AssertionError:
-            core.state['xrootd.had-failures'] = True
-            raise
+            core.check_system(command, message ,user=True)
+            self.assert_(os.path.isfile(TestXrootd.download_temp), "Downloaded file missing")
+            self.assertEqualVerbose(files.read(TestXrootd.download_temp, as_single_string=True),
+                                    files.read(remote_file, as_single_string=True),
+                                    "Downloaded contents differ from expected")
         finally:
-            try:
-                os.unlink(download_path)
-            except FileNotFoundError:
-                pass
+            files.remove(TestXrootd.download_temp)
+
+    @xrootd_record_failure
+    def test_06a_xrdcp_download_gsi(self):
+        self.skip_unless_security("GSI")
+        remote_file = TestXrootd.user_file_to_download
+        remote_url = xroot_url(remote_file)
+        command = ('xrdcp', '--nopbar', '--debug', '2', remote_url, TestXrootd.download_temp)
+        message = "xrdcp download with GSI"
+        with core.no_bearer_token(core.options.username):
+            self._test_download(remote_file, command, message)
+
+    @xrootd_record_failure
+    def test_06b_xrdcp_download_scitoken(self):
+        self.skip_unless_security("SCITOKENS")
+        remote_file = TestXrootd.user_file_to_download
+        remote_url = xroot_url(remote_file)
+        command = ('xrdcp', '--nopbar', '--debug', '2', remote_url, TestXrootd.download_temp)
+        message = "xrdcp download with scitoken"
+        with core.no_x509(core.options.username), core.environ_context({"BEARER_TOKEN_FILE": core.config['token.xrootd']}):
+            self._test_download(remote_file, command, message)
+
+    @xrootd_record_failure
+    def test_06c_xrdcp_download_voms(self):
+        self.skip_unless_security("VOMS")
+        remote_file = TestXrootd.vo_file_to_download
+        remote_url = xroot_url(remote_file)
+        command = ('xrdcp', '--nopbar', '--debug', '2', remote_url, TestXrootd.download_temp)
+        message = "xrdcp download with VOMS"
+        with core.no_bearer_token(core.options.username):
+            self._test_download(remote_file, command, message)
+
+    @xrootd_record_failure
+    def test_07_https_download_public(self):
+        remote_file = TestXrootd.public_file_to_download
+        remote_url = https_url(remote_file)
+        command = ('curl', '-kLs', remote_url, '-o', TestXrootd.download_temp)
+        message = "HTTPS download from public dir"
+        self._test_download(remote_file, command, message)
+
+    @xrootd_record_failure
+    def test_08a_https_download_scitoken_in_url(self):
+        self.skip_unless_security("SCITOKENS")
+        remote_file = TestXrootd.user_file_to_download
+        remote_url = https_url(remote_file, token=core.state['token.xrootd_contents'])
+        command = ('curl', '-kLs', remote_url, '-o', TestXrootd.download_temp)
+        message = "HTTPS download from user dir with token in the URL"
+        self._test_download(remote_file, command, message)
+
+    @xrootd_record_failure
+    def test_08b_https_download_scitoken_in_header(self):
+        self.skip_unless_security("SCITOKENS")
+        remote_file = TestXrootd.user_file_to_download
+        remote_url = https_url(remote_file)
+        command = ('curl', '-kLs',
+                   '-H', f"Authorization: Bearer {core.state['token.xrootd_contents']}",
+                   remote_url, '-o', TestXrootd.download_temp)
+        message = "HTTPS download from user dir with token in the header"
+        self._test_download(remote_file, command, message)
+
+    # TODO Maybe some HTTPS upload tests?
 
     # TODO Drop after we EOL OSG 3.5
     # Test dir reorg broke the FUSE test.  We can drop it for now due to low demand -mat 2021-10-14
