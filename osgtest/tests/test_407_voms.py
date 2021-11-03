@@ -17,6 +17,9 @@ class TestVOMS(osgunittest.OSGTestCase):
         stdout = core.check_system(command, 'Run voms-proxy-info', user=True)[0]
         self.assert_(('/%s/Role=NULL' % (core.config['voms.vo'])) in stdout, msg)
 
+    def test_00_setup(self):
+        core.state.setdefault('proxy.valid', False)
+
     def test_01_add_user(self):
         core.state['voms.added-user'] = False
         voms.skip_ok_unless_installed()
