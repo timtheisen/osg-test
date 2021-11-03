@@ -96,3 +96,22 @@ class TestVOMS(osgunittest.OSGTestCase):
             self.fail("Can't find proxy's signing algorithm")
         proxy_algorithm = match.group(1)
         self.assertEqual(cert_algorithm, proxy_algorithm)
+
+        core.state['proxy.valid'] = True
+
+    def test_09_basic_grid_proxy(self):
+        """
+        Use voms-proxy-init to create a basic grid proxy (without VOMS attributes)
+        if we don't already have one.  We may need this for tests in other modules.
+        """
+        core.skip_ok_unless_installed("voms-clients", by_dependency=True)
+        self.skip_ok_if(core.state['proxy.valid'], "Already have a proxy")
+        self.skip_ok_unless(core.state.get('user.verified', False), "No user")
+        self.skip_ok_unless(os.path.isfile(core.state['user.cert_path']) and
+                            os.path.isfile(core.state['user.key_path']),
+                            "No user cert/key")
+
+        password = core.options.password + '\n'
+        core.check_system(['voms-proxy-init', '-rfc'], 'Run voms-proxy-init w/o VO', user=True, stdin=password)
+        core.check_system(['voms-proxy-info'], "Check resulting proxy", user=True)
+        core.state['proxy.valid'] = True

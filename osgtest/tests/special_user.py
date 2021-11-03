@@ -102,6 +102,7 @@ class TestUser(osgunittest.OSGTestCase):
         # Set up certificate
         globus_dir = os.path.join(core.state['user.pwd'].pw_dir, '.globus')
         core.state['user.cert_path'] = os.path.join(globus_dir, 'usercert.pem')
+        core.state['user.key_path'] = os.path.join(globus_dir, 'userkey.pem')
         test_ca = CA.load(core.config['certs.test-ca'])
         if not os.path.exists(core.state['user.cert_path']):
             test_ca.usercert(core.options.username, core.options.password)
