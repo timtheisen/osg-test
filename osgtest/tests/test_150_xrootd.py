@@ -43,7 +43,7 @@ AUTHFILE_TEXT = f"""\
 u =      /@=/ a
 
 # Our test VO has full privileges to /osgtestvo
-g /{voms.VONAME} /osgtestvo/ a
+g /{voms.VONAME} /{voms.VONAME}/ a
 
 # All users (including unauth users) have full privileges to /public/
 u *      /public/ a
@@ -89,7 +89,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.had-failures'] = False
         core.config['xrootd.public_subdir'] = "public"
         core.config['xrootd.user_subdir'] = core.options.username
-        core.config['xrootd.vo_subdir'] = "osgtestvo"
+        core.config['xrootd.vo_subdir'] = voms.VONAME
         self.skip_ok_unless(core.state['user.verified'], "Test user not available")
 
         xrootd_user = pwd.getpwnam("xrootd")
