@@ -24,7 +24,6 @@ class TestStopXrootdTPC(osgunittest.OSGTestCase):
             files.restore(core.config['xrootd.tpc.config-1'], "xrootd")
             files.restore(core.config['xrootd.tpc.config-2'], "xrootd")
             files.restore(core.config['xrootd.tpc.basic-config'], "xrootd")
-            # files.restore('/etc/xrootd/config.d/40-osg-standalone.cfg', "xrootd")
             files.restore(xrootd.logfile("third-party-copy-1"), "xrootd", ignore_missing=True)
             files.restore(xrootd.logfile("third-party-copy-2"), "xrootd", ignore_missing=True)
 
