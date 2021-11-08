@@ -114,3 +114,4 @@ class TestVOMS(osgunittest.OSGTestCase):
         core.check_system(['voms-proxy-init', '-rfc'], 'Run voms-proxy-init w/o VO', user=True, stdin=password)
         core.check_system(['voms-proxy-info'], "Check resulting proxy", user=True)
         core.state['proxy.valid'] = True
+        core.state['voms.got-proxy'] = False  # got a proxy but without VOMS attrs
