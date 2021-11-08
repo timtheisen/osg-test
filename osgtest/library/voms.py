@@ -1,6 +1,5 @@
 import os
 import shutil
-import socket
 
 import cagen
 from osgtest.library import core
@@ -53,7 +52,7 @@ def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc
 def advertise_lsc(vo, hostcert='/etc/grid-security/hostcert.pem'):
     """Create the VO directory and .lsc file under /etc/grid-security/vomsdir for the given VO"""
     host_dn, host_issuer = cagen.certificate_info(hostcert)
-    hostname = socket.getfqdn()
+    hostname = core.get_hostname()
     lsc_dir = os.path.join('/etc/grid-security/vomsdir', vo)
     if not os.path.isdir(lsc_dir):
         os.makedirs(lsc_dir)
@@ -66,7 +65,7 @@ def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
     Caller is responsible for preserving and restoring /etc/vomses.
     """
     host_dn, _ = cagen.certificate_info(hostcert)
-    hostname = socket.getfqdn()
+    hostname = core.get_hostname()
     vomses_path = '/etc/vomses'
     contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
                 (vo, hostname, 15151, host_dn, vo))
