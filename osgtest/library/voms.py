@@ -1,5 +1,7 @@
+import pwd
 import os
 import shutil
+import tempfile
 
 import cagen
 from osgtest.library import core
@@ -113,6 +115,59 @@ def destroy_voms_conf(vo):
     """Remove the VOMS config for the VO"""
     vodir = os.path.join('/etc/voms', vo)
     shutil.rmtree(vodir, ignore_errors=True)
+
+
+def proxy_direct(username=None, password=None,
+                 cert_path=None, key_path=None,
+                 fqan=f'/{VONAME}/Role=NULL/Capability=NULL'):
+    f"""Generate a user proxy and directly sign VOMS attributes using the test VOMS cert and key
+    - username: owner of the generated proxy file (default osg-test username)
+    - password: proxy password (default: osg-test password)
+    - cert_path: path to the user certificate (default: ~username/.globus/usercert.pem)
+    - key_path: path to the user key (default: ~username/.globus/userkey.pem)
+    - fqan: VOMS attribute (default: /{VONAME}/Role=NULL/Capability=NULL)
+    """
+    if username:
+        user = pwd.getpwnam(username)
+        uid = user.pw_uid
+        gid = user.pw_gid
+    else:
+        username = core.options.username
+        uid = core.state['user.uid']
+        gid = core.state['user.gid']
+
+    if not password:
+        password = core.options.password
+    if not cert_path:
+        cert_path = os.path.join(os.path.expanduser(f'~{username}'), '.globus/usercert.pem')
+    if not key_path:
+        key_path = os.path.join(os.path.expanduser(f'~{username}'), '.globus/userkey.pem')
+
+    # voms-proxy-direct requires that the user cert/key are owned by the user running the command
+    filemap = dict()
+    for src in (cert_path, key_path):
+        dest = tempfile.NamedTemporaryFile()
+        filemap[src] = dest.name
+        shutil.copy2(src, dest.name)
+
+    proxy_path = f'/tmp/x509up_u{core.state["user.uid"]}'
+    try:
+        command = ('voms-proxy-direct',
+                   '-rfc',
+                   '-bits', '2048',
+                   '-voms', VONAME,
+                   '-uri', core.get_hostname(),
+                   '-fqan', fqan,
+                   '-cert', filemap[cert_path],
+                   '-key', filemap[key_path],
+                   '-hostcert', core.config['certs.vomscert'],
+                   '-hostkey', core.config['certs.vomskey'],
+                   '-out', proxy_path)
+        core.check_system(command, 'Run voms-proxy-direct', stdin=password)
+        os.chown(username, uid, gid)
+    finally:
+        for tmp in filemap.values():
+            tmp.close()
 
 
 def is_installed():

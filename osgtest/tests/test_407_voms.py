@@ -59,15 +59,11 @@ class TestVOMS(osgunittest.OSGTestCase):
     def test_05_voms_proxy_info(self):
         self.proxy_info('second voms-proxy-info output is ok')
 
-    def test_06_rfc_voms_proxy_init(self):
+    def test_06_voms_proxy_direct(self):
         core.state['voms.got-proxy'] = False
+        core.skip_ok_unless_installed("voms-clients", by_dependency=True)
 
-        voms.skip_ok_unless_installed()
-        self.skip_bad_unless(core.state['voms.added-user'])
-
-        command = ('voms-proxy-init', '-voms', core.config['voms.vo'], '-rfc')
-        password = core.options.password + '\n'
-        core.check_system(command, 'Run voms-proxy-init', user=True, stdin=password)
+        voms.proxy_direct()
         core.state['voms.got-proxy'] = True
 
     def test_07_rfc_voms_proxy_info(self):
