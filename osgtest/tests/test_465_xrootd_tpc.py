@@ -112,7 +112,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         core.log_message("Unauth TPC to public dir")
         with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
             core.system(command, user=True)
-        time.sleep(1)
+        time.sleep(1)  # wait a sec for the transfer to be completed
         self.assertTrue(os.path.exists(dest_path), "Copied file missing")
         self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path),
                         "Copied file contents do not match original")
@@ -127,7 +127,7 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         core.log_message("Unauth TPC to private dir (should fail)")
         with core.no_x509(core.options.username), core.no_bearer_token(core.options.username):
             core.system(command, user=True)
-        time.sleep(1)
+        time.sleep(1)  # wait a sec for the transfer to be completed
         self.assertFalse(os.path.exists(dest_path), "Copied file wrongly exists")
 
     def _test_upload(self, dest_path, token1, token2, message):
