@@ -147,7 +147,7 @@ def proxy_direct(username=None, password=None,
     filemap = dict()
     for src in (cert_path, key_path):
         dest = tempfile.NamedTemporaryFile()
-        filemap[src] = dest.name
+        filemap[src] = dest
         shutil.copy2(src, dest.name)
 
     proxy_path = f'/tmp/x509up_u{core.state["user.uid"]}'
@@ -158,8 +158,8 @@ def proxy_direct(username=None, password=None,
                    '-voms', VONAME,
                    '-uri', core.get_hostname(),
                    '-fqan', fqan,
-                   '-cert', filemap[cert_path],
-                   '-key', filemap[key_path],
+                   '-cert', filemap[cert_path].name,
+                   '-key', filemap[key_path].name,
                    '-hostcert', core.config['certs.vomscert'],
                    '-hostkey', core.config['certs.vomskey'],
                    '-out', proxy_path)
