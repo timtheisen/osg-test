@@ -151,24 +151,19 @@ def proxy_direct(username=None, password=None,
         shutil.copy2(src, dest.name)
 
     proxy_path = f'/tmp/x509up_u{core.state["user.uid"]}'
-    try:
-        command = ('voms-proxy-direct',
-                   '-rfc',
-                   '-bits', '2048',
-                   '-voms', VONAME,
-                   '-uri', core.get_hostname(),
-                   '-fqan', fqan,
-                   '-cert', filemap[cert_path].name,
-                   '-key', filemap[key_path].name,
-                   '-hostcert', core.config['certs.vomscert'],
-                   '-hostkey', core.config['certs.vomskey'],
-                   '-out', proxy_path)
-        core.check_system(command, 'Run voms-proxy-direct', stdin=password)
-        os.chown(proxy_path, uid, gid)
-    finally:
-        for tmp in filemap.values():
-            tmp.close()
-
+    command = ('voms-proxy-direct',
+               '-rfc',
+               '-bits', '2048',
+               '-voms', VONAME,
+               '-uri', core.get_hostname(),
+               '-fqan', fqan,
+               '-cert', filemap[cert_path].name,
+               '-key', filemap[key_path].name,
+               '-hostcert', core.config['certs.vomscert'],
+               '-hostkey', core.config['certs.vomskey'],
+               '-out', proxy_path)
+    core.check_system(command, 'Run voms-proxy-direct', stdin=password)
+    os.chown(proxy_path, uid, gid)
 
 def is_installed():
     """Return True if the dependencies for setting up and using VOMS are installed.
