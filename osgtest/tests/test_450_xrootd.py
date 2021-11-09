@@ -124,6 +124,9 @@ class TestXrootd(osgunittest.OSGTestCase):
         xrootd_url = xroot_url(TestXrootd.user_copied_file_scitoken)
         command = ('xrdcp', '--force', '--debug', '2', TestXrootd.__data_path, xrootd_url)
         with core.no_x509(core.options.username):
+            # TODO: Passing token contents with $BEARER_TOKEN or having the token be in /tmp/bt_u$UID is currently
+            # broken (token is not found/not used).  Using $BEARER_TOKEN_FILE or having the token be in
+            # $X509_RUNTIME_DIR/bt_u$UID works.  Bug report forthcoming.
             with core.environ_context({"BEARER_TOKEN": core.state['token.xrootd_contents'], "BEARER_TOKEN_FILE": None}):
                 message = "xrdcp upload to user dir with scitoken in BEARER_TOKEN"
                 expected_exit = 0
