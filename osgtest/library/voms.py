@@ -164,7 +164,7 @@ def proxy_direct(username=None, password=None,
                    '-hostkey', core.config['certs.vomskey'],
                    '-out', proxy_path)
         core.check_system(command, 'Run voms-proxy-direct', stdin=password)
-        os.chown(username, uid, gid)
+        os.chown(proxy_path, uid, gid)
     finally:
         for tmp in filemap.values():
             tmp.close()
