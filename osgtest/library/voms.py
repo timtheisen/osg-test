@@ -153,6 +153,7 @@ def proxy_direct(username=None, password=None,
     proxy_path = f'/tmp/x509up_u{core.state["user.uid"]}'
     command = ('voms-proxy-direct',
                '-rfc',
+               '-debug',
                '-bits', '2048',
                '-voms', VONAME,
                '-uri', core.get_hostname(),
