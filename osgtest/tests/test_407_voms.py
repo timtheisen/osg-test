@@ -74,7 +74,7 @@ class TestVOMS(osgunittest.OSGTestCase):
         Check generated proxies to make sure that they use the same signing
         algorithm as the certificate
         """
-        voms.skip_ok_unless_installed()
+        core.skip_ok_unless_installed("voms-clients", by_dependency=True)
         self.skip_bad_unless(core.state['voms.got-proxy'], 'no proxy')
 
         pwd_entry = pwd.getpwnam(core.options.username)
