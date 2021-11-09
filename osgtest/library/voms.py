@@ -137,7 +137,9 @@ def proxy_direct(username=None, password=None,
         gid = core.state['user.gid']
 
     if not password:
-        password = core.options.password + '\n'
+        password = core.options.password
+    if not password.endswith('\n'):
+        password = password + '\n'
     if not cert_path:
         cert_path = os.path.join(os.path.expanduser(f'~{username}'), '.globus/usercert.pem')
     if not key_path:
