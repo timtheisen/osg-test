@@ -168,7 +168,8 @@ def proxy_direct(username=None, password=None,
     core.check_system(command, 'Run voms-proxy-direct', stdin=password)
     os.chown(proxy_path, uid, gid)
 
-def is_installed():
+
+def server_is_installed():
     """Return True if the dependencies for setting up and using VOMS are installed.
     EL7 requires a minimum version of the voms-server package to get the service file fix from SOFTWARE-2357.
     """
@@ -179,7 +180,21 @@ def is_installed():
     return True
 
 
-def skip_ok_unless_installed():
+def skip_ok_unless_server_is_installed():
     """OkSkip if the dependencies for setting up and using VOMS are not installed."""
-    if not is_installed():
+    if not server_is_installed():
         raise osgunittest.OkSkipException('VOMS server requirements not installed')
+
+
+def can_make_proxy():
+    """Return True if the packages necessary for making a proxy are installed.
+    This is either voms-clients-cpp (which provides voms-proxy-direct),
+    or voms-server + dependencies + any voms client.
+    """
+    return core.dependency_is_installed("voms-clients-cpp") or server_is_installed()
+
+
+def skip_ok_unless_can_make_proxy():
+    """OkSkip if the dependencies for creating VOMS proxies are not installed."""
+    if not can_make_proxy():
+        raise osgunittest.OkSkipException('Required packages for creating VOMS proxies not installed')

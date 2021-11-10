@@ -103,7 +103,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
             core.config['xrootd.security'].add("GSI")
         if core.dependency_is_installed("xrootd-scitokens"):
             core.config['xrootd.security'].add("SCITOKENS")
-        if voms.is_installed() or core.dependency_is_installed("voms-clients-cpp"):
+        if voms.can_make_proxy():
             core.config['xrootd.security'].add("VOMS")
 
         self.skip_ok_unless(core.config['xrootd.security'], "No xrootd security available")
