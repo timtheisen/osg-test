@@ -38,7 +38,7 @@ def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc
 
     command = ['/usr/share/voms/voms_install_db',
                '--voms-vo=' + vo,
-               '--port=' + VOPORT,
+               '--port=' + str(VOPORT),
                '--db-type=mysql',
                '--db-admin=root',
                '--voms-name=' + dbusername,
