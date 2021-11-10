@@ -14,7 +14,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.config['certs.vomskey'] = '/etc/grid-security/voms/vomskey.pem'
 
     def test_02_install_voms_certs(self):
-        voms.skip_ok_unless_can_make_proxy()
+        voms.skip_ok_unless_installed()
         vomscert = core.config['certs.vomscert']
         vomskey = core.config['certs.vomskey']
         self.skip_ok_if(core.check_file_and_perms(vomscert, 'voms', 0o644) and
@@ -32,7 +32,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
         core.config['voms.dbusername'] = 'voms_' + core.config['voms.vo']
 
     def test_05_create_vo(self):
-        voms.skip_ok_unless_server_is_installed()
+        voms.skip_ok_unless_installed()
 
         # Destroy the DB if it already exists
         try:
@@ -48,7 +48,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
                        vomskey=core.config['certs.vomskey'])
 
     def test_08_advertise(self):
-        voms.skip_ok_unless_server_is_installed()
+        voms.skip_ok_unless_installed()
 
         voms.advertise_lsc(core.config['voms.vo'], core.config['certs.hostcert'])
         files.preserve('/etc/vomses', owner='voms')
@@ -60,7 +60,7 @@ class TestStartVOMS(osgunittest.OSGTestCase):
     def test_09_start_voms(self):
         core.state['voms.started-server'] = False
 
-        voms.skip_ok_unless_server_is_installed()
+        voms.skip_ok_unless_installed()
         self.skip_ok_if(os.path.exists(core.config['voms.lock-file']), 'apparently running')
 
         if core.el_release() < 7:
