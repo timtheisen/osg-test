@@ -11,7 +11,7 @@ from osgtest.library import osgunittest
 
 
 VONAME = "osgtestvo"
-
+VOPORT = 15151
 
 def _get_sqlloc():
     # Find full path to libvomsmysql.so
@@ -38,7 +38,7 @@ def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc
 
     command = ['/usr/share/voms/voms_install_db',
                '--voms-vo=' + vo,
-               '--port=15151',
+               '--port=' + str(VOPORT),
                '--db-type=mysql',
                '--db-admin=root',
                '--voms-name=' + dbusername,
@@ -70,7 +70,7 @@ def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
     hostname = core.get_hostname()
     vomses_path = '/etc/vomses'
     contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
-                (vo, hostname, 15151, host_dn, vo))
+                (vo, hostname, VOPORT, host_dn, vo))
     files.write(vomses_path, contents, backup=False, chmod=0o644)
 
 
@@ -158,7 +158,7 @@ def proxy_direct(username=None, password=None,
                '-debug',
                '-bits', '2048',
                '-voms', VONAME,
-               '-uri', core.get_hostname(),
+               '-uri', f'{core.get_hostname()}:{VOPORT}',
                '-fqan', fqan,
                '-cert', filemap[cert_path].name,
                '-key', filemap[key_path].name,
