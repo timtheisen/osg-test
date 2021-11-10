@@ -162,8 +162,8 @@ def proxy_direct(username=None, password=None,
                '-fqan', fqan,
                '-cert', filemap[cert_path].name,
                '-key', filemap[key_path].name,
-               '-hostcert', core.config['certs.vomscert'],
-               '-hostkey', core.config['certs.vomskey'],
+               '-hostcert', core.config['certs.hostcert'],
+               '-hostkey', core.config['certs.hostkey'],
                '-out', proxy_path)
     core.check_system(command, 'Run voms-proxy-direct', stdin=password)
     os.chown(proxy_path, uid, gid)
