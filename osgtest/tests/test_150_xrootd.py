@@ -4,6 +4,7 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.voms as voms
 import osgtest.library.xrootd as xrootd
 import shlex
 import shutil
@@ -16,6 +17,9 @@ ofs.authlib ++ libXrdAccSciTokens.so config=%s
 
 # Pass the bearer token to the Xrootd authorization framework.
 http.header2cgi Authorization authz
+
+# Allow using tokens with strong auth
+sec.protocol ztn
 """
 
 # XRootD configuration necessary for osg-xrootd-standalone
@@ -28,20 +32,21 @@ xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
 xrd.tlsca noverify
 acc.authdb /etc/xrootd/Authfile
 ofs.authorize
+xrootd.seclib /usr/lib64/libXrdSec.so
 """
 
 # Authfile syntax is described in https://xrootd.slac.stanford.edu/doc/dev50/sec_config.htm#_Toc64492263
 # Privileges used are "a" (all) and "rl" (read only).
 # All paths are relative to the rootdir defined above
-AUTHFILE_TEXT = """\
+AUTHFILE_TEXT = f"""\
 # A user has full privileges to a directory named after them (e.g. matyas has /matyas/, vdttest has /vdttest/)
 u =      /@=/ a
 
-# The xrootd user has full privileges to the top-level directory
-u xrootd / a
+# Our test VO has full privileges to /osgtestvo
+g /{voms.VONAME} /{voms.VONAME}/ a
 
-# All users (including unauth users) have full privileges to /public/, and read-only ("rl") privileges to the top-level directory
-u *      /public/ a / rl
+# All users (including unauth users) have full privileges to /public/
+u *      /public/ a
 """
 
 XROOTD_LOGGING_CFG_TEXT = """\
@@ -72,7 +77,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
     def test_01_configure_xrootd(self):
         core.state['xrootd.is-configured'] = False
-        core.config['xrootd.security'] = []
+        core.config['xrootd.security'] = set()
         core.config['certs.xrootdcert'] = '/etc/grid-security/xrd/xrdcert.pem'
         core.config['certs.xrootdkey'] = '/etc/grid-security/xrd/xrdkey.pem'
         # rootdir and resourcename needs to be set early for the default osg-xrootd config
@@ -80,11 +85,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.config['xrootd.logging-config'] = '/etc/xrootd/config.d/99-logging.cfg'
         core.config['xrootd.service-defaults'] = '/etc/sysconfig/xrootd'
         core.config['xrootd.multiuser'] = False
-        core.config['xrootd.ztn'] = False
         core.state['xrootd.backups-exist'] = False
         core.state['xrootd.had-failures'] = False
         core.config['xrootd.public_subdir'] = "public"
         core.config['xrootd.user_subdir'] = core.options.username
+        core.config['xrootd.vo_subdir'] = voms.VONAME
         self.skip_ok_unless(core.state['user.verified'], "Test user not available")
 
         xrootd_user = pwd.getpwnam("xrootd")
@@ -92,14 +97,16 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
         if core.osg_release() < '3.6':
-            core.skip_ok_unless_installed("globus-proxy-utils")
-            core.config['xrootd.security'].append("GSI")
             xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
 
-        else:  # 3.6+
-        # FIXME: remove else after https://opensciencegrid.atlassian.net/browse/SOFTWARE-4858 is released
-            core.skip_ok_unless_installed("xrootd-scitokens")
-            core.config['xrootd.security'].append("SCITOKENS")
+        if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
+            core.config['xrootd.security'].add("GSI")
+        if core.dependency_is_installed("xrootd-scitokens"):
+            core.config['xrootd.security'].add("SCITOKENS")
+        if voms.can_make_proxy():
+            core.config['xrootd.security'].add("VOMS")
+
+        self.skip_ok_unless(core.config['xrootd.security'], "No xrootd security available")
 
         core.install_cert('certs.xrootdcert', 'certs.hostcert', 'xrootd', 0o644)
         core.install_cert('certs.xrootdkey', 'certs.hostkey', 'xrootd', 0o400)
@@ -121,6 +128,9 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         user_dir = f"{xrootd.ROOTDIR}/{core.config['xrootd.user_subdir']}"
         files.safe_makedirs(user_dir)
         os.chmod(user_dir, 0o770)
+        vo_dir = f"{xrootd.ROOTDIR}/{core.config['xrootd.vo_subdir']}"
+        files.safe_makedirs(vo_dir)
+        os.chmod(vo_dir, 0o1777)
         core.system(["chown", "-R", "xrootd:xrootd", xrootd.ROOTDIR])
         os.chown(user_dir, core.state["user.uid"], xrootd_user.pw_gid)
 
@@ -221,31 +231,24 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                          XROOTD5_SCITOKENS_CFG_TXT % scitokens_conf_path,
                          backup=False)
 
-        ### ztn tests don't work right now.
-        #
-        # # Enable ztn which requires that the token be sent over an encrypted connection
-        # # and allows getting the token from the environment.
-        # core.config['xrootd.ztn'] = True
-        # files.write("/etc/xrootd/config.d/99-osgtest-ztn.cfg",
-        #             "sec.protocol ztn\n",
-        #             chmod=0o644,
-        #             owner='xrootd')
-
     def test_07_check_cconfig(self):
         xrootd_config = xrootd.cconfig("standalone", raw=False, quiet=False)
         self.assertRegexInList(xrootd_config,
                                rf"^[ ]*oss\.localroot[ ]+{xrootd.ROOTDIR}[ ]*$",
-                               "oss.localroot not being set correctly")
+                               f"'oss.localroot {xrootd.ROOTDIR}' not found")
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*acc\.authdb[ ]+/etc/xrootd/Authfile[ ]*$",
-                               "authfile not being set correctly")
+                               "'acc.authdb /etc/xrootd/Authfile' not found")
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*ofs\.authorize[ ]*$",
-                               "ofs.authorize missing")
+                               "'ofs.authorize' not found")
+        self.assertRegexInList(xrootd_config,
+                               r"^[ ]*xrootd\.seclib[ ]+/usr/lib64/libXrdSec\.so[ ]*$",
+                               "'xrootd.seclib /usr/lib64/libXrdSec.so' not found")
         if "SCITOKENS" in core.config['xrootd.security']:
             self.assertRegexInList(xrootd_config,
                                    r"^[ ]*ofs\.authlib[ ]+[+][+][ ]+libXrdAccSciTokens\.so[ ]+config=/etc/xrootd/scitokens\.conf[ ]*$",
-                                   "scitokens config not getting loaded")
+                                   "'ofs.authlib ++ libXrdAccSciTokens.so config=/etc/xrootd/scitokens.conf' not found")
 
     def test_08_start_xrootd(self):
         self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")

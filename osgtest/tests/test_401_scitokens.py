@@ -21,13 +21,13 @@ class TestTokens(osgunittest.OSGTestCase):
         )
 
     def test_02_request_xrootd_scitokens(self):
-        self.skip_ok_unless("SCITOKENS" in core.config.get('xrootd.security', []),
+        self.skip_ok_unless("SCITOKENS" in core.config.get('xrootd.security', set()),
                             "Not using SciTokens for XRootD")
         try:
             credentials.request_scitoken(
                 "xrootd",
                 subject=core.options.username,
-                scope="write:/",
+                scope=f"read:/{core.config['xrootd.user_subdir']} write:/{core.config['xrootd.user_subdir']}",
                 audience="OSG_TEST",
                 overwrite=True,
                 log=True,
@@ -35,7 +35,7 @@ class TestTokens(osgunittest.OSGTestCase):
             credentials.request_scitoken(
                 "xrootd_tpc_1",
                 subject=core.options.username,
-                scope="read:/",
+                scope=f"read:/{core.config['xrootd.public_subdir']}",
                 audience="OSG_TEST",
                 overwrite=True,
                 log=True,
@@ -43,7 +43,7 @@ class TestTokens(osgunittest.OSGTestCase):
             credentials.request_scitoken(
                 "xrootd_tpc_2",
                 subject=core.options.username,
-                scope="write:/",
+                scope=f"write:/{core.config['xrootd.user_subdir']}",
                 audience="OSG_TEST",
                 overwrite=True,
                 log=True,

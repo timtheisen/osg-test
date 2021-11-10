@@ -39,28 +39,6 @@ if named third-party-copy-2
 fi
 """
 
-XROOTD_STANDALONE_TXT = """\
-set EnableHttp = 1
-set EnableLcmaps = 1
-
-if named standalone
-set HttpPort = 1094
-xrd.port $(HttpPort)
-fi
-
-all.role server
-cms.allow host *
-
-# Logging verbosity                                                                                                                                         
-xrootd.trace emsg login stall redirect
-ofs.trace -all
-xrd.trace conn
-cms.trace all
-
-xrd.network keepalive kaparms 10m,1m,5
-xrd.timeout idle 60m
-"""
-
 
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
@@ -92,9 +70,6 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                     XROOTD_CFG_TEXT,
                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
                     chmod=0o644)
-        files.write('/etc/xrootd/config.d/40-osg-standalone.cfg', XROOTD_STANDALONE_TXT,
-                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
-                    chmod=0o644)
         files.write(core.config['xrootd.tpc.basic-config'],
                     XROOTD_TPC_TXT +
                     (XROOTD_MACAROON_TXT if "GSI" in core.config['xrootd.security'] else ""),
@@ -102,7 +77,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                     chmod=0o644)
 
         core.state['xrootd.tpc.backups-exist'] = True
- 
+
     def test_02_create_macaroons(self):
         self.skip_ok_unless("GSI" in core.config['xrootd.security'],
                             "Our macaroons tests use GSI")

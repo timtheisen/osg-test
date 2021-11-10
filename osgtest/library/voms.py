@@ -1,6 +1,7 @@
+import pwd
 import os
 import shutil
-import socket
+import tempfile
 
 import cagen
 from osgtest.library import core
@@ -9,6 +10,8 @@ from osgtest.library import mysql
 from osgtest.library import osgunittest
 
 
+VONAME = "osgtestvo"
+VOPORT = 15151
 
 def _get_sqlloc():
     # Find full path to libvomsmysql.so
@@ -35,7 +38,7 @@ def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc
 
     command = ['/usr/share/voms/voms_install_db',
                '--voms-vo=' + vo,
-               '--port=15151',
+               '--port=' + str(VOPORT),
                '--db-type=mysql',
                '--db-admin=root',
                '--voms-name=' + dbusername,
@@ -51,7 +54,7 @@ def create_vo(vo, dbusername='voms_osgtest', dbpassword='secret', vomscert='/etc
 def advertise_lsc(vo, hostcert='/etc/grid-security/hostcert.pem'):
     """Create the VO directory and .lsc file under /etc/grid-security/vomsdir for the given VO"""
     host_dn, host_issuer = cagen.certificate_info(hostcert)
-    hostname = socket.getfqdn()
+    hostname = core.get_hostname()
     lsc_dir = os.path.join('/etc/grid-security/vomsdir', vo)
     if not os.path.isdir(lsc_dir):
         os.makedirs(lsc_dir)
@@ -64,10 +67,10 @@ def advertise_vomses(vo, hostcert='/etc/grid-security/hostcert.pem'):
     Caller is responsible for preserving and restoring /etc/vomses.
     """
     host_dn, _ = cagen.certificate_info(hostcert)
-    hostname = socket.getfqdn()
+    hostname = core.get_hostname()
     vomses_path = '/etc/vomses'
     contents = ('"%s" "%s" "%d" "%s" "%s"\n' %
-                (vo, hostname, 15151, host_dn, vo))
+                (vo, hostname, VOPORT, host_dn, vo))
     files.write(vomses_path, contents, backup=False, chmod=0o644)
 
 
@@ -114,7 +117,59 @@ def destroy_voms_conf(vo):
     shutil.rmtree(vodir, ignore_errors=True)
 
 
-def is_installed():
+def proxy_direct(username=None, password=None,
+                 cert_path=None, key_path=None,
+                 fqan=f'/{VONAME}/Role=NULL/Capability=NULL'):
+    f"""Generate a user proxy and directly sign VOMS attributes using the test VOMS cert and key
+    - username: owner of the generated proxy file (default osg-test username)
+    - password: proxy password (default: osg-test password)
+    - cert_path: path to the user certificate (default: ~username/.globus/usercert.pem)
+    - key_path: path to the user key (default: ~username/.globus/userkey.pem)
+    - fqan: VOMS attribute (default: /{VONAME}/Role=NULL/Capability=NULL)
+    """
+    if username:
+        user = pwd.getpwnam(username)
+        uid = user.pw_uid
+        gid = user.pw_gid
+    else:
+        username = core.options.username
+        uid = core.state['user.uid']
+        gid = core.state['user.gid']
+
+    if not password:
+        password = core.options.password
+    if not password.endswith('\n'):
+        password = password + '\n'
+    if not cert_path:
+        cert_path = os.path.join(os.path.expanduser(f'~{username}'), '.globus/usercert.pem')
+    if not key_path:
+        key_path = os.path.join(os.path.expanduser(f'~{username}'), '.globus/userkey.pem')
+
+    # voms-proxy-direct requires that the user cert/key are owned by the user running the command
+    filemap = dict()
+    for src in (cert_path, key_path):
+        dest = tempfile.NamedTemporaryFile()
+        filemap[src] = dest
+        shutil.copy2(src, dest.name)
+
+    proxy_path = f'/tmp/x509up_u{core.state["user.uid"]}'
+    command = ('voms-proxy-direct',
+               '-rfc',
+               '-debug',
+               '-bits', '2048',
+               '-voms', VONAME,
+               '-uri', f'{core.get_hostname()}:{VOPORT}',
+               '-fqan', fqan,
+               '-cert', filemap[cert_path].name,
+               '-key', filemap[key_path].name,
+               '-hostcert', core.config['certs.hostcert'],
+               '-hostkey', core.config['certs.hostkey'],
+               '-out', proxy_path)
+    core.check_system(command, 'Run voms-proxy-direct', stdin=password)
+    os.chown(proxy_path, uid, gid)
+
+
+def server_is_installed():
     """Return True if the dependencies for setting up and using VOMS are installed.
     EL7 requires a minimum version of the voms-server package to get the service file fix from SOFTWARE-2357.
     """
@@ -125,7 +180,21 @@ def is_installed():
     return True
 
 
-def skip_ok_unless_installed():
+def skip_ok_unless_server_is_installed():
     """OkSkip if the dependencies for setting up and using VOMS are not installed."""
-    if not is_installed():
+    if not server_is_installed():
         raise osgunittest.OkSkipException('VOMS server requirements not installed')
+
+
+def can_make_proxy():
+    """Return True if the packages necessary for making a proxy are installed.
+    This is either voms-clients-cpp (which provides voms-proxy-direct),
+    or voms-server + dependencies + any voms client.
+    """
+    return core.dependency_is_installed("voms-clients-cpp") or server_is_installed()
+
+
+def skip_ok_unless_can_make_proxy():
+    """OkSkip if the dependencies for creating VOMS proxies are not installed."""
+    if not can_make_proxy():
+        raise osgunittest.OkSkipException('Required packages for creating VOMS proxies not installed')
