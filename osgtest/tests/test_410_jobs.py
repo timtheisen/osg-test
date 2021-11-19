@@ -79,4 +79,10 @@ class TestRunJobs(osgunittest.OSGTestCase):
         else:
             core.log_message('condor WRITE token not found; skipping SCITOKENS auth')
 
-        self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')
+        if core.osg_release() == "3.6" and \
+           core.PackageVersion('condor') >= '9.0.0' and \
+           core.PackageVersion('condor') < '9.0.8':
+            with core.no_x509(core.options.username):
+                self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')
+        else:
+            self.run_job_in_tmp_dir(command, 'condor_ce_run a Condor job')
