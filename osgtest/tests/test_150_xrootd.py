@@ -104,7 +104,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
             core.config['xrootd.security'].add("GSI")
-        if core.dependency_is_installed("xrootd-scitokens"):
+        if core.PackageVersion("xrootd-scitokens") >= "5":
             core.config['xrootd.security'].add("SCITOKENS")
         if voms.can_make_proxy():
             core.config['xrootd.security'].add("VOMS")
