@@ -24,7 +24,7 @@ class TestStopXrootd(osgunittest.OSGTestCase):
         if core.state['xrootd.backups-exist']:
             files.restore(core.config['xrootd.config'], "xrootd")
             files.restore(core.config['xrootd.logging-config'], "xrootd")
-            files.restore('/etc/xrootd/Authfile', "xrootd")
+            files.restore(core.config['xrootd.authfile'], "xrootd")
             files.restore(xrootd.logfile("standalone"), "xrootd", ignore_missing=True)
             if "SCITOKENS" in core.config['xrootd.security']:
                 files.restore('/etc/xrootd/scitokens.conf', "xrootd")
