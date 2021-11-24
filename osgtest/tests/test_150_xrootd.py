@@ -30,7 +30,7 @@ set resourcename = OSG_TEST_XROOTD_STANDALONE
 STANDALONE_XROOTD_FOR_3_5_CFG_TEXT = """
 xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
 xrd.tlsca noverify
-acc.authdb /etc/xrootd/Authfile
+acc.authdb /etc/xrootd/auth_file
 ofs.authorize
 xrootd.seclib /usr/lib64/libXrdSec.so
 """
@@ -68,6 +68,7 @@ map_subject = true
 
 
 class TestStartXrootd(osgunittest.OSGTestCase):
+    authfile = "/etc/xrootd/Authfile"
 
     def setUp(self):
         core.skip_ok_unless_installed("xrootd", "osg-xrootd-standalone", by_dependency=True)
@@ -95,9 +96,11 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         xrootd_user = pwd.getpwnam("xrootd")
 
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
+        TestStartXrootd.authfile = '/etc/xrootd/Authfile'
 
         if core.osg_release() < '3.6':
             xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
+            TestStartXrootd.authfile = '/etc/xrootd/auth_file'
 
         if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
             core.config['xrootd.security'].add("GSI")
@@ -114,8 +117,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         files.write(core.config['xrootd.logging-config'], XROOTD_LOGGING_CFG_TEXT, owner='xrootd', backup=True, chmod=0o644)
         files.write(core.config['xrootd.config'], xrootd_config, owner='xrootd', backup=True, chmod=0o644)
 
-        authfile = '/etc/xrootd/Authfile'
-        files.write(authfile, AUTHFILE_TEXT, owner="xrootd", chown=(xrootd_user.pw_uid, xrootd_user.pw_gid), chmod=0o644)
+        files.write(TestStartXrootd.authfile, AUTHFILE_TEXT, owner="xrootd", chown=(xrootd_user.pw_uid, xrootd_user.pw_gid), chmod=0o644)
         try:
             shutil.rmtree(xrootd.ROOTDIR)
         except FileNotFoundError:
@@ -237,8 +239,8 @@ class TestStartXrootd(osgunittest.OSGTestCase):
                                rf"^[ ]*oss\.localroot[ ]+{xrootd.ROOTDIR}[ ]*$",
                                f"'oss.localroot {xrootd.ROOTDIR}' not found")
         self.assertRegexInList(xrootd_config,
-                               r"^[ ]*acc\.authdb[ ]+/etc/xrootd/Authfile[ ]*$",
-                               "'acc.authdb /etc/xrootd/Authfile' not found")
+                               rf"^[ ]*acc\.authdb[ ]+{TestStartXrootd.authfile}[ ]*$",
+                               f"'acc.authdb {TestStartXrootd.authfile}' not found")
         self.assertRegexInList(xrootd_config,
                                r"^[ ]*ofs\.authorize[ ]*$",
                                "'ofs.authorize' not found")
