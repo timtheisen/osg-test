@@ -47,6 +47,8 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
                    "-H", f"Source: {source_url}",
                    "-H", "Overwrite: T",
         ]
+        # We're contacting the destination which means we need to auth to the
+        # destination and give it the token to auth to the source 
         if dest_token:
             command.extend(["-H", f"Authorization: Bearer {dest_token}"])
         if source_token:
