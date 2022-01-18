@@ -93,8 +93,6 @@ class TestStashCache(OSGTestCase):
 
     def test_05_stashcp(self):
         command = ["stashcp", "-d"]
-        if core.PackageVersion('stashcache-client') < '5.1.0-5':
-            command.append("--cache=root://localhost")
         name, contents = self.testfiles[3]
         path = os.path.join(getcfg("OriginExport"), name)
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
