@@ -93,6 +93,10 @@ class TestStashCache(OSGTestCase):
 
     def test_05_stashcp(self):
         command = ["stashcp", "-d"]
+        if core.rpm_is_installed("stashcp"):
+            # stashcp (the Go version) doesn't use caches.json so specify the cache on the command line
+            # (it also doesn't use root://)
+            command.append("--cache=http://localhost:%d" % getcfg("CacheHTTPPort"))
         name, contents = self.testfiles[3]
         path = os.path.join(getcfg("OriginExport"), name)
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
