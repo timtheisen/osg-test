@@ -12,20 +12,13 @@ def output_is_acceptable(fetch_crl_output):
     a few transient ones.
     """
     error_message_whitelist = [
+        r'^VERBOSE\(0\)',
         'CRL has lastUpdate time in the future',
         'CRL has nextUpdate time in the past',
-        # VERBOSE(0) BrGrid/0: downloaded CRL lastUpdate could not be derived
-        'CRL lastUpdate could not be derived',
         # ERROR CRL verification failed for BrGrid/0 (BrGrid)
         'CRL verification failed for',
-        # VERBOSE(0) BrGrid/0: 0
-        r': \d+$',
-        # VERBOSE(0) Download error http://lacgridca.ic.uff.br/crl/cacrl.crl: timed out after 120s
-        'Download error',
         # ERROR verify called on empty data blob
         'verify called on empty data blob',
-        # VERBOSE(0) SDG-G2/0: CRL signature failed
-        'CRL signature failed',
         # LWP::Protocol::http::Socket: connect: No route to host at /usr/share/perl5/LWP/Protocol/http.pm line 51.
         'LWP::Protocol::http::Socket',
     ]
