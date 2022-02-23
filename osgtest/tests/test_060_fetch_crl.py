@@ -28,6 +28,10 @@ def output_is_acceptable(fetch_crl_output):
         'CRL signature failed',
         # LWP::Protocol::http::Socket: connect: No route to host at /usr/share/perl5/LWP/Protocol/http.pm line 51.
         'LWP::Protocol::http::Socket',
+        # VERBOSE(0) DigitalTrustIGTFCA/0: downloaded CRL lastUpdate predates installed CRL,
+        'downloaded CRL lastUpdate predates installed CRL',
+        # VERBOSE(0) DigitalTrustIGTFCA/0: and current version has sane timestamp
+        'and current version has sane timestamp',
     ]
 
     all_lines_ok = True
