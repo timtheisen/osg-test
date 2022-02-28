@@ -55,10 +55,7 @@ class TestInstall(osgunittest.OSGTestCase):
             retry_fail, _, stdout, _ = yum.retry_command(command)
             if retry_fail == '':   # the command succeeded
                 core.state['install.transaction_ids'].add(yum.get_transaction_id())
-                if not pkg.startswith("/"):
-                    # ^^ rpm --verify doesn't work if you asked for a file instead of a package
-                    command = ('rpm', '--verify', pkg)
-                    core.check_system(command, 'Verify %s' % (pkg))
+                verify_dependency(pkg)
                 yum.parse_output_for_packages(stdout)
 
             fail_msg += retry_fail
@@ -110,3 +107,18 @@ class TestInstall(osgunittest.OSGTestCase):
             self.fail(fail_msg)
         else:
             core.state['install.transaction_ids'].add(yum.get_transaction_id())
+
+
+def verify_dependency(dep):
+    """Assert that at least one installed rpm provides the given virtual
+    dependency, and verify the first rpm that does."""
+
+    rpms = core.dependency_installed_rpms(dep)
+
+    assert rpms, "Dependency '%s' not installed" % dep
+
+    pkg = rpms[0]
+
+    command = ('rpm', '--verify', pkg)
+    core.check_system(command, 'Verify %s' % pkg)
+

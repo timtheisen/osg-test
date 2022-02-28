@@ -339,9 +339,17 @@ def dependency_is_installed(a_dependency):
     Distinct from rpm_is_installed in that this handles virtual dependencies,
     such as 'grid-certificates'.
     """
+    return bool(dependency_installed_rpms(a_dependency))
+
+
+def dependency_installed_rpms(a_dependency):
+    """Returns a list of installed rpms satisfying a virtual dependency.
+    """
     status, stdout, stderr = system(('rpm', '--query', '--whatprovides', a_dependency),
                                     log_output=False, quiet=True)
-    return (status == 0) and not stdout.startswith('no package provides')
+    return (stdout.splitlines()
+            if (status == 0) and not stdout.startswith('no package provides')
+            else [])
 
 
 def installed_rpms():
