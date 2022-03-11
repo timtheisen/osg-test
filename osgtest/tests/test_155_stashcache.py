@@ -76,6 +76,7 @@ else if named stash-origin
     set resourcename = $(OriginResourcename)
     set originexport = $(OriginExport)
 fi
+{maybe_enable_voms}
 """
 
 CACHE_AUTHFILE_PATH = PARAMS["StashCacheAuthfile"]
@@ -181,10 +182,15 @@ class TestStartStashCache(OSGTestCase):
             files.replace_regexpr(path, regexp, "", owner=NAMESPACE)
             filelist.append(path)
 
+        maybe_enable_voms = ""
+        if core.rpm_is_installed("osg-xrootd"):
+            if core.PackageVersion("osg-xrootd") >= "3.6-16":
+                maybe_enable_voms = "set EnableVoms = 1"
+
         # Write our new files
         for path, contents in [
             (PARAMS_CFG_PATH, PARAMS_CFG_CONTENTS),
-            (PRE_CFG_PATH, PRE_CFG_CONTENTS),
+            (PRE_CFG_PATH, PRE_CFG_CONTENTS.format(**locals())),
             (ORIGIN_AUTHFILE_PATH, ORIGIN_AUTHFILE_CONTENTS),
             (ORIGIN_PUBLIC_AUTHFILE_PATH, ORIGIN_PUBLIC_AUTHFILE_CONTENTS),
             (CACHE_AUTHFILE_PATH, CACHE_AUTHFILE_CONTENTS),
