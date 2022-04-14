@@ -1,6 +1,6 @@
 Summary:   Tests an OSG Software installation
 Name:      osg-test
-Version:   3.2.0
+Version:   3.2.1
 Release:   1%{?dist}
 License:   Apache License, 2.0
 Group:     Applications/Grid
@@ -45,6 +45,9 @@ make install DESTDIR=$RPM_BUILD_ROOT PYTHON=%{__python}
 %{_sbindir}/%{name}-log-viewer
 
 %changelog
+* Thu Apr 14 2022 Carl Edquist <edquist@cs.wisc.edu> - 3.2.1-1
+- Allow condor-blahp rpm to be used in place of blahp (SOFTWARE-4964)
+
 * Mon Aug 23 2021 Matyas Selmeci <matyas@cs.wisc.edu> - 3.2.0-1
 - Use Python 3 on EL7 too
 
