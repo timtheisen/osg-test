@@ -42,7 +42,8 @@ class TestRunJobs(osgunittest.OSGTestCase):
         shutil.rmtree(tmp_dir)
 
     def test_01_condor_run_pbs(self):
-        core.skip_ok_unless_installed('condor', 'blahp')
+        core.skip_ok_unless_installed('condor')
+        core.skip_ok_unless_installed('blahp', by_dependency=True)
         core.skip_ok_unless_installed('torque-mom', 'torque-server', 'torque-scheduler', by_dependency=True)
         self.skip_bad_unless(core.state['jobs.env-set'], 'job environment not set')
         self.skip_bad_unless(service.is_running('condor'), 'condor not running')
@@ -54,7 +55,10 @@ class TestRunJobs(osgunittest.OSGTestCase):
         # Figure out whether the installed BLAHP package is the same as or later
         # than "blahp-1.18.11.bosco-4.osg*" (in the RPM sense), because it's the
         # first build in which the job environments are correctly passed to PBS.
-        blahp_pbs_has_env_vars = core.PackageVersion('blahp') >= '1.18.11.bosco-4.osg'
+        # The 'condor-blahp' rpm obsoletes 'blahp' in 9.5.0 (SOFTWARE-4964)
+        blahp_pbs_has_env_vars = (
+            core.rpm_is_installed('condor-blahp') or
+            core.PackageVersion('blahp') >= '1.18.11.bosco-4.osg')
 
         self.run_job_in_tmp_dir(command, 'condor_run a Condor job', verify_environment=blahp_pbs_has_env_vars)
 
