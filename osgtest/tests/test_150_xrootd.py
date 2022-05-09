@@ -126,67 +126,6 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.backups-exist'] = True
         core.state['xrootd.is-configured'] = True
 
-    # Make sure the directories are set up correctly and that the xrootd user
-    # can access everything it's supposed to be able to.
-    # TODO: Remove before merging into master
-    def test_02_xrootd_user_file_access(self):
-        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
-        public_subdir = core.config['xrootd.public_subdir']
-        xrootd_user = pwd.getpwnam("xrootd")
-        # Verify xrootd user permissions
-        testfile1 = os.path.join(xrootd.ROOTDIR, "plain_copy_xrootd_rootdir")
-        testfile2 = os.path.join(xrootd.ROOTDIR, public_subdir, "plain_copy_xrootd_public")
-        # Set GID first: if I set UID first I won't have permissions to set GID
-        os.setegid(xrootd_user.pw_gid)
-        try:
-            os.seteuid(xrootd_user.pw_uid)
-            try:
-                try:
-                    with open(testfile1, "w") as fh:
-                        fh.write("hello")
-                except OSError as err:
-                    self.fail(f"xrootd user cannot access {testfile1}: {err}")
-                try:
-                    with open(testfile2, "w") as fh:
-                        fh.write("world")
-                except OSError as err:
-                    self.fail(f"xrootd user cannot access {testfile2}: {err}")
-            finally:
-                os.seteuid(os.getuid())
-        finally:
-            os.setegid(os.getgid())
-
-    # Make sure the directories are set up correctly and that the test user
-    # can access everything it's supposed to be able to.
-    # TODO: Remove before merging into master
-    def test_03_test_user_file_access(self):
-        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
-        username = core.options.username
-        public_subdir = core.config['xrootd.public_subdir']
-        user_subdir = core.config['xrootd.user_subdir']
-        # Verify unpriv user permissions
-        testfile3 = os.path.join(xrootd.ROOTDIR, user_subdir, "plain_copy_testuser_user")
-        testfile4 = os.path.join(xrootd.ROOTDIR, public_subdir, "plain_copy_testuser_public")
-        # Set GID first: if I set UID first I won't have permissions to set GID
-        os.setegid(core.state['user.gid'])
-        try:
-            os.seteuid(core.state['user.uid'])
-            try:
-                try:
-                    with open(testfile3, "w") as fh:
-                        fh.write("hello")
-                except OSError as err:
-                    self.fail(f"{username} user cannot access {testfile3}: {err}")
-                try:
-                    with open(testfile4, "w") as fh:
-                        fh.write("world")
-                except OSError as err:
-                    self.fail(f"{username} user cannot access {testfile4}: {err}")
-            finally:
-                os.seteuid(os.getuid())
-        finally:
-            os.setegid(os.getgid())
-
     def test_05_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
         xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
