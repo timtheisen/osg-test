@@ -4,54 +4,41 @@ import osgtest.library.core as core
 import osgtest.library.files as files
 import osgtest.library.service as service
 import osgtest.library.osgunittest as osgunittest
+import osgtest.library.xrootd as xrootd
 
 
 HTTP_PORT1 = 9001  # chosen so it doesn't conflict w/ the stashcache instances
 HTTP_PORT2 = 9002
 
-XROOTD_CFG_TEXT = """\
+XROOTD_CFG_TEXT = f"""\
 all.adminpath /var/spool/xrootd
 all.pidpath /var/run/xrootd
 set resourcename = VDTTEST
-set rootdir = /
+set rootdir = {xrootd.ROOTDIR}
 continue /etc/xrootd/config.d/
 """
 
 
-XROOTD_MACAROON_TXT = """\
+XROOTD_TPC_TXT = f"""
 if named third-party-copy-1
-set HttpPort = 9001
-macaroons.secretkey /etc/xrootd/macaroon-secret-1
-xrd.port 9001
+  set HttpPort = {HTTP_PORT1}
+  xrd.port {HTTP_PORT1}
 fi
 if named third-party-copy-2
-set HttpPort = 9002
-macaroons.secretkey /etc/xrootd/macaroon-secret-2
-xrd.port 9002
+  set HttpPort = {HTTP_PORT2}
+  xrd.port {HTTP_PORT2}
 fi
 """
 
-XROOTD_STANDALONE_TXT = """\
-set EnableHttp = 1
-set EnableLcmaps = 1
-
-if named standalone
-set HttpPort = 1094
-xrd.port $(HttpPort)
+XROOTD_MACAROON_TXT = """
+if named third-party-copy-1
+  macaroons.secretkey /etc/xrootd/macaroon-secret-1
 fi
-
-all.role server
-cms.allow host *
-
-# Logging verbosity                                                                                                                                         
-xrootd.trace emsg login stall redirect
-ofs.trace -all
-xrd.trace conn
-cms.trace all
-
-xrd.network keepalive kaparms 10m,1m,5
-xrd.timeout idle 60m
+if named third-party-copy-2
+  macaroons.secretkey /etc/xrootd/macaroon-secret-2
+fi
 """
+
 
 class TestStartXrootdTPC(osgunittest.OSGTestCase):
     @core.elrelease(7,8)
@@ -60,6 +47,7 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
                                       by_dependency=True)
         if core.rpm_is_installed("xcache"):
             self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2", "xcache 1.0.2+ configs conflict with xrootd tests")
+        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
 
     def test_01_configure_xrootd(self):
         core.config['xrootd.tpc.config-1'] = '/etc/xrootd/xrootd-third-party-copy-1.cfg'
@@ -68,27 +56,31 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.state['xrootd.started-http-server-1'] = False
         core.state['xrootd.started-http-server-2'] = False
         core.state['xrootd.tpc.backups-exist'] = False
+        core.state['xrootd.tpc.had-failures'] = False
 
         self.skip_ok_unless(core.options.adduser, 'user not created')
-        core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
 
         user = pwd.getpwnam("xrootd")
 
         files.write(core.config['xrootd.tpc.config-1'],
-                     XROOTD_CFG_TEXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    XROOTD_CFG_TEXT,
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
         files.write(core.config['xrootd.tpc.config-2'],
-                     XROOTD_CFG_TEXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
-        files.write('/etc/xrootd/config.d/40-osg-standalone.cfg', XROOTD_STANDALONE_TXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    XROOTD_CFG_TEXT,
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
         files.write(core.config['xrootd.tpc.basic-config'],
-                     XROOTD_MACAROON_TXT,
-                     owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid))
+                    XROOTD_TPC_TXT +
+                    (XROOTD_MACAROON_TXT if "GSI" in core.config['xrootd.security'] else ""),
+                    owner='xrootd', backup=True, chown=(user.pw_uid, user.pw_gid),
+                    chmod=0o644)
 
         core.state['xrootd.tpc.backups-exist'] = True
- 
-    def test_02_create_secrets(self):
+
+    def test_02_create_macaroons(self):
+        self.skip_ok_unless("GSI" in core.config['xrootd.security'],
+                            "Our macaroons tests use GSI")
         core.config['xrootd.tpc.macaroon-secret-1'] = '/etc/xrootd/macaroon-secret-1'
         core.config['xrootd.tpc.macaroon-secret-2'] = '/etc/xrootd/macaroon-secret-2'
         core.check_system(["openssl", "rand", "-base64", "-out",
@@ -96,13 +88,16 @@ class TestStartXrootdTPC(osgunittest.OSGTestCase):
         core.check_system(["openssl", "rand", "-base64", "-out",
                                core.config['xrootd.tpc.macaroon-secret-2'], "64"], "Creating symmetric key")
 
-    def test_03_start_xrootd(self):
+    def test_03_start_xrootd_tpc(self):
         if core.rpm_is_installed("xrootd-multiuser"):
             core.config['xrootd_tpc_service_1'] = "xrootd-privileged@third-party-copy-1"
             core.config['xrootd_tpc_service_2'] = "xrootd-privileged@third-party-copy-2"
         else:
             core.config['xrootd_tpc_service_1'] = "xrootd@third-party-copy-1"
             core.config['xrootd_tpc_service_2'] = "xrootd@third-party-copy-2"
+        if core.options.manualrun:
+            files.preserve_and_remove(xrootd.logfile("third-party-copy-1"), owner="xrootd")
+            files.preserve_and_remove(xrootd.logfile("third-party-copy-2"), owner="xrootd")
         service.check_start(core.config['xrootd_tpc_service_1'], min_up_time = 5)
         service.check_start(core.config['xrootd_tpc_service_2'], min_up_time = 5)
         core.state['xrootd.started-http-server-1'] = True

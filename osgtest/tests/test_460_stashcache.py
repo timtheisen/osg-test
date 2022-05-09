@@ -93,8 +93,10 @@ class TestStashCache(OSGTestCase):
 
     def test_05_stashcp(self):
         command = ["stashcp", "-d"]
-        if core.PackageVersion('stashcache-client') < '5.1.0-5':
-            command.append("--cache=root://localhost")
+        if core.rpm_is_installed("stashcp"):
+            # stashcp (the Go version) doesn't use caches.json so specify the cache on the command line
+            # (it also doesn't use root://)
+            command.append("--cache=http://localhost:%d" % getcfg("CacheHTTPPort"))
         name, contents = self.testfiles[3]
         path = os.path.join(getcfg("OriginExport"), name)
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
@@ -105,6 +107,7 @@ class TestStashCache(OSGTestCase):
         self.assertCached(name, contents)
 
     def test_06_xrootd_fetch_from_origin_auth(self):
+        # TODO This should work with voms certs too
         core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
         self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
         name, contents = self.testfiles[0]
@@ -120,6 +123,7 @@ class TestStashCache(OSGTestCase):
         self.assert_(checksum_match, 'Origin and directly downloaded file have the same contents')
 
     def test_07_xrootd_fetch_from_auth_cache(self):
+        # TODO This should work with voms certs too
         core.skip_ok_unless_installed('globus-proxy-utils', by_dependency=True)
         self.skip_bad_unless(core.state['proxy.valid'], 'requires a proxy cert')
         name, contents = self.testfiles[2]
@@ -135,6 +139,7 @@ class TestStashCache(OSGTestCase):
         self.assert_(checksum_match, 'Origin and file downloaded via cache have the same contents')
 
     def test_08_https_fetch_from_auth_cache(self):
+        # TODO This should work with voms certs too
         core.skip_ok_unless_installed('globus-proxy-utils', 'gfal2-plugin-http', 'gfal2-util-scripts',
                                       'gfal2-plugin-file', by_dependency=True)
         core.skip_ok_unless_one_installed('python2-gfal2-util', 'python3-gfal2-util')
