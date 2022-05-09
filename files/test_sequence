@@ -4,7 +4,6 @@ test_060_fetch_crl
 test_070_munge
 test_090_jobs
 test_100_condor
-test_130_gridftp
 test_140_lcmaps
 test_150_xrootd
 test_155_stashcache
@@ -22,8 +21,6 @@ test_401_scitokens
 test_403_myproxy
 test_407_voms
 test_410_jobs
-test_420_gridftp
-test_430_uberftp
 test_450_xrootd
 test_460_stashcache
 test_465_xrootd_tpc
@@ -40,7 +37,6 @@ test_835_stashcache
 test_838_xrootd_tpc
 test_840_xrootd
 test_850_lcmaps
-test_860_gridftp
 test_890_condor
 test_910_pbs
 test_920_gsiopenssh
