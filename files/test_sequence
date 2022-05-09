@@ -13,7 +13,6 @@ test_190_condorce
 test_200_voms
 test_290_slurm
 test_380_cvmfs
-test_400_proxy
 test_401_scitokens
 test_407_voms
 test_410_jobs
@@ -34,5 +33,4 @@ test_890_condor
 test_910_pbs
 test_940_munge
 test_950_mysqld
-test_960_proxy
 test_970_java
