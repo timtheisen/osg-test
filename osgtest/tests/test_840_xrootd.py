@@ -10,9 +10,7 @@ import osgtest.library.xrootd as xrootd
 
 class TestStopXrootd(osgunittest.OSGTestCase):
     def setUp(self):
-        if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
-                            "xcache 1.0.2+ configs conflict with xrootd tests")
+        self.skip_ok_if(core.rpm_is_installed("xcache"), "xcache configs conflict with xrootd tests")
         core.skip_ok_unless_installed("xrootd", "osg-xrootd-standalone", by_dependency=True)
 
     def test_01_dump_logs_if_failures(self):

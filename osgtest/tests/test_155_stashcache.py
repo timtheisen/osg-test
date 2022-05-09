@@ -141,16 +141,10 @@ class TestStartStashCache(OSGTestCase):
                                       "stash-cache",
                                       "stashcache-client",
                                       by_dependency=True)
-        if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") < "1.0.2", "needs xcache 1.0.2+")
 
     def test_01_configure(self):
-        if core.PackageVersion('stash-cache') >= '1.1.0':
-            caching_plugin_cfg_path = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
-            http_cfg_path = "/etc/xrootd/config.d/50-osg-http.cfg"
-        else:
-            caching_plugin_cfg_path = "/etc/xrootd/config.d/40-osg-caching-plugin.cfg"
-            http_cfg_path = "/etc/xrootd/config.d/40-osg-http.cfg"
+        caching_plugin_cfg_path = "/etc/xrootd/config.d/40-stash-cache-plugin.cfg"
+        http_cfg_path = "/etc/xrootd/config.d/50-osg-http.cfg"
 
         for key, val in PARAMS.items():
             setcfg(key, val)

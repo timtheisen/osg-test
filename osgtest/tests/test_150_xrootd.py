@@ -27,13 +27,6 @@ STANDALONE_XROOTD_CFG_TEXT = f"""\
 set rootdir = {xrootd.ROOTDIR}
 set resourcename = OSG_TEST_XROOTD_STANDALONE
 """
-STANDALONE_XROOTD_FOR_3_5_CFG_TEXT = """
-xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
-xrd.tlsca noverify
-acc.authdb /etc/xrootd/auth_file
-ofs.authorize
-xrootd.seclib /usr/lib64/libXrdSec.so
-"""
 
 # Authfile syntax is described in https://xrootd.slac.stanford.edu/doc/dev50/sec_config.htm#_Toc64492263
 # Privileges used are "a" (all) and "rl" (read only).
@@ -70,9 +63,7 @@ map_subject = true
 class TestStartXrootd(osgunittest.OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed("xrootd", "osg-xrootd-standalone", by_dependency=True)
-        if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
-                            "xcache 1.0.2+ configs conflict with xrootd tests")
+        self.skip_ok_if(core.rpm_is_installed("xcache"), "xcache configs conflict with xrootd tests")
 
     def test_01_configure_xrootd(self):
         core.state['xrootd.is-configured'] = False
@@ -96,11 +87,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
-        if core.osg_release() < '3.6':
-            xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
-            core.config['xrootd.authfile'] = '/etc/xrootd/auth_file'
-
-        if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
+        if core.dependency_is_installed("voms-clients"):
             core.config['xrootd.security'].add("GSI")
         if core.PackageVersion("xrootd-scitokens") >= "5":
             core.config['xrootd.security'].add("SCITOKENS")
@@ -200,19 +187,10 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         finally:
             os.setegid(os.getgid())
 
-    @core.osgrelease(3.5)
-    def test_04_configure_hdfs(self):
-        core.skip_ok_unless_installed('xrootd-hdfs')
-        hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so\n"
-        files.append(core.config['xrootd.config'], hdfs_config, backup=False)
-
     def test_05_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
-        if core.PackageVersion("xrootd-multiuser") < "1.0.0-0":
-            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default\n"
-        else:
-            xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
-                                    "ofs.ckslib ++ libXrdMultiuser.so\n"
+        xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
+                                "ofs.ckslib ++ libXrdMultiuser.so\n"
         if os.path.exists("/etc/xrootd/config.d/60-osg-multiuser.cfg"):
             core.log_message("Not adding XRootD multiuser config, already exists")
         else:
