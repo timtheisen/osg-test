@@ -4,7 +4,6 @@ test_060_fetch_crl
 test_070_munge
 test_090_jobs
 test_100_condor
-test_140_lcmaps
 test_150_xrootd
 test_155_stashcache
 test_158_xrootd_tpc
@@ -36,7 +35,6 @@ test_820_cvmfs
 test_835_stashcache
 test_838_xrootd_tpc
 test_840_xrootd
-test_850_lcmaps
 test_890_condor
 test_910_pbs
 test_920_gsiopenssh
