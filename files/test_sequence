@@ -11,7 +11,6 @@ test_170_pbs
 test_180_cvmfs
 test_190_condorce
 test_200_voms
-test_220_myproxy
 test_280_gsiopenssh
 test_290_slurm
 test_380_cvmfs
