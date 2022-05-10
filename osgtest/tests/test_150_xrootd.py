@@ -27,13 +27,6 @@ STANDALONE_XROOTD_CFG_TEXT = f"""\
 set rootdir = {xrootd.ROOTDIR}
 set resourcename = OSG_TEST_XROOTD_STANDALONE
 """
-STANDALONE_XROOTD_FOR_3_5_CFG_TEXT = """
-xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
-xrd.tlsca noverify
-acc.authdb /etc/xrootd/auth_file
-ofs.authorize
-xrootd.seclib /usr/lib64/libXrdSec.so
-"""
 
 # Authfile syntax is described in https://xrootd.slac.stanford.edu/doc/dev50/sec_config.htm#_Toc64492263
 # Privileges used are "a" (all) and "rl" (read only).
@@ -70,9 +63,7 @@ map_subject = true
 class TestStartXrootd(osgunittest.OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed("xrootd", "osg-xrootd-standalone", by_dependency=True)
-        if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") >= "1.0.2",
-                            "xcache 1.0.2+ configs conflict with xrootd tests")
+        self.skip_ok_if(core.rpm_is_installed("xcache"), "xcache configs conflict with xrootd tests")
 
     def test_01_configure_xrootd(self):
         core.state['xrootd.is-configured'] = False
@@ -96,11 +87,7 @@ class TestStartXrootd(osgunittest.OSGTestCase):
 
         xrootd_config = STANDALONE_XROOTD_CFG_TEXT
 
-        if core.osg_release() < '3.6':
-            xrootd_config += STANDALONE_XROOTD_FOR_3_5_CFG_TEXT
-            core.config['xrootd.authfile'] = '/etc/xrootd/auth_file'
-
-        if core.dependency_is_installed("globus-proxy-utils") or core.dependency_is_installed("voms-clients"):
+        if core.dependency_is_installed("voms-clients"):
             core.config['xrootd.security'].add("GSI")
         if core.PackageVersion("xrootd-scitokens") >= "5":
             core.config['xrootd.security'].add("SCITOKENS")
@@ -139,80 +126,10 @@ class TestStartXrootd(osgunittest.OSGTestCase):
         core.state['xrootd.backups-exist'] = True
         core.state['xrootd.is-configured'] = True
 
-    # Make sure the directories are set up correctly and that the xrootd user
-    # can access everything it's supposed to be able to.
-    # TODO: Remove before merging into master
-    def test_02_xrootd_user_file_access(self):
-        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
-        public_subdir = core.config['xrootd.public_subdir']
-        xrootd_user = pwd.getpwnam("xrootd")
-        # Verify xrootd user permissions
-        testfile1 = os.path.join(xrootd.ROOTDIR, "plain_copy_xrootd_rootdir")
-        testfile2 = os.path.join(xrootd.ROOTDIR, public_subdir, "plain_copy_xrootd_public")
-        # Set GID first: if I set UID first I won't have permissions to set GID
-        os.setegid(xrootd_user.pw_gid)
-        try:
-            os.seteuid(xrootd_user.pw_uid)
-            try:
-                try:
-                    with open(testfile1, "w") as fh:
-                        fh.write("hello")
-                except OSError as err:
-                    self.fail(f"xrootd user cannot access {testfile1}: {err}")
-                try:
-                    with open(testfile2, "w") as fh:
-                        fh.write("world")
-                except OSError as err:
-                    self.fail(f"xrootd user cannot access {testfile2}: {err}")
-            finally:
-                os.seteuid(os.getuid())
-        finally:
-            os.setegid(os.getgid())
-
-    # Make sure the directories are set up correctly and that the test user
-    # can access everything it's supposed to be able to.
-    # TODO: Remove before merging into master
-    def test_03_test_user_file_access(self):
-        self.skip_ok_unless(core.state['xrootd.is-configured'], "xrootd is not configured")
-        username = core.options.username
-        public_subdir = core.config['xrootd.public_subdir']
-        user_subdir = core.config['xrootd.user_subdir']
-        # Verify unpriv user permissions
-        testfile3 = os.path.join(xrootd.ROOTDIR, user_subdir, "plain_copy_testuser_user")
-        testfile4 = os.path.join(xrootd.ROOTDIR, public_subdir, "plain_copy_testuser_public")
-        # Set GID first: if I set UID first I won't have permissions to set GID
-        os.setegid(core.state['user.gid'])
-        try:
-            os.seteuid(core.state['user.uid'])
-            try:
-                try:
-                    with open(testfile3, "w") as fh:
-                        fh.write("hello")
-                except OSError as err:
-                    self.fail(f"{username} user cannot access {testfile3}: {err}")
-                try:
-                    with open(testfile4, "w") as fh:
-                        fh.write("world")
-                except OSError as err:
-                    self.fail(f"{username} user cannot access {testfile4}: {err}")
-            finally:
-                os.seteuid(os.getuid())
-        finally:
-            os.setegid(os.getgid())
-
-    @core.osgrelease(3.5)
-    def test_04_configure_hdfs(self):
-        core.skip_ok_unless_installed('xrootd-hdfs')
-        hdfs_config = "ofs.osslib /usr/lib64/libXrdHdfs.so\n"
-        files.append(core.config['xrootd.config'], hdfs_config, backup=False)
-
     def test_05_configure_multiuser(self):
         core.skip_ok_unless_installed('xrootd-multiuser', by_dependency=True)
-        if core.PackageVersion("xrootd-multiuser") < "1.0.0-0":
-            xrootd_multiuser_conf = "xrootd.fslib libXrdMultiuser.so default\n"
-        else:
-            xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
-                                    "ofs.ckslib ++ libXrdMultiuser.so\n"
+        xrootd_multiuser_conf = "ofs.osslib ++ libXrdMultiuser.so\n" \
+                                "ofs.ckslib ++ libXrdMultiuser.so\n"
         if os.path.exists("/etc/xrootd/config.d/60-osg-multiuser.cfg"):
             core.log_message("Not adding XRootD multiuser config, already exists")
         else:

@@ -44,8 +44,6 @@ class TestStashCache(OSGTestCase):
                                       "stash-cache",
                                       "stashcache-client",
                                       by_dependency=True)
-        if core.rpm_is_installed("xcache"):
-            self.skip_ok_if(core.PackageVersion("xcache") < "1.0.2", "needs xcache 1.0.2+")
         self.skip_bad_unless_running("xrootd@stash-origin", "xrootd@stash-cache", "xrootd@stash-origin-auth",
                                      "xrootd@stash-cache-auth")
 
