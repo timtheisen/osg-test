@@ -115,6 +115,10 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
             core.system(command, user=True)
         time.sleep(1)  # wait a sec for the transfer to be completed
         self.assertTrue(os.path.exists(dest_path), "Copied file missing")
+        source_size = os.path.getsize(TestXrootdTPC.source_path)
+        dest_size = os.path.getsize(dest_path)
+        self.assertEqual(source_size, dest_size, "Copied file size (%d) does not match original (%d)" % (
+            dest_size, source_size))
         self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path, dest_path),
                         "Copied file contents do not match original")
 
@@ -143,6 +147,10 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         time.sleep(1)  # wait a sec for the transfer to be completed
 
         self.assertTrue(os.path.exists(dest_path), "Copied file missing")
+        source_size = os.path.getsize(TestXrootdTPC.source_path)
+        dest_size = os.path.getsize(dest_path)
+        self.assertEqual(source_size, dest_size, "Copied file size (%d) does not match original (%d)" % (
+            dest_size, source_size))
         self.assertTrue(files.checksum_files_match(TestXrootdTPC.source_path,
                                                    dest_path),
                         "Copied file contents do not match original")
