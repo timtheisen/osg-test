@@ -47,6 +47,9 @@ xrootd.trace all
 xrd.trace all -sched
 ofs.trace all
 http.trace all
+voms.trace all
+sec.trace all
+scitokens.trace debug
 """
 
 SCITOKENS_CONF_TEXT = f"""\
