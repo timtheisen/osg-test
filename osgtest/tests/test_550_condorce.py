@@ -19,6 +19,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
     def setUp(self):
         # Enforce SciToken or GSI auth for testing
         os.environ['_condor_SEC_CLIENT_AUTHENTICATION_METHODS'] = 'SCITOKENS, GSI'
+        os.environ['_condor_TOOL_DEBUG'] = 'D_CAT, D_SECURITY:2'
         core.skip_ok_unless_installed('condor', 'htcondor-ce')
         self.skip_bad_unless(service.is_running('condor-ce'), 'ce not running')
 
@@ -102,7 +103,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
 
     def test_03_ping(self):
         self.check_write_creds()
-        self.command += ['condor_ce_ping', 'WRITE', '-verbose']
+        self.command += ['condor_ce_ping', '-debug', 'WRITE', '-verbose']
         stdout, _, _ = core.check_system(self.command, 'ping using SCITOKENS or GSI', user=True)
         self.assertTrue(re.search(r'Authorized:\s*TRUE', stdout), 'could not authorize with SCITOKENS or GSI')
 
