@@ -145,7 +145,7 @@ def proxy_direct(username=None, password=None,
     if not key_path:
         key_path = os.path.join(os.path.expanduser(f'~{username}'), '.globus/userkey.pem')
 
-    # voms-proxy-direct requires that the user cert/key are owned by the user running the command
+    # voms-proxy-fake requires that the user cert/key are owned by the user running the command
     filemap = dict()
     for src in (cert_path, key_path):
         dest = tempfile.NamedTemporaryFile()
@@ -153,7 +153,7 @@ def proxy_direct(username=None, password=None,
         shutil.copy2(src, dest.name)
 
     proxy_path = f'/tmp/x509up_u{core.state["user.uid"]}'
-    command = ('voms-proxy-direct',
+    command = ('voms-proxy-fake',
                '-rfc',
                '-debug',
                '-bits', '2048',
@@ -165,7 +165,7 @@ def proxy_direct(username=None, password=None,
                '-hostcert', core.config['certs.hostcert'],
                '-hostkey', core.config['certs.hostkey'],
                '-out', proxy_path)
-    core.check_system(command, 'Run voms-proxy-direct', stdin=password)
+    core.check_system(command, 'Run voms-proxy-fake', stdin=password)
     os.chown(proxy_path, uid, gid)
 
 
@@ -188,7 +188,7 @@ def skip_ok_unless_server_is_installed():
 
 def can_make_proxy():
     """Return True if the packages necessary for making a proxy are installed.
-    This is either voms-clients-cpp (which provides voms-proxy-direct),
+    This is either voms-clients-cpp (which provides voms-proxy-fake),
     or voms-server + dependencies + any voms client.
     """
     return core.dependency_is_installed("voms-clients-cpp") or server_is_installed()
