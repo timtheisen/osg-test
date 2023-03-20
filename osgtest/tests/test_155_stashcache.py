@@ -135,7 +135,6 @@ def start_xrootd(instance):
 
 
 class TestStartStashCache(OSGTestCase):
-    @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("stash-origin",
                                       "stash-cache",
