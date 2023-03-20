@@ -56,7 +56,6 @@ class TestXrootdTPC(osgunittest.OSGTestCase):
         command.append(dest_url)
         return command
 
-    @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("osg-xrootd-standalone",
                                       by_dependency=True)

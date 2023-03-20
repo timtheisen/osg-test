@@ -19,7 +19,6 @@ def stop_xrootd(instance):
 
 
 class TestStopStashCache(OSGTestCase):
-    @core.elrelease(7,8)
     def setUp(self):
         core.skip_ok_unless_installed("stash-origin",
                                       "stash-cache",
