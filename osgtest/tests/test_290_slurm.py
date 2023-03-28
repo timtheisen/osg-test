@@ -42,7 +42,6 @@ StateSaveLocation=/var/spool/slurmd
 """
 
 SLURM_CGROUPS_CONFIG = """CgroupAutomount=yes
-CgroupMountpoint=/cgroup
 ConstrainCores=no
 ConstrainRAMSpace=no
 """
