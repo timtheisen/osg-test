@@ -1,5 +1,7 @@
 import os
 import shutil
+import subprocess
+
 from osgtest.library import core
 from osgtest.library import files
 from osgtest.library.osgunittest import OSGTestCase
@@ -11,6 +13,10 @@ NAMESPACE = "stashcache"
 
 def getcfg(key):
     return core.config["%s.%s" % (NAMESPACE, key)]
+
+
+def getstate(key):
+    return core.state["%s.%s" % (NAMESPACE, key)]
 
 
 def stop_xrootd(instance):
@@ -50,3 +56,12 @@ class TestStopStashCache(OSGTestCase):
         # Do the keys first, so that the directories will be empty for the certs.
         core.remove_cert('certs.xrootdkey')
         core.remove_cert('certs.xrootdcert')
+
+    def test_08_stop_namespaces_json_server(self):
+        proc = getstate("namespaces_json_server_proc")
+        if proc:
+            proc.terminate()
+            try:
+                proc.wait(5)
+            except subprocess.TimeoutExpired:
+                proc.kill()

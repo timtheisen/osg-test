@@ -96,9 +96,13 @@ class TestStashCache(OSGTestCase):
             command.append("--cache=http://localhost:%d" % getcfg("CacheHTTPPort"))
         name, contents = self.testfiles[3]
         path = os.path.join(getcfg("OriginExport"), name)
+
+        # If we have the namespaces json server running, set STASH_NAMESPACE_URL so stashcp can use it.
+        stash_namespace_url = getcfg("STASH_NAMESPACE_URL")
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
-            core.check_system(command + [path, tf.name],
-                              "Checking stashcp")
+            with core.environ_context({"STASH_NAMESPACE_URL": stash_namespace_url}):
+                core.check_system(command + [path, tf.name],
+                                  "Checking stashcp")
             result = tf.read()
         self.assertEqualVerbose(core.to_str(result), contents, "stashcp'ed file mismatch")
         self.assertCached(name, contents)

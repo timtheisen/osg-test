@@ -1,5 +1,7 @@
 import os
-import pwd
+from subprocess import Popen
+import sys
+import time
 
 from osgtest.library import core
 from osgtest.library import files
@@ -124,6 +126,10 @@ def setcfg(key, val):
     core.config["%s.%s" % (NAMESPACE, key)] = val
 
 
+def setstate(key, val):
+    core.state["%s.%s" % (NAMESPACE, key)] = val
+
+
 def start_xrootd(instance):
     svc = "xrootd@%s" % instance
     if not service.is_running(svc):
@@ -213,3 +219,19 @@ class TestStartStashCache(OSGTestCase):
 
     def test_05_start_stash_cache_auth(self):
         start_xrootd("stash-cache-auth")
+
+    def test_06_start_namespaces_json_server(self):
+        # Start the namespaces JSON server in the background
+        # Don't wait for it to finish, but keep track of the process by saving
+        # the process object in core.state.
+        setstate("namespaces_json_server_proc", None)
+        setcfg("STASH_NAMESPACE_URL", "")
+        proc = Popen([sys.executable, "-m", "namespaces_json_server"])
+
+        # Make sure it didn't immediately crash
+        time.sleep(2)
+        ret = proc.poll()
+        self.assertEqual(ret, None, f"namespaces JSON server terminated prematurely with code {ret}")
+
+        setstate("namespaces_json_server_proc", proc)
+        setcfg("STASH_NAMESPACE_URL", "http://localhost:1080")
