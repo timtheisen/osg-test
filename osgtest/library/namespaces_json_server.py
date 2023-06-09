@@ -4,7 +4,6 @@
 
 Serves a fake Topology /osdf/namespaces JSON file on any GET.
 Schema based on Topology 1.39.
-Send a POST containing the word "bye" to shut down the server
 """
 import sys
 import json
@@ -76,41 +75,13 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         self.log_request(code=HTTPStatus.OK, size=len(response))
         self.wfile.write(response)
 
-    def do_POST(self):
-        """POST handler
-
-        if given a POST with "bye" in it, shuts down the server
-        """
-        # a little overkill -- I could have shut down the server on any POST
-        # but it took long enough to figure out the Content-Length thing that
-        # I wanted to keep the code.
-        content_length = int(self.headers.get("Content-Length", 0))
-        # need to check the content length before reading, otherwise empty
-        # POST data would make us block.
-        data = b""
-        if content_length:
-            data = self.rfile.read1()
-        if b"bye" in data:
-            code = HTTPStatus.NO_CONTENT
-            self.log_request(code, size=0)
-            self.log_message("exiting")
-            self.send_response(code)
-            self.end_headers()
-            sys.exit(0)
-        else:
-            code = HTTPStatus.BAD_REQUEST
-            self.log_request(code, size=0)
-            self.log_error("bad POST")
-            self.send_response(code)
-            self.end_headers()
-
 
 def main(argv):
     server_address = (HOST, PORT)
     httpd = http.server.HTTPServer(server_address, HTTPRequestHandler)
     print(f"Server created on {HOST}:{PORT}.\n"
           "Serving namespaces JSON on any GET.\n"
-          "Send a POST containing 'bye' to exit")
+          "Send SIGTERM to exit")
     httpd.serve_forever()
 
 
