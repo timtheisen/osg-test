@@ -1,4 +1,5 @@
 import os
+import shlex
 from subprocess import Popen
 import sys
 import time
@@ -226,12 +227,17 @@ class TestStartStashCache(OSGTestCase):
         # the process object in core.state.
         setstate("namespaces_json_server_proc", None)
         setcfg("STASH_NAMESPACE_URL", "")
-        proc = Popen([sys.executable, "-m", "namespaces_json_server"])
+        q_python = shlex.quote(sys.executable)
+        logfile = "/tmp/namespaces_json.log.%d" % os.getpid()
+        setcfg("namespaces_json_server_logfile", logfile)
+        proc = Popen(f"{q_python} -m namespaces_json_server > {logfile} 2>&1", shell=True)
 
         # Make sure it didn't immediately crash
         time.sleep(2)
         ret = proc.poll()
-        self.assertEqual(ret, None, f"namespaces JSON server terminated prematurely with code {ret}")
+        if ret is not None:
+            core.system(["/bin/cat", logfile])
+            self.assertEqual(ret, None, f"namespaces JSON server terminated prematurely with code {ret}")
 
         setstate("namespaces_json_server_proc", proc)
         setcfg("STASH_NAMESPACE_URL", "http://localhost:1080")

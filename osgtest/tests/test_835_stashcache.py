@@ -65,3 +65,8 @@ class TestStopStashCache(OSGTestCase):
                 proc.wait(5)
             except subprocess.TimeoutExpired:
                 proc.kill()
+        try:
+            logfile = getcfg("namespaces_json_server_logfile")
+            os.unlink(logfile)
+        except (KeyError, OSError):
+            pass
