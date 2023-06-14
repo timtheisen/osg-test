@@ -230,7 +230,7 @@ class TestStartStashCache(OSGTestCase):
         q_python = shlex.quote(sys.executable)
         logfile = "/tmp/namespaces_json.log.%d" % os.getpid()
         setcfg("namespaces_json_server_logfile", logfile)
-        proc = Popen(f"{q_python} -m namespaces_json_server > {logfile} 2>&1", shell=True)
+        proc = Popen(f"{q_python} -m osgtest.library.namespaces_json_server > {logfile} 2>&1", shell=True)
 
         # Make sure it didn't immediately crash
         time.sleep(2)
