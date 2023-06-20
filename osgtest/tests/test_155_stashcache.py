@@ -225,6 +225,8 @@ class TestStartStashCache(OSGTestCase):
         # Start the namespaces JSON server in the background
         # Don't wait for it to finish, but keep track of the process by saving
         # the process object in core.state.
+
+        # TODO: Turn this into a systemd service
         setstate("namespaces_json_server_proc", None)
         setcfg("STASH_NAMESPACE_URL", "")
         q_python = shlex.quote(sys.executable)

@@ -58,6 +58,7 @@ class TestStopStashCache(OSGTestCase):
         core.remove_cert('certs.xrootdcert')
 
     def test_08_stop_namespaces_json_server(self):
+        # TODO: Turn this into a systemd service
         proc = getstate("namespaces_json_server_proc")
         if proc:
             proc.terminate()
