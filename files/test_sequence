@@ -1,5 +1,6 @@
 test_040_java
 test_050_mysqld
+test_055_osg_ca_manage
 test_060_fetch_crl
 test_070_munge
 test_090_jobs
