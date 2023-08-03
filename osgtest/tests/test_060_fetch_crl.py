@@ -55,7 +55,7 @@ class TestFetchCrl(osgunittest.OSGTestCase):
         else:
             self.assertEquals(status, 0, fail)
         count = len(glob.glob(os.path.join('/etc/grid-security/certificates', '*.r[0-9]')))
-        self.assert_(count > 3, True)
+        self.assert_(count > 3, f"Expected > 3 crls but found {count}")
 
     def test_02_fetch_crl_dir(self):
         core.skip_ok_unless_installed('fetch-crl')
@@ -73,4 +73,4 @@ class TestFetchCrl(osgunittest.OSGTestCase):
             self.assertEquals(status, 0, fail)
         count = len(glob.glob(os.path.join(temp_crl_dir, '*.r[0-9]')))
         shutil.rmtree(temp_crl_dir)
-        self.assert_(count > 3, True)
+        self.assert_(count > 3, f"Expected > 3 crls but found {count}")

@@ -151,7 +151,7 @@ The test software is written in Python and consists of:
 -   The tests themselves (also Python modules) in `osgtest/tests`
 -   Extra files needed at runtime in `files`
 
-The whole system uses the standard Python `unittest` framework to run. Note that all tests have to be compatible with Python 2.6; when reading the docs for `unittest`, keep note of when a feature was introduced.
+The whole system uses the standard Python `unittest` framework to run. 
 
 ### Test Sequence
 
