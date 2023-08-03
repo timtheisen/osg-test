@@ -15,7 +15,7 @@ class TestOsgCaManage(osgunittest.OSGTestCase):
         fail = core.diagnose('Run osg-ca-manage setupCA', command, status, stdout, stderr)
 
         self.assertEquals(status, 0, fail)
-        pem_count = len(glob.glob(os.path.join('/etc/grid-security/certificates', '*.pem')))
+        pem_count = len(glob.glob('/etc/grid-security/certificates/*.pem'))
         self.assert_(pem_count > 0, "No certificates installed")
 
     def test_02_verify_ca(self):
