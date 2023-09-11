@@ -66,7 +66,7 @@ class TestCleanup(osgunittest.OSGTestCase):
 
         self.skip_bad_unless(core.state['install.release-updated'], 'release not updated')
 
-        command = ['rpm', '-e', 'osg-release']
+        command = ['rpm', '-e', '--nodeps', 'osg-release']
         core.check_system(command, 'Erase osg-release')
 
         rpm_url = 'https://repo.opensciencegrid.org/osg/' \
@@ -76,7 +76,7 @@ class TestCleanup(osgunittest.OSGTestCase):
             + '-el' \
             + str(core.el_release()) \
             + '-release-latest.rpm'
-        command = ['rpm', '-Uvh', rpm_url]
+        command = ['yum', 'install', '-y', rpm_url]
         core.check_system(command, 'Downgrade osg-release')
 
         yum.clean(*core.config['yum.clean_repos'])
@@ -132,7 +132,11 @@ class TestCleanup(osgunittest.OSGTestCase):
         certs_dir = '/etc/grid-security/certificates'
         if core.state['certs.ca_created']:
             files.remove(os.path.join(certs_dir, 'OSG-Test-CA.*'))
-            for link in os.listdir(certs_dir):
+            try:
+                dirlist = os.listdir(certs_dir)
+            except FileNotFoundError:
+                dirlist = []
+            for link in dirlist:
                 abs_link_path = os.path.join(certs_dir, link)
                 try:
                     dest = os.readlink(abs_link_path)
@@ -150,8 +154,11 @@ class TestCleanup(osgunittest.OSGTestCase):
                 files.remove(os.path.join(openssl_dir, 'tls', tls_file))
 
         # Remove the entire certs dir if our test CA was the only resident
-        if len(os.listdir(certs_dir)) == 0:
-            files.remove(certs_dir, force=True)
+        try:
+            if len(os.listdir(certs_dir)) == 0:
+                files.remove(certs_dir, force=True)
+        except FileNotFoundError:
+            core.log_message(f'{certs_dir} has already been removed')
 
         if core.state['certs.hostcert_created']:
             files.remove(core.config['certs.hostcert'])

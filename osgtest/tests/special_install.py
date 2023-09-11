@@ -71,14 +71,14 @@ class TestInstall(osgunittest.OSGTestCase):
 
         self.skip_bad_unless(core.state['install.success'], 'Install did not succeed')
 
-        command = ['rpm', '-e', 'osg-release']
+        command = ['rpm', '-e', '--nodeps', 'osg-release']
         core.check_system(command, 'Erase osg-release')
 
         self.assert_(re.match('\d+\.\d+', core.options.updaterelease), "Unrecognized updaterelease format")
         rpm_url = 'https://repo.opensciencegrid.org/osg/' + core.options.updaterelease + '/osg-' + \
                   core.options.updaterelease + '-el' + str(core.el_release()) + '-release-latest.rpm'
-        command = ['rpm', '-Uvh', rpm_url]
-        core.check_system(command, 'Update osg-release')
+        command = ['yum', 'install', '-y', rpm_url]
+        core.check_system(command, 'Install new version of osg-release')
 
         core.config['yum.clean_repos'] = ['osg'] + core.options.updaterepos
         yum.clean(*core.config['yum.clean_repos'])
