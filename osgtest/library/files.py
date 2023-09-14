@@ -219,6 +219,7 @@ def restore(path, owner, ignore_missing=False):
 
 def remove(path, force=False):
     """Remove the path, which could be a file, symlink, empty directory, or file glob.
+    Does nothing if the path is already missing.
 
     If the force argument is True, then this function will remove non-empty directories.
     """
