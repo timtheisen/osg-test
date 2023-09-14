@@ -61,12 +61,7 @@ class TestCondorCE(osgunittest.OSGTestCase):
         cwd = os.getcwd()
         os.chdir('/tmp')
         self.command += ['condor_ce_trace', '--debug'] + list(args) + [core.get_hostname()]
-        if core.osg_release() == "3.6" and \
-           core.PackageVersion('condor') >= '9.0.0' and \
-           core.PackageVersion('condor') < '9.0.8':
-            with core.no_x509(core.options.username):
-                trace_rc, trace_out, trace_err = core.system(self.command, user=True)
-        else:
+        with core.no_x509(core.options.username):
             trace_rc, trace_out, trace_err = core.system(self.command, user=True)
         os.chdir(cwd)
 
