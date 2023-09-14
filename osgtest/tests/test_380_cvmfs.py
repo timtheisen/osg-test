@@ -11,7 +11,7 @@ import osgtest.library.osgunittest as osgunittest
 class TestCvmfs(osgunittest.OSGTestCase):
 
     __check_path = '/cvmfs/cms.cern.ch/cmsset_default.sh'
-    __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osg-wn:3.3-el6'
+    __cvmfs_image = '/cvmfs/singularity.opensciencegrid.org/library/alpine:latest'
     core.config['cvmfs.debug-dirs'] = []
 
     def debug_cvmfs(self, repo):
