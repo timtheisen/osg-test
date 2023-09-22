@@ -37,11 +37,6 @@ class TestInstall(osgunittest.OSGTestCase):
                 pkg_repo_dict["x509-scitokens-issuer-client"] = ["osg-development"]
                 break
 
-        # Special case: htcondor-ce-collector on EL8 needs mod_auth_oidc, only avaiable in a module
-        if "htcondor-ce-collector" in pkg_repo_dict:
-            if core.el_release() > 7:
-                core.check_system(["dnf", "-y", "module", "enable", "mod_auth_openidc"], "Enable mod_auth_openidc module")
-
         for pkg, repos in pkg_repo_dict.items():
             # Do not try to re-install packages
             if core.rpm_is_installed(pkg):
