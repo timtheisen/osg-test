@@ -69,9 +69,16 @@ class TestInstall(osgunittest.OSGTestCase):
         command = ['rpm', '-e', '--nodeps', 'osg-release']
         core.check_system(command, 'Erase osg-release')
 
-        self.assert_(re.match('\d+\.\d+', core.options.updaterelease), "Unrecognized updaterelease format")
-        rpm_url = 'https://repo.opensciencegrid.org/osg/' + core.options.updaterelease + '/osg-' + \
-                  core.options.updaterelease + '-el' + str(core.el_release()) + '-release-latest.rpm'
+        update_release = core.options.updaterelease
+        self.assert_(re.match('\d+[.]?\d+$', update_release), "Unrecognized updaterelease format")
+
+        # Example URLs
+        # https://repo.opensciencegrid.org/osg/3.6/osg-3.6-el7-release-latest.rpm
+        # https://repo.opensciencegrid.org/osg/23-main/osg-23-main-el8-release-latest.rpm
+        if '.' not in update_release:  # 23, 24, etc.
+            update_release = f'{update_release}-main'
+        rpm_url = 'https://repo.opensciencegrid.org/osg/' + update_release + '/osg-' + \
+            update_release + '-el' + str(core.el_release()) + '-release-latest.rpm'
         command = ['yum', 'install', '-y', rpm_url]
         core.check_system(command, 'Install new version of osg-release')
 
