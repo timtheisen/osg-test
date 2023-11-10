@@ -41,7 +41,7 @@ class TestStashCache(OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed("stash-origin",
                                       "stash-cache",
-                                      "stashcache-client",
+                                      "osdf-client",
                                       by_dependency=True)
         self.skip_bad_unless_running("xrootd@stash-origin", "xrootd@stash-cache", "xrootd@stash-origin-auth",
                                      "xrootd@stash-cache-auth")
@@ -90,17 +90,20 @@ class TestStashCache(OSGTestCase):
 
     def test_05_stashcp(self):
         command = ["stashcp", "-d"]
-        if core.rpm_is_installed("stashcp"):
-            # stashcp (the Go version) doesn't use caches.json so specify the cache on the command line
+        if not core.rpm_is_installed("stashcache-client"):
+            # stashcp (the Go versions) doesn't use caches.json so specify the cache on the command line
             # (it also doesn't use root://)
             command.append("--cache=http://localhost:%d" % getcfg("CacheHTTPPort"))
         name, contents = self.testfiles[3]
         path = os.path.join(getcfg("OriginExport"), name)
 
         # If we have the namespaces json server running, set STASH_NAMESPACE_URL so stashcp can use it.
+        # Also set STASH_TOPOLOGY_NAMESPACE_URL because that is the env var the Pelican version of stashcp uses.
+        # (STASH_FEDERATION_TOPOLOGYNAMESPACEURL also works but is a mouthful)
         stash_namespace_url = getcfg("STASH_NAMESPACE_URL")
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
-            with core.environ_context({"STASH_NAMESPACE_URL": stash_namespace_url}):
+            with core.environ_context({"STASH_NAMESPACE_URL": stash_namespace_url,
+                                       "STASH_TOPOLOGY_NAMESPACE_URL": stash_namespace_url}):
                 core.check_system(command + [path, tf.name],
                                   "Checking stashcp")
             result = tf.read()

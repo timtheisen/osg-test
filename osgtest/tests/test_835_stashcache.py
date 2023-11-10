@@ -28,7 +28,7 @@ class TestStopStashCache(OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed("stash-origin",
                                       "stash-cache",
-                                      "stashcache-client",
+                                      "osdf-client",
                                       by_dependency=True)
 
     def test_01_stop_stash_origin(self):
