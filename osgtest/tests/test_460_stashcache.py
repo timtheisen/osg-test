@@ -41,7 +41,7 @@ class TestStashCache(OSGTestCase):
     def setUp(self):
         core.skip_ok_unless_installed("stash-origin",
                                       "stash-cache",
-                                      "osdf-client",
+                                      "stashcp",
                                       by_dependency=True)
         self.skip_bad_unless_running("xrootd@stash-origin", "xrootd@stash-cache", "xrootd@stash-origin-auth",
                                      "xrootd@stash-cache-auth")
