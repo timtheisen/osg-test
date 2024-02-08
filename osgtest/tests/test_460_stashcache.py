@@ -103,7 +103,8 @@ class TestStashCache(OSGTestCase):
         stash_namespace_url = getcfg("STASH_NAMESPACE_URL")
         with tempfile.NamedTemporaryFile(mode="r+b") as tf:
             with core.environ_context({"STASH_NAMESPACE_URL": stash_namespace_url,
-                                       "STASH_TOPOLOGY_NAMESPACE_URL": stash_namespace_url}):
+                                       "STASH_TOPOLOGY_NAMESPACE_URL": stash_namespace_url,
+                                       "STASH_USE_TOPOLOGY": "1"}):
                 core.check_system(command + [path, tf.name],
                                   "Checking stashcp")
             result = tf.read()
