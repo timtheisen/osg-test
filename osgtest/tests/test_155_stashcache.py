@@ -110,8 +110,11 @@ CACHES_JSON_CONTENTS = """\
 ]
 """
 
+GRID_MAPFILE = "/etc/grid-security/grid-mapfile"
 ORIGIN_SCITOKENS_CONF_PATH = "/run/stash-origin-auth/scitokens.conf"
+ORIGIN_GRIDMAP_PATH = "/run/stash-origin-auth/grid-mapfile"
 CACHE_SCITOKENS_CONF_PATH = "/run/stash-cache-auth/scitokens.conf"
+CACHE_GRIDMAP_PATH = "/run/stash-cache-auth/grid-mapfile"
 SCITOKENS_CONF_CONTENTS = """\
 [Issuer /unregistered]
 issuer = https://scitokens.org/unregistered
@@ -187,6 +190,10 @@ class TestStartStashCache(OSGTestCase):
             if core.PackageVersion("osg-xrootd") >= "3.6-16":
                 maybe_enable_voms = "set EnableVoms = 1"
 
+        gridmap_text = ""
+        if os.path.exists(GRID_MAPFILE):
+            gridmap_text = files.read(GRID_MAPFILE, as_single_string=True)
+
         # Write our new files
         for path, contents in [
             (PARAMS_CFG_PATH, PARAMS_CFG_CONTENTS),
@@ -198,6 +205,8 @@ class TestStartStashCache(OSGTestCase):
             (CACHES_JSON_PATH, CACHES_JSON_CONTENTS),
             (CACHE_SCITOKENS_CONF_PATH, SCITOKENS_CONF_CONTENTS),
             (ORIGIN_SCITOKENS_CONF_PATH, SCITOKENS_CONF_CONTENTS),
+            (ORIGIN_GRIDMAP_PATH, gridmap_text),
+            (CACHE_GRIDMAP_PATH, gridmap_text),
         ]:
             files.write(path, contents, owner=NAMESPACE, chmod=0o644)
             filelist.append(path)
