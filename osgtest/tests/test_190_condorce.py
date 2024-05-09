@@ -71,25 +71,28 @@ QUEUE_SUPER_USER_MAY_IMPERSONATE = .*"""
 
         condor_contents = """GRIDMAP = /etc/grid-security/grid-mapfile
 ALL_DEBUG=D_CAT D_ALWAYS:2 D_SECURITY:2
-JOB_ROUTER_DEFAULTS = $(JOB_ROUTER_DEFAULTS) [set_default_maxMemory = 128;]
-JOB_ROUTER_ENTRIES = \\
-   [ \\
-     GridResource = "batch pbs"; \\
-     TargetUniverse = 9; \\
-     name = "Local_PBS"; \\
-     Requirements = target.osgTestBatchSystem =?= "pbs"; \\
-   ] \\
-   [ \\
-     GridResource = "batch slurm"; \\
-     TargetUniverse = 9; \\
-     name = "Local_Slurm"; \\
-     Requirements = target.osgTestBatchSystem =?= "slurm"; \\
-   ] \\
-   [ \\
-     TargetUniverse = 5; \\
-     name = "Local_Condor"; \\
-     Requirements = (target.osgTestBatchSystem =!= "pbs" && target.osgTestBatchSystem =!= "slurm"); \\
-   ]
+
+JOB_ROUTER_USE_DEPRECATED_ROUTER_ENTRIES = False
+JOB_ROUTER_PRE_ROUTE_TRANSFORM_NAMES = $(JOB_ROUTER_PRE_ROUTE_TRANSFORM_NAMES) DefaultMemory
+JOB_ROUTER_TRANSFORM_DefaultMemory @=jrt
+    default_MaxMemory = 128
+@jrt
+
+JOB_ROUTER_ROUTE_NAMES = PBS_Cluster, Slurm_Cluster, Condor_Pool
+JOB_ROUTER_ROUTE_PBS_Cluster @=jrt
+    REQUIREMENTS osgTestBatchSystem =?= "pbs"
+    TargetUniverse = 9
+    GridResource = "batch pbs"
+@jrt
+JOB_ROUTER_ROUTE_Slurm_Cluster @=jrt
+    REQUIREMENTS osgTestBatchSystem =?= "slurm"
+    TargetUniverse = 9
+    GridResource = "batch slurm"
+@jrt
+JOB_ROUTER_ROUTE_Condor_Pool @=jrt
+    REQUIREMENTS (osgTestBatchSystem =!= "pbs" && osgTestBatchSystem =!= "slurm")
+  TargetUniverse = 5
+@jrt
 
 JOB_ROUTER_SCHEDD2_SPOOL=/var/lib/condor/spool
 JOB_ROUTER_SCHEDD2_NAME=$(FULL_HOSTNAME)
